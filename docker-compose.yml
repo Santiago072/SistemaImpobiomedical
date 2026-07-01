@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: impobiomedical_app
+    restart: always
+    environment:
+      - PORT=${PORT:-80}
+      - DB_HOST=${DB_HOST:-impobiomedical_db}
+      - DB_NAME=${DB_NAME:-sistema_impobiomedical}
+      - DB_USER=${DB_USER:-impo_user}
+      - DB_PASS=${DB_PASS:-}
+      - APP_BASE=${APP_BASE:-/}
+      - SESSION_LIFETIME=${SESSION_LIFETIME:-3600}
+      - COOKIE_SECURE=${COOKIE_SECURE:-1}
+      - UPLOAD_MAX_SIZE=${UPLOAD_MAX_SIZE:-5242880}
+      - ALLOWED_EXTENSIONS=${ALLOWED_EXTENSIONS:-jpg,jpeg,png,gif,webp}
+    volumes:
+      - impo_uploads:/var/www/html/uploads
+      - impo_logs:/var/www/html/logs
+    ports:
+      - "8894:80"
+    depends_on:
+      - impobiomedical_db
+    networks:
+      - sodicol_network
+
+  impobiomedical_db:
+    image: mariadb:10.11
+    container_name: impobiomedical_db
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MARIADB_DATABASE: ${DB_NAME:-sistema_impobiomedical}
+      MARIADB_USER: ${DB_USER:-impo_user}
+      MARIADB_PASSWORD: ${DB_PASS:-}
+    volumes:
+      - impo_db_data:/var/lib/mysql
+      - ./BD.txt:/docker-entrypoint-initdb.d/BD.sql
+    networks:
+      - sodicol_network
+
+volumes:
+  impo_uploads:
+  impo_logs:
+  impo_db_data:
+
+networks:
+  sodicol_network:
+    external: true

@@ -1,0 +1,21 @@
+# Entorno
+config/.env
+.env
+
+# Composer
+vendor/
+
+# Logs
+logs/*.log
+
+# Uploads (imágenes de productos — persistidas en volumen Docker)
+uploads/*
+!uploads/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,119 @@
+-- ============================================================
+-- Sistema Impobiomedical — Script de Base de Datos
+-- BD: sistema_impobiomedical
+-- Zona horaria: America/Bogota
+-- ============================================================
+
+CREATE DATABASE IF NOT EXISTS sistema_impobiomedical
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE sistema_impobiomedical;
+
+-- ── Usuarios del sistema ────────────────────────────────────
+CREATE TABLE IF NOT EXISTS usuarios (
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    codigo        VARCHAR(10) UNIQUE NOT NULL,        -- Ej: EB, JD, etc.
+    documento     VARCHAR(20) UNIQUE NOT NULL,
+    nombre        VARCHAR(100) NOT NULL,
+    correo        VARCHAR(100) UNIQUE NOT NULL,
+    password      VARCHAR(255) NULL,
+    telefono      VARCHAR(20),
+    cargo         VARCHAR(50) NULL,
+    rol           ENUM('admin', 'usuario') DEFAULT 'usuario',
+    estado        ENUM('activo', 'inactivo') DEFAULT 'activo',
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Clientes ────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS clientes (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    nombre          VARCHAR(100) NOT NULL,             -- Nombre o Entidad
+    nit             VARCHAR(25) UNIQUE NOT NULL,        -- NIT o CC
+    departamento    VARCHAR(60) NOT NULL,
+    municipio       VARCHAR(60) NOT NULL,
+    direccion       VARCHAR(100) NOT NULL,
+    nombre_contacto VARCHAR(60) NOT NULL,
+    telefono        VARCHAR(20) NOT NULL,
+    correo          VARCHAR(100) NULL,
+    estado          ENUM('activo', 'inactivo') DEFAULT 'activo',
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_cliente_nombre (nombre),
+    INDEX idx_cliente_nit (nit)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Catálogo de productos ───────────────────────────────────
+CREATE TABLE IF NOT EXISTS productos (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    titulo          VARCHAR(255) NOT NULL,
+    foto            VARCHAR(255) DEFAULT NULL,
+    descripcion     TEXT NOT NULL,
+    precio          DECIMAL(20,2) NOT NULL DEFAULT 0.00,
+    iva             ENUM('si', 'no') NOT NULL DEFAULT 'si',
+    porcentaje_iva  DECIMAL(5,2) NOT NULL DEFAULT 19.00,
+    estado          ENUM('activo', 'inactivo') DEFAULT 'activo',
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_producto_titulo (titulo)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Cotizaciones (cabecera) ─────────────────────────────────
+CREATE TABLE IF NOT EXISTS cotizaciones (
+    id                   INT AUTO_INCREMENT PRIMARY KEY,
+    -- Número: codigo_usuario + consecutivo mensual (Ej: EB01, EB02)
+    numero_cotizacion    VARCHAR(30) DEFAULT NULL,
+    usuario_id           INT NOT NULL,
+    usuario_codigo       VARCHAR(10) NOT NULL,          -- Snapshot del código al momento de crear
+    -- Datos del cliente (snapshot: puede ser de catálogo o manual)
+    cliente_id           INT NULL,
+    cliente_nombre       VARCHAR(200) NOT NULL DEFAULT '',
+    cliente_nit          VARCHAR(30) DEFAULT NULL,
+    cliente_direccion    VARCHAR(200) DEFAULT NULL,
+    cliente_telefono     VARCHAR(30) DEFAULT NULL,
+    cliente_correo       VARCHAR(100) DEFAULT NULL,
+    cliente_contacto     VARCHAR(100) DEFAULT NULL,
+    cliente_ciudad       VARCHAR(100) DEFAULT NULL,
+    -- Datos del asesor (snapshot)
+    asesor_nombre        VARCHAR(100) NOT NULL DEFAULT '',
+    asesor_cargo         VARCHAR(100) DEFAULT NULL,
+    -- Datos de la cotización
+    fecha_creacion       DATE DEFAULT (CURRENT_DATE),
+    dias_validez         INT DEFAULT 30,
+    fecha_validez        DATE NULL,                    -- Se calcula al finalizar
+    condiciones_pago     VARCHAR(100) DEFAULT 'CONTADO',
+    observaciones        TEXT NULL,
+    estado               ENUM('borrador', 'finalizada') DEFAULT 'borrador',
+    created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE SET NULL,
+    INDEX idx_cotizacion_numero (numero_cotizacion),
+    INDEX idx_cotizacion_cliente (cliente_nombre),
+    INDEX idx_cotizacion_fecha (fecha_creacion),
+    INDEX idx_cotizacion_usuario (usuario_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Ítems de cada cotización ────────────────────────────────
+CREATE TABLE IF NOT EXISTS cotizacion_items (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    cotizacion_id   INT NOT NULL,
+    producto_id     INT NULL,                          -- NULL si fue ingresado manualmente
+    titulo          VARCHAR(255) NOT NULL,
+    foto            VARCHAR(255) DEFAULT NULL,
+    descripcion     TEXT NOT NULL,
+    cantidad        INT NOT NULL DEFAULT 1,
+    precio          DECIMAL(20,2) NOT NULL DEFAULT 0.00,
+    iva             ENUM('si', 'no') NOT NULL DEFAULT 'si',
+    porcentaje_iva  DECIMAL(5,2) NOT NULL DEFAULT 19.00,
+    tiempo_entrega  VARCHAR(80) DEFAULT NULL,          -- Ej: "5 A 15 DIAS HÁBILES"
+    FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id) ON DELETE CASCADE,
+    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Usuario administrador inicial ───────────────────────────
+-- Contraseña inicial: Admin2026* (cambiar tras primer acceso)
+INSERT INTO `usuarios` (`codigo`, `documento`, `nombre`, `correo`, `password`, `telefono`, `cargo`, `rol`, `estado`) VALUES
+('ADM', '1000000000', 'Administrador', 'admin@impobiomedical.com',
+ '$2y$10$EOofArNIR1pB.DfysZAhzeB13ImopdK5BVeexCagCl/2jxBo4OMGK',
+ '3000000000', 'Administrador', 'admin', 'activo');
