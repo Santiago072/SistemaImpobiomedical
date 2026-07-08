@@ -38,10 +38,5 @@ $esDashboard = $esDashboard ?? false;
             </span>
             <?php endif; ?>
         <?php endif; ?>
-        <button class="btn-modo" id="btnModo" title="Cambiar tema">
-            <span class="modo-icon-dia"><i class="bi bi-sun-fill"></i></span>
-            <span class="modo-icon-noche"><i class="bi bi-moon-stars-fill"></i></span>
-            <span class="modo-label"></span>
-        </button>
     </div>
 </div>

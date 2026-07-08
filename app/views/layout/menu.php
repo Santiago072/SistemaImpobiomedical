@@ -13,20 +13,13 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 ?>
 <nav class="menu-principal">
     <div class="menu-lateral" id="menuLateral">
-        <div class="logo-wrap">
-            <div class="logo-ring-wrap">
-                <div class="logo-ring"></div>
-                <div class="logo-ring"></div>
-                <div class="logo-ring"></div>
-                <div class="logo-halo"></div>
-                <div class="logo-halo"></div>
-                <div class="logo-halo"></div>
-                <div class="logo-dash"></div>
-                <div class="logo-circle">
-                    <img src="<?= $basePath ?>logo/logo.png" alt="Logo Impobiomedical">
+            <div class="logo-simple-wrap" style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px 0;">
+                <div class="ecg-container-menu" style="width: 120px; height: 60px;">
+                    <svg viewBox="0 0 500 100" preserveAspectRatio="none" style="width: 100%; height: 100%; stroke: #10757e; stroke-width: 4; fill: none; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: dash 4s linear infinite; filter: drop-shadow(0 0 5px rgba(16,117,126,0.5));">
+                        <polyline points="0,50 150,50 170,20 190,80 210,10 230,90 250,50 500,50" />
+                    </svg>
                 </div>
             </div>
-        </div>
 
         <ul class="lista-menu-lateral">
             <li>
@@ -41,9 +34,6 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <?php endif; ?>
             <li class="menu-desplegable" data-panel="cotizaciones" title="Cotizaciones">
                 <a href="#"><i class="bi bi-file-earmark-text-fill"></i></a>
-            </li>
-            <li class="menu-desplegable" data-panel="catalogo" title="Catálogo">
-                <a href="#"><i class="bi bi-box-seam-fill"></i></a>
             </li>
             <li>
                 <a href="<?= $basePath ?>?action=logout" title="Cerrar sesión">
@@ -67,22 +57,14 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     const menus = {
         admin: `
             <h3>Administración</h3>
-            <li><a href="<?= $basePath ?>?module=usuarios"><i class="fas fa-user-friends"></i> Lista Usuarios</a></li>
-            <li><a href="<?= $basePath ?>?module=usuarios&action=crear"><i class="fas fa-user-plus"></i> Nuevo Usuario</a></li>
+            <li><a href="<?= $basePath ?>?module=usuarios"><i class="fas fa-users"></i> Gestión de Usuarios</a></li>
+            <li><a href="<?= $basePath ?>?module=productos"><i class="fas fa-box-open"></i> Gestión de Productos</a></li>
         `,
         cotizaciones: `
             <h3>Cotizaciones</h3>
             <li><a href="<?= $basePath ?>?module=cotizaciones&action=crear"><i class="fas fa-plus-circle"></i> Nueva Cotización</a></li>
             <li><a href="<?= $basePath ?>?module=cotizaciones&action=consultar"><i class="fas fa-search"></i> Consultar</a></li>
-            <li><a href="<?= $basePath ?>?module=clientes"><i class="fas fa-building"></i> Clientes</a></li>
-            <li><a href="<?= $basePath ?>?module=clientes&action=crear"><i class="fas fa-plus"></i> Nuevo Cliente</a></li>
-        `,
-        catalogo: `
-            <h3>Catálogo</h3>
-            <li><a href="<?= $basePath ?>?module=productos"><i class="fas fa-box-open"></i> Lista Productos</a></li>
-            <?php if ($rol === 'admin'): ?>
-            <li><a href="<?= $basePath ?>?module=productos&action=crear"><i class="fas fa-plus"></i> Nuevo Producto</a></li>
-            <?php endif; ?>
+            <li><a href="<?= $basePath ?>?module=clientes"><i class="fas fa-building"></i> Gestión de Clientes</a></li>
         `
     };
 

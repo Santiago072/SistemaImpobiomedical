@@ -45,7 +45,7 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
             <div class="grupo-campo">
                 <label>Descripción *</label>
-                <textarea name="descripcion" required maxlength="1000"><?= htmlspecialchars($datos['descripcion']) ?></textarea>
+                <textarea name="descripcion" required maxlength="5000"><?= htmlspecialchars($datos['descripcion']) ?></textarea>
             </div>
             <div class="grupo-campo">
                 <label>Cantidad *</label>
@@ -54,15 +54,25 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
             <div class="grupo-campo">
                 <label>Valor con IVA *</label>
-                <select name="IVA" required>
+                <select name="iva" required>
                     <option value="si" <?= $datos['iva'] === 'si' ? 'selected' : '' ?>>Aplicar IVA</option>
                     <option value="no" <?= $datos['iva'] === 'no' ? 'selected' : '' ?>>No Aplicar IVA</option>
                 </select>
             </div>
             <div class="grupo-campo">
+                <label>% IVA</label>
+                <input type="number" name="porcentaje_iva"
+                       value="<?= floatval($datos['porcentaje_iva'] ?? 19) ?>" min="0" max="100" step="0.01">
+            </div>
+            <div class="grupo-campo">
                 <label>Precio Unitario *</label>
                 <input type="number" name="precio"
                        value="<?= floatval($datos['precio']) ?>" required min="0" step="0.01">
+            </div>
+            <div class="grupo-campo">
+                <label>Tiempo de Entrega</label>
+                <input type="text" name="tiempo_entrega"
+                       value="<?= htmlspecialchars($datos['tiempo_entrega'] ?? '') ?>" maxlength="120">
             </div>
             <div class="grupo-campo">
                 <button type="submit" class="boton-primario">Actualizar Ítem</button>

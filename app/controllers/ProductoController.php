@@ -38,8 +38,10 @@ class ProductoController
         if (isset($_GET['updated'])) $mensajeExito = 'Producto actualizado exitosamente';
         if (isset($_GET['deleted'])) $mensajeExito = 'Producto eliminado exitosamente';
 
+        $csrf_token = generar_token_csrf();
+
         return compact('productos', 'busqueda', 'paginaActual', 'totalPaginas',
-                       'total', 'mensajeExito', 'mensajeError', 'rol');
+                       'total', 'mensajeExito', 'mensajeError', 'rol', 'csrf_token');
     }
 
     public function crear(): array
@@ -61,8 +63,8 @@ class ProductoController
         }
 
         $titulo         = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
-        $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 2000);
-        $precio         = (float)str_replace(['$', '.', ','], ['', '', '.'], $_POST['precio'] ?? '0');
+        $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
+        $precio         = (float)($_POST['precio'] ?? 0);
         $iva            = mb_substr(sanitizar_entrada($_POST['iva'] ?? ''), 0, 5);
         $porcentaje_iva = (float)($_POST['porcentaje_iva'] ?? 19);
 
@@ -118,11 +120,12 @@ class ProductoController
         }
 
         $titulo         = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
-        $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 2000);
-        $precio         = (float)str_replace(['$', '.', ','], ['', '', '.'], $_POST['precio'] ?? '0');
+        $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
+        $precio         = (float)($_POST['precio'] ?? 0);
         $iva            = mb_substr(sanitizar_entrada($_POST['iva'] ?? ''), 0, 5);
         $porcentaje_iva = (float)($_POST['porcentaje_iva'] ?? 19);
-        $estado         = mb_substr(sanitizar_entrada($_POST['estado'] ?? ''), 0, 10);
+        $estado         = mb_substr(sanitizar_entrada($_POST['estado'] ?? 'activo'), 0, 10);
+        if (empty($estado)) $estado = 'activo';
 
         if (!$titulo || !$descripcion || $precio < 0) {
             $mensajeError = 'Todos los campos son obligatorios';

@@ -139,19 +139,26 @@ class CotizacionModel
         string $clienteCorreo,
         string $clienteContacto,
         string $clienteCiudad,
-        ?int   $clienteId = null
+        ?int   $clienteId = null,
+        string $asesorNombre = '',
+        string $asesorCargo = '',
+        string $usuarioCodigo = ''
     ): string {
         mysqli_begin_transaction($this->db);
         try {
-            // Obtener el código del usuario de esta cotización
-            $stmtCodigo = mysqli_prepare($this->db,
-                'SELECT usuario_codigo FROM cotizaciones WHERE id = ? FOR UPDATE');
-            mysqli_stmt_bind_param($stmtCodigo, 'i', $id);
-            mysqli_stmt_execute($stmtCodigo);
-            $resCodigo   = mysqli_stmt_get_result($stmtCodigo);
-            $rowCodigo   = mysqli_fetch_assoc($resCodigo);
-            $codigo      = $rowCodigo['usuario_codigo'] ?? 'COT';
-            mysqli_stmt_close($stmtCodigo);
+            // Utilizar el código del usuario actual si se proporcionó, si no, buscar en la bd
+            if (!empty($usuarioCodigo)) {
+                $codigo = $usuarioCodigo;
+            } else {
+                $stmtCodigo = mysqli_prepare($this->db,
+                    'SELECT usuario_codigo FROM cotizaciones WHERE id = ? FOR UPDATE');
+                mysqli_stmt_bind_param($stmtCodigo, 'i', $id);
+                mysqli_stmt_execute($stmtCodigo);
+                $resCodigo   = mysqli_stmt_get_result($stmtCodigo);
+                $rowCodigo   = mysqli_fetch_assoc($resCodigo);
+                $codigo      = $rowCodigo['usuario_codigo'] ?? 'COT';
+                mysqli_stmt_close($stmtCodigo);
+            }
 
             // Contar cotizaciones finalizadas de este usuario en el mes actual
             $mes  = date('Y-m');
@@ -168,7 +175,7 @@ class CotizacionModel
             $cnt    = (int)mysqli_fetch_assoc($resCnt)['total'];
             mysqli_stmt_close($stmtCnt);
 
-            $numeroCotizacion = $codigo . str_pad($cnt + 1, 2, '0', STR_PAD_LEFT);
+            $numeroCotizacion = trim($codigo) . ' ' . str_pad($cnt + 1, 2, '0', STR_PAD_LEFT);
 
             // Calcular fecha de validez
             $fechaValidez = date('Y-m-d', strtotime($fechaCreacion . " + $diasValidez days"));
@@ -180,14 +187,17 @@ class CotizacionModel
                      condiciones_pago=?, observaciones=?,
                      cliente_nombre=?, cliente_nit=?, cliente_direccion=?,
                      cliente_telefono=?, cliente_correo=?, cliente_contacto=?,
-                     cliente_ciudad=?, cliente_id=?
+                     cliente_ciudad=?, cliente_id=?,
+                     asesor_nombre=?, asesor_cargo=?, usuario_codigo=?
                  WHERE id=?");
-            mysqli_stmt_bind_param($stmtUpd, 'sssissssssssssii',
+            mysqli_stmt_bind_param($stmtUpd, 'ssissssssssssisssi',
                 $numeroCotizacion, $fechaCreacion, $diasValidez, $fechaValidez,
                 $condicionesPago, $observaciones,
                 $clienteNombre, $clienteNit, $clienteDireccion,
                 $clienteTelefono, $clienteCorreo, $clienteContacto,
-                $clienteCiudad, $clienteId, $id);
+                $clienteCiudad, $clienteId,
+                $asesorNombre, $asesorCargo, $codigo,
+                $id);
             mysqli_stmt_execute($stmtUpd);
             mysqli_stmt_close($stmtUpd);
 
@@ -255,7 +265,7 @@ class CotizacionModel
         }
 
         if (!empty($filtros['fecha'])) {
-            $condiciones[] = 'c.fecha_creacion = ?';
+            $condiciones[] = 'DATE(c.fecha_creacion) = ?';
             $params[]      = $filtros['fecha'];
             $types        .= 's';
         }
@@ -314,7 +324,7 @@ class CotizacionModel
             'INSERT INTO cotizacion_items
              (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio, iva, porcentaje_iva, tiempo_entrega)
              VALUES (?,?,?,?,?,?,?,?,?,?)');
-        mysqli_stmt_bind_param($stmt, 'iissssidss',
+        mysqli_stmt_bind_param($stmt, 'iisssidsds',
             $cotizacionId, $productoId, $titulo, $foto, $descripcion,
             $cantidad, $precio, $iva, $porcentajeIva, $tiempoEntrega);
         $ok = mysqli_stmt_execute($stmt);
@@ -326,20 +336,12 @@ class CotizacionModel
                                    string $descripcion, int $cantidad, float $precio,
                                    string $iva, float $porcentajeIva, string $tiempoEntrega): bool
     {
+        // s=titulo s=foto s=descripcion i=cantidad d=precio s=iva d=porcentajeIva s=tiempoEntrega i=itemId i=cotizacionId
         $stmt = mysqli_prepare($this->db,
             'UPDATE cotizacion_items
              SET titulo=?,foto=?,descripcion=?,cantidad=?,precio=?,iva=?,porcentaje_iva=?,tiempo_entrega=?
              WHERE id=? AND cotizacion_id=?');
-        mysqli_stmt_bind_param($stmt, 'ssssidssi',
-            $titulo, $foto, $descripcion, $cantidad, $precio, $iva, $porcentajeIva,
-            $tiempoEntrega, $itemId);
-        // Fix: 10 params
-        mysqli_stmt_close($stmt);
-        $stmt = mysqli_prepare($this->db,
-            'UPDATE cotizacion_items
-             SET titulo=?,foto=?,descripcion=?,cantidad=?,precio=?,iva=?,porcentaje_iva=?,tiempo_entrega=?
-             WHERE id=? AND cotizacion_id=?');
-        mysqli_stmt_bind_param($stmt, 'ssssidssii',
+        mysqli_stmt_bind_param($stmt, 'sssidsdsii',
             $titulo, $foto, $descripcion, $cantidad, $precio, $iva, $porcentajeIva,
             $tiempoEntrega, $itemId, $cotizacionId);
         $ok = mysqli_stmt_execute($stmt);

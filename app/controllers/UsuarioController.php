@@ -49,8 +49,10 @@ class UsuarioController
             $mensajeError = $mapa[$_GET['error']] ?? 'Error al procesar la solicitud';
         }
 
+        $csrf_token = generar_token_csrf();
+
         return compact('usuarios', 'busqueda', 'paginaActual', 'totalPaginas', 'total',
-                       'mensajeExito', 'mensajeError');
+                       'mensajeExito', 'mensajeError', 'csrf_token');
     }
 
     // ── CREAR ─────────────────────────────────────────────────────────────────
@@ -82,7 +84,7 @@ class UsuarioController
         $rol      = mb_substr(sanitizar_entrada($_POST['rol'] ?? ''), 0, 10);
         $password = mb_substr($_POST['password'] ?? '', 0, 255);
 
-        $mensajeError = $this->validarCampos($codigo, $doc, $nombre, $correo, $telefono, $rol, $password, false);
+        $mensajeError = $this->validarCampos($codigo, $doc, $nombre, $correo, $telefono, $rol, $password, true);
 
         if ($mensajeError === '' && $this->model->existeCodigoOCorreo($codigo, $correo)) {
             $mensajeError = 'El código o correo ya está registrado';
@@ -160,6 +162,12 @@ class UsuarioController
         }
 
         if ($this->model->actualizar($id, $codigo, $doc, $nombre, $correo, $telefono, $cargo, $rol, $estado)) {
+            if ($id === (int)$_SESSION['usuario_id']) {
+                $_SESSION['usuario_nombre'] = $nombre;
+                $_SESSION['usuario_codigo'] = $codigo;
+                $_SESSION['usuario_cargo']  = $cargo;
+                $_SESSION['rol']            = $rol;
+            }
             header('Location: ' . BASE_URL . '?module=usuarios&updated=1');
             exit();
         }
@@ -248,8 +256,8 @@ class UsuarioController
         if (!$codigo || !$doc || !$nombre || !$correo || !$telefono || !$rol) {
             return 'Todos los campos son obligatorios';
         }
-        if (!preg_match('/^[A-Z0-9]{1,10}$/', $codigo)) {
-            return 'El código solo puede contener letras mayúsculas y números (máx. 10)';
+        if (!preg_match('/^[A-Z0-9\-]{1,10}$/', $codigo)) {
+            return 'El código solo puede contener letras mayúsculas, números y guiones (máx. 10)';
         }
         if (mb_strlen($nombre) < 3 || mb_strlen($nombre) > 100) {
             return 'El nombre debe tener entre 3 y 100 caracteres';

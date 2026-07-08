@@ -19,12 +19,12 @@ class ClienteModel
         if ($busqueda !== '') {
             $param = "%$busqueda%";
             $stmt  = mysqli_prepare($this->db,
-                "SELECT * FROM clientes WHERE estado='activo' AND (nombre LIKE ? OR nit LIKE ? OR municipio LIKE ?)
+                "SELECT * FROM clientes WHERE (nombre LIKE ? OR nit LIKE ? OR municipio LIKE ?)
                  ORDER BY nombre LIMIT ? OFFSET ?");
             mysqli_stmt_bind_param($stmt, 'sssii', $param, $param, $param, $limite, $offset);
         } else {
             $stmt = mysqli_prepare($this->db,
-                "SELECT * FROM clientes WHERE estado='activo' ORDER BY nombre LIMIT ? OFFSET ?");
+                "SELECT * FROM clientes ORDER BY nombre LIMIT ? OFFSET ?");
             mysqli_stmt_bind_param($stmt, 'ii', $limite, $offset);
         }
         mysqli_stmt_execute($stmt);
@@ -42,12 +42,12 @@ class ClienteModel
         if ($busqueda !== '') {
             $param = "%$busqueda%";
             $stmt  = mysqli_prepare($this->db,
-                "SELECT COUNT(*) AS total FROM clientes WHERE estado='activo'
-                 AND (nombre LIKE ? OR nit LIKE ? OR municipio LIKE ?)");
+                "SELECT COUNT(*) AS total FROM clientes WHERE 
+                 (nombre LIKE ? OR nit LIKE ? OR municipio LIKE ?)");
             mysqli_stmt_bind_param($stmt, 'sss', $param, $param, $param);
         } else {
             $stmt = mysqli_prepare($this->db,
-                "SELECT COUNT(*) AS total FROM clientes WHERE estado='activo'");
+                "SELECT COUNT(*) AS total FROM clientes");
         }
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -129,8 +129,7 @@ class ClienteModel
 
     public function eliminar(int $id): bool
     {
-        // Soft delete
-        $stmt = mysqli_prepare($this->db, "UPDATE clientes SET estado='inactivo' WHERE id=?");
+        $stmt = mysqli_prepare($this->db, "DELETE FROM clientes WHERE id=?");
         mysqli_stmt_bind_param($stmt, 'i', $id);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);

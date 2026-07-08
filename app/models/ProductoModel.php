@@ -19,12 +19,12 @@ class ProductoModel
         if ($busqueda !== '') {
             $param = "%$busqueda%";
             $stmt  = mysqli_prepare($this->db,
-                "SELECT * FROM productos WHERE estado='activo' AND titulo LIKE ?
+                "SELECT * FROM productos WHERE titulo LIKE ?
                  ORDER BY titulo LIMIT ? OFFSET ?");
             mysqli_stmt_bind_param($stmt, 'sii', $param, $limite, $offset);
         } else {
             $stmt = mysqli_prepare($this->db,
-                "SELECT * FROM productos WHERE estado='activo' ORDER BY titulo LIMIT ? OFFSET ?");
+                "SELECT * FROM productos ORDER BY titulo LIMIT ? OFFSET ?");
             mysqli_stmt_bind_param($stmt, 'ii', $limite, $offset);
         }
         mysqli_stmt_execute($stmt);
@@ -42,11 +42,11 @@ class ProductoModel
         if ($busqueda !== '') {
             $param = "%$busqueda%";
             $stmt  = mysqli_prepare($this->db,
-                "SELECT COUNT(*) AS total FROM productos WHERE estado='activo' AND titulo LIKE ?");
+                "SELECT COUNT(*) AS total FROM productos WHERE titulo LIKE ?");
             mysqli_stmt_bind_param($stmt, 's', $param);
         } else {
             $stmt = mysqli_prepare($this->db,
-                "SELECT COUNT(*) AS total FROM productos WHERE estado='activo'");
+                "SELECT COUNT(*) AS total FROM productos");
         }
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -123,14 +123,7 @@ class ProductoModel
         $stmt = mysqli_prepare($this->db,
             'UPDATE productos SET titulo=?,foto=?,descripcion=?,precio=?,iva=?,porcentaje_iva=?,estado=?
              WHERE id=?');
-        mysqli_stmt_bind_param($stmt, 'sssdsdssi',
-            $titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $estado, $id);
-        // Fix: 8 params
-        mysqli_stmt_close($stmt);
-        $stmt = mysqli_prepare($this->db,
-            'UPDATE productos SET titulo=?,foto=?,descripcion=?,precio=?,iva=?,porcentaje_iva=?,estado=?
-             WHERE id=?');
-        mysqli_stmt_bind_param($stmt, 'sssdsssi',
+        mysqli_stmt_bind_param($stmt, 'sssdsdsi',
             $titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $estado, $id);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
@@ -139,7 +132,7 @@ class ProductoModel
 
     public function eliminar(int $id): bool
     {
-        $stmt = mysqli_prepare($this->db, "UPDATE productos SET estado='inactivo' WHERE id=?");
+        $stmt = mysqli_prepare($this->db, "DELETE FROM productos WHERE id=?");
         mysqli_stmt_bind_param($stmt, 'i', $id);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);

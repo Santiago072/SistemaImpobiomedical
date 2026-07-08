@@ -88,12 +88,12 @@ class CotizacionController
 
         $producto_id    = validar_numero($_POST['producto_id'] ?? '') ? (int)$_POST['producto_id'] : null;
         $titulo         = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
-        $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 2000);
+        $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
         $cantidad       = max(1, (int)($_POST['cantidad'] ?? 1));
-        $precio         = (float)str_replace(['$', '.', ','], ['', '', '.'], $_POST['precio'] ?? '0');
+        $precio         = (float)($_POST['precio'] ?? 0);
         $iva            = mb_substr(sanitizar_entrada($_POST['iva'] ?? 'si'), 0, 5);
         $porcentaje_iva = (float)($_POST['porcentaje_iva'] ?? 19);
-        $tiempo_entrega = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 80);
+        $tiempo_entrega = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 120);
 
         if (!in_array($iva, ['si', 'no'], true)) {
             $iva = 'si';
@@ -136,12 +136,12 @@ class CotizacionController
             } else {
                 $itemId         = (int)($_POST['item_id'] ?? 0);
                 $titulo         = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
-                $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 2000);
+                $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
                 $cantidad       = max(1, (int)($_POST['cantidad'] ?? 1));
-                $precio         = (float)str_replace(['$', '.', ','], ['', '', '.'], $_POST['precio'] ?? '0');
+                $precio         = (float)($_POST['precio'] ?? 0);
                 $iva            = mb_substr(sanitizar_entrada($_POST['iva'] ?? 'si'), 0, 5);
                 $porcentaje_iva = (float)($_POST['porcentaje_iva'] ?? 19);
-                $tiempo_entrega = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 80);
+                $tiempo_entrega = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 120);
 
                 if (!in_array($iva, ['si', 'no'], true)) {
                     $mensajeError = 'IVA no válido';
@@ -253,10 +253,23 @@ class CotizacionController
             return compact('csrf_token', 'mensajeError', 'items', 'cotizacion_id');
         }
 
+        if ($clienteId === null) {
+            $existe = false;
+            if (!empty($clienteNit)) {
+                $existe = $this->clienteModel->existeNit($clienteNit);
+            }
+            if (!$existe) {
+                $this->clienteModel->crear($clienteNombre, $clienteNit, '', $clienteCiudad, $clienteDireccion, $clienteContacto, $clienteTelefono, $clienteCorreo);
+            }
+        }
+
         $numeroCotizacion = $this->model->finalizarCotizacion(
             $cotizacion_id, $fechaCreacion, $diasValidez, $condicionesPago, $observaciones,
             $clienteNombre, $clienteNit, $clienteDireccion, $clienteTelefono,
-            $clienteCorreo, $clienteContacto, $clienteCiudad, $clienteId
+            $clienteCorreo, $clienteContacto, $clienteCiudad, $clienteId,
+            $_SESSION['usuario_nombre'] ?? '',
+            $_SESSION['usuario_cargo'] ?? '',
+            $_SESSION['usuario_codigo'] ?? ''
         );
 
         unset($_SESSION['cotizacion_id']);
@@ -269,7 +282,7 @@ class CotizacionController
     public function consultar(): array
     {
         verificar_autenticacion();
-
+        $mensajeError = '';
         $csrf_token   = generar_token_csrf();
         $cotizaciones = [];
         $totalPaginas = 0;
@@ -289,26 +302,26 @@ class CotizacionController
             if (!empty($_POST['numero_cotizacion'])) $filtros['numero_cotizacion'] = sanitizar_entrada($_POST['numero_cotizacion']);
 
             $_SESSION['cotizacion_filtros'] = $filtros;
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&buscando=1');
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
             exit();
-        }
-
-        if (isset($_GET['buscando'], $_SESSION['cotizacion_filtros'])) {
-            $filtros         = $_SESSION['cotizacion_filtros'];
-            $busquedaFecha   = $filtros['fecha'] ?? '';
-            $busquedaCliente = $filtros['nombre_cliente'] ?? '';
-            $busquedaNumero  = $filtros['numero_cotizacion'] ?? '';
-
-            $total        = $this->model->contarConFiltros($filtros, $usuarioId, $rol);
-            $totalPaginas = (int)ceil($total / $this->porPagina);
-            $cotizaciones = $this->model->buscarConFiltros($filtros, $offset, $this->porPagina, $usuarioId, $rol);
         }
 
         if (isset($_GET['limpiar'])) {
             unset($_SESSION['cotizacion_filtros']);
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
         }
 
-        return compact('cotizaciones', 'csrf_token', 'busquedaFecha', 'busquedaCliente',
+        $filtros = $_SESSION['cotizacion_filtros'] ?? [];
+        $busquedaFecha   = $filtros['fecha'] ?? '';
+        $busquedaCliente = $filtros['nombre_cliente'] ?? '';
+        $busquedaNumero  = $filtros['numero_cotizacion'] ?? '';
+
+        $total        = $this->model->contarConFiltros($filtros, $usuarioId, $rol);
+        $totalPaginas = (int)ceil($total / $this->porPagina);
+        $cotizaciones = $this->model->buscarConFiltros($filtros, $offset, $this->porPagina, $usuarioId, $rol);
+
+        return compact('cotizaciones', 'csrf_token', 'mensajeError', 'busquedaFecha', 'busquedaCliente',
                        'busquedaNumero', 'paginaActual', 'totalPaginas');
     }
 
@@ -343,7 +356,7 @@ class CotizacionController
     public function ajaxBuscarProductos(): void
     {
         verificar_autenticacion();
-        verificar_rate_limit(20, 60, 'ajax_productos');
+        verificar_rate_limit(100, 60, 'ajax_productos');
         header('Content-Type: application/json');
         $busqueda = sanitizar_entrada($_GET['busqueda'] ?? '');
         $productos = $this->productoModel->listarTodos($busqueda);
@@ -369,7 +382,7 @@ class CotizacionController
     public function ajaxBuscarClientes(): void
     {
         verificar_autenticacion();
-        verificar_rate_limit(20, 60, 'ajax_clientes_cot');
+        verificar_rate_limit(100, 60, 'ajax_clientes_cot');
         header('Content-Type: application/json');
         $busqueda = sanitizar_entrada($_GET['q'] ?? '');
         $clientes = $this->clienteModel->buscarParaSelect($busqueda);

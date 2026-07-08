@@ -11,88 +11,105 @@ include dirname(__DIR__) . '/layout/header.php';
 include dirname(__DIR__) . '/layout/menu.php';
 ?>
 
-<div class="contenido-principal">
-    <?php $pageHeading = 'Consultar Cotizaciones';
-    include dirname(__DIR__) . '/layout/topbar.php'; ?>
+<div class="layout-main">
+    <?php include dirname(__DIR__) . '/layout/topbar.php'; ?>
 
-    <div class="encabezado-pagina"><h1>Consultar Cotización</h1></div>
+    <main class="contenido-principal">
 
-    <?php if ($mensajeError): ?>
-    <div class="error-box"><i class="fas fa-exclamation-triangle"></i> <?= htmlspecialchars($mensajeError) ?></div>
-    <?php endif; ?>
+        <div class="mod-header">
+            <div>
+                <h1 class="mod-title"><i class="bi bi-file-earmark-text-fill"></i> Consultar Cotizaciones</h1>
+                <p class="mod-sub">Filtre y visualice cotizaciones generadas</p>
+            </div>
+        </div>
 
-    <!-- Filtros de búsqueda estilo Panel -->
-    <div class="filter-panel">
-        <i class="bi bi-funnel filter-icon"></i>
-        <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=consultar" class="formulario-busqueda w-100" style="display:flex; gap:10px; align-items:center; flex:1;">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
-            <input type="date" name="fecha" value="<?= htmlspecialchars($busquedaFecha) ?>" 
-                   class="filter-input" style="flex:0.5;">
-            <input type="text" name="nombre_cliente" value="<?= htmlspecialchars($busquedaCliente) ?>"
-                   placeholder="Buscar por cliente..." maxlength="60" class="filter-input">
-            <input type="text" name="numero_cotizacion" value="<?= htmlspecialchars($busquedaNumero) ?>"
-                   placeholder="Número cotización..." maxlength="20" class="filter-input">
-            
-            <button type="submit" style="display:none;"></button> <!-- submit oculto para enter -->
-            <?php if (!empty($cotizaciones) || $busquedaFecha || $busquedaCliente || $busquedaNumero): ?>
-            <a href="<?= $basePath ?>?module=cotizaciones&action=consultar&limpiar=1" class="boton-limpiar">
-                <i class="bi bi-x-circle"></i> Limpiar
-            </a>
-            <?php endif; ?>
-        </form>
-    </div>
+        <?php if ($mensajeError): ?>
+        <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($mensajeError) ?></div>
+        <?php endif; ?>
 
-    <!-- Tabla de resultados -->
-    <div class="tabla-contenedor">
-        <table class="tabla-datos">
-            <thead>
-                <tr>
-                    <th>N° Cotización</th><th>Fecha</th><th>Nombre del cliente</th>
-                    <th>Entidad</th><th>Ciudad</th><th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($cotizaciones)): ?>
-                    <?php foreach ($cotizaciones as $cot): ?>
+        <!-- Filtros de búsqueda estilo Panel -->
+        <div class="mod-search-bar">
+            <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=consultar" class="mod-search-form" style="display:flex; gap:10px; align-items:center; flex:1;">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                <span class="mod-search-icon"><i class="bi bi-funnel"></i></span>
+                <input type="date" name="fecha" value="<?= htmlspecialchars($busquedaFecha) ?>" class="mod-search-input" style="flex:0.5; border: 1.5px solid #e2e8f0; border-radius: 9px; padding: 10px;" onchange="this.form.submit()">
+                <input type="text" name="nombre_cliente" value="<?= htmlspecialchars($busquedaCliente) ?>" placeholder="Buscar por cliente..." maxlength="60" class="mod-search-input" style="flex:1;">
+                <input type="text" name="numero_cotizacion" value="<?= htmlspecialchars($busquedaNumero) ?>" placeholder="Número cotización..." maxlength="20" class="mod-search-input" style="flex:1;">
+                
+                <button type="submit" class="imo-btn-save" style="padding: 10px 15px; border-radius: 9px;"><i class="bi bi-search"></i> Buscar</button>
+                <?php if (!empty($cotizaciones) || $busquedaFecha || $busquedaCliente || $busquedaNumero): ?>
+                <a href="<?= $basePath ?>?module=cotizaciones&action=consultar&limpiar=1" class="mod-btn-clear" title="Limpiar filtros">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+                <?php endif; ?>
+            </form>
+        </div>
+
+        <!-- Tabla de resultados -->
+        <div class="mod-table-wrap">
+            <table class="mod-table">
+                <thead>
                     <tr>
-                        <td><?= htmlspecialchars($cot['numero_cotizacion'] ?: 'Sin número') ?></td>
-                        <td><?= htmlspecialchars($cot['fecha_creacion']) ?></td>
-                        <td><?= htmlspecialchars($cot['nombre_cliente']) ?></td>
-                        <td><?= htmlspecialchars($cot['entidad']) ?></td>
-                        <td><?= htmlspecialchars($cot['ciudad']) ?></td>
-                        <td class="acciones-tabla">
-                            <?php if (!empty($cot['numero_cotizacion'])): ?>
-                            <button type="button" class="btn-ver-pdf"
-                                onclick="verPDF('<?= htmlspecialchars($cot['numero_cotizacion']) ?>',
-                                               '<?= htmlspecialchars($cot['nombre_cliente']) ?>')">
-                                <i class="bi bi-eye"></i> Ver
-                            </button>
-                            <?php else: ?>
-                            <span class="estado-no-generado">No generado</span>
-                            <?php endif; ?>
+                        <th>N° Cotización</th>
+                        <th>Fecha</th>
+                        <th>Nombre del cliente</th>
+                        <th>Entidad</th>
+                        <th>Ciudad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($cotizaciones)): ?>
+                        <?php foreach ($cotizaciones as $cot): ?>
+                        <tr>
+                            <td><strong><?= htmlspecialchars($cot['numero_cotizacion'] ?: 'Sin número') ?></strong></td>
+                            <td><?= htmlspecialchars($cot['fecha_creacion']) ?></td>
+                            <td><?= htmlspecialchars($cot['nombre_cliente']) ?></td>
+                            <td><?= htmlspecialchars($cot['entidad']) ?></td>
+                            <td><?= htmlspecialchars($cot['ciudad']) ?></td>
+                            <td>
+                                <div class="mod-actions">
+                                    <?php if (!empty($cot['numero_cotizacion'])): ?>
+                                    <button type="button" class="mod-btn-edit" style="width:auto; padding:0 12px; font-weight:600;"
+                                        onclick="verPDF('<?= htmlspecialchars($cot['numero_cotizacion']) ?>', '<?= htmlspecialchars($cot['nombre_cliente']) ?>')">
+                                        <i class="bi bi-eye"></i> Ver PDF
+                                    </button>
+                                    <?php else: ?>
+                                    <span class="mod-badge badge-red">No generado</span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php elseif (isset($_GET['buscando'])): ?>
+                    <tr>
+                        <td colspan="6" class="mod-empty">
+                            <i class="bi bi-search"></i>
+                            <p>No se encontraron cotizaciones.</p>
                         </td>
                     </tr>
-                    <?php endforeach; ?>
-                <?php elseif (isset($_GET['buscando'])): ?>
-                <tr><td colspan="6" style="padding:0; border:none;">
-                    <div class="empty-state-card" style="margin:20px 0;">
-                        <i class="bi bi-search"></i>
-                        <p>No se encontraron cotizaciones.</p>
-                    </div>
-                </td></tr>
-                <?php else: ?>
-                <tr><td colspan="6" style="padding:0; border:none;">
-                    <div class="empty-state-card" style="margin:20px 0;">
-                        <i class="bi bi-funnel"></i>
-                        <p>Use los filtros de arriba para buscar cotizaciones.</p>
-                    </div>
-                </td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+                    <?php else: ?>
+                    <tr>
+                        <td colspan="6" class="mod-empty">
+                            <i class="bi bi-funnel"></i>
+                            <p>Use los filtros de arriba para buscar cotizaciones.</p>
+                        </td>
+                    </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
 
-    <?php include dirname(__DIR__) . '/partials/paginacion.php'; ?>
+        <?php 
+        $pagBaseUrl = $basePath . '?module=cotizaciones&action=consultar';
+        if (!empty($_GET['buscando'])) $pagBaseUrl .= '&buscando=1';
+        if (!empty($_GET['busqueda_cliente'])) $pagBaseUrl .= '&busqueda_cliente=' . urlencode($_GET['busqueda_cliente']);
+        if (!empty($_GET['fecha_inicio'])) $pagBaseUrl .= '&fecha_inicio=' . urlencode($_GET['fecha_inicio']);
+        if (!empty($_GET['fecha_fin'])) $pagBaseUrl .= '&fecha_fin=' . urlencode($_GET['fecha_fin']);
+        include __DIR__ . '/../layout/paginacion.php'; 
+        ?>
+
+    </main>
 </div>
 
 <!-- Modal visor PDF -->
@@ -132,7 +149,7 @@ function verPDF(numero, cliente) {
     frame.style.display = 'block';
     titulo.textContent  = numero + ' - ' + cliente;
     frame.src           = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&ver=' + encodeURIComponent(numero);
-    btnDesc.href        = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&descargar=' + encodeURIComponent(numero);
+    btnDesc.href        = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&ver=' + encodeURIComponent(numero) + '&descargar=1';
     btnDesc.setAttribute('download', 'cotizacion_' + numero + '.pdf');
     modal.style.display          = 'block';
     document.body.style.overflow = 'hidden';

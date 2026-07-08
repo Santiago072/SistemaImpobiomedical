@@ -12,9 +12,12 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
 ?>
 
 <div class="layout-main">
-    <?php include __DIR__ . '/../layout/topbar.php'; ?>
-
     <main class="contenido-principal">
+        <?php 
+        $esDashboard = true;
+        $usuario = ['nombre' => $_SESSION['usuario_nombre'] ?? '', 'rol' => $_SESSION['rol'] ?? ''];
+        include __DIR__ . '/../layout/topbar.php'; 
+        ?>
         <div class="page-header">
             <h1 class="page-title"><i class="bi bi-speedometer2"></i> Panel Principal</h1>
             <p class="page-sub">Bienvenido, <?= htmlspecialchars($_SESSION['usuario_nombre']) ?>
@@ -58,10 +61,12 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
                     <i class="bi bi-building"></i>
                     <span>Clientes</span>
                 </a>
+                <?php if ($rol === 'admin'): ?>
                 <a href="<?= $basePath ?>?module=productos" class="action-card">
                     <i class="bi bi-box-seam-fill"></i>
                     <span>Catálogo</span>
                 </a>
+                <?php endif; ?>
                 <?php if ($rol === 'admin'): ?>
                 <a href="<?= $basePath ?>?module=usuarios" class="action-card">
                     <i class="bi bi-people-fill"></i>
@@ -76,77 +81,92 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
 <style>
 .badge-codigo {
     display: inline-block;
-    background: var(--copper);
+    background: linear-gradient(135deg, #10757e, #0a4f55);
     color: #fff;
     font-size: 11px;
     font-weight: 700;
-    padding: 2px 10px;
+    padding: 3px 12px;
     border-radius: 20px;
-    margin-left: 8px;
+    margin-left: 10px;
     vertical-align: middle;
+    box-shadow: 0 2px 4px rgba(16, 117, 126, 0.3);
 }
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-bottom: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
 }
 .kpi-card {
-    background: var(--glass-bg-medium);
-    border: 1px solid var(--glass-border-medium);
-    border-radius: 16px;
-    padding: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    border-radius: 20px;
+    padding: 28px;
     display: flex;
     align-items: center;
-    gap: 18px;
-    backdrop-filter: blur(10px);
-    transition: transform .2s, box-shadow .2s;
+    gap: 24px;
+    transition: all .3s ease;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
 }
 .kpi-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-gold);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(16, 117, 126, 0.1);
+    border-color: rgba(16, 117, 126, 0.2);
 }
 .kpi-icon {
-    width: 56px; height: 56px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, var(--copper), var(--honey));
+    width: 65px; height: 65px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #10757e, #20b2aa);
     display: flex; align-items: center; justify-content: center;
-    font-size: 24px; color: #fff;
+    font-size: 28px; color: #fff;
     flex-shrink: 0;
+    box-shadow: 0 6px 15px rgba(16, 117, 126, 0.25);
 }
 .kpi-icon-alt {
-    background: linear-gradient(135deg, #2d6a6a, var(--copper));
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 6px 15px rgba(245, 158, 11, 0.25);
 }
-.kpi-num { font-size: 28px; font-weight: 700; color: var(--amber); line-height: 1; }
-.kpi-label { font-size: 12px; color: rgba(255,255,255,.6); margin-top: 4px; }
+.kpi-num { font-size: 36px; font-weight: 800; color: #1f2937; line-height: 1; letter-spacing: -1px; }
+.kpi-label { font-size: 14px; color: #6b7280; margin-top: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 .section-title {
-    font-size: 15px; font-weight: 600;
-    color: var(--gilt); margin-bottom: 16px;
+    font-size: 18px; font-weight: 700;
+    color: #1f2937; margin-bottom: 20px;
 }
 .actions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
 }
 .action-card {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 14px;
-    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #f3f4f6;
+    border-radius: 16px;
+    padding: 24px;
     display: flex; flex-direction: column;
-    align-items: center; gap: 10px;
-    text-decoration: none; color: #fff;
-    font-size: 13px; font-weight: 500;
+    align-items: center; gap: 14px;
+    text-decoration: none; color: #374151;
+    font-size: 14px; font-weight: 600;
     text-align: center;
-    transition: all .2s;
+    transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
 }
 .action-card:hover {
-    background: var(--glass-bg-medium);
-    border-color: var(--copper);
-    transform: translateY(-2px);
-    color: var(--gilt);
+    background: #ffffff;
+    border-color: #10757e;
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 20px rgba(16, 117, 126, 0.08);
+    color: #10757e;
 }
-.action-card i { font-size: 26px; color: var(--amber); }
+.action-card i { 
+    font-size: 32px; 
+    color: #9ca3af; 
+    transition: all .3s ease; 
+}
+.action-card:hover i { 
+    color: #10757e; 
+    transform: scale(1.1);
+}
 </style>
 
 <script src="<?= $basePath ?>public/js/script.js"></script>

@@ -30,7 +30,7 @@ Options -Indexes
 </IfModule>
 
 <IfModule mod_rewrite.c>
-    RewriteRule ^logs/ - [F,L]
+    RewriteRule ^(logs|app|config|vendor)/ - [F,L]
 </IfModule>
 
 <IfModule mod_php.c>

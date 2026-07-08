@@ -35,8 +35,10 @@ class ClienteController
         if (isset($_GET['updated'])) $mensajeExito = 'Cliente actualizado exitosamente';
         if (isset($_GET['deleted'])) $mensajeExito = 'Cliente eliminado exitosamente';
 
+        $csrf_token = generar_token_csrf();
+
         return compact('clientes', 'busqueda', 'paginaActual', 'totalPaginas',
-                       'total', 'mensajeExito', 'mensajeError');
+                       'total', 'mensajeExito', 'mensajeError', 'csrf_token');
     }
 
     public function crear(): array
@@ -72,7 +74,7 @@ class ClienteController
             $mensajeError = 'El correo electrónico no es válido';
         }
 
-        if ($mensajeError === '' && $this->model->existeNit($nit)) {
+        if ($mensajeError === '' && !empty($nit) && $this->model->existeNit($nit)) {
             $mensajeError = 'El NIT/CC ya está registrado';
         }
 
@@ -127,14 +129,15 @@ class ClienteController
         $nombre_contacto = mb_substr(sanitizar_entrada($_POST['nombre_contacto'] ?? ''), 0, 60);
         $telefono        = mb_substr(sanitizar_entrada($_POST['telefono'] ?? ''), 0, 20);
         $correo          = mb_substr(sanitizar_entrada($_POST['correo'] ?? ''), 0, 100) ?: null;
-        $estado          = mb_substr(sanitizar_entrada($_POST['estado'] ?? ''), 0, 10);
+        $estado          = mb_substr(sanitizar_entrada($_POST['estado'] ?? 'activo'), 0, 10);
+        if (empty($estado)) $estado = 'activo';
 
         $mensajeError = $this->validarCampos($nombre, $nit, $departamento, $municipio, $direccion, $nombre_contacto, $telefono);
 
         if ($mensajeError === '' && $correo && !validar_email($correo)) {
             $mensajeError = 'El correo electrónico no es válido';
         }
-        if ($mensajeError === '' && $this->model->existeNit($nit, $id)) {
+        if ($mensajeError === '' && !empty($nit) && $this->model->existeNit($nit, $id)) {
             $mensajeError = 'El NIT/CC ya está registrado en otro cliente';
         }
 
@@ -197,8 +200,8 @@ class ClienteController
                                    string $municipio, string $direccion,
                                    string $nombre_contacto, string $telefono): string
     {
-        if (!$nombre || !$nit || !$departamento || !$municipio || !$direccion || !$nombre_contacto || !$telefono) {
-            return 'Todos los campos obligatorios deben ser completados';
+        if (!$nombre) {
+            return 'El Nombre / Entidad es obligatorio';
         }
         if (mb_strlen($nombre) < 2) {
             return 'El nombre debe tener al menos 2 caracteres';

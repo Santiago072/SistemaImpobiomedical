@@ -1,4 +1,5 @@
 <?php
+ob_start();
 /**
  * index.php — Front Controller / Router principal del Sistema Impobiomedical.
  *
@@ -111,21 +112,24 @@ if ($module === 'panel') {
 if ($module === 'usuarios') {
     $ctrl = new UsuarioController($db);
     switch ($action) {
-        case 'crear':
-            $data = $ctrl->crear();
-            extract($data);
-            include __DIR__ . '/app/views/usuarios/crear.php';
-            break;
-        case 'editar':
-            $data = $ctrl->editar();
-            extract($data);
-            include __DIR__ . '/app/views/usuarios/editar.php';
-            break;
         case 'eliminar':
             $ctrl->eliminar();
             break;
         case 'reset_password':
             $ctrl->resetPassword();
+            break;
+        case 'crear':
+        case 'editar':
+            $dataForm = $action === 'crear' ? $ctrl->crear() : $ctrl->editar();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($dataForm['mensajeError'])) {
+                $dataList = $ctrl->listar();
+                $data = array_merge($dataList, $dataForm);
+                $urlBase = BASE_URL . '?module=usuarios&action=lista';
+                extract($data);
+                include __DIR__ . '/app/views/usuarios/lista.php';
+            } else {
+                header('Location: ' . BASE_URL . '?module=usuarios');
+            }
             break;
         default:
             $data    = $ctrl->listar();
@@ -140,16 +144,6 @@ if ($module === 'usuarios') {
 if ($module === 'clientes') {
     $ctrl = new ClienteController($db);
     switch ($action) {
-        case 'crear':
-            $data = $ctrl->crear();
-            extract($data);
-            include __DIR__ . '/app/views/clientes/crear.php';
-            break;
-        case 'editar':
-            $data = $ctrl->editar();
-            extract($data);
-            include __DIR__ . '/app/views/clientes/editar.php';
-            break;
         case 'eliminar':
             $ctrl->eliminar();
             break;
@@ -158,6 +152,19 @@ if ($module === 'clientes') {
             break;
         case 'ajax_get':
             $ctrl->ajaxGet();
+            break;
+        case 'crear':
+        case 'editar':
+            $dataForm = $action === 'crear' ? $ctrl->crear() : $ctrl->editar();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($dataForm['mensajeError'])) {
+                $dataList = $ctrl->listar();
+                $data = array_merge($dataList, $dataForm);
+                $urlBase = BASE_URL . '?module=clientes';
+                extract($data);
+                include __DIR__ . '/app/views/clientes/lista.php';
+            } else {
+                header('Location: ' . BASE_URL . '?module=clientes');
+            }
             break;
         default:
             $data    = $ctrl->listar();
@@ -172,18 +179,21 @@ if ($module === 'clientes') {
 if ($module === 'productos') {
     $ctrl = new ProductoController($db);
     switch ($action) {
-        case 'crear':
-            $data = $ctrl->crear();
-            extract($data);
-            include __DIR__ . '/app/views/productos/crear.php';
-            break;
-        case 'editar':
-            $data = $ctrl->editar();
-            extract($data);
-            include __DIR__ . '/app/views/productos/editar.php';
-            break;
         case 'eliminar':
             $ctrl->eliminar();
+            break;
+        case 'crear':
+        case 'editar':
+            $dataForm = $action === 'crear' ? $ctrl->crear() : $ctrl->editar();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($dataForm['mensajeError'])) {
+                $dataList = $ctrl->listar();
+                $data = array_merge($dataList, $dataForm);
+                $urlBase = BASE_URL . '?module=productos';
+                extract($data);
+                include __DIR__ . '/app/views/productos/lista.php';
+            } else {
+                header('Location: ' . BASE_URL . '?module=productos');
+            }
             break;
         default:
             $data    = $ctrl->listar();
