@@ -21,4 +21,3 @@ docker compose up -d --build
 
 echo ""
 echo "✅ Despliegue Impobiomedical completado exitosamente."
-echo "   Disponible en puerto: 8894"
