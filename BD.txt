@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS cotizacion_items (
     precio          DECIMAL(20,2) NOT NULL DEFAULT 0.00,
     iva             ENUM('si', 'no') NOT NULL DEFAULT 'si',
     porcentaje_iva  DECIMAL(5,2) NOT NULL DEFAULT 19.00,
-    tiempo_entrega  VARCHAR(80) DEFAULT NULL,          -- Ej: "5 A 15 DIAS HÁBILES"
+    tiempo_entrega  VARCHAR(255) DEFAULT NULL,         -- Ej: "5 A 15 DIAS HÁBILES"
     FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id) ON DELETE CASCADE,
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

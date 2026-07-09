@@ -1,14 +1,14 @@
-<?php
+﻿<?php
 require_once dirname(__DIR__) . '/models/UsuarioModel.php';
 require_once dirname(__DIR__, 2) . '/config/seguridad.php';
 
 /**
- * UsuarioController — lógica de gestión de usuarios.
+ * UsuarioController â€” lÃ³gica de gestiÃ³n de usuarios.
  *
  * Principios:
- *   - SRP: solo coordina la lógica de usuarios.
- *   - El admin asigna el código (ej: EB) al crear el usuario.
- *   - El admin resetea la contraseña (sin email).
+ *   - SRP: solo coordina la lÃ³gica de usuarios.
+ *   - El admin asigna el cÃ³digo (ej: EB) al crear el usuario.
+ *   - El admin resetea la contraseÃ±a (sin email).
  */
 class UsuarioController
 {
@@ -20,7 +20,7 @@ class UsuarioController
         $this->model = new UsuarioModel($conexion);
     }
 
-    // ── LISTAR ────────────────────────────────────────────────────────────────
+    // â”€â”€ LISTAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public function listar(): array
     {
         verificar_admin();
@@ -38,13 +38,13 @@ class UsuarioController
         if (isset($_GET['created']))  $mensajeExito = 'Usuario creado exitosamente';
         if (isset($_GET['updated']))  $mensajeExito = 'Usuario actualizado exitosamente';
         if (isset($_GET['deleted']))  $mensajeExito = 'Usuario eliminado exitosamente';
-        if (isset($_GET['reset']))    $mensajeExito = 'Contraseña restablecida exitosamente';
+        if (isset($_GET['reset']))    $mensajeExito = 'ContraseÃ±a restablecida exitosamente';
         if (isset($_GET['error'])) {
             $mapa = [
-                'last_admin'    => 'No se puede eliminar el último administrador',
-                'self_delete'   => 'No puede eliminarse a sí mismo',
+                'last_admin'    => 'No se puede eliminar el Ãºltimo administrador',
+                'self_delete'   => 'No puede eliminarse a sÃ­ mismo',
                 'delete_failed' => 'Error al eliminar el usuario',
-                'invalid_id'    => 'ID de usuario inválido',
+                'invalid_id'    => 'ID de usuario invÃ¡lido',
             ];
             $mensajeError = $mapa[$_GET['error']] ?? 'Error al procesar la solicitud';
         }
@@ -55,7 +55,7 @@ class UsuarioController
                        'mensajeExito', 'mensajeError', 'csrf_token');
     }
 
-    // ── CREAR ─────────────────────────────────────────────────────────────────
+    // â”€â”€ CREAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public function crear(): array
     {
         verificar_admin();
@@ -71,7 +71,7 @@ class UsuarioController
         verificar_rate_limit(10, 60, 'usuario_crear');
 
         if (!verificar_token_csrf($_POST['csrf_token'] ?? '')) {
-            $mensajeError = 'Token de seguridad inválido';
+            $mensajeError = 'Token de seguridad invÃ¡lido';
             return compact('mensajeError', 'mensajeExito', 'csrf_token');
         }
 
@@ -87,10 +87,10 @@ class UsuarioController
         $mensajeError = $this->validarCampos($codigo, $doc, $nombre, $correo, $telefono, $rol, $password, true);
 
         if ($mensajeError === '' && $this->model->existeCodigoOCorreo($codigo, $correo)) {
-            $mensajeError = 'El código o correo ya está registrado';
+            $mensajeError = 'El cÃ³digo o correo ya estÃ¡ registrado';
         }
         if ($mensajeError === '' && $this->model->existeDocumentoOCorreo($doc, $correo)) {
-            $mensajeError = 'El documento o correo ya está registrado';
+            $mensajeError = 'El documento o correo ya estÃ¡ registrado';
         }
 
         if ($mensajeError !== '') {
@@ -107,7 +107,7 @@ class UsuarioController
         return compact('mensajeError', 'mensajeExito', 'csrf_token');
     }
 
-    // ── EDITAR ────────────────────────────────────────────────────────────────
+    // â”€â”€ EDITAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public function editar(): array
     {
         verificar_admin();
@@ -134,7 +134,7 @@ class UsuarioController
         verificar_rate_limit(15, 60, 'usuario_editar');
 
         if (!verificar_token_csrf($_POST['csrf_token'] ?? '')) {
-            $mensajeError = 'Token de seguridad inválido';
+            $mensajeError = 'Token de seguridad invÃ¡lido';
             return compact('usuario', 'mensajeError', 'csrf_token');
         }
 
@@ -150,10 +150,10 @@ class UsuarioController
         $mensajeError = $this->validarCampos($codigo, $doc, $nombre, $correo, $telefono, $rol, '', true);
 
         if ($mensajeError === '' && !in_array($estado, ['activo', 'inactivo'], true)) {
-            $mensajeError = 'Estado no válido';
+            $mensajeError = 'Estado no vÃ¡lido';
         }
         if ($mensajeError === '' && $this->model->existeCodigoOCorreo($codigo, $correo, $id)) {
-            $mensajeError = 'El código o correo ya está registrado en otro usuario';
+            $mensajeError = 'El cÃ³digo o correo ya estÃ¡ registrado en otro usuario';
         }
 
         if ($mensajeError !== '') {
@@ -176,7 +176,7 @@ class UsuarioController
         return compact('usuario', 'mensajeError', 'csrf_token');
     }
 
-    // ── RESET PASSWORD (Admin restablece la contraseña manualmente) ───────────
+    // â”€â”€ RESET PASSWORD (Admin restablece la contraseÃ±a manualmente) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public function resetPassword(): void
     {
         verificar_admin();
@@ -193,7 +193,7 @@ class UsuarioController
             exit();
         }
 
-        // La nueva contraseña es el documento del usuario (por defecto)
+        // La nueva contraseÃ±a es el documento del usuario (por defecto)
         $nuevaPass = $usuario['documento'];
         $hash = password_hash($nuevaPass, PASSWORD_BCRYPT);
         $this->model->resetPassword($id, $hash);
@@ -201,7 +201,7 @@ class UsuarioController
         exit();
     }
 
-    // ── ELIMINAR ──────────────────────────────────────────────────────────────
+    // â”€â”€ ELIMINAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public function eliminar(): void
     {
         verificar_admin();
@@ -220,7 +220,7 @@ class UsuarioController
         };
 
         if (!validar_numero($_GET['id'] ?? '')) {
-            $responderError('ID inválido', 'invalid_id');
+            $responderError('ID invÃ¡lido', 'invalid_id');
         }
 
         $id = (int)$_GET['id'];
@@ -232,7 +232,7 @@ class UsuarioController
         $usuarioAEliminar = $this->model->buscarPorId($id);
         if ($usuarioAEliminar && $usuarioAEliminar['rol'] === 'admin' &&
             $this->model->contarAdmins() <= 1) {
-            $responderError('No se puede eliminar al último administrador', 'last_admin');
+            $responderError('No se puede eliminar al Ãºltimo administrador', 'last_admin');
         }
 
         if ($this->model->eliminar($id)) {
@@ -248,7 +248,7 @@ class UsuarioController
         $responderError('Error al eliminar', 'delete_failed');
     }
 
-    // ── Validación ────────────────────────────────────────────────────────────
+    // â”€â”€ ValidaciÃ³n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private function validarCampos(string $codigo, string $doc, string $nombre, string $correo,
                                    string $telefono, string $rol, string $password,
                                    bool $passwordOpcional = false): string
@@ -257,23 +257,24 @@ class UsuarioController
             return 'Todos los campos son obligatorios';
         }
         if (!preg_match('/^[A-Z0-9\-]{1,10}$/', $codigo)) {
-            return 'El código solo puede contener letras mayúsculas, números y guiones (máx. 10)';
+            return 'El cÃ³digo solo puede contener letras mayÃºsculas, nÃºmeros y guiones (mÃ¡x. 10)';
         }
         if (mb_strlen($nombre) < 3 || mb_strlen($nombre) > 100) {
             return 'El nombre debe tener entre 3 y 100 caracteres';
         }
         if (!validar_email($correo)) {
-            return 'El correo electrónico no es válido';
+            return 'El correo electrÃ³nico no es vÃ¡lido';
         }
         if (!in_array($rol, ['admin', 'usuario'], true)) {
-            return 'Rol no válido';
+            return 'Rol no vÃ¡lido';
         }
         if (!$passwordOpcional && empty($password)) {
-            return 'La contraseña es obligatoria';
+            return 'La contraseÃ±a es obligatoria';
         }
         if (!empty($password) && mb_strlen($password) < 6) {
-            return 'La contraseña debe tener al menos 6 caracteres';
+            return 'La contraseÃ±a debe tener al menos 6 caracteres';
         }
         return '';
     }
 }
+
