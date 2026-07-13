@@ -150,7 +150,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                     <div class="imo-form-group">
                                         <label>Precio Proveedor Base ($) *</label>
                                         <input type="number" name="precio_proveedor" id="inpPrecioProveedor"
-                                               min="0" step="0.01" placeholder="0.00" oninput="renderCalculadora()">
+                                               min="0" step="0.01" placeholder="0.00" oninput="calcularTotales()">
                                     </div>
                                     <div class="imo-form-group">
                                         <label>Proveedor</label>
@@ -433,7 +433,7 @@ function calcularPreview() {
     document.getElementById('prevBase').textContent = '$' + (pu * qty).toLocaleString('es-CO', {minimumFractionDigits:0});
     document.getElementById('prevIva').textContent  = '$' + (iva * qty).toLocaleString('es-CO', {minimumFractionDigits:0});
     document.getElementById('prevTotal').textContent = '$' + total.toLocaleString('es-CO', {minimumFractionDigits:0});
-    renderCalculadora();
+    if (typeof calcularTotales === 'function') calcularTotales();
 }
 
 function toggleGanancias() {
@@ -454,17 +454,22 @@ let calcState = {
 
 function addOp(etapa) {
     calcState[etapa].push({ tipo: 'suma', valor: 0 });
-    renderCalculadora();
+    renderCalculadoraInputs();
 }
 
 function removeOp(etapa, index) {
     calcState[etapa].splice(index, 1);
-    renderCalculadora();
+    renderCalculadoraInputs();
 }
 
-function updateOp(etapa, index, campo, valor) {
-    calcState[etapa][index][campo] = valor;
-    renderCalculadora();
+function updateOpTipo(etapa, index, valor) {
+    calcState[etapa][index].tipo = valor;
+    calcularTotales();
+}
+
+function updateOpValor(etapa, index, valor) {
+    calcState[etapa][index].valor = valor;
+    calcularTotales();
 }
 
 function aplicarOperaciones(valorBase, operaciones) {
@@ -478,39 +483,22 @@ function aplicarOperaciones(valorBase, operaciones) {
     return acumulado;
 }
 
-function renderCalculadora() {
+function renderCalculadoraInputs() {
     const container = document.getElementById('calc-container');
     if (!container) return;
 
-    const precioBase = parseFloat(document.getElementById('inpPrecioProveedor')?.value) || 0;
-    
-    // Cálculos en cascada
-    const totalUtilidad = aplicarOperaciones(precioBase, calcState.utilidad);
-    const totalFlete = aplicarOperaciones(totalUtilidad, calcState.flete);
-    const totalCalib = aplicarOperaciones(totalFlete, calcState.calibracion);
-    const totalEstamp = aplicarOperaciones(totalCalib, calcState.estampillas);
-
-    // Guardar totales finales en los inputs hidden para enviar al backend (Camino 1)
-    // El 'flete' real es la diferencia entre el total con flete y el total anterior, etc.
-    document.getElementById('hdnPctUtilidad').value = (totalUtilidad - precioBase).toFixed(2);
-    document.getElementById('hdnFlete').value = (totalFlete - totalUtilidad).toFixed(2);
-    document.getElementById('hdnCalibracion').value = (totalCalib - totalFlete).toFixed(2);
-    document.getElementById('hdnEstampillas').value = (totalEstamp - totalCalib).toFixed(2);
-
-    const formatMoney = v => '$' + Math.round(v).toLocaleString('es-CO');
-
-    const renderEtapa = (clave, titulo, subtotal) => {
+    const renderEtapa = (clave, titulo) => {
         let html = `<div class="calc-etapa">
-            <h4>${titulo} <span>Acumulado: ${formatMoney(subtotal)}</span></h4>`;
+            <h4>${titulo} <span id="acum_${clave}">Acumulado: $0</span></h4>`;
         
         calcState[clave].forEach((op, idx) => {
             html += `<div class="calc-op-row">
-                <select onchange="updateOp('${clave}', ${idx}, 'tipo', this.value)">
+                <select onchange="updateOpTipo('${clave}', ${idx}, this.value)">
                     <option value="suma" ${op.tipo==='suma'?'selected':''}>+ Sumar valor ($)</option>
                     <option value="mult_pct" ${op.tipo==='mult_pct'?'selected':''}>+ Sumar porcentaje (%)</option>
                     <option value="div_pct" ${op.tipo==='div_pct'?'selected':''}>/ Dividir entre (Ej: 0.70)</option>
                 </select>
-                <input type="number" step="0.01" value="${op.valor}" oninput="updateOp('${clave}', ${idx}, 'valor', this.value)" placeholder="Valor...">
+                <input type="number" step="0.01" value="${op.valor}" oninput="updateOpValor('${clave}', ${idx}, this.value)" placeholder="Valor...">
                 <button type="button" class="btn-calc-del" onclick="removeOp('${clave}', ${idx})"><i class="bi bi-x-circle-fill"></i></button>
             </div>`;
         });
@@ -521,16 +509,43 @@ function renderCalculadora() {
     };
 
     container.innerHTML = 
-        renderEtapa('utilidad', '1. Utilidad (Sobre precio proveedor)', totalUtilidad) +
-        renderEtapa('flete', '2. Fletes (Sobre acumulado anterior)', totalFlete) +
-        renderEtapa('calibracion', '3. Calibración', totalCalib) +
-        renderEtapa('estampillas', '4. Estampillas', totalEstamp);
+        renderEtapa('utilidad', '1. Utilidad (Sobre precio proveedor)') +
+        renderEtapa('flete', '2. Fletes (Sobre acumulado anterior)') +
+        renderEtapa('calibracion', '3. Calibración') +
+        renderEtapa('estampillas', '4. Estampillas');
+
+    calcularTotales();
+}
+
+function calcularTotales() {
+    const precioBase = parseFloat(document.getElementById('inpPrecioProveedor')?.value) || 0;
+    
+    // Cálculos en cascada
+    const totalUtilidad = aplicarOperaciones(precioBase, calcState.utilidad);
+    const totalFlete = aplicarOperaciones(totalUtilidad, calcState.flete);
+    const totalCalib = aplicarOperaciones(totalFlete, calcState.calibracion);
+    const totalEstamp = aplicarOperaciones(totalCalib, calcState.estampillas);
+
+    // Guardar totales finales en los inputs hidden para enviar al backend (Camino 1)
+    document.getElementById('hdnPctUtilidad').value = (totalUtilidad - precioBase).toFixed(2);
+    document.getElementById('hdnFlete').value = (totalFlete - totalUtilidad).toFixed(2);
+    document.getElementById('hdnCalibracion').value = (totalCalib - totalFlete).toFixed(2);
+    document.getElementById('hdnEstampillas').value = (totalEstamp - totalCalib).toFixed(2);
+
+    const formatMoney = v => 'Acumulado: $' + Math.round(v).toLocaleString('es-CO');
+
+    // Actualizar los spans de acumulados sin redibujar los inputs
+    const elUtil = document.getElementById('acum_utilidad'); if(elUtil) elUtil.textContent = formatMoney(totalUtilidad);
+    const elFlete = document.getElementById('acum_flete'); if(elFlete) elFlete.textContent = formatMoney(totalFlete);
+    const elCalib = document.getElementById('acum_calibracion'); if(elCalib) elCalib.textContent = formatMoney(totalCalib);
+    const elEstamp = document.getElementById('acum_estampillas'); if(elEstamp) elEstamp.textContent = formatMoney(totalEstamp);
 
     // IVA Final
     const ivaVal = document.getElementById('inpIva')?.value || 'si';
     const pctIva = parseFloat(document.getElementById('inpPctIva')?.value) || 0;
     const ivaFinal = ivaVal === 'si' ? totalEstamp * (pctIva / 100) : 0;
-    document.getElementById('resValorFinal').textContent = formatMoney(totalEstamp + ivaFinal);
+    const resFinal = document.getElementById('resValorFinal');
+    if (resFinal) resFinal.textContent = '$' + Math.round(totalEstamp + ivaFinal).toLocaleString('es-CO');
 }
 
 function limpiarFormulario() {
@@ -554,7 +569,7 @@ function limpiarFormulario() {
         calibracion: [],
         estampillas: []
     };
-    renderCalculadora();
+    renderCalculadoraInputs();
     toggleIva('si');
 }
 
@@ -574,7 +589,7 @@ document.addEventListener('click', e => {
 
 toggleIva('si');
 calcularPreview();
-renderCalculadora();
+renderCalculadoraInputs();
 </script>
 
 <script src="<?= $basePath ?>public/js/script.js"></script>
