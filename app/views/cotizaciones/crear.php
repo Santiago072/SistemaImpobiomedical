@@ -176,6 +176,13 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                                maxlength="100" placeholder="Ej: ALENO SAS">
                                     </div>
                                 </div>
+                                <div class="imo-form-row">
+                                    <div class="imo-form-group">
+                                        <label>Código Proveedor</label>
+                                        <input type="text" name="codigo_proveedor" id="inpCodigoProveedor"
+                                               maxlength="60" placeholder="Ej: PROV-001">
+                                    </div>
+                                </div>
 
                                 <!-- Resultado calculado -->
                                 <div class="ganancia-resultado">
@@ -491,7 +498,7 @@ function limpiarFormulario() {
     document.getElementById('inpCategoria').value = '';
     document.getElementById('inpCodigoProducto').value = '';
     // Limpiar campos de ganancias
-    ['inpPrecioProveedor','inpPctUtilidad','inpFlete','inpCalibracion','inpEstampillas','inpProveedor']
+    ['inpPrecioProveedor','inpPctUtilidad','inpFlete','inpCalibracion','inpEstampillas','inpProveedor','inpCodigoProveedor']
         .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     calcularGanancias();
     toggleIva('si');
