@@ -20,7 +20,7 @@ services:
       - impo_uploads:/var/www/html/uploads
       - impo_logs:/var/www/html/logs
     ports:
-      - "8894:80"
+      - "8895:80"
     depends_on:
       - impobiomedical_db
     networks:
