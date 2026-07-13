@@ -294,11 +294,8 @@ class CotizacionController
             return compact('csrf_token', 'mensajeError', 'items', 'cotizacion_id');
         }
 
-        if ($clienteId === null) {
-            $existe = false;
-            if (!empty($clienteNit)) {
-                $existe = $this->clienteModel->existeNit($clienteNit);
-            }
+        if ($clienteId === null && !empty($clienteNit)) {
+            $existe = $this->clienteModel->existeNit($clienteNit);
             if (!$existe) {
                 $this->clienteModel->crear($clienteNombre, $clienteNit, '', $clienteCiudad, $clienteDireccion, $clienteContacto, $clienteTelefono, $clienteCorreo);
             }
