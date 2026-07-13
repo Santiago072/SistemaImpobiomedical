@@ -546,6 +546,13 @@ function calcularTotales() {
     const ivaFinal = ivaVal === 'si' ? totalEstamp * (pctIva / 100) : 0;
     const resFinal = document.getElementById('resValorFinal');
     if (resFinal) resFinal.textContent = '$' + Math.round(totalEstamp + ivaFinal).toLocaleString('es-CO');
+
+    // Sincronizar con el input principal de precio (para guardar en la base de datos)
+    const inpPrecio = document.getElementById('inpPrecio');
+    if (inpPrecio && precioBase > 0) {
+        inpPrecio.value = totalEstamp.toFixed(2);
+        if (typeof calcularPreview === 'function') calcularPreview();
+    }
 }
 
 function limpiarFormulario() {

@@ -70,6 +70,11 @@ include dirname(__DIR__) . '/layout/menu.php';
                                 <input type="number" name="cantidad" value="<?= intval($datos['cantidad']) ?>" required min="1">
                             </div>
                             <div class="imo-form-group">
+                                <label>Precio Unitario *</label>
+                                <input type="number" name="precio" id="inpPrecio"
+                                       value="<?= floatval($datos['precio']) ?>" required min="0" step="0.01">
+                            </div>
+                            <div class="imo-form-group">
                                 <label>Tiempo de Entrega</label>
                                 <input type="text" name="tiempo_entrega" value="<?= htmlspecialchars($datos['tiempo_entrega'] ?? '') ?>" maxlength="120">
                             </div>
@@ -256,6 +261,12 @@ function calcularTotales() {
     const ivaFinal = ivaVal === 'si' ? totalEstamp * (pctIva / 100) : 0;
     const resFinal = document.getElementById('resValorFinal');
     if (resFinal) resFinal.textContent = '$' + Math.round(totalEstamp + ivaFinal).toLocaleString('es-CO');
+
+    // Sincronizar con el input principal de precio (para guardar en la BD)
+    const inpPrecio = document.getElementById('inpPrecio');
+    if (inpPrecio && precioBase > 0) {
+        inpPrecio.value = totalEstamp.toFixed(2);
+    }
 }
 
 function toggleIva(val) {
