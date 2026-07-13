@@ -5304,39 +5304,41 @@ body:not(.login-premium) .control-label {
     }
 }
 
-
- / *   C a t e g o r y   F i l t e r s   * / 
- . m o d - b t n - c a t e g o r y   { 
-         d i s p l a y :   i n l i n e - f l e x ; 
-         a l i g n - i t e m s :   c e n t e r ; 
-         g a p :   6 p x ; 
-         p a d d i n g :   6 p x   1 4 p x ; 
-         b a c k g r o u n d :   # f 8 f a f c ; 
-         b o r d e r :   1 p x   s o l i d   # e 2 e 8 f 0 ; 
-         b o r d e r - r a d i u s :   2 0 p x ; 
-         c o l o r :   # 4 7 5 5 6 9 ; 
-         f o n t - s i z e :   1 3 p x ; 
-         f o n t - w e i g h t :   5 0 0 ; 
-         t e x t - d e c o r a t i o n :   n o n e ; 
-         t r a n s i t i o n :   a l l   0 . 2 s   e a s e ; 
- } 
- . m o d - b t n - c a t e g o r y : h o v e r   { 
-         b a c k g r o u n d :   # e 2 e 8 f 0 ; 
-         c o l o r :   # 0 f 1 7 2 a ; 
- } 
- . m o d - b t n - c a t e g o r y . a c t i v e   { 
-         b a c k g r o u n d :   # 0 f 7 6 6 e ; 
-         b o r d e r - c o l o r :   # 0 f 7 6 6 e ; 
-         c o l o r :   # f f f ; 
- } 
- . m o d - b t n - c a t e g o r y   . c a t - c o u n t   { 
-         b a c k g r o u n d :   r g b a ( 0 , 0 , 0 , 0 . 0 6 ) ; 
-         p a d d i n g :   2 p x   6 p x ; 
-         b o r d e r - r a d i u s :   1 0 p x ; 
-         f o n t - s i z e :   1 1 p x ; 
- } 
- . m o d - b t n - c a t e g o r y . a c t i v e   . c a t - c o u n t   { 
-         b a c k g r o u n d :   r g b a ( 2 5 5 , 2 5 5 , 2 5 5 , 0 . 2 ) ; 
- } 
-  
- 
+/* ── Category Filter Buttons ── */
+.mod-btn-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #f0fdfa;
+    border: 1.5px solid #99f6e4;
+    border-radius: 20px;
+    color: #0f766e;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+}
+.mod-btn-category:hover {
+    background: #ccfbf1;
+    border-color: #2dd4bf;
+    color: #0d5c55;
+}
+.mod-btn-category.active {
+    background: #0f766e;
+    border-color: #0f766e;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(15,118,110,0.3);
+}
+.mod-btn-category .cat-count {
+    background: rgba(0,0,0,0.08);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.mod-btn-category.active .cat-count {
+    background: rgba(255,255,255,0.25);
+}

@@ -187,8 +187,8 @@ function updateOpTipo(etapa, index, valor) {
 }
 
 function updateOpValor(etapa, index, valor) {
-    calcState[etapa][index].valor = valor;
-    calcularTotales();
+    calcState[etapa][index].valor = parseFloat(valor) || 0;
+    calcularTotales(); // Solo recalcula, NO redibuja los inputs
 }
 
 function aplicarOperaciones(valorBase, operaciones) {
@@ -261,12 +261,7 @@ function calcularTotales() {
     const ivaFinal = ivaVal === 'si' ? totalEstamp * (pctIva / 100) : 0;
     const resFinal = document.getElementById('resValorFinal');
     if (resFinal) resFinal.textContent = '$' + Math.round(totalEstamp + ivaFinal).toLocaleString('es-CO');
-
-    // Sincronizar con el input principal de precio (para guardar en la BD)
-    const inpPrecio = document.getElementById('inpPrecio');
-    if (inpPrecio && precioBase > 0) {
-        inpPrecio.value = totalEstamp.toFixed(2);
-    }
+    // NOTA: inpPrecio NO se modifica aquí. El precio del cliente es independiente.
 }
 
 function toggleIva(val) {
