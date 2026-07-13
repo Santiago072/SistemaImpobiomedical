@@ -68,6 +68,9 @@ class ProductoController
         $iva            = mb_substr(sanitizar_entrada($_POST['iva'] ?? ''), 0, 5);
         $porcentaje_iva = (float)($_POST['porcentaje_iva'] ?? 19);
 
+        $categoria      = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
+        $codigo_producto= mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
+
         if (!$titulo || !$descripcion || $precio < 0) {
             $mensajeError = 'Todos los campos son obligatorios y el precio debe ser válido';
             return compact('mensajeError', 'csrf_token');
@@ -80,7 +83,7 @@ class ProductoController
 
         $foto = $this->uploader->subir($_FILES['foto'] ?? [], '');
 
-        if ($this->model->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva)) {
+        if ($this->model->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $categoria, $codigo_producto)) {
             header('Location: ' . BASE_URL . '?module=productos&created=1');
             exit();
         }
@@ -127,6 +130,9 @@ class ProductoController
         $estado         = mb_substr(sanitizar_entrada($_POST['estado'] ?? 'activo'), 0, 10);
         if (empty($estado)) $estado = 'activo';
 
+        $categoria      = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
+        $codigo_producto= mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
+
         if (!$titulo || !$descripcion || $precio < 0) {
             $mensajeError = 'Todos los campos son obligatorios';
             return compact('producto', 'mensajeError', 'csrf_token');
@@ -134,7 +140,7 @@ class ProductoController
 
         $foto = $this->uploader->reemplazar($_FILES['foto'] ?? [], $producto['foto'] ?? '');
 
-        if ($this->model->actualizar($id, $titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $estado)) {
+        if ($this->model->actualizar($id, $titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $estado, $categoria, $codigo_producto)) {
             header('Location: ' . BASE_URL . '?module=productos&updated=1');
             exit();
         }

@@ -72,13 +72,13 @@ class ProductoModel
         if ($busqueda !== '') {
             $param = "%$busqueda%";
             $stmt  = mysqli_prepare($this->db,
-                "SELECT id, titulo, foto, descripcion, precio, iva, porcentaje_iva
+                "SELECT id, titulo, foto, descripcion, precio, iva, porcentaje_iva, categoria, codigo_producto
                  FROM productos WHERE estado='activo' AND titulo LIKE ?
                  ORDER BY titulo LIMIT 50");
             mysqli_stmt_bind_param($stmt, 's', $param);
         } else {
             $stmt = mysqli_prepare($this->db,
-                "SELECT id, titulo, foto, descripcion, precio, iva, porcentaje_iva
+                "SELECT id, titulo, foto, descripcion, precio, iva, porcentaje_iva, categoria, codigo_producto
                  FROM productos WHERE estado='activo' ORDER BY titulo LIMIT 50");
         }
         mysqli_stmt_execute($stmt);
@@ -104,13 +104,14 @@ class ProductoModel
     }
 
     public function crear(string $titulo, string $foto, string $descripcion,
-                          float $precio, string $iva, float $porcentaje_iva): bool
+                          float $precio, string $iva, float $porcentaje_iva,
+                          string $categoria = null, string $codigo_producto = null): bool
     {
         $stmt = mysqli_prepare($this->db,
-            'INSERT INTO productos (titulo, foto, descripcion, precio, iva, porcentaje_iva)
-             VALUES (?,?,?,?,?,?)');
-        mysqli_stmt_bind_param($stmt, 'sssdsd',
-            $titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva);
+            'INSERT INTO productos (titulo, foto, descripcion, precio, iva, porcentaje_iva, categoria, codigo_producto)
+             VALUES (?,?,?,?,?,?,?,?)');
+        mysqli_stmt_bind_param($stmt, 'sssdsdss',
+            $titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $categoria, $codigo_producto);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         return $ok;
@@ -118,13 +119,13 @@ class ProductoModel
 
     public function actualizar(int $id, string $titulo, string $foto, string $descripcion,
                                float $precio, string $iva, float $porcentaje_iva,
-                               string $estado): bool
+                               string $estado, string $categoria = null, string $codigo_producto = null): bool
     {
         $stmt = mysqli_prepare($this->db,
-            'UPDATE productos SET titulo=?,foto=?,descripcion=?,precio=?,iva=?,porcentaje_iva=?,estado=?
+            'UPDATE productos SET titulo=?,foto=?,descripcion=?,precio=?,iva=?,porcentaje_iva=?,estado=?,categoria=?,codigo_producto=?
              WHERE id=?');
-        mysqli_stmt_bind_param($stmt, 'sssdsdsi',
-            $titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $estado, $id);
+        mysqli_stmt_bind_param($stmt, 'sssdsdsssi',
+            $titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $estado, $categoria, $codigo_producto, $id);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         return $ok;

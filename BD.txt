@@ -140,3 +140,8 @@ INSERT INTO `usuarios` (`codigo`, `documento`, `nombre`, `correo`, `password`, `
 ('ADM', '1000000000', 'Administrador', 'admin@impobiomedical.com',
  '$2y$10$EOofArNIR1pB.DfysZAhzeB13ImopdK5BVeexCagCl/2jxBo4OMGK',
  '3000000000', 'Administrador', 'admin', 'activo');
+
+-- ══ ALTER: ejecutar en producción para agregar columnas a productos ══
+-- ALTER TABLE productos
+--   ADD COLUMN categoria VARCHAR(100) DEFAULT NULL AFTER porcentaje_iva,
+--   ADD COLUMN codigo_producto VARCHAR(60) DEFAULT NULL AFTER categoria;

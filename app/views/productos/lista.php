@@ -69,6 +69,10 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <div class="prod-body">
                     <div class="prod-price">$<?= number_format($p['precio'], 0, ',', '.') ?></div>
                     <div class="prod-name"><?= htmlspecialchars($p['titulo']) ?></div>
+                    <div class="prod-meta" style="margin-bottom:8px;">
+                        <?php if(!empty($p['codigo_producto'])): ?><span class="prod-tag" style="background:#e0f2fe;color:#0284c7;"><i class="bi bi-upc-scan"></i> <?= htmlspecialchars($p['codigo_producto']) ?></span><?php endif; ?>
+                        <?php if(!empty($p['categoria'])): ?><span class="prod-tag" style="background:#f3e8ff;color:#7e22ce;"><i class="bi bi-tag-fill"></i> <?= htmlspecialchars($p['categoria']) ?></span><?php endif; ?>
+                    </div>
                     <div class="prod-meta">
                         <span class="prod-tag"><i class="bi bi-boxes"></i> Stock: <?= intval($p['cantidad']) ?></span>
                         <span class="prod-tag <?= $p['iva'] === 'si' ? 'tag-iva' : 'tag-noiva' ?>">
@@ -115,6 +119,26 @@ include dirname(__DIR__) . '/layout/menu.php';
 
             <div class="prod-edit-layout">
                 <div class="prod-edit-left">
+                    <div class="imo-form-row">
+                        <div class="imo-form-group">
+                            <label>Código del Producto</label>
+                            <input type="text" name="codigo_producto" maxlength="60" placeholder="Ej: PROD-001">
+                        </div>
+                        <div class="imo-form-group">
+                            <label>Categoría</label>
+                            <select name="categoria">
+                                <option value="">-- Seleccionar categoría --</option>
+                                <option value="Insumo Medico Quirurgico">Insumo Médico Quirúrgico</option>
+                                <option value="Insumo Medico Odontologico">Insumo Médico Odontológico</option>
+                                <option value="Mobiliario Hospitalario">Mobiliario Hospitalario</option>
+                                <option value="Equipo Medico">Equipo Médico</option>
+                                <option value="Accesorios">Accesorios</option>
+                                <option value="Repuestos">Repuestos</option>
+                                <option value="Equipo de Terapia">Equipo de Terapia</option>
+                                <option value="Medicamentos">Medicamentos</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="imo-form-group">
                         <label>Nombre del Producto *</label>
                         <input type="text" name="titulo" required maxlength="60">
@@ -174,6 +198,26 @@ include dirname(__DIR__) . '/layout/menu.php';
 
             <div class="prod-edit-layout">
                 <div class="prod-edit-left">
+                    <div class="imo-form-row">
+                        <div class="imo-form-group">
+                            <label>Código del Producto</label>
+                            <input type="text" id="e_codigo_producto" name="codigo_producto" maxlength="60" placeholder="Ej: PROD-001">
+                        </div>
+                        <div class="imo-form-group">
+                            <label>Categoría</label>
+                            <select id="e_categoria" name="categoria">
+                                <option value="">-- Seleccionar categoría --</option>
+                                <option value="Insumo Medico Quirurgico">Insumo Médico Quirúrgico</option>
+                                <option value="Insumo Medico Odontologico">Insumo Médico Odontológico</option>
+                                <option value="Mobiliario Hospitalario">Mobiliario Hospitalario</option>
+                                <option value="Equipo Medico">Equipo Médico</option>
+                                <option value="Accesorios">Accesorios</option>
+                                <option value="Repuestos">Repuestos</option>
+                                <option value="Equipo de Terapia">Equipo de Terapia</option>
+                                <option value="Medicamentos">Medicamentos</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="imo-form-group">
                         <label>Nombre del Producto *</label>
                         <input type="text" id="e_titulo" name="titulo" required maxlength="60">
@@ -284,6 +328,8 @@ function abrirModalEditar(p) {
     document.getElementById('e_iva').value         = p.iva || 'no';
     document.getElementById('e_estado').value      = p.estado || 'activo';
     document.getElementById('e_foto_actual').value = p.foto || '';
+    document.getElementById('e_categoria').value   = p.categoria || '';
+    document.getElementById('e_codigo_producto').value = p.codigo_producto || '';
 
     const preview = document.getElementById('prod-img-preview');
     if (p.foto) {
