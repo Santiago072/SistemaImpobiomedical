@@ -34,15 +34,33 @@ include dirname(__DIR__) . '/layout/menu.php';
         <div class="mod-alert <?= $clase ?>"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($mensajeError) ?></div>
         <?php endif; ?>
 
+        <!-- Filtros por Categoría -->
+        <?php if (!empty($categoriasCount)): ?>
+        <div style="margin-bottom:20px; display:flex; flex-wrap:wrap; gap:8px;">
+            <a href="<?= $basePath ?>?module=productos&action=lista" class="mod-btn-category <?= empty($categoriaSel) ? 'active' : '' ?>">
+                Todos
+            </a>
+            <?php foreach ($categoriasCount as $cat): ?>
+            <a href="<?= $basePath ?>?module=productos&action=lista&categoria=<?= urlencode($cat['categoria']) ?>" 
+               class="mod-btn-category <?= ($categoriaSel === $cat['categoria']) ? 'active' : '' ?>">
+                <?= htmlspecialchars($cat['categoria']) ?> <span class="cat-count">(<?= $cat['cantidad'] ?>)</span>
+            </a>
+            <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+
         <!-- Búsqueda -->
         <div class="mod-search-bar">
             <form action="<?= $basePath ?>" method="GET" class="mod-search-form">
                 <input type="hidden" name="module" value="productos">
                 <input type="hidden" name="action" value="lista">
+                <?php if (!empty($categoriaSel)): ?>
+                <input type="hidden" name="categoria" value="<?= htmlspecialchars($categoriaSel) ?>">
+                <?php endif; ?>
                 <span class="mod-search-icon"><i class="bi bi-search"></i></span>
                 <input type="text" name="busqueda" class="mod-search-input" value="<?= htmlspecialchars($busqueda) ?>" placeholder="Buscar producto...">
                 <?php if ($busqueda): ?>
-                <a href="<?= $basePath ?>?module=productos&action=lista" class="mod-btn-clear"><i class="bi bi-x-lg"></i></a>
+                <a href="<?= $basePath ?>?module=productos&action=lista<?= !empty($categoriaSel) ? '&categoria='.urlencode($categoriaSel) : '' ?>" class="mod-btn-clear"><i class="bi bi-x-lg"></i></a>
                 <?php endif; ?>
             </form>
         </div>
@@ -97,7 +115,9 @@ include dirname(__DIR__) . '/layout/menu.php';
         </div>
 
         <?php 
-        $pagBaseUrl = $basePath . '?module=productos&action=lista' . (!empty($busqueda) ? '&busqueda=' . urlencode($busqueda) : '');
+        $pagBaseUrl = $basePath . '?module=productos&action=lista' 
+                    . (!empty($categoriaSel) ? '&categoria=' . urlencode($categoriaSel) : '')
+                    . (!empty($busqueda) ? '&busqueda=' . urlencode($busqueda) : '');
         include __DIR__ . '/../layout/paginacion.php'; 
         ?>
         <?php if (($total ?? 0) > 0): ?>

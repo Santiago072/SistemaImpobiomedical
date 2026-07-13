@@ -24,13 +24,16 @@ class ProductoController
         verificar_autenticacion();
 
         $busqueda     = sanitizar_entrada($_GET['busqueda'] ?? '');
+        $categoriaSel = sanitizar_entrada($_GET['categoria'] ?? '');
         $paginaActual = max(1, (int)($_GET['pagina'] ?? 1));
         $offset       = ($paginaActual - 1) * $this->porPagina;
 
-        $total        = $this->model->contar($busqueda);
-        $productos    = $this->model->listar($offset, $this->porPagina, $busqueda);
+        $total        = $this->model->contar($busqueda, $categoriaSel);
+        $productos    = $this->model->listar($offset, $this->porPagina, $busqueda, $categoriaSel);
         $totalPaginas = (int)ceil($total / $this->porPagina);
         $rol          = $_SESSION['rol'] ?? 'usuario';
+        
+        $categoriasCount = $this->model->obtenerConteosPorCategoria();
 
         $mensajeExito = '';
         $mensajeError = '';
@@ -40,7 +43,7 @@ class ProductoController
 
         $csrf_token = generar_token_csrf();
 
-        return compact('productos', 'busqueda', 'paginaActual', 'totalPaginas',
+        return compact('productos', 'busqueda', 'categoriaSel', 'categoriasCount', 'paginaActual', 'totalPaginas',
                        'total', 'mensajeExito', 'mensajeError', 'rol', 'csrf_token');
     }
 

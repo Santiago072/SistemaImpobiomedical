@@ -406,6 +406,10 @@ function autocompletar(p) {
         document.getElementById('previewFoto').innerHTML = '';
     }
     
+    // Auto-fill new fields
+    document.getElementById('inpCategoria').value     = p.categoria || '';
+    document.getElementById('inpCodigoProducto').value= p.codigo_producto || '';
+    
     document.getElementById('badgeAuto').style.display = 'inline';
     document.getElementById('listaProductos').style.display = 'none';
     document.getElementById('busquedaProducto').value = '';

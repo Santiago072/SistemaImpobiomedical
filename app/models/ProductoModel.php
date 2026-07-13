@@ -14,19 +14,36 @@ class ProductoModel
         $this->db = $conexion;
     }
 
-    public function listar(int $offset, int $limite, string $busqueda = ''): array
+    public function listar(int $offset, int $limite, string $busqueda = '', string $categoria = ''): array
     {
+        $where = [];
+        $params = [];
+        $types = '';
+
         if ($busqueda !== '') {
-            $param = "%$busqueda%";
-            $stmt  = mysqli_prepare($this->db,
-                "SELECT * FROM productos WHERE titulo LIKE ?
-                 ORDER BY titulo LIMIT ? OFFSET ?");
-            mysqli_stmt_bind_param($stmt, 'sii', $param, $limite, $offset);
-        } else {
-            $stmt = mysqli_prepare($this->db,
-                "SELECT * FROM productos ORDER BY titulo LIMIT ? OFFSET ?");
-            mysqli_stmt_bind_param($stmt, 'ii', $limite, $offset);
+            $where[] = "titulo LIKE ?";
+            $params[] = "%$busqueda%";
+            $types .= 's';
         }
+
+        if ($categoria !== '') {
+            $where[] = "categoria = ?";
+            $params[] = $categoria;
+            $types .= 's';
+        }
+
+        $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+        $sql = "SELECT * FROM productos $whereClause ORDER BY titulo LIMIT ? OFFSET ?";
+        
+        $params[] = $limite;
+        $params[] = $offset;
+        $types .= 'ii';
+
+        $stmt = mysqli_prepare($this->db, $sql);
+        if (!empty($params)) {
+            mysqli_stmt_bind_param($stmt, $types, ...$params);
+        }
+        
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $rows   = [];
@@ -37,22 +54,50 @@ class ProductoModel
         return $rows;
     }
 
-    public function contar(string $busqueda = ''): int
+    public function contar(string $busqueda = '', string $categoria = ''): int
     {
+        $where = [];
+        $params = [];
+        $types = '';
+
         if ($busqueda !== '') {
-            $param = "%$busqueda%";
-            $stmt  = mysqli_prepare($this->db,
-                "SELECT COUNT(*) AS total FROM productos WHERE titulo LIKE ?");
-            mysqli_stmt_bind_param($stmt, 's', $param);
-        } else {
-            $stmt = mysqli_prepare($this->db,
-                "SELECT COUNT(*) AS total FROM productos");
+            $where[] = "titulo LIKE ?";
+            $params[] = "%$busqueda%";
+            $types .= 's';
         }
+
+        if ($categoria !== '') {
+            $where[] = "categoria = ?";
+            $params[] = $categoria;
+            $types .= 's';
+        }
+
+        $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+        $sql = "SELECT COUNT(*) AS total FROM productos $whereClause";
+
+        $stmt = mysqli_prepare($this->db, $sql);
+        if (!empty($params)) {
+            mysqli_stmt_bind_param($stmt, $types, ...$params);
+        }
+        
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $row    = mysqli_fetch_assoc($result);
         mysqli_stmt_close($stmt);
         return (int)($row['total'] ?? 0);
+    }
+
+    public function obtenerConteosPorCategoria(): array
+    {
+        $stmt = mysqli_prepare($this->db, "SELECT categoria, COUNT(*) as cantidad FROM productos WHERE categoria IS NOT NULL AND categoria != '' GROUP BY categoria ORDER BY cantidad DESC");
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $rows = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+        mysqli_stmt_close($stmt);
+        return $rows;
     }
 
     public function buscarPorId(int $id): ?array
