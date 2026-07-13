@@ -330,7 +330,7 @@ class CotizacionModel
              (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio, iva, porcentaje_iva, tiempo_entrega,
               categoria, codigo_producto, precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, proveedor, codigo_proveedor)
              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-        mysqli_stmt_bind_param($stmt, 'iisssidsdsssddddss',
+        mysqli_stmt_bind_param($stmt, 'iisssidsdsssdddddss',
             $cotizacionId, $productoId, $titulo, $foto, $descripcion,
             $cantidad, $precio, $iva, $porcentajeIva, $tiempoEntrega,
             $categoria, $codigoProducto, $precioProveedor, $porcentajeUtilidad,
@@ -354,7 +354,7 @@ class CotizacionModel
              SET titulo=?,foto=?,descripcion=?,cantidad=?,precio=?,iva=?,porcentaje_iva=?,tiempo_entrega=?,
                  categoria=?,codigo_producto=?,precio_proveedor=?,porcentaje_utilidad=?,flete=?,calibracion=?,estampillas=?,proveedor=?,codigo_proveedor=?
              WHERE id=? AND cotizacion_id=?');
-        mysqli_stmt_bind_param($stmt, 'sssidsdsssddddssii',
+        mysqli_stmt_bind_param($stmt, 'sssidsdsssdddddssii',
             $titulo, $foto, $descripcion, $cantidad, $precio, $iva, $porcentajeIva, $tiempoEntrega,
             $categoria, $codigoProducto, $precioProveedor, $porcentajeUtilidad,
             $flete, $calibracion, $estampillas, $proveedor, $codigoProveedor,

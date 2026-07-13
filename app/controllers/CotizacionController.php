@@ -119,7 +119,7 @@ class CotizacionController
 
         // Si es producto nuevo (no del catálogo), guardarlo en catálogo
         if ($producto_id === null && !$this->productoModel->existePorTitulo($titulo)) {
-            $this->productoModel->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva);
+            $this->productoModel->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $categoria, $codigo_producto);
         }
 
         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
