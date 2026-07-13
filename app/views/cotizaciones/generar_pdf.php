@@ -132,12 +132,14 @@ table { width:100%; border-collapse:collapse; }
 
 /* Columnas tabla items */
 .col-cant  { width:4%;  }
-.col-desc  { width:35%; }
+.col-desc  { width:30%; }
 .col-img   { width:10%; }
-.col-vu    { width:13%; }
-.col-iva   { width:12%; }
-.col-vt    { width:14%; }
-.col-te    { width:12%; }
+.col-piva  { width:5%;  }
+.col-vu    { width:10%; }
+.col-iva   { width:10%; }
+.col-tiva  { width:10%; }
+.col-vt    { width:10%; }
+.col-te    { width:11%; }
 
 /* Header de items */
 .th-item {
@@ -181,7 +183,7 @@ table { width:100%; border-collapse:collapse; }
 ════════════════════════════════════════════════ -->
 <table style="width:100%; border-collapse:collapse; border:none; font-size:9.5px;">
 <thead style="display:table-header-group;">
-<tr><td colspan="7" style="padding:0; border:none; background:#fff; text-align:left;">
+<tr><td colspan="9" style="padding:0; border:none; background:#fff; text-align:left;">
 
 <!-- HEADER PRINCIPAL -->
 <div class="hdr-wrap">
@@ -229,7 +231,7 @@ table { width:100%; border-collapse:collapse; }
 </thead>
 
 <tbody>
-<tr><td colspan="7" style="padding:0; border:none; background:#fff; text-align:left;">
+<tr><td colspan="9" style="padding:0; border:none; background:#fff; text-align:left;">
 
 <!-- ══════════════════════════════════════════════
      DATOS CLIENTE + FECHA
@@ -287,8 +289,10 @@ table { width:100%; border-collapse:collapse; }
   <th class="th-item col-cant">CANT</th>
   <th class="th-item col-desc">DESCRIPCIÓN</th>
   <th class="th-item col-img">IMAGEN</th>
+  <th class="th-item col-piva">% IVA</th>
   <th class="th-item col-vu">V/U</th>
   <th class="th-item col-iva">IVA</th>
+  <th class="th-item col-tiva">T/IVA</th>
   <th class="th-item col-vt">V/T</th>
   <th class="th-item col-te">TIEMPO ENTREGA</th>
 </tr>
@@ -306,8 +310,11 @@ foreach ($items as $it):
     // IVA fila = V/U * CANT * pct%  (pero en la tabla mostramos por fila el iva del subtotal)
     $subtotal = $vu * $qty;
     $ivaFila  = $aplica ? $subtotal * ($pct / 100) : 0;
+    
     // V/T = V/U × CANT (sin IVA, como la guía imagen 3)
     $vt      = $subtotal;
+    // T/IVA = V/T + IVA fila (Total fila con IVA incluido)
+    $tIva    = $vt + $ivaFila;
 
     $rowCls  = ($rowIdx % 2 === 0) ? 'row-even' : 'row-odd';
     $rowIdx++;
@@ -325,8 +332,10 @@ foreach ($items as $it):
         <img src="<?= $imgProd ?>" style="max-height:90px; max-width:110px;">
       <?php endif; ?>
     </td>
+    <td class="b tc vm nowrap" style="padding:4px 6px;"><?= $aplica ? $pct . '%' : '0%' ?></td>
     <td class="b tr vm nowrap" style="padding:4px 6px;">$ <?= number_format($vu, 0, ',', '.') ?></td>
     <td class="b tr vm nowrap" style="padding:4px 6px;">$ <?= number_format($ivaFila, 0, ',', '.') ?></td>
+    <td class="b tr vm nowrap" style="padding:4px 6px;">$ <?= number_format($tIva, 0, ',', '.') ?></td>
     <td class="b tr vm nowrap" style="padding:4px 6px; font-weight:bold;">$ <?= number_format($vt, 0, ',', '.') ?></td>
     <td class="b tc vm" style="padding:5px 6px; font-size:9px;"><?= nl2br(htmlspecialchars($it['tiempo_entrega'] ?? '')) ?></td>
   </tr>
@@ -334,7 +343,7 @@ foreach ($items as $it):
 
   <!-- Fila nota de entrega + totales en columnas derechas -->
   <tr>
-    <td colspan="3" rowspan="3" style="background:#e8f4f4; border:1px solid #555; padding:6px 8px; font-size:8.5px; font-weight:bold; vertical-align:top;">
+    <td colspan="5" rowspan="3" style="background:#e8f4f4; border:1px solid #555; padding:6px 8px; font-size:8.5px; font-weight:bold; vertical-align:top;">
       *EL TIEMPO DE ENTREGA CUENTA A PARTIR DEL RECIBO DE LA ORDEN DE COMPRA. SUJETO A VERIFICACIÓN DE DISPONIBILIDAD DE EXISTENCIA EN EL MOMENTO DE CONFIRMACIÓN DE ENVÍO.*
     </td>
     <td colspan="2" style="padding:4px 6px; border:1px solid #555; background:#e8f4f4; font-size:9.5px; font-weight:bold; text-align:right;">VALOR BASE</td>
