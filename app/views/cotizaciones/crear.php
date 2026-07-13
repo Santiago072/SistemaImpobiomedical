@@ -136,76 +136,45 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <!-- Sección Porcentajes Ganancias -->
                         <div class="ganancias-section">
                             <button type="button" class="ganancias-toggle" onclick="toggleGanancias()">
-                                <i class="bi bi-percent"></i> Porcentajes Ganancias
+                                <i class="bi bi-percent"></i> Porcentajes Ganancias (Calculadora Dinámica)
                                 <i class="bi bi-chevron-down" id="iconGanancias"></i>
                             </button>
                             <div id="panelGanancias" class="ganancias-panel" style="display:none;">
+                                <!-- Campos ocultos donde guardaremos los totales finales para la Base de Datos -->
+                                <input type="hidden" name="porcentaje_utilidad" id="hdnPctUtilidad" value="0">
+                                <input type="hidden" name="flete" id="hdnFlete" value="0">
+                                <input type="hidden" name="calibracion" id="hdnCalibracion" value="0">
+                                <input type="hidden" name="estampillas" id="hdnEstampillas" value="0">
+
                                 <div class="imo-form-row">
                                     <div class="imo-form-group">
-                                        <label>Precio Proveedor ($)</label>
+                                        <label>Precio Proveedor Base ($) *</label>
                                         <input type="number" name="precio_proveedor" id="inpPrecioProveedor"
-                                               min="0" step="0.01" placeholder="0.00" oninput="calcularGanancias()">
-                                    </div>
-                                    <div class="imo-form-group">
-                                        <label>% Utilidad (Ganancia Empresa)</label>
-                                        <input type="number" name="porcentaje_utilidad" id="inpPctUtilidad"
-                                               min="0" max="1000" step="0.01" placeholder="0.00" oninput="calcularGanancias()">
-                                    </div>
-                                </div>
-                                <div class="imo-form-row">
-                                    <div class="imo-form-group">
-                                        <label>Flete (Envío / Transporte) ($)</label>
-                                        <input type="number" name="flete" id="inpFlete"
-                                               min="0" step="0.01" placeholder="0.00" oninput="calcularGanancias()">
-                                    </div>
-                                    <div class="imo-form-group">
-                                        <label>Calibración ($)</label>
-                                        <input type="number" name="calibracion" id="inpCalibracion"
-                                               min="0" step="0.01" placeholder="0.00" oninput="calcularGanancias()">
-                                    </div>
-                                </div>
-                                <div class="imo-form-row">
-                                    <div class="imo-form-group">
-                                        <label>Estampillas ($)</label>
-                                        <input type="number" name="estampillas" id="inpEstampillas"
-                                               min="0" step="0.01" placeholder="0.00" oninput="calcularGanancias()">
+                                               min="0" step="0.01" placeholder="0.00" oninput="renderCalculadora()">
                                     </div>
                                     <div class="imo-form-group">
                                         <label>Proveedor</label>
-                                        <input type="text" name="proveedor" id="inpProveedor"
-                                               maxlength="100" placeholder="Ej: ALENO SAS">
+                                        <input type="text" name="proveedor" id="inpProveedor" maxlength="100" placeholder="Ej: ALENO SAS">
                                     </div>
                                 </div>
                                 <div class="imo-form-row">
                                     <div class="imo-form-group">
                                         <label>Código Proveedor</label>
-                                        <input type="text" name="codigo_proveedor" id="inpCodigoProveedor"
-                                               maxlength="60" placeholder="Ej: PROV-001">
+                                        <input type="text" name="codigo_proveedor" id="inpCodigoProveedor" maxlength="60" placeholder="Ej: PROV-001">
                                     </div>
+                                </div>
+
+                                <div id="calc-container" style="margin-top: 15px;">
+                                    <!-- Aquí se renderiza la calculadora dinámica con JS -->
                                 </div>
 
                                 <!-- Resultado calculado -->
                                 <div class="ganancia-resultado">
-                                    <div class="ganancia-res-row">
-                                        <span>Precio base + utilidad:</span>
-                                        <strong id="resUtilidad">$0</strong>
-                                    </div>
-                                    <div class="ganancia-res-row">
-                                        <span>+ Flete:</span>
-                                        <strong id="resFlete">$0</strong>
-                                    </div>
-                                    <div class="ganancia-res-row">
-                                        <span>+ Calibración:</span>
-                                        <strong id="resCalibracion">$0</strong>
-                                    </div>
-                                    <div class="ganancia-res-row">
-                                        <span>+ Estampillas:</span>
-                                        <strong id="resEstampillas">$0</strong>
-                                    </div>
                                     <div class="ganancia-res-row total-row" style="border-top:1px solid #d1fae5; padding-top:8px; margin-top:4px;">
                                         <span>💰 Valor Final con IVA para el Cliente:</span>
-                                        <strong id="resValorFinal" style="color:#059669; font-size:14px;">$0</strong>
+                                        <strong id="resValorFinal" style="color:#059669; font-size:16px;">$0</strong>
                                     </div>
+                                    <p style="font-size:10px; color:#6b7280; margin-top:4px;">* Los totales de cada etapa se guardarán automáticamente en la cotización.</p>
                                 </div>
                             </div>
                         </div>
@@ -357,6 +326,23 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     border-radius: 0 0 10px 10px; padding: 16px;
     margin-top: -4px;
 }
+.calc-etapa {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 12px; margin-bottom: 12px;
+}
+.calc-etapa h4 { margin: 0 0 10px 0; font-size: 13px; color: #111827; display: flex; justify-content: space-between; border-bottom: 1px solid #f3f4f6; padding-bottom: 6px; }
+.calc-etapa h4 span { color: #059669; font-weight: bold; }
+.calc-op-row {
+    display: flex; gap: 8px; margin-bottom: 8px; align-items: center;
+}
+.calc-op-row select, .calc-op-row input {
+    border: 1px solid #d1d5db; border-radius: 6px; padding: 6px; font-size: 12px;
+}
+.btn-calc-add {
+    background: #e0f2fe; color: #0284c7; border: none; border-radius: 6px;
+    padding: 4px 8px; font-size: 11px; cursor: pointer; font-weight: 600;
+}
+.btn-calc-del { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px; }
 .ganancia-resultado {
     background: #fff; border: 1px solid #6ee7b7; border-radius: 8px;
     padding: 12px 16px; margin-top: 12px;
@@ -447,7 +433,7 @@ function calcularPreview() {
     document.getElementById('prevBase').textContent = '$' + (pu * qty).toLocaleString('es-CO', {minimumFractionDigits:0});
     document.getElementById('prevIva').textContent  = '$' + (iva * qty).toLocaleString('es-CO', {minimumFractionDigits:0});
     document.getElementById('prevTotal').textContent = '$' + total.toLocaleString('es-CO', {minimumFractionDigits:0});
-    calcularGanancias();
+    renderCalculadora();
 }
 
 function toggleGanancias() {
@@ -458,34 +444,93 @@ function toggleGanancias() {
     icon.className = visible ? 'bi bi-chevron-down' : 'bi bi-chevron-up';
 }
 
-function calcularGanancias() {
-    const precioProveedor = parseFloat(document.getElementById('inpPrecioProveedor')?.value) || 0;
-    const pctUtilidad     = parseFloat(document.getElementById('inpPctUtilidad')?.value) || 0;
-    const flete           = parseFloat(document.getElementById('inpFlete')?.value) || 0;
-    const calibracion     = parseFloat(document.getElementById('inpCalibracion')?.value) || 0;
-    const estampillas     = parseFloat(document.getElementById('inpEstampillas')?.value) || 0;
+// ── Estado de la Calculadora Dinámica ──
+let calcState = {
+    utilidad:    [{ tipo: 'div_pct', valor: 0.70 }], // Ej: dividido por 70%
+    flete:       [], // Ej: sumas fijas o porcentajes
+    calibracion: [],
+    estampillas: []
+};
 
-    // Precio con utilidad aplicada
-    const utilidadValor   = precioProveedor * (pctUtilidad / 100);
-    const precioConUtil   = precioProveedor + utilidadValor;
+function addOp(etapa) {
+    calcState[etapa].push({ tipo: 'suma', valor: 0 });
+    renderCalculadora();
+}
 
-    // Acumulando costos adicionales
-    const precioConFlete  = precioConUtil + flete;
-    const precioConCalib  = precioConFlete + calibracion;
-    const precioConEstamp = precioConCalib + estampillas;
+function removeOp(etapa, index) {
+    calcState[etapa].splice(index, 1);
+    renderCalculadora();
+}
 
-    // Agregar IVA al total final
+function updateOp(etapa, index, campo, valor) {
+    calcState[etapa][index][campo] = valor;
+    renderCalculadora();
+}
+
+function aplicarOperaciones(valorBase, operaciones) {
+    let acumulado = parseFloat(valorBase) || 0;
+    operaciones.forEach(op => {
+        let v = parseFloat(op.valor) || 0;
+        if (op.tipo === 'suma') acumulado += v;
+        if (op.tipo === 'mult_pct') acumulado += acumulado * (v / 100);
+        if (op.tipo === 'div_pct' && v > 0) acumulado = acumulado / v; // Ej: v=0.70 => divide por 0.70
+    });
+    return acumulado;
+}
+
+function renderCalculadora() {
+    const container = document.getElementById('calc-container');
+    if (!container) return;
+
+    const precioBase = parseFloat(document.getElementById('inpPrecioProveedor')?.value) || 0;
+    
+    // Cálculos en cascada
+    const totalUtilidad = aplicarOperaciones(precioBase, calcState.utilidad);
+    const totalFlete = aplicarOperaciones(totalUtilidad, calcState.flete);
+    const totalCalib = aplicarOperaciones(totalFlete, calcState.calibracion);
+    const totalEstamp = aplicarOperaciones(totalCalib, calcState.estampillas);
+
+    // Guardar totales finales en los inputs hidden para enviar al backend (Camino 1)
+    // El 'flete' real es la diferencia entre el total con flete y el total anterior, etc.
+    document.getElementById('hdnPctUtilidad').value = (totalUtilidad - precioBase).toFixed(2);
+    document.getElementById('hdnFlete').value = (totalFlete - totalUtilidad).toFixed(2);
+    document.getElementById('hdnCalibracion').value = (totalCalib - totalFlete).toFixed(2);
+    document.getElementById('hdnEstampillas').value = (totalEstamp - totalCalib).toFixed(2);
+
+    const formatMoney = v => '$' + Math.round(v).toLocaleString('es-CO');
+
+    const renderEtapa = (clave, titulo, subtotal) => {
+        let html = `<div class="calc-etapa">
+            <h4>${titulo} <span>Acumulado: ${formatMoney(subtotal)}</span></h4>`;
+        
+        calcState[clave].forEach((op, idx) => {
+            html += `<div class="calc-op-row">
+                <select onchange="updateOp('${clave}', ${idx}, 'tipo', this.value)">
+                    <option value="suma" ${op.tipo==='suma'?'selected':''}>+ Sumar valor ($)</option>
+                    <option value="mult_pct" ${op.tipo==='mult_pct'?'selected':''}>+ Sumar porcentaje (%)</option>
+                    <option value="div_pct" ${op.tipo==='div_pct'?'selected':''}>/ Dividir entre (Ej: 0.70)</option>
+                </select>
+                <input type="number" step="0.01" value="${op.valor}" oninput="updateOp('${clave}', ${idx}, 'valor', this.value)" placeholder="Valor...">
+                <button type="button" class="btn-calc-del" onclick="removeOp('${clave}', ${idx})"><i class="bi bi-x-circle-fill"></i></button>
+            </div>`;
+        });
+        
+        html += `<button type="button" class="btn-calc-add" onclick="addOp('${clave}')">+ Añadir operación</button>
+        </div>`;
+        return html;
+    };
+
+    container.innerHTML = 
+        renderEtapa('utilidad', '1. Utilidad (Sobre precio proveedor)', totalUtilidad) +
+        renderEtapa('flete', '2. Fletes (Sobre acumulado anterior)', totalFlete) +
+        renderEtapa('calibracion', '3. Calibración', totalCalib) +
+        renderEtapa('estampillas', '4. Estampillas', totalEstamp);
+
+    // IVA Final
     const ivaVal = document.getElementById('inpIva')?.value || 'si';
     const pctIva = parseFloat(document.getElementById('inpPctIva')?.value) || 0;
-    const ivaFinal = ivaVal === 'si' ? precioConEstamp * (pctIva / 100) : 0;
-    const valorFinal = precioConEstamp + ivaFinal;
-
-    const fmt = v => '$' + Math.round(v).toLocaleString('es-CO');
-    document.getElementById('resUtilidad').textContent    = fmt(precioConUtil);
-    document.getElementById('resFlete').textContent       = fmt(precioConFlete);
-    document.getElementById('resCalibracion').textContent = fmt(precioConCalib);
-    document.getElementById('resEstampillas').textContent = fmt(precioConEstamp);
-    document.getElementById('resValorFinal').textContent  = fmt(valorFinal);
+    const ivaFinal = ivaVal === 'si' ? totalEstamp * (pctIva / 100) : 0;
+    document.getElementById('resValorFinal').textContent = formatMoney(totalEstamp + ivaFinal);
 }
 
 function limpiarFormulario() {
@@ -497,10 +542,19 @@ function limpiarFormulario() {
     // Limpiar campos nuevos
     document.getElementById('inpCategoria').value = '';
     document.getElementById('inpCodigoProducto').value = '';
-    // Limpiar campos de ganancias
-    ['inpPrecioProveedor','inpPctUtilidad','inpFlete','inpCalibracion','inpEstampillas','inpProveedor','inpCodigoProveedor']
-        .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-    calcularGanancias();
+    
+    document.getElementById('inpPrecioProveedor').value = '';
+    document.getElementById('inpProveedor').value = '';
+    document.getElementById('inpCodigoProveedor').value = '';
+
+    // Resetear calculadora
+    calcState = {
+        utilidad:    [{ tipo: 'div_pct', valor: 0.70 }],
+        flete:       [],
+        calibracion: [],
+        estampillas: []
+    };
+    renderCalculadora();
     toggleIva('si');
 }
 
@@ -520,6 +574,7 @@ document.addEventListener('click', e => {
 
 toggleIva('si');
 calcularPreview();
+renderCalculadora();
 </script>
 
 <script src="<?= $basePath ?>public/js/script.js"></script>

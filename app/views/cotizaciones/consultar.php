@@ -74,6 +74,10 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         onclick="verPDF('<?= htmlspecialchars($cot['numero_cotizacion']) ?>', '<?= htmlspecialchars($cot['nombre_cliente']) ?>')">
                                         <i class="bi bi-eye"></i> Ver PDF
                                     </button>
+                                    <button type="button" class="mod-btn-del" style="width:auto; padding:0 12px; font-weight:600; background:#3b82f6; color:white; border-color:#3b82f6;"
+                                        onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=ver_respaldo&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Hoja de Respaldo Proveedores">
+                                        <i class="bi bi-file-earmark-spreadsheet"></i> Respaldo
+                                    </button>
                                     <?php else: ?>
                                     <span class="mod-badge badge-red">No generado</span>
                                     <?php endif; ?>

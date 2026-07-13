@@ -127,6 +127,25 @@ class CotizacionController
     }
 
     // ── EDITAR ÍTEM ───────────────────────────────────────────────────────────
+    public function verRespaldo(): array
+    {
+        verificar_autenticacion();
+        $numero = $_GET['numero'] ?? '';
+        if (empty($numero)) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
+
+        $cotizacion = $this->model->buscarCotizacionPorNumero($numero);
+        if (!$cotizacion) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
+
+        $items = $this->model->obtenerItems($cotizacion['id']);
+        return ['cotizacion' => $cotizacion, 'items' => $items];
+    }
+
     public function editarItem(): array
     {
         verificar_autenticacion();

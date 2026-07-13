@@ -230,6 +230,11 @@ if ($module === 'cotizaciones') {
         case 'generar_pdf':
             include __DIR__ . '/app/views/cotizaciones/generar_pdf.php';
             break;
+        case 'ver_respaldo':
+            $data = $ctrl->verRespaldo();
+            extract($data);
+            include __DIR__ . '/app/views/cotizaciones/respaldo.php';
+            break;
         case 'ajax_buscar_productos':
             $ctrl->ajaxBuscarProductos();
             break;
