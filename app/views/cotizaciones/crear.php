@@ -55,6 +55,27 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <input type="hidden" name="foto_actual" id="hdnFotoActual" value="">
 
                         <div class="imo-form-group">
+                            <label>Categoría *</label>
+                            <select name="categoria" id="inpCategoria">
+                                <option value="">-- Seleccionar categoría --</option>
+                                <option value="Insumo Medico Quirurgico">Insumo Médico Quirúrgico</option>
+                                <option value="Insumo Medico Odontologico">Insumo Médico Odontológico</option>
+                                <option value="Mobiliario Hospitalario">Mobiliario Hospitalario</option>
+                                <option value="Equipo Medico">Equipo Médico</option>
+                                <option value="Accesorios">Accesorios</option>
+                                <option value="Repuestos">Repuestos</option>
+                                <option value="Equipo de Terapia">Equipo de Terapia</option>
+                                <option value="Medicamentos">Medicamentos</option>
+                            </select>
+                        </div>
+
+                        <div class="imo-form-group">
+                            <label>Código del Producto</label>
+                            <input type="text" name="codigo_producto" id="inpCodigoProducto" maxlength="60"
+                                   placeholder="Ej: MQ-001">
+                        </div>
+
+                        <div class="imo-form-group">
                             <label>Título / Nombre del Producto *</label>
                             <input type="text" name="titulo" id="inpTitulo" required maxlength="255"
                                    value="<?= htmlspecialchars($producto['titulo'] ?? '') ?>">
@@ -110,6 +131,76 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             <div class="prev-row"><span>Precio base:</span> <strong id="prevBase">$0</strong></div>
                             <div class="prev-row"><span>IVA:</span> <strong id="prevIva">$0</strong></div>
                             <div class="prev-row total-row"><span>Total unitario:</span> <strong id="prevTotal">$0</strong></div>
+                        </div>
+
+                        <!-- Sección Porcentajes Ganancias -->
+                        <div class="ganancias-section">
+                            <button type="button" class="ganancias-toggle" onclick="toggleGanancias()">
+                                <i class="bi bi-percent"></i> Porcentajes Ganancias
+                                <i class="bi bi-chevron-down" id="iconGanancias"></i>
+                            </button>
+                            <div id="panelGanancias" class="ganancias-panel" style="display:none;">
+                                <div class="imo-form-row">
+                                    <div class="imo-form-group">
+                                        <label>Precio Proveedor ($)</label>
+                                        <input type="number" name="precio_proveedor" id="inpPrecioProveedor"
+                                               min="0" step="0.01" placeholder="0.00" oninput="calcularGanancias()">
+                                    </div>
+                                    <div class="imo-form-group">
+                                        <label>% Utilidad (Ganancia Empresa)</label>
+                                        <input type="number" name="porcentaje_utilidad" id="inpPctUtilidad"
+                                               min="0" max="1000" step="0.01" placeholder="0.00" oninput="calcularGanancias()">
+                                    </div>
+                                </div>
+                                <div class="imo-form-row">
+                                    <div class="imo-form-group">
+                                        <label>Flete (Envío / Transporte) ($)</label>
+                                        <input type="number" name="flete" id="inpFlete"
+                                               min="0" step="0.01" placeholder="0.00" oninput="calcularGanancias()">
+                                    </div>
+                                    <div class="imo-form-group">
+                                        <label>Calibración ($)</label>
+                                        <input type="number" name="calibracion" id="inpCalibracion"
+                                               min="0" step="0.01" placeholder="0.00" oninput="calcularGanancias()">
+                                    </div>
+                                </div>
+                                <div class="imo-form-row">
+                                    <div class="imo-form-group">
+                                        <label>Estampillas ($)</label>
+                                        <input type="number" name="estampillas" id="inpEstampillas"
+                                               min="0" step="0.01" placeholder="0.00" oninput="calcularGanancias()">
+                                    </div>
+                                    <div class="imo-form-group">
+                                        <label>Proveedor</label>
+                                        <input type="text" name="proveedor" id="inpProveedor"
+                                               maxlength="100" placeholder="Ej: ALENO SAS">
+                                    </div>
+                                </div>
+
+                                <!-- Resultado calculado -->
+                                <div class="ganancia-resultado">
+                                    <div class="ganancia-res-row">
+                                        <span>Precio base + utilidad:</span>
+                                        <strong id="resUtilidad">$0</strong>
+                                    </div>
+                                    <div class="ganancia-res-row">
+                                        <span>+ Flete:</span>
+                                        <strong id="resFlete">$0</strong>
+                                    </div>
+                                    <div class="ganancia-res-row">
+                                        <span>+ Calibración:</span>
+                                        <strong id="resCalibracion">$0</strong>
+                                    </div>
+                                    <div class="ganancia-res-row">
+                                        <span>+ Estampillas:</span>
+                                        <strong id="resEstampillas">$0</strong>
+                                    </div>
+                                    <div class="ganancia-res-row total-row" style="border-top:1px solid #d1fae5; padding-top:8px; margin-top:4px;">
+                                        <span>💰 Valor Final con IVA para el Cliente:</span>
+                                        <strong id="resValorFinal" style="color:#059669; font-size:14px;">$0</strong>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="imo-modal-footer" style="border-top:none; padding-top:0;">
@@ -243,6 +334,30 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 .total-highlight { color: var(--amber); font-size:15px; }
 .empty-state { text-align:center; padding:48px 20px; color:#9ca3af; }
 .empty-state i { font-size:48px; display:block; margin-bottom:12px; }
+
+/* Ganancias section */
+.ganancias-section { margin-bottom: 16px; }
+.ganancias-toggle {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; background: linear-gradient(135deg, #064e3b, #059669);
+    color: #fff; border: none; border-radius: 10px; cursor: pointer;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.3px;
+    transition: opacity .2s;
+}
+.ganancias-toggle:hover { opacity: .88; }
+.ganancias-panel {
+    background: #f0fdf4; border: 1px solid #6ee7b7;
+    border-radius: 0 0 10px 10px; padding: 16px;
+    margin-top: -4px;
+}
+.ganancia-resultado {
+    background: #fff; border: 1px solid #6ee7b7; border-radius: 8px;
+    padding: 12px 16px; margin-top: 12px;
+}
+.ganancia-res-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: #374151; margin-bottom: 4px;
+}
 </style>
 
 <script>
@@ -325,6 +440,45 @@ function calcularPreview() {
     document.getElementById('prevBase').textContent = '$' + (pu * qty).toLocaleString('es-CO', {minimumFractionDigits:0});
     document.getElementById('prevIva').textContent  = '$' + (iva * qty).toLocaleString('es-CO', {minimumFractionDigits:0});
     document.getElementById('prevTotal').textContent = '$' + total.toLocaleString('es-CO', {minimumFractionDigits:0});
+    calcularGanancias();
+}
+
+function toggleGanancias() {
+    const panel = document.getElementById('panelGanancias');
+    const icon  = document.getElementById('iconGanancias');
+    const visible = panel.style.display !== 'none';
+    panel.style.display = visible ? 'none' : 'block';
+    icon.className = visible ? 'bi bi-chevron-down' : 'bi bi-chevron-up';
+}
+
+function calcularGanancias() {
+    const precioProveedor = parseFloat(document.getElementById('inpPrecioProveedor')?.value) || 0;
+    const pctUtilidad     = parseFloat(document.getElementById('inpPctUtilidad')?.value) || 0;
+    const flete           = parseFloat(document.getElementById('inpFlete')?.value) || 0;
+    const calibracion     = parseFloat(document.getElementById('inpCalibracion')?.value) || 0;
+    const estampillas     = parseFloat(document.getElementById('inpEstampillas')?.value) || 0;
+
+    // Precio con utilidad aplicada
+    const utilidadValor   = precioProveedor * (pctUtilidad / 100);
+    const precioConUtil   = precioProveedor + utilidadValor;
+
+    // Acumulando costos adicionales
+    const precioConFlete  = precioConUtil + flete;
+    const precioConCalib  = precioConFlete + calibracion;
+    const precioConEstamp = precioConCalib + estampillas;
+
+    // Agregar IVA al total final
+    const ivaVal = document.getElementById('inpIva')?.value || 'si';
+    const pctIva = parseFloat(document.getElementById('inpPctIva')?.value) || 0;
+    const ivaFinal = ivaVal === 'si' ? precioConEstamp * (pctIva / 100) : 0;
+    const valorFinal = precioConEstamp + ivaFinal;
+
+    const fmt = v => '$' + Math.round(v).toLocaleString('es-CO');
+    document.getElementById('resUtilidad').textContent    = fmt(precioConUtil);
+    document.getElementById('resFlete').textContent       = fmt(precioConFlete);
+    document.getElementById('resCalibracion').textContent = fmt(precioConCalib);
+    document.getElementById('resEstampillas').textContent = fmt(precioConEstamp);
+    document.getElementById('resValorFinal').textContent  = fmt(valorFinal);
 }
 
 function limpiarFormulario() {
@@ -333,6 +487,13 @@ function limpiarFormulario() {
     document.getElementById('formItem').reset();
     document.getElementById('inpIva').value = 'si';
     document.getElementById('previewFoto').innerHTML = '';
+    // Limpiar campos nuevos
+    document.getElementById('inpCategoria').value = '';
+    document.getElementById('inpCodigoProducto').value = '';
+    // Limpiar campos de ganancias
+    ['inpPrecioProveedor','inpPctUtilidad','inpFlete','inpCalibracion','inpEstampillas','inpProveedor']
+        .forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    calcularGanancias();
     toggleIva('si');
 }
 

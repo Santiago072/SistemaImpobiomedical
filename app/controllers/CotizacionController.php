@@ -86,14 +86,22 @@ class CotizacionController
 
         verificar_rate_limit(20, 60, 'cot_guardar_item');
 
-        $producto_id    = validar_numero($_POST['producto_id'] ?? '') ? (int)$_POST['producto_id'] : null;
-        $titulo         = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
-        $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
-        $cantidad       = max(1, (int)($_POST['cantidad'] ?? 1));
-        $precio         = (float)($_POST['precio'] ?? 0);
-        $iva            = mb_substr(sanitizar_entrada($_POST['iva'] ?? 'si'), 0, 5);
-        $porcentaje_iva = (float)($_POST['porcentaje_iva'] ?? 19);
-        $tiempo_entrega = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 120);
+        $producto_id         = validar_numero($_POST['producto_id'] ?? '') ? (int)$_POST['producto_id'] : null;
+        $titulo              = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
+        $descripcion         = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
+        $cantidad            = max(1, (int)($_POST['cantidad'] ?? 1));
+        $precio              = (float)($_POST['precio'] ?? 0);
+        $iva                 = mb_substr(sanitizar_entrada($_POST['iva'] ?? 'si'), 0, 5);
+        $porcentaje_iva      = (float)($_POST['porcentaje_iva'] ?? 19);
+        $tiempo_entrega      = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 120);
+        $categoria           = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
+        $codigo_producto     = mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
+        $precio_proveedor    = (float)($_POST['precio_proveedor'] ?? 0);
+        $porcentaje_utilidad = (float)($_POST['porcentaje_utilidad'] ?? 0);
+        $flete               = (float)($_POST['flete'] ?? 0);
+        $calibracion         = (float)($_POST['calibracion'] ?? 0);
+        $estampillas         = (float)($_POST['estampillas'] ?? 0);
+        $proveedor           = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 100);
 
         if (!in_array($iva, ['si', 'no'], true)) {
             $iva = 'si';
@@ -103,7 +111,9 @@ class CotizacionController
 
         $this->model->insertarItem(
             $cotizacion_id, $producto_id, $titulo, $foto,
-            $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega
+            $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
+            $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
+            $flete, $calibracion, $estampillas, $proveedor
         );
 
         // Si es producto nuevo (no del catálogo), guardarlo en catálogo
@@ -134,14 +144,22 @@ class CotizacionController
             if (!verificar_token_csrf($_POST['csrf_token'] ?? '')) {
                 $mensajeError = 'Token de seguridad inválido';
             } else {
-                $itemId         = (int)($_POST['item_id'] ?? 0);
-                $titulo         = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
-                $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
-                $cantidad       = max(1, (int)($_POST['cantidad'] ?? 1));
-                $precio         = (float)($_POST['precio'] ?? 0);
-                $iva            = mb_substr(sanitizar_entrada($_POST['iva'] ?? 'si'), 0, 5);
-                $porcentaje_iva = (float)($_POST['porcentaje_iva'] ?? 19);
-                $tiempo_entrega = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 120);
+                $itemId              = (int)($_POST['item_id'] ?? 0);
+                $titulo              = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
+                $descripcion         = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
+                $cantidad            = max(1, (int)($_POST['cantidad'] ?? 1));
+                $precio              = (float)($_POST['precio'] ?? 0);
+                $iva                 = mb_substr(sanitizar_entrada($_POST['iva'] ?? 'si'), 0, 5);
+                $porcentaje_iva      = (float)($_POST['porcentaje_iva'] ?? 19);
+                $tiempo_entrega      = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 120);
+                $categoria           = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
+                $codigo_producto     = mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
+                $precio_proveedor    = (float)($_POST['precio_proveedor'] ?? 0);
+                $porcentaje_utilidad = (float)($_POST['porcentaje_utilidad'] ?? 0);
+                $flete               = (float)($_POST['flete'] ?? 0);
+                $calibracion         = (float)($_POST['calibracion'] ?? 0);
+                $estampillas         = (float)($_POST['estampillas'] ?? 0);
+                $proveedor           = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 100);
 
                 if (!in_array($iva, ['si', 'no'], true)) {
                     $mensajeError = 'IVA no válido';
@@ -150,7 +168,9 @@ class CotizacionController
                 } else {
                     $foto = $this->uploader->reemplazar($_FILES['foto'] ?? [], $_POST['foto_actual'] ?? '');
                     if ($this->model->actualizarItem($itemId, $cotizacion_id, $titulo, $foto,
-                            $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega)) {
+                            $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
+                            $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
+                            $flete, $calibracion, $estampillas, $proveedor)) {
                         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear&updated=1');
                         exit();
                     }

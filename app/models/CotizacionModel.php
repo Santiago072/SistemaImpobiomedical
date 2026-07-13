@@ -318,15 +318,22 @@ class CotizacionModel
 
     public function insertarItem(int $cotizacionId, ?int $productoId, string $titulo, string $foto,
                                  string $descripcion, int $cantidad, float $precio,
-                                 string $iva, float $porcentajeIva, string $tiempoEntrega): bool
+                                 string $iva, float $porcentajeIva, string $tiempoEntrega,
+                                 string $categoria = '', string $codigoProducto = '',
+                                 float $precioProveedor = 0, float $porcentajeUtilidad = 0,
+                                 float $flete = 0, float $calibracion = 0,
+                                 float $estampillas = 0, string $proveedor = ''): bool
     {
         $stmt = mysqli_prepare($this->db,
             'INSERT INTO cotizacion_items
-             (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio, iva, porcentaje_iva, tiempo_entrega)
-             VALUES (?,?,?,?,?,?,?,?,?,?)');
-        mysqli_stmt_bind_param($stmt, 'iisssidsds',
+             (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio, iva, porcentaje_iva, tiempo_entrega,
+              categoria, codigo_producto, precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, proveedor)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+        mysqli_stmt_bind_param($stmt, 'iisssidsdsssdddds',
             $cotizacionId, $productoId, $titulo, $foto, $descripcion,
-            $cantidad, $precio, $iva, $porcentajeIva, $tiempoEntrega);
+            $cantidad, $precio, $iva, $porcentajeIva, $tiempoEntrega,
+            $categoria, $codigoProducto, $precioProveedor, $porcentajeUtilidad,
+            $flete, $calibracion, $estampillas, $proveedor);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         return $ok;
@@ -334,16 +341,22 @@ class CotizacionModel
 
     public function actualizarItem(int $itemId, int $cotizacionId, string $titulo, string $foto,
                                    string $descripcion, int $cantidad, float $precio,
-                                   string $iva, float $porcentajeIva, string $tiempoEntrega): bool
+                                   string $iva, float $porcentajeIva, string $tiempoEntrega,
+                                   string $categoria = '', string $codigoProducto = '',
+                                   float $precioProveedor = 0, float $porcentajeUtilidad = 0,
+                                   float $flete = 0, float $calibracion = 0,
+                                   float $estampillas = 0, string $proveedor = ''): bool
     {
-        // s=titulo s=foto s=descripcion i=cantidad d=precio s=iva d=porcentajeIva s=tiempoEntrega i=itemId i=cotizacionId
         $stmt = mysqli_prepare($this->db,
             'UPDATE cotizacion_items
-             SET titulo=?,foto=?,descripcion=?,cantidad=?,precio=?,iva=?,porcentaje_iva=?,tiempo_entrega=?
+             SET titulo=?,foto=?,descripcion=?,cantidad=?,precio=?,iva=?,porcentaje_iva=?,tiempo_entrega=?,
+                 categoria=?,codigo_producto=?,precio_proveedor=?,porcentaje_utilidad=?,flete=?,calibracion=?,estampillas=?,proveedor=?
              WHERE id=? AND cotizacion_id=?');
-        mysqli_stmt_bind_param($stmt, 'sssidsdsii',
-            $titulo, $foto, $descripcion, $cantidad, $precio, $iva, $porcentajeIva,
-            $tiempoEntrega, $itemId, $cotizacionId);
+        mysqli_stmt_bind_param($stmt, 'sssidsdsssdddddsii',
+            $titulo, $foto, $descripcion, $cantidad, $precio, $iva, $porcentajeIva, $tiempoEntrega,
+            $categoria, $codigoProducto, $precioProveedor, $porcentajeUtilidad,
+            $flete, $calibracion, $estampillas, $proveedor,
+            $itemId, $cotizacionId);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         return $ok;

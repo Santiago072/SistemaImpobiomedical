@@ -106,10 +106,31 @@ CREATE TABLE IF NOT EXISTS cotizacion_items (
     precio          DECIMAL(20,2) NOT NULL DEFAULT 0.00,
     iva             ENUM('si', 'no') NOT NULL DEFAULT 'si',
     porcentaje_iva  DECIMAL(5,2) NOT NULL DEFAULT 19.00,
-    tiempo_entrega  VARCHAR(255) DEFAULT NULL,         -- Ej: "5 A 15 DIAS HÁBILES"
+    tiempo_entrega  VARCHAR(255) DEFAULT NULL,
+    -- Campos de categorización y código
+    categoria       VARCHAR(100) DEFAULT NULL,
+    codigo_producto VARCHAR(60)  DEFAULT NULL,
+    -- Campos de rentabilidad (uso interno, no se muestran al cliente)
+    precio_proveedor    DECIMAL(20,2) DEFAULT 0.00,
+    porcentaje_utilidad DECIMAL(8,2)  DEFAULT 0.00,
+    flete               DECIMAL(20,2) DEFAULT 0.00,
+    calibracion         DECIMAL(20,2) DEFAULT 0.00,
+    estampillas         DECIMAL(20,2) DEFAULT 0.00,
+    proveedor           VARCHAR(100)  DEFAULT NULL,
     FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id) ON DELETE CASCADE,
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ══ ALTER: ejecutar en producción para agregar las nuevas columnas ══
+-- ALTER TABLE cotizacion_items
+--   ADD COLUMN categoria        VARCHAR(100)  DEFAULT NULL AFTER tiempo_entrega,
+--   ADD COLUMN codigo_producto  VARCHAR(60)   DEFAULT NULL AFTER categoria,
+--   ADD COLUMN precio_proveedor DECIMAL(20,2) DEFAULT 0.00 AFTER codigo_producto,
+--   ADD COLUMN porcentaje_utilidad DECIMAL(8,2) DEFAULT 0.00 AFTER precio_proveedor,
+--   ADD COLUMN flete            DECIMAL(20,2) DEFAULT 0.00 AFTER porcentaje_utilidad,
+--   ADD COLUMN calibracion      DECIMAL(20,2) DEFAULT 0.00 AFTER flete,
+--   ADD COLUMN estampillas      DECIMAL(20,2) DEFAULT 0.00 AFTER calibracion,
+--   ADD COLUMN proveedor        VARCHAR(100)  DEFAULT NULL AFTER estampillas;
 
 -- ── Usuario administrador inicial ───────────────────────────
 -- Contraseña inicial: Admin2026* (cambiar tras primer acceso)
