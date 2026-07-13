@@ -136,14 +136,15 @@ class CotizacionController
             exit();
         }
 
-        $cotizacion = $this->model->buscarCotizacionPorNumero($numero);
+        $cotizacion = $this->model->buscarPorNumero($numero);
         if (!$cotizacion) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
             exit();
         }
 
-        $items = $this->model->obtenerItems($cotizacion['id']);
-        return ['cotizacion' => $cotizacion, 'items' => $items];
+        $items = $this->model->obtenerItems((int)$cotizacion['id']);
+        $csrf_token = generar_token_csrf();
+        return ['cotizacion' => $cotizacion, 'items' => $items, 'csrf_token' => $csrf_token];
     }
 
     public function editarItem(): array
