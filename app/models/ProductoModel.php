@@ -16,31 +16,34 @@ class ProductoModel
 
     public function listar(int $offset, int $limite, string $busqueda = '', string $categoria = ''): array
     {
-        $where  = ["estado = 'activo'"];
+        $where = [];
         $params = [];
-        $types  = '';
+        $types = '';
 
         if ($busqueda !== '') {
-            $where[]  = "titulo LIKE ?";
+            $where[] = "titulo LIKE ?";
             $params[] = "%$busqueda%";
-            $types   .= 's';
+            $types .= 's';
         }
 
         if ($categoria !== '') {
-            $where[]  = "categoria = ?";
+            $where[] = "categoria = ?";
             $params[] = $categoria;
-            $types   .= 's';
+            $types .= 's';
         }
 
-        $whereClause = 'WHERE ' . implode(' AND ', $where);
+        $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
         $sql = "SELECT * FROM productos $whereClause ORDER BY titulo LIMIT ? OFFSET ?";
-
+        
         $params[] = $limite;
         $params[] = $offset;
-        $types   .= 'ii';
+        $types .= 'ii';
 
         $stmt = mysqli_prepare($this->db, $sql);
-        mysqli_stmt_bind_param($stmt, $types, ...$params);
+        if (!empty($params)) {
+            mysqli_stmt_bind_param($stmt, $types, ...$params);
+        }
+        
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $rows   = [];
@@ -53,29 +56,30 @@ class ProductoModel
 
     public function contar(string $busqueda = '', string $categoria = ''): int
     {
-        $where  = ["estado = 'activo'"];
+        $where = [];
         $params = [];
-        $types  = '';
+        $types = '';
 
         if ($busqueda !== '') {
-            $where[]  = "titulo LIKE ?";
+            $where[] = "titulo LIKE ?";
             $params[] = "%$busqueda%";
-            $types   .= 's';
+            $types .= 's';
         }
 
         if ($categoria !== '') {
-            $where[]  = "categoria = ?";
+            $where[] = "categoria = ?";
             $params[] = $categoria;
-            $types   .= 's';
+            $types .= 's';
         }
 
-        $whereClause = 'WHERE ' . implode(' AND ', $where);
+        $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
         $sql = "SELECT COUNT(*) AS total FROM productos $whereClause";
 
         $stmt = mysqli_prepare($this->db, $sql);
         if (!empty($params)) {
             mysqli_stmt_bind_param($stmt, $types, ...$params);
         }
+        
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $row    = mysqli_fetch_assoc($result);
@@ -85,10 +89,7 @@ class ProductoModel
 
     public function obtenerConteosPorCategoria(): array
     {
-        $stmt = mysqli_prepare($this->db,
-            "SELECT categoria, COUNT(*) as cantidad FROM productos
-             WHERE estado = 'activo' AND categoria IS NOT NULL AND categoria != ''
-             GROUP BY categoria ORDER BY cantidad DESC");
+        $stmt = mysqli_prepare($this->db, "SELECT categoria, COUNT(*) as cantidad FROM productos WHERE categoria IS NOT NULL AND categoria != '' GROUP BY categoria ORDER BY cantidad DESC");
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $rows = [];
@@ -175,13 +176,9 @@ class ProductoModel
         return $ok;
     }
 
-    /**
-     * Soft delete: marca el producto como inactivo en lugar de eliminarlo físicamente.
-     * Los ítems de cotizaciones existentes (ON DELETE SET NULL) no se ven afectados.
-     */
     public function eliminar(int $id): bool
     {
-        $stmt = mysqli_prepare($this->db, "UPDATE productos SET estado='inactivo' WHERE id=?");
+        $stmt = mysqli_prepare($this->db, "DELETE FROM productos WHERE id=?");
         mysqli_stmt_bind_param($stmt, 'i', $id);
         $ok = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
