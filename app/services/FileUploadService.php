@@ -1,6 +1,4 @@
 <?php
-require_once dirname(__DIR__, 2) . '/config/seguridad.php';
-
 /**
  * FileUploadService — Responsabilidad Única: manejar la subida y reemplazo de archivos.
  *

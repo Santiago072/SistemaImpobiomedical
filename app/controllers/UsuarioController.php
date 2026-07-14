@@ -1,5 +1,4 @@
 ﻿<?php
-require_once dirname(__DIR__) . '/models/UsuarioModel.php';
 require_once dirname(__DIR__, 2) . '/config/seguridad.php';
 
 /**

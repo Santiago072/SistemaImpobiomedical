@@ -1,5 +1,13 @@
 {
     "require": {
         "dompdf/dompdf": "^2.0"
+    },
+    "autoload": {
+        "classmap": [
+            "app/controllers/",
+            "app/models/",
+            "app/services/",
+            "app/contracts/"
+        ]
     }
 }

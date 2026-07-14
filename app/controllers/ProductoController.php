@@ -1,6 +1,4 @@
 <?php
-require_once dirname(__DIR__) . '/models/ProductoModel.php';
-require_once dirname(__DIR__) . '/services/FileUploadService.php';
 require_once dirname(__DIR__, 2) . '/config/seguridad.php';
 
 /**

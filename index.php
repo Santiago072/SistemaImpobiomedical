@@ -43,6 +43,9 @@ set_exception_handler(function (Throwable $e) {
     exit();
 });
 
+// ── Autoloader Composer (clases de app/) ─────────────────────────────────────
+require_once __DIR__ . '/vendor/autoload.php';
+
 // ── Carga del .env ────────────────────────────────────────────────────────────
 require_once __DIR__ . '/config/EnvLoader.php';
 EnvLoader::load(__DIR__ . '/config/.env');
@@ -68,14 +71,12 @@ $action = sanitizar_entrada($_GET['action'] ?? '');
 
 // ── Logout ────────────────────────────────────────────────────────────────────
 if ($action === 'logout') {
-    require_once __DIR__ . '/app/controllers/AuthController.php';
     (new AuthController(conexion()))->logout();
     exit();
 }
 
 // ── Login (sin módulo) ────────────────────────────────────────────────────────
 if ($module === '') {
-    require_once __DIR__ . '/app/controllers/AuthController.php';
     $data = (new AuthController(conexion()))->login();
     extract($data);
     include __DIR__ . '/app/views/auth/login.php';
@@ -84,11 +85,11 @@ if ($module === '') {
 
 // ── Mapa de módulos (OCP) ─────────────────────────────────────────────────────
 $rutasMap = [
-    'panel'        => __DIR__ . '/app/controllers/PanelController.php',
-    'usuarios'     => __DIR__ . '/app/controllers/UsuarioController.php',
-    'clientes'     => __DIR__ . '/app/controllers/ClienteController.php',
-    'productos'    => __DIR__ . '/app/controllers/ProductoController.php',
-    'cotizaciones' => __DIR__ . '/app/controllers/CotizacionController.php',
+    'panel'        => true,
+    'usuarios'     => true,
+    'clientes'     => true,
+    'productos'    => true,
+    'cotizaciones' => true,
 ];
 
 if (!array_key_exists($module, $rutasMap)) {
@@ -96,7 +97,6 @@ if (!array_key_exists($module, $rutasMap)) {
     exit();
 }
 
-require_once $rutasMap[$module];
 $db = conexion();
 
 // ── Dispatch por módulo ───────────────────────────────────────────────────────

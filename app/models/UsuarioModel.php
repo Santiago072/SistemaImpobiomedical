@@ -1,6 +1,4 @@
 <?php
-require_once dirname(__DIR__, 2) . '/app/contracts/RepositoryInterface.php';
-
 /**
  * UsuarioModel — acceso a datos de la tabla usuarios.
  *
