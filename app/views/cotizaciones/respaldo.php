@@ -41,14 +41,14 @@ $totalValorFinal      = 0;
                     <thead>
                         <tr>
                             <th>Producto</th>
+                            <th>Cód. Proveedor</th>
+                            <th>Proveedor</th>
                             <th style="text-align:right;">Precio Proveedor</th>
-                            <th style="text-align:right;">Porcentaje Utilidad (Ganancia Empresa)</th>
-                            <th style="text-align:right;">Flete (Envío Transporte)</th>
+                            <th style="text-align:right;">Porcentaje Utilidad</th>
+                            <th style="text-align:right;">Flete</th>
                             <th style="text-align:right;">Calibración</th>
                             <th style="text-align:right;">Estampillas</th>
-                            <th>Proveedor</th>
-                            <th>Cód. Proveedor</th>
-                            <th style="text-align:right;">Valor Final con IVA para el Cliente</th>
+                            <th style="text-align:right;">V/F con IVA</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -118,7 +118,7 @@ $totalValorFinal      = 0;
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
-                    <tfoot>
+                    <!-- <tfoot>
                         <tr style="background:#f3f4f6; font-size:14px;">
                             <td style="text-align:right; font-weight:bold;">TOTALES:</td>
                             <td style="text-align:right; font-weight:bold; color:#4b5563;">$<?= number_format($totalPrecioProveedor, 0, ',', '.') ?></td>
@@ -129,11 +129,11 @@ $totalValorFinal      = 0;
                             <td colspan="2"></td>
                             <td style="text-align:right; font-weight:900; color:#059669; font-size:16px;">$<?= number_format($totalValorFinal, 0, ',', '.') ?></td>
                         </tr>
-                    </tfoot>
+                    </tfoot> -->
                 </table>
             </div>
             
-            <div style="margin-top:20px; padding:15px; background:#f0fdf4; border:1px solid #6ee7b7; border-radius:8px; text-align:right;">
+            <!-- <div style="margin-top:20px; padding:15px; background:#f0fdf4; border:1px solid #6ee7b7; border-radius:8px; text-align:right;">
                 <p style="margin:0; font-size:14px; color:#064e3b;">
                     <strong>Ganancia (Utilidad) Total Proyectada:</strong>
                     <span style="font-size:20px; font-weight:bold;">$<?= number_format($totalUtilidad, 0, ',', '.') ?></span>
@@ -142,7 +142,7 @@ $totalValorFinal      = 0;
                     <strong>Valor Final Total con IVA:</strong>
                     <span style="font-size:20px; font-weight:bold; color:#059669;">$<?= number_format($totalValorFinal, 0, ',', '.') ?></span>
                 </p>
-            </div>
+            </div> -->
         </div>
     </main>
 </div>
