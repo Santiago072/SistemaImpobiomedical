@@ -59,18 +59,19 @@ $totalValorFinal      = 0;
                                 $qty = (int)$it['cantidad'];
 
                                 /*
-                                 * Los valores guardados en BD son diferenciales UNITARIOS en cascada:
-                                 *   precio_proveedor    = costo base unitario
-                                 *   porcentaje_utilidad = (acum_utilidad  - precio_proveedor)  por unidad
-                                 *   flete               = (acum_flete     - acum_utilidad)      por unidad
-                                 *   calibracion         = (acum_calibracion - acum_flete)       por unidad
-                                 *   estampillas         = (acum_estampillas - acum_calibracion) por unidad
+                                 * Los valores guardados en BD son diferenciales UNITARIOS en cascada.
+                                 * Se reconstruyen los ACUMULADOS unitarios para mostrar exactamente
+                                 * lo que la calculadora dinámica muestra en cada etapa:
                                  *
-                                 * Reconstrucción acumulada unitaria:
-                                 *   acum_utilidad    = precio_proveedor + porcentaje_utilidad
-                                 *   acum_flete       = acum_utilidad    + flete
-                                 *   acum_calibracion = acum_flete       + calibracion
-                                 *   acum_estampillas = acum_calibracion + estampillas  ← precio venta sin IVA
+                                 *   acum_util    = precio_proveedor + porcentaje_utilidad  → col "Utilidad"
+                                 *   acum_flete   = acum_util   + flete                    → col "Flete"
+                                 *   acum_calib   = acum_flete  + calibracion              → col "Calibración"
+                                 *   acum_estamp  = acum_calib  + estampillas              → col "Estampillas"
+                                 *
+                                 * "Precio Proveedor" = precio_proveedor unitario
+                                 * "Valor Final con IVA" = acum_estamp * qty + IVA (total de la fila)
+                                 *
+                                 * Los totales del pie van × cantidad para reflejar el costo total real.
                                  */
                                 $ppUnit = (float)($it['precio_proveedor']    ?? 0);
                                 $puUnit = (float)($it['porcentaje_utilidad'] ?? 0);
@@ -78,20 +79,13 @@ $totalValorFinal      = 0;
                                 $pcUnit = (float)($it['calibracion']         ?? 0);
                                 $peUnit = (float)($it['estampillas']         ?? 0);
 
-                                // Acumulados unitarios en cascada
+                                // Acumulados unitarios — estos son los valores que muestra la calculadora
                                 $acumUtil   = $ppUnit + $puUnit;
                                 $acumFlete  = $acumUtil  + $pfUnit;
                                 $acumCalib  = $acumFlete + $pcUnit;
                                 $acumEstamp = $acumCalib + $peUnit; // precio venta sin IVA unitario
 
-                                // Totales de fila (× cantidad)
-                                $pProv   = $ppUnit * $qty;
-                                $pUtil   = $puUnit * $qty;
-                                $pFlete  = $pfUnit * $qty;
-                                $pCalib  = $pcUnit * $qty;
-                                $pEstamp = $peUnit * $qty;
-
-                                // Valor Final con IVA
+                                // Valor Final con IVA de la fila completa (unitario × cantidad + IVA)
                                 $subtotalSinIva = $acumEstamp * $qty;
                                 $pct            = (float)($it['porcentaje_iva'] ?? 19);
                                 $ivaFila        = (strtolower($it['iva']) === 'si')
@@ -99,11 +93,12 @@ $totalValorFinal      = 0;
                                                   : 0;
                                 $valorFinalIva  = $subtotalSinIva + $ivaFila;
 
-                                $totalPrecioProveedor += $pProv;
-                                $totalUtilidad        += $pUtil;
-                                $totalFlete           += $pFlete;
-                                $totalCalibracion     += $pCalib;
-                                $totalEstampillas     += $pEstamp;
+                                // Totales del pie (× cantidad)
+                                $totalPrecioProveedor += $ppUnit  * $qty;
+                                $totalUtilidad        += $acumUtil   * $qty;
+                                $totalFlete           += $acumFlete  * $qty;
+                                $totalCalibracion     += $acumCalib  * $qty;
+                                $totalEstampillas     += $acumEstamp * $qty;
                                 $totalValorFinal      += $valorFinalIva;
                             ?>
                             <tr>
@@ -111,11 +106,11 @@ $totalValorFinal      = 0;
                                     <strong><?= htmlspecialchars(mb_strimwidth($it['titulo'], 0, 40, '…')) ?></strong><br>
                                     <span style="font-size:11px; color:#6b7280;">Cant: <?= $qty ?></span>
                                 </td>
-                                <td style="text-align:right; color:#4b5563;">$<?= number_format($pProv, 0, ',', '.') ?></td>
-                                <td style="text-align:right; color:#059669; font-weight:600;">$<?= number_format($pUtil, 0, ',', '.') ?></td>
-                                <td style="text-align:right; color:#d97706;">$<?= number_format($pFlete, 0, ',', '.') ?></td>
-                                <td style="text-align:right; color:#2563eb;">$<?= number_format($pCalib, 0, ',', '.') ?></td>
-                                <td style="text-align:right; color:#7c3aed;">$<?= number_format($pEstamp, 0, ',', '.') ?></td>
+                                <td style="text-align:right; color:#4b5563;">$<?= number_format($ppUnit, 0, ',', '.') ?></td>
+                                <td style="text-align:right; color:#059669; font-weight:600;">$<?= number_format($acumUtil, 0, ',', '.') ?></td>
+                                <td style="text-align:right; color:#d97706;">$<?= number_format($acumFlete, 0, ',', '.') ?></td>
+                                <td style="text-align:right; color:#2563eb;">$<?= number_format($acumCalib, 0, ',', '.') ?></td>
+                                <td style="text-align:right; color:#7c3aed;">$<?= number_format($acumEstamp, 0, ',', '.') ?></td>
                                 <td><?= htmlspecialchars($it['proveedor'] ?: 'No especificado') ?></td>
                                 <td><?= htmlspecialchars($it['codigo_proveedor'] ?: '-') ?></td>
                                 <td style="text-align:right; font-weight:bold; background:#f0fdf4; color:#059669;">$<?= number_format($valorFinalIva, 0, ',', '.') ?></td>
