@@ -8,12 +8,13 @@ $basePath  = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 include dirname(__DIR__) . '/layout/header.php';
 include dirname(__DIR__) . '/layout/menu.php';
 
-$totalBase = 0;
-$totalUtilidad = 0;
-$totalFlete = 0;
+$totalBase        = 0;
+$totalUtilidad    = 0;
+$totalFlete       = 0;
 $totalCalibracion = 0;
 $totalEstampillas = 0;
-$totalGeneral = 0;
+$totalGeneral     = 0;
+$totalValorFinal  = 0;
 ?>
 
 <div class="layout-main">
@@ -49,31 +50,67 @@ $totalGeneral = 0;
                             <th style="text-align:right;">Calibración</th>
                             <th style="text-align:right;">Estampillas</th>
                             <th style="text-align:right;">Subtotal</th>
+                            <th style="text-align:right;">Valor Final con IVA</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($items)): ?>
-                        <tr><td colspan="9" class="mod-empty">No hay ítems en esta cotización.</td></tr>
+                        <tr><td colspan="10" class="mod-empty">No hay ítems en esta cotización.</td></tr>
                         <?php else: ?>
-                            <?php foreach ($items as $it): 
+                            <?php foreach ($items as $it):
                                 $qty = (int)$it['cantidad'];
-                                // Los valores de la BD vienen como unitarios, los multiplicamos por la cantidad para el total de la fila.
-                                // Nota: Asumimos que los campos guardados en la BD (precio_proveedor, porcentaje_utilidad, etc.) 
-                                // son por unidad de producto.
-                                $pBase = (float)($it['precio_proveedor'] ?? 0) * $qty;
-                                $pUtil = (float)($it['porcentaje_utilidad'] ?? 0) * $qty;
-                                $pFlete = (float)($it['flete'] ?? 0) * $qty;
-                                $pCalib = (float)($it['calibracion'] ?? 0) * $qty;
-                                $pEstamp = (float)($it['estampillas'] ?? 0) * $qty;
-                                
-                                $subtotalFila = $pBase + $pUtil + $pFlete + $pCalib + $pEstamp;
 
-                                $totalBase += $pBase;
-                                $totalUtilidad += $pUtil;
-                                $totalFlete += $pFlete;
+                                /*
+                                 * Los valores guardados en BD son diferenciales UNITARIOS:
+                                 *   precio_proveedor  = costo base unitario
+                                 *   porcentaje_utilidad = (acum_utilidad  - precio_proveedor)   por unidad
+                                 *   flete               = (acum_flete     - acum_utilidad)       por unidad
+                                 *   calibracion         = (acum_calibracion - acum_flete)        por unidad
+                                 *   estampillas         = (acum_estampillas - acum_calibracion)  por unidad
+                                 *
+                                 * Para reconstruir los acumulados por fila:
+                                 *   acum_utilidad    = precio_proveedor + porcentaje_utilidad
+                                 *   acum_flete       = acum_utilidad    + flete
+                                 *   acum_calibracion = acum_flete       + calibracion
+                                 *   acum_estampillas = acum_calibracion + estampillas
+                                 *
+                                 * El subtotal de la fila = acum_estampillas * qty (precio de venta sin IVA).
+                                 * El Valor Final = subtotal + IVA.
+                                 */
+                                $ppUnit  = (float)($it['precio_proveedor']    ?? 0);
+                                $puUnit  = (float)($it['porcentaje_utilidad'] ?? 0);
+                                $pfUnit  = (float)($it['flete']               ?? 0);
+                                $pcUnit  = (float)($it['calibracion']         ?? 0);
+                                $peUnit  = (float)($it['estampillas']         ?? 0);
+
+                                // Acumulados unitarios (reconstrucción en cascada)
+                                $acumUtil  = $ppUnit + $puUnit;
+                                $acumFlete = $acumUtil + $pfUnit;
+                                $acumCalib = $acumFlete + $pcUnit;
+                                $acumEstamp = $acumCalib + $peUnit;
+
+                                // Totales de fila (× cantidad)
+                                $pBase    = $ppUnit    * $qty;
+                                $pUtil    = $puUnit    * $qty;   // diferencial ganancia
+                                $pFlete   = $pfUnit    * $qty;   // diferencial flete
+                                $pCalib   = $pcUnit    * $qty;   // diferencial calibración
+                                $pEstamp  = $peUnit    * $qty;   // diferencial estampillas
+                                $subtotalFila = $acumEstamp * $qty; // precio venta sin IVA
+
+                                // IVA sobre el precio de venta al cliente
+                                $pct  = (float)($it['porcentaje_iva'] ?? 19);
+                                $ivaFila = (strtolower($it['iva']) === 'si')
+                                           ? $subtotalFila * ($pct / 100)
+                                           : 0;
+                                $valorFinalIva = $subtotalFila + $ivaFila;
+
+                                $totalBase        += $pBase;
+                                $totalUtilidad    += $pUtil;
+                                $totalFlete       += $pFlete;
                                 $totalCalibracion += $pCalib;
                                 $totalEstampillas += $pEstamp;
-                                $totalGeneral += $subtotalFila;
+                                $totalGeneral     += $subtotalFila;
+                                $totalValorFinal  = ($totalValorFinal ?? 0) + $valorFinalIva;
                             ?>
                             <tr>
                                 <td>
@@ -88,6 +125,7 @@ $totalGeneral = 0;
                                 <td style="text-align:right; color:#2563eb;">$<?= number_format($pCalib, 0, ',', '.') ?></td>
                                 <td style="text-align:right; color:#7c3aed;">$<?= number_format($pEstamp, 0, ',', '.') ?></td>
                                 <td style="text-align:right; font-weight:bold; background:#f9fafb;">$<?= number_format($subtotalFila, 0, ',', '.') ?></td>
+                                <td style="text-align:right; font-weight:bold; background:#f0fdf4; color:#059669;">$<?= number_format($valorFinalIva, 0, ',', '.') ?></td>
                             </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -101,6 +139,7 @@ $totalGeneral = 0;
                             <td style="text-align:right; font-weight:bold; color:#2563eb;">$<?= number_format($totalCalibracion, 0, ',', '.') ?></td>
                             <td style="text-align:right; font-weight:bold; color:#7c3aed;">$<?= number_format($totalEstampillas, 0, ',', '.') ?></td>
                             <td style="text-align:right; font-weight:900; color:#111827; font-size:16px;">$<?= number_format($totalGeneral, 0, ',', '.') ?></td>
+                            <td style="text-align:right; font-weight:900; color:#059669; font-size:16px;">$<?= number_format($totalValorFinal, 0, ',', '.') ?></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -111,7 +150,7 @@ $totalGeneral = 0;
                     <strong>Ganancia (Utilidad) Total Proyectada:</strong> 
                     <span style="font-size:20px; font-weight:bold;">$<?= number_format($totalUtilidad, 0, ',', '.') ?></span>
                 </p>
-                <?php if($totalGeneral > 0): ?>
+                <?php if ($totalGeneral > 0): ?>
                 <p style="margin:5px 0 0 0; font-size:12px; color:#047857;">
                     Margen bruto estimado: <strong><?= number_format(($totalUtilidad / $totalGeneral) * 100, 1) ?>%</strong>
                 </p>
