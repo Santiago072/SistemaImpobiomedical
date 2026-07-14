@@ -3,9 +3,10 @@
  * ClienteModel — acceso a datos de la tabla clientes.
  *
  * - SRP: toda la lógica SQL de clientes vive aquí.
+ * - ISP: implementa RepositoryInterface (contrato estricto).
  * - Campos: nombre, nit, departamento, municipio, direccion, nombre_contacto, telefono, correo
  */
-class ClienteModel
+class ClienteModel implements RepositoryInterface
 {
     private \mysqli $db;
 

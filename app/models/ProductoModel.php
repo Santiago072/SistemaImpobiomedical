@@ -3,9 +3,10 @@
  * ProductoModel — acceso a datos del catálogo de productos.
  *
  * - SRP: toda la lógica SQL de productos vive aquí.
+ * - ISP: implementa RepositoryInterface (contrato estricto).
  * - Campos: titulo, foto, descripcion, precio, iva, porcentaje_iva, estado
  */
-class ProductoModel
+class ProductoModel implements RepositoryInterface
 {
     private \mysqli $db;
 
