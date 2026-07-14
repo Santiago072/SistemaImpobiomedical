@@ -1,6 +1,6 @@
 ﻿Options -Indexes
 
-# â”€â”€ Front Controller Routing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Front Controller Routing ──────────────────────────────────────────────────
 # Compatible con XAMPP local (/SistemaImpobiomedical/) y Docker (/)
 <IfModule mod_rewrite.c>
     RewriteEngine On
@@ -10,11 +10,11 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
 
-    # Reescribir todo lo demÃ¡s al front controller
+    # Reescribir todo lo demás al front controller
     RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
 
-# â”€â”€ Seguridad â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Seguridad ─────────────────────────────────────────────────────────────────
 <FilesMatch "^\.env">
     Require all denied
 </FilesMatch>
@@ -30,8 +30,8 @@
     Header set Referrer-Policy "strict-origin-when-cross-origin"
     Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
     Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data:; connect-src 'self'"
-    # Activar HSTS solo cuando HTTPS este confirmado en produccion
-    # Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains"
+    # HSTS: fuerza HTTPS por 2 años en dominio y subdominios (producción confirmada con SSL)
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains"
 </IfModule>
 
 <IfModule mod_rewrite.c>
@@ -42,4 +42,3 @@
     php_flag display_errors Off
     php_flag display_startup_errors Off
 </IfModule>
-
