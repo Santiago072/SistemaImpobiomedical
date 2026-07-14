@@ -106,13 +106,13 @@ $totalValorFinal      = 0;
                                     <strong><?= htmlspecialchars(mb_strimwidth($it['titulo'], 0, 40, '…')) ?></strong><br>
                                     <span style="font-size:11px; color:#6b7280;">Cant: <?= $qty ?></span>
                                 </td>
+                                <td><?= htmlspecialchars($it['codigo_proveedor'] ?: '-') ?></td>
+                                <td><?= htmlspecialchars($it['proveedor'] ?: 'No especificado') ?></td>
                                 <td style="text-align:right; color:#4b5563;">$<?= number_format($ppUnit, 0, ',', '.') ?></td>
                                 <td style="text-align:right; color:#059669; font-weight:600;">$<?= number_format($acumUtil, 0, ',', '.') ?></td>
                                 <td style="text-align:right; color:#d97706;">$<?= number_format($acumFlete, 0, ',', '.') ?></td>
                                 <td style="text-align:right; color:#2563eb;">$<?= number_format($acumCalib, 0, ',', '.') ?></td>
                                 <td style="text-align:right; color:#7c3aed;">$<?= number_format($acumEstamp, 0, ',', '.') ?></td>
-                                <td><?= htmlspecialchars($it['proveedor'] ?: 'No especificado') ?></td>
-                                <td><?= htmlspecialchars($it['codigo_proveedor'] ?: '-') ?></td>
                                 <td style="text-align:right; font-weight:bold; background:#f0fdf4; color:#059669;">$<?= number_format($valorFinalIva, 0, ',', '.') ?></td>
                             </tr>
                             <?php endforeach; ?>
