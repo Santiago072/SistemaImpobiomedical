@@ -125,6 +125,8 @@ class OrdenCompraController
             $ivaItem         = sanitizar_entrada($d['iva'] ?? 'si');
             $pctIva          = (float)($d['porcentaje_iva'] ?? 19);
 
+            error_log("[ORDEN_CREAR] item=$itemId cod_prov='$codigoProveedor' d_raw=" . json_encode($d['codigo_proveedor'] ?? 'NO_KEY'));
+
             $this->model->insertarItem(
                 $ordenId, $itemId, $codigoProveedor,
                 $titulo, $descripcion, $cantidad,
