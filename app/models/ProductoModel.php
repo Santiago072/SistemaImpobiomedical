@@ -118,13 +118,13 @@ class ProductoModel implements RepositoryInterface
         if ($busqueda !== '') {
             $param = "%$busqueda%";
             $stmt  = mysqli_prepare($this->db,
-                "SELECT id, titulo, foto, descripcion, precio, iva, porcentaje_iva, categoria, codigo_producto
+                "SELECT id, titulo, foto, descripcion, precio, iva, porcentaje_iva, categoria, codigo_producto, codigo_proveedor
                  FROM productos WHERE estado='activo' AND titulo LIKE ?
                  ORDER BY titulo LIMIT 50");
             mysqli_stmt_bind_param($stmt, 's', $param);
         } else {
             $stmt = mysqli_prepare($this->db,
-                "SELECT id, titulo, foto, descripcion, precio, iva, porcentaje_iva, categoria, codigo_producto
+                "SELECT id, titulo, foto, descripcion, precio, iva, porcentaje_iva, categoria, codigo_producto, codigo_proveedor
                  FROM productos WHERE estado='activo' ORDER BY titulo LIMIT 50");
         }
         mysqli_stmt_execute($stmt);

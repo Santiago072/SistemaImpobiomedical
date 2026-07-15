@@ -407,8 +407,9 @@ function autocompletar(p) {
     }
     
     // Auto-fill new fields
-    document.getElementById('inpCategoria').value     = p.categoria || '';
-    document.getElementById('inpCodigoProducto').value= p.codigo_producto || '';
+    document.getElementById('inpCategoria').value      = p.categoria || '';
+    document.getElementById('inpCodigoProducto').value = p.codigo_producto || '';
+    document.getElementById('inpCodigoProveedor').value= p.codigo_proveedor || '';
     
     document.getElementById('badgeAuto').style.display = 'inline';
     document.getElementById('listaProductos').style.display = 'none';
