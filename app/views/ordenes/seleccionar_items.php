@@ -70,10 +70,10 @@ include dirname(__DIR__) . '/layout/menu.php';
                                     <input type="checkbox" id="checkAll" title="Seleccionar todos"
                                            style="width:18px;height:18px;cursor:pointer;">
                                 </th>
-                                <th>Cód. Proveedor</th>
+                                <th>CÓD. PRD. PROVEEDOR</th>
                                 <th>Producto / Descripción</th>
                                 <th>Proveedor</th>
-                                <th style="text-align:right;">Cant.</th>
+                                <th style="text-align:right;">Cant. a pedir</th>
                                 <th style="text-align:right;">Precio U.</th>
                                 <th style="text-align:right;">IVA</th>
                                 <th style="text-align:right;">Total</th>
@@ -106,6 +106,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][descripcion]"
                                                value="<?= htmlspecialchars($it['descripcion']) ?>">
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][cantidad]"
+                                               id="hdn-qty-<?= (int)$it['id'] ?>"
                                                value="<?= $qty ?>">
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][precio]"
                                                value="<?= $pu ?>">
@@ -143,10 +144,22 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <span style="font-size:11px; color:var(--text-soft);">—</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td style="text-align:right;"><?= $qty ?></td>
+                                    <td style="text-align:right;">
+                                        <input type="number"
+                                               min="1" max="<?= $qty ?>"
+                                               value="<?= $qty ?>"
+                                               class="qty-input"
+                                               data-id="<?= (int)$it['id'] ?>"
+                                               title="Máx: <?= $qty ?>"
+                                               style="width:65px; padding:4px 6px; border-radius:6px; border:1.5px solid rgba(45,190,203,.3); background:rgba(255,255,255,.08); color:inherit; font-size:13px; font-weight:600; text-align:center;">
+                                        <div style="font-size:10px; color:var(--text-soft); margin-top:2px;">de <?= $qty ?></div>
+                                    </td>
                                     <td style="text-align:right; white-space:nowrap;">$ <?= number_format($pu, 0, ',', '.') ?></td>
                                     <td style="text-align:right; white-space:nowrap;"><?= $aplica ? $pct . '%' : '0%' ?></td>
-                                    <td style="text-align:right; white-space:nowrap; font-weight:600;">$ <?= number_format($total, 0, ',', '.') ?></td>
+                                    <td class="celda-total" style="text-align:right; white-space:nowrap; font-weight:600;"
+                                        data-pu="<?= $pu ?>" data-pct="<?= $pct ?>" data-aplica="<?= $aplica ? 1 : 0 ?>">
+                                        $ <?= number_format($total, 0, ',', '.') ?>
+                                    </td>
                                 </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -276,26 +289,31 @@ NOTA:
     background:rgba(45,190,203,.08);
 }
 .oc-filter-btn {
-    padding:5px 14px;
+    padding:6px 16px;
     border-radius:20px;
-    border:1.5px solid rgba(45,190,203,.4);
-    background:rgba(45,190,203,.1);
-    color:#e2e8f0;
+    border:1.5px solid #10757e;
+    background:#e8f8f8;
+    color:#0a4f55;
     font-size:12px;
-    font-weight:600;
+    font-weight:700;
     cursor:pointer;
     transition:all .2s;
     display:inline-flex;
     align-items:center;
     gap:5px;
     white-space:nowrap;
+    box-shadow:0 1px 3px rgba(0,0,0,.08);
 }
-.oc-filter-btn:hover,
+.oc-filter-btn:hover {
+    background:#c8eef0;
+    border-color:#0a4f55;
+    color:#0a4f55;
+}
 .oc-filter-btn.active {
-    background:rgba(45,190,203,.25);
-    border-color:var(--amber);
-    color:#fff;
-    box-shadow:0 0 8px rgba(45,190,203,.3);
+    background:#10757e;
+    border-color:#10757e;
+    color:#ffffff;
+    box-shadow:0 2px 6px rgba(16,117,126,.35);
 }
 .item-row.oculta { display:none; }
 </style>
@@ -308,16 +326,47 @@ NOTA:
     const cntItems = document.getElementById('cntItems');
     const cntSub   = document.getElementById('cntSubtotal');
 
+    // ── Actualizar cantidad hidden + total de fila ─────────────────────────
+    document.querySelectorAll('.qty-input').forEach(inp => {
+        inp.addEventListener('input', function() {
+            const id     = this.dataset.id;
+            const max    = parseInt(this.max) || 9999;
+            let val      = parseInt(this.value) || 1;
+            if (val < 1)   { val = 1;   this.value = 1; }
+            if (val > max) { val = max; this.value = max; }
+
+            // Actualizar hidden de cantidad
+            const hdnQty = document.getElementById('hdn-qty-' + id);
+            if (hdnQty) hdnQty.value = val;
+
+            // Recalcular total de la fila
+            const celdaTot = this.closest('tr').querySelector('.celda-total');
+            if (celdaTot) {
+                const pu    = parseFloat(celdaTot.dataset.pu)    || 0;
+                const pct   = parseFloat(celdaTot.dataset.pct)   || 0;
+                const aplica= parseInt(celdaTot.dataset.aplica)  === 1;
+                const sub   = pu * val;
+                const iva   = aplica ? sub * (pct / 100) : 0;
+                const tot   = sub + iva;
+                celdaTot.textContent = '$ ' + Math.round(tot).toLocaleString('es-CO');
+            }
+
+            actualizarResumen();
+        });
+    });
+
+    // ── Resumen de selección ──────────────────────────────────────────────
     function actualizarResumen() {
         let cnt = 0, sub = 0;
         checks.forEach(c => {
             if (c.checked) {
                 cnt++;
-                const row = c.closest('tr');
-                // total = última celda
-                const cells = row.querySelectorAll('td');
-                const totalTxt = cells[cells.length - 1].textContent.replace(/[^0-9,]/g,'').replace(',','.');
-                sub += parseFloat(totalTxt.replace(/\./g,'').replace(',','.')) || 0;
+                const row      = c.closest('tr');
+                const celdaTot = row.querySelector('.celda-total');
+                if (celdaTot) {
+                    const txt = celdaTot.textContent.replace(/[^\d]/g, '');
+                    sub += parseInt(txt) || 0;
+                }
             }
         });
         cntItems.textContent = cnt;
@@ -334,7 +383,7 @@ NOTA:
 
     checks.forEach(c => c.addEventListener('change', actualizarResumen));
 
-    // Filtro por proveedor
+    // ── Filtro por proveedor ──────────────────────────────────────────────
     document.querySelectorAll('.oc-filter-btn').forEach(btn => {
         btn.addEventListener('click', function(){
             document.querySelectorAll('.oc-filter-btn').forEach(b => b.classList.remove('active'));
@@ -352,7 +401,7 @@ NOTA:
         });
     });
 
-    // Auto-rellenar proveedor al seleccionar un ítem
+    // ── Auto-rellenar proveedor al seleccionar un ítem ────────────────────
     checks.forEach(c => {
         c.addEventListener('change', function(){
             if (this.checked) {
