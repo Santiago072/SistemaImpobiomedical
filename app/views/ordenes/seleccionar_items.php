@@ -115,7 +115,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][porcentaje_iva]"
                                                value="<?= $pct ?>">
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][codigo_proveedor]"
-                                               class="cod-prov-hidden-<?= (int)$it['id'] ?>"
+                                               id="cod-prov-hidden-<?= (int)$it['id'] ?>"
                                                value="<?= htmlspecialchars($it['codigo_proveedor'] ?? '') ?>">
                                     </td>
                                     <td>
@@ -125,7 +125,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                                value="<?= htmlspecialchars($it['codigo_proveedor'] ?? '') ?>"
                                                maxlength="60"
                                                style="width:90px; padding:5px 8px; border-radius:6px; border:1.5px solid rgba(45,190,203,.25); background:rgba(255,255,255,.06); color:var(--white); font-size:12px;"
-                                               oninput="document.querySelector('.cod-prov-hidden-<?= (int)$it['id'] ?>').value=this.value">
+                                               oninput="document.getElementById('cod-prov-hidden-<?= (int)$it['id'] ?>').value=this.value">
                                     </td>
                                     <td>
                                         <strong style="font-size:13px;"><?= htmlspecialchars(mb_strimwidth($it['titulo'], 0, 55, '…')) ?></strong>
