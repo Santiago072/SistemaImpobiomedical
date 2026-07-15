@@ -72,8 +72,14 @@ if (!function_exists('fmt')) {
     }
 }
 
-// Vaciar TODOS los buffers previos (incluyendo el ob_start() de index.php)
-// para que el HTML del PDF quede en un buffer limpio de nivel 1
+// DEBUG: capturar qué hay en el buffer ANTES de limpiar
+$_preContent = '';
+if (ob_get_level() > 0) {
+    $_preContent = ob_get_contents() ?: '';
+    error_log('[PDF-ORDER DEBUG] Niveles buffer: ' . ob_get_level() . ' | Bytes acumulados: ' . strlen($_preContent) . ' | Preview: ' . substr(strip_tags($_preContent), 0, 80));
+}
+
+// Vaciar TODOS los buffers previos
 while (ob_get_level() > 0) {
     ob_end_clean();
 }
