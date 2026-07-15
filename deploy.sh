@@ -31,24 +31,32 @@ docker compose up -d --build
 echo ""
 echo "[5/5] Ejecutando migraciones de base de datos..."
 
-# Esperar a que MariaDB esté lista (máx 30 segundos)
-echo "  Esperando que la base de datos esté lista..."
-for i in $(seq 1 15); do
-    if docker exec impobiomedical_db mariadb-admin ping -u impo_user -p"${DB_PASS}" --silent 2>/dev/null; then
-        echo "  Base de datos lista."
-        break
-    fi
-    sleep 2
-done
+# Leer DB_PASS desde config/.env del proyecto
+DB_PASS_LOCAL=$(grep '^DB_PASS=' config/.env 2>/dev/null | cut -d '=' -f2- | tr -d '\r')
 
-# Ejecutar el SQL de órdenes de compra (IF NOT EXISTS → inocuo si ya existe)
-docker exec -i impobiomedical_db mariadb \
-    -u impo_user \
-    -p"${DB_PASS}" \
-    sistema_impobiomedical \
-    < ordenes_compra_bd.sql \
-    && echo "  ✅ Migración ordenes_compra aplicada." \
-    || echo "  ⚠️  La migración ya estaba aplicada o no fue necesaria."
+if [ -z "$DB_PASS_LOCAL" ]; then
+    echo "  ⚠️  No se encontró DB_PASS en config/.env — saltando migración automática."
+    echo "     Ejecuta manualmente: docker exec -i impobiomedical_db mariadb -u impo_user -p'TU_PASS' sistema_impobiomedical < ordenes_compra_bd.sql"
+else
+    # Esperar a que MariaDB esté lista (máx 30 segundos)
+    echo "  Esperando que la base de datos esté lista..."
+    for i in $(seq 1 15); do
+        if docker exec impobiomedical_db mariadb-admin ping -u impo_user -p"${DB_PASS_LOCAL}" --silent 2>/dev/null; then
+            echo "  Base de datos lista."
+            break
+        fi
+        sleep 2
+    done
+
+    # Ejecutar el SQL (IF NOT EXISTS → inocuo si ya existe)
+    docker exec -i impobiomedical_db mariadb \
+        -u impo_user \
+        -p"${DB_PASS_LOCAL}" \
+        sistema_impobiomedical \
+        < ordenes_compra_bd.sql \
+        && echo "  ✅ Migración ordenes_compra aplicada." \
+        || echo "  ⚠️  Error en la migración — revisa los logs."
+fi
 
 echo ""
 echo "========================================"
