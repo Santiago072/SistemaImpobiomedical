@@ -72,6 +72,12 @@ if (!function_exists('fmt')) {
     }
 }
 
+// Vaciar TODOS los buffers previos (incluyendo el ob_start() de index.php)
+// para que el HTML del PDF quede en un buffer limpio de nivel 1
+while (ob_get_level() > 0) {
+    ob_end_clean();
+}
+
 ob_start();
 ?>
 <!DOCTYPE html>
