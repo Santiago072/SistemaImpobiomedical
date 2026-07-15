@@ -102,6 +102,22 @@ class OrdenCompraController
             exit();
         }
 
+        // Validar que todos los ítems sean del mismo proveedor
+        $itemsData = $_POST['items_data'] ?? [];
+        $proveedoresSeleccionados = [];
+        foreach ($itemsIds as $itemId) {
+            $d = $itemsData[(int)$itemId] ?? [];
+            $prov = trim(sanitizar_entrada($d['proveedor'] ?? ''));
+            if ($prov && !in_array($prov, $proveedoresSeleccionados, true)) {
+                $proveedoresSeleccionados[] = $prov;
+            }
+        }
+        if (count($proveedoresSeleccionados) > 1) {
+            header('Location: ' . BASE_URL . '?module=ordenes&action=seleccionar_items&cotizacion='
+                . urlencode($cotizacionNumero) . '&error=proveedor_mixto');
+            exit();
+        }
+
         // Crear la orden
         $ordenId = $this->model->crearOrden(
             $cotizacionId, $cotizacionNumero, $usuarioId,

@@ -32,6 +32,13 @@ include dirname(__DIR__) . '/layout/menu.php';
         <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> Debe seleccionar al menos un ítem.</div>
         <?php endif; ?>
 
+        <?php if (isset($_GET['error']) && $_GET['error'] === 'proveedor_mixto'): ?>
+        <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> No puedes combinar ítems de distintos proveedores en una misma orden. Filtra por proveedor y genera una orden por cada uno.</div>
+        <?php endif; ?>
+
+        <!-- Alerta dinámica JS para proveedor mixto -->
+        <div id="alertaProveedorMixto" class="mod-alert mod-alert-err" style="display:none; margin-bottom:12px;"></div>
+
         <form method="POST" action="<?= $basePath ?>?module=ordenes&action=crear" id="formOrden">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
             <input type="hidden" name="cotizacion_id" value="<?= (int)$cotizacion['id'] ?>">
@@ -117,6 +124,8 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][codigo_proveedor]"
                                                id="cod-prov-hidden-<?= (int)$it['id'] ?>"
                                                value="<?= htmlspecialchars($it['codigo_proveedor'] ?? '') ?>">
+                                        <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][proveedor]"
+                                               value="<?= htmlspecialchars($prov) ?>">
                                     </td>
                                     <td>
                                         <input type="text"
@@ -362,12 +371,18 @@ NOTA:
     });
 
     // ── Resumen de selección ──────────────────────────────────────────────
+    const alertaProveedor = document.getElementById('alertaProveedorMixto');
+
     function actualizarResumen() {
         let cnt = 0, sub = 0;
+        const proveedoresSeleccionados = new Set();
+
         checks.forEach(c => {
             if (c.checked) {
                 cnt++;
                 const row      = c.closest('tr');
+                const prov     = row.dataset.proveedor || '';
+                if (prov) proveedoresSeleccionados.add(prov);
                 const celdaTot = row.querySelector('.celda-total');
                 if (celdaTot) {
                     const txt = celdaTot.textContent.replace(/[^\d]/g, '');
@@ -375,9 +390,22 @@ NOTA:
                 }
             }
         });
+
         cntItems.textContent = cnt;
         cntSub.textContent   = '$ ' + sub.toLocaleString('es-CO', {minimumFractionDigits:0});
-        btnGen.disabled      = cnt === 0;
+
+        const provMixto = proveedoresSeleccionados.size > 1;
+        if (alertaProveedor) {
+            if (provMixto) {
+                const lista = Array.from(proveedoresSeleccionados).join(', ');
+                alertaProveedor.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> No puedes mezclar proveedores en una misma orden. Seleccionados: <strong>' + lista + '</strong>. Filtra por proveedor y genera una orden por cada uno.';
+                alertaProveedor.style.display = 'flex';
+            } else {
+                alertaProveedor.style.display = 'none';
+            }
+        }
+
+        btnGen.disabled = cnt === 0 || provMixto;
         checkAll.indeterminate = cnt > 0 && cnt < checks.length;
         checkAll.checked       = cnt === checks.length && checks.length > 0;
     }
