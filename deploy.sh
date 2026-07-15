@@ -56,6 +56,15 @@ else
         < ordenes_compra_bd.sql \
         && echo "  ✅ Migración ordenes_compra aplicada." \
         || echo "  ⚠️  Error en la migración — revisa los logs."
+
+    # Ejecutar migraciones ALTER TABLE pendientes
+    docker exec -i impobiomedical_db mariadb \
+        -u impo_user \
+        -p"${DB_PASS_LOCAL}" \
+        sistema_impobiomedical \
+        < migraciones.sql \
+        && echo "  ✅ Migraciones ALTER TABLE aplicadas." \
+        || echo "  ⚠️  Error en migraciones ALTER — revisa los logs."
 fi
 
 echo ""
