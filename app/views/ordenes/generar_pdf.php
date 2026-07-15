@@ -231,6 +231,7 @@ table { width:100%; border-collapse:collapse; }
     $cls     = ($idx % 2 === 0) ? 'f-azul' : 'f-lblue';
     $idx++;
     $codProv  = trim($it['codigo_proveedor'] ?? '');
+    if ($codProv === '0') $codProv = '';
     $fotoVal  = $it['foto'] ?? '';
     $imgItem  = !empty($fotoVal) ? imgB64OC2(dirname(__DIR__, 3) . '/uploads/' . $fotoVal) : '';
 ?>
