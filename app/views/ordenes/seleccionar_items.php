@@ -46,13 +46,19 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <!-- Filtro rápido por proveedor -->
                 <?php if (count($proveedores) > 1): ?>
                 <div style="margin-bottom:16px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                    <span style="font-size:13px; color:var(--text-soft);">Filtrar por proveedor:</span>
-                    <button type="button" class="oc-filter-btn active" data-proveedor="">Todos</button>
+                    <span style="font-size:13px; color:var(--text-soft); font-weight:600;">Filtrar por proveedor:</span>
+                    <button type="button" class="oc-filter-btn active" data-proveedor="">
+                        <i class="bi bi-grid-fill" style="font-size:10px;"></i> Todos
+                    </button>
                     <?php foreach ($proveedores as $p): ?>
                     <button type="button" class="oc-filter-btn" data-proveedor="<?= htmlspecialchars($p) ?>">
-                        <?= htmlspecialchars($p) ?>
+                        <i class="bi bi-building" style="font-size:10px;"></i> <?= htmlspecialchars($p) ?>
                     </button>
                     <?php endforeach; ?>
+                </div>
+                <?php elseif (count($proveedores) === 1): ?>
+                <div style="margin-bottom:14px; padding:8px 14px; background:rgba(45,190,203,.08); border:1px solid rgba(45,190,203,.2); border-radius:8px; font-size:12px; color:rgba(255,255,255,.75);">
+                    <i class="bi bi-building"></i> Proveedor: <strong><?= htmlspecialchars($proveedores[0]) ?></strong>
                 </div>
                 <?php endif; ?>
 
@@ -272,18 +278,24 @@ NOTA:
 .oc-filter-btn {
     padding:5px 14px;
     border-radius:20px;
-    border:1.5px solid rgba(45,190,203,.3);
-    background:rgba(255,255,255,.05);
-    color:rgba(255,255,255,.75);
+    border:1.5px solid rgba(45,190,203,.4);
+    background:rgba(45,190,203,.1);
+    color:#e2e8f0;
     font-size:12px;
+    font-weight:600;
     cursor:pointer;
     transition:all .2s;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    white-space:nowrap;
 }
 .oc-filter-btn:hover,
 .oc-filter-btn.active {
-    background:rgba(45,190,203,.18);
+    background:rgba(45,190,203,.25);
     border-color:var(--amber);
-    color:var(--white);
+    color:#fff;
+    box-shadow:0 0 8px rgba(45,190,203,.3);
 }
 .item-row.oculta { display:none; }
 </style>

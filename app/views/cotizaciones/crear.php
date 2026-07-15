@@ -159,7 +159,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                 </div>
                                 <div class="imo-form-row">
                                     <div class="imo-form-group">
-                                        <label>Código Proveedor</label>
+                                        <label>Código Producto Proveedor</label>
                                         <input type="text" name="codigo_proveedor" id="inpCodigoProveedor" maxlength="60" placeholder="Ej: PROV-001">
                                     </div>
                                 </div>
