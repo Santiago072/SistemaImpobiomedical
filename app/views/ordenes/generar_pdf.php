@@ -73,10 +73,11 @@ if (!function_exists('fmt')) {
 }
 
 // DEBUG: capturar qué hay en el buffer ANTES de limpiar
-$_preContent = '';
 if (ob_get_level() > 0) {
-    $_preContent = ob_get_contents() ?: '';
-    error_log('[PDF-ORDER DEBUG] Niveles buffer: ' . ob_get_level() . ' | Bytes acumulados: ' . strlen($_preContent) . ' | Preview: ' . substr(strip_tags($_preContent), 0, 80));
+    $_preLen = strlen(ob_get_contents() ?: '');
+    if ($_preLen > 0) {
+        error_log('[PDF-ORDER] Buffer previo: ' . $_preLen . ' bytes');
+    }
 }
 
 // Vaciar TODOS los buffers previos
@@ -129,45 +130,45 @@ table { width:100%; border-collapse:collapse; }
 <body>
 
 <!-- ══ ENCABEZADO ══ -->
-<table style="border:1px solid #7f7f7f; margin-bottom:7px;">
+<table style="border:1px solid #7f7f7f; margin-bottom:7px; table-layout:fixed;">
   <tr>
-    <td style="width:22%; padding:5px 7px; border-right:1px solid #7f7f7f; text-align:center; vertical-align:middle;">
+    <td style="width:22%; padding:5px 7px; border-right:1px solid #7f7f7f; text-align:center; vertical-align:top;">
       <?php if ($imgLogoPdf): ?>
       <img src="<?= $imgLogoPdf ?>" style="max-height:46px; max-width:120px;">
       <?php endif; ?>
     </td>
-    <td style="width:48%; padding:7px; border-right:1px solid #7f7f7f; text-align:center; vertical-align:middle;">
+    <td style="width:48%; padding:7px; border-right:1px solid #7f7f7f; text-align:center; vertical-align:top;">
       <span style="font-size:14px; font-weight:bold;">Orden de Compra</span>
     </td>
     <td style="width:30%; padding:0; vertical-align:top;">
-      <table style="width:100%; border-collapse:collapse; font-size:8px; height:100%;">
-        <tr><td style="padding:3px 7px; border-bottom:1px solid #ccc;"><b>Codigo:</b>SGC-AP-GFI-FT-005</td></tr>
+      <table style="width:100%; border-collapse:collapse; font-size:8px;">
+        <tr><td style="padding:3px 7px; border-bottom:1px solid #ccc;"><b>Codigo:</b> SGC-AP-GFI-FT-005</td></tr>
         <tr><td style="padding:3px 7px; border-bottom:1px solid #ccc;"><b>Fecha:</b> <?= htmlspecialchars($fechaFmt) ?></td></tr>
-        <tr><td style="padding:3px 7px;"><b>Version:</b>001</td></tr>
+        <tr><td style="padding:3px 7px;"><b>Version:</b> 001</td></tr>
       </table>
     </td>
   </tr>
 </table>
 
 <!-- ══ EMPRESA + PO BOX ══ -->
-<table style="margin-bottom:7px;">
+<table style="margin-bottom:7px; table-layout:fixed; width:100%;">
   <tr>
-    <td style="vertical-align:top;">
+    <td style="vertical-align:top; padding-right:8px;">
       <div style="font-size:9.5px; font-weight:bold;">Reg.Mercantil No.121529 // Nit.900.535.843-3</div>
       <div style="font-size:8px; font-style:italic; margin-top:2px;">Cra 10 No. 9-80 Barrio Cooperativa</div>
       <div style="font-size:8px; font-style:italic; margin-top:1px;">Telefax: (4) 322 27 79 &nbsp;Cél.317 3453644</div>
-      <div style="font-size:8px; margin-top:1px;">&nbsp;&nbsp;&nbsp;&nbsp;Florencia-Caquetá- Colombia</div>
+      <div style="font-size:8px; margin-top:1px;">Florencia-Caquetá- Colombia</div>
       <div style="font-size:7.5px; margin-top:2px;">https://impobiomedical.impomin.com/ &nbsp;contabilidad@impomin.com &nbsp;impobiomedical@impomin.com</div>
     </td>
-    <td style="vertical-align:top; text-align:right; white-space:nowrap; width:160px;">
-      <table style="border-collapse:collapse; margin-left:auto;">
+    <td style="vertical-align:top; text-align:right; width:170px;">
+      <table style="border-collapse:collapse; margin-left:auto; width:170px;">
         <tr>
-          <td class="h-azul" style="padding:5px 12px; border:1px solid #1f3864; width:46px; text-align:center; font-size:9px;">P.O</td>
-          <td style="font-size:14px; font-weight:bold; padding:3px 14px; border:1px solid #7f7f7f; border-left:none; text-align:center; min-width:72px;"><?= $po ?></td>
+          <td class="h-azul" style="padding:5px 10px; border:1px solid #1f3864; width:46px; text-align:center; font-size:9px;">P.O</td>
+          <td style="font-size:14px; font-weight:bold; padding:3px 10px; border:1px solid #7f7f7f; border-left:none; text-align:center; width:124px;"><?= $po ?></td>
         </tr>
         <tr>
-          <td class="h-azul" style="padding:5px 12px; border:1px solid #1f3864; border-top:none; text-align:center; font-size:9px;">DATE:</td>
-          <td style="font-size:8px; padding:4px 14px; border:1px solid #7f7f7f; border-top:none; border-left:none; text-align:center;"><?= htmlspecialchars($fechaFmt) ?></td>
+          <td class="h-azul" style="padding:5px 10px; border:1px solid #1f3864; border-top:none; text-align:center; font-size:9px;">DATE:</td>
+          <td style="font-size:8px; padding:4px 10px; border:1px solid #7f7f7f; border-top:none; border-left:none; text-align:center;"><?= htmlspecialchars($fechaFmt) ?></td>
         </tr>
       </table>
     </td>
@@ -175,20 +176,20 @@ table { width:100%; border-collapse:collapse; }
 </table>
 
 <!-- ══ TO / TIPO CONTRIBUYENTE ══ -->
-<table style="margin-bottom:6px;">
+<table style="margin-bottom:6px; table-layout:fixed; width:100%;">
   <tr>
-    <td class="h-azul" style="padding:4px 8px; border:1px solid #7f7f7f; width:68px; text-align:center; vertical-align:middle; font-size:9px;">TO:</td>
-    <td style="padding:4px 10px; border:1px solid #7f7f7f; border-left:none; font-size:10px; font-weight:bold; text-align:center; vertical-align:middle;">
+    <td class="h-azul" style="padding:4px 8px; border:1px solid #7f7f7f; width:68px; text-align:center; font-size:9px;">TO:</td>
+    <td style="padding:4px 10px; border:1px solid #7f7f7f; border-left:none; font-size:10px; font-weight:bold; text-align:center;">
       <?= mb_strtoupper(htmlspecialchars($proveedor)) ?>
     </td>
-    <td class="h-azul" style="padding:4px 5px; border:1px solid #7f7f7f; border-left:none; width:30px; text-align:center; vertical-align:middle; font-size:9px;">NIT</td>
-    <td style="padding:4px 9px; border:1px solid #7f7f7f; border-left:none; font-size:9px; font-weight:bold; text-align:center; vertical-align:middle; width:115px;">
+    <td class="h-azul" style="padding:4px 5px; border:1px solid #7f7f7f; border-left:none; width:30px; text-align:center; font-size:9px;">NIT</td>
+    <td style="padding:4px 9px; border:1px solid #7f7f7f; border-left:none; font-size:9px; font-weight:bold; text-align:center; width:115px;">
       <?= htmlspecialchars($proveedorNit) ?>
     </td>
   </tr>
   <tr>
-    <td class="h-azul" style="padding:4px 5px; border:1px solid #7f7f7f; border-top:none; text-align:center; vertical-align:middle; line-height:1.4; font-size:8px;">TIPO DE<br>CONTRIBUYENTE</td>
-    <td colspan="3" style="padding:4px 10px; border:1px solid #7f7f7f; border-top:none; border-left:none; font-size:9.5px; font-weight:bold; text-align:center; vertical-align:middle;">
+    <td class="h-azul" style="padding:4px 5px; border:1px solid #7f7f7f; border-top:none; text-align:center; font-size:8px; line-height:1.4;">TIPO DE<br>CONTRIBUYENTE</td>
+    <td colspan="3" style="padding:4px 10px; border:1px solid #7f7f7f; border-top:none; border-left:none; font-size:9.5px; font-weight:bold; text-align:center;">
       <?= mb_strtoupper(htmlspecialchars($tipoContrib)) ?>
     </td>
   </tr>
