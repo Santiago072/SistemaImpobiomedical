@@ -57,7 +57,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <?php endforeach; ?>
                 </div>
                 <?php elseif (count($proveedores) === 1): ?>
-                <div style="margin-bottom:14px; padding:8px 14px; background:rgba(45,190,203,.08); border:1px solid rgba(45,190,203,.2); border-radius:8px; font-size:12px; color:rgba(255,255,255,.75);">
+                <div style="margin-bottom:14px; padding:8px 14px; background:#e8f8f8; border:1px solid #10757e; border-radius:8px; font-size:12px; color:#0a4f55; font-weight:600;">
                     <i class="bi bi-building"></i> Proveedor: <strong><?= htmlspecialchars($proveedores[0]) ?></strong>
                 </div>
                 <?php endif; ?>
@@ -152,7 +152,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                                                data-id="<?= (int)$it['id'] ?>"
                                                title="Máx: <?= $qty ?>"
                                                style="width:65px; padding:4px 6px; border-radius:6px; border:1.5px solid rgba(45,190,203,.3); background:rgba(255,255,255,.08); color:inherit; font-size:13px; font-weight:600; text-align:center;">
-                                        <div style="font-size:10px; color:var(--text-soft); margin-top:2px;">de <?= $qty ?></div>
                                     </td>
                                     <td style="text-align:right; white-space:nowrap;">$ <?= number_format($pu, 0, ',', '.') ?></td>
                                     <td style="text-align:right; white-space:nowrap;"><?= $aplica ? $pct . '%' : '0%' ?></td>
@@ -328,30 +327,37 @@ NOTA:
 
     // ── Actualizar cantidad hidden + total de fila ─────────────────────────
     document.querySelectorAll('.qty-input').forEach(inp => {
+        // Evitar que Enter en este input envíe el form
+        inp.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') e.preventDefault();
+        });
         inp.addEventListener('input', function() {
-            const id     = this.dataset.id;
-            const max    = parseInt(this.max) || 9999;
-            let val      = parseInt(this.value) || 1;
+            const id  = this.dataset.id;
+            const max = parseInt(this.max) || 9999;
+            let val   = parseInt(this.value) || 1;
             if (val < 1)   { val = 1;   this.value = 1; }
             if (val > max) { val = max; this.value = max; }
 
-            // Actualizar hidden de cantidad
             const hdnQty = document.getElementById('hdn-qty-' + id);
             if (hdnQty) hdnQty.value = val;
 
-            // Recalcular total de la fila
             const celdaTot = this.closest('tr').querySelector('.celda-total');
             if (celdaTot) {
-                const pu    = parseFloat(celdaTot.dataset.pu)    || 0;
-                const pct   = parseFloat(celdaTot.dataset.pct)   || 0;
-                const aplica= parseInt(celdaTot.dataset.aplica)  === 1;
+                const pu    = parseFloat(celdaTot.dataset.pu)   || 0;
+                const pct   = parseFloat(celdaTot.dataset.pct)  || 0;
+                const aplica= parseInt(celdaTot.dataset.aplica) === 1;
                 const sub   = pu * val;
                 const iva   = aplica ? sub * (pct / 100) : 0;
-                const tot   = sub + iva;
-                celdaTot.textContent = '$ ' + Math.round(tot).toLocaleString('es-CO');
+                celdaTot.textContent = '$ ' + Math.round(sub + iva).toLocaleString('es-CO');
             }
-
             actualizarResumen();
+        });
+    });
+
+    // Evitar que Enter en el campo código dispare el submit
+    document.querySelectorAll('.oc-cod-input').forEach(inp => {
+        inp.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') e.preventDefault();
         });
     });
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * Vista: PDF de Orden de Compra — IMPOMIN S.A.S
- * Variables disponibles: $ctrl (OrdenCompraController)
+ * Diseño fiel a la imagen de referencia.
  */
 
 // Limpiar cualquier buffer previo (incluyendo el ob_start() de index.php)
@@ -13,18 +13,15 @@ try {
     $data = $ctrl->generarPdf();
 } catch (Exception $e) {
     http_response_code(500);
-    die('Error al generar la orden: ' . htmlspecialchars($e->getMessage()));
+    die('Error: ' . htmlspecialchars($e->getMessage()));
 }
 
 $orden  = $data['orden'];
 $items  = $data['items'];
 $forzar = $data['forzar'];
 
-if (empty($items)) {
-    die('La orden de compra no tiene ítems.');
-}
+if (empty($items)) die('La orden no tiene ítems.');
 
-// ── Datos ─────────────────────────────────────────────────────────────────────
 $po              = (int)$orden['numero_po'];
 $fecha           = $orden['fecha'] ?? date('Y-m-d');
 $proveedor       = $orden['proveedor'] ?? '';
@@ -36,19 +33,17 @@ $deptCompras     = $orden['departamento_compras'] ?? '';
 $nota            = $orden['nota'] ?? '';
 $retencionPct    = (float)($orden['retencion'] ?? 2.5);
 
-// ── Fecha en inglés ───────────────────────────────────────────────────────────
 date_default_timezone_set('America/Bogota');
 $meses    = ['January','February','March','April','May','June',
              'July','August','September','October','November','December'];
 $fechaObj = new DateTime($fecha);
 $fechaFmt = $meses[(int)$fechaObj->format('n') - 1] . ' ' . $fechaObj->format('j') . ', ' . $fechaObj->format('Y');
 
-// ── DomPDF ────────────────────────────────────────────────────────────────────
 require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-function imgB64PO(string $ruta): string {
+function imgB64OC2(string $ruta): string {
     if (!file_exists($ruta)) return '';
     $ext  = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
     $mime = in_array($ext, ['jpg','jpeg']) ? 'jpeg' : 'png';
@@ -57,29 +52,26 @@ function imgB64PO(string $ruta): string {
 }
 
 $logoDir    = dirname(__DIR__, 3) . '/logo/';
-$imgLogoPdf = imgB64PO($logoDir . 'logopdf.png');
+$imgLogoPdf = imgB64OC2($logoDir . 'logopdf.png');
 
-// ── Cálculos ──────────────────────────────────────────────────────────────────
-$subtotal = 0;
-$totalIva = 0;
+// Cálculos
+$subtotal = 0; $totalIva = 0;
 foreach ($items as $it) {
-    $pu      = (float)$it['precio_unit'];
-    $qty     = (int)$it['cantidad'];
-    $pct     = (float)($it['porcentaje_iva'] ?? 19);
-    $aplica  = strtolower($it['iva']) === 'si';
-    $sub     = $pu * $qty;
+    $pu     = (float)$it['precio_unit'];
+    $qty    = (int)$it['cantidad'];
+    $pct    = (float)($it['porcentaje_iva'] ?? 19);
+    $aplica = strtolower($it['iva']) === 'si';
+    $sub    = $pu * $qty;
     $subtotal += $sub;
     $totalIva += $aplica ? $sub * ($pct / 100) : 0;
 }
 $retencion = $subtotal * ($retencionPct / 100);
 $total     = $subtotal + $totalIva - $retencion;
 
-// ── Paleta de colores (fiel a imagen de referencia) ───────────────────────────
-// Azul encabezados:  #2f5496
-// Azul filas pares:  #b8cce4
-// Azul filas impares:#dce6f1
-// Amarillo totales:  #ffffcc
-// Azul total final:  #2f5496 fondo / blanco texto
+// Formato número colombiano: punto miles, sin decimales
+function fmt(float $n): string {
+    return '$&nbsp;' . number_format($n, 0, ',', '.');
+}
 
 ob_start();
 ?>
@@ -90,124 +82,80 @@ ob_start();
 <title>P.O. <?= $po ?></title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body {
-    font-family: Arial, sans-serif;
-    font-size: 8.5px;
-    color: #000;
-    padding: 10px 14px;   /* margen compacto */
-}
+body { font-family:Arial, sans-serif; font-size:8.5px; color:#000; padding:10px 14px; }
 table { width:100%; border-collapse:collapse; }
+
+/* Paleta fiel a imagen de referencia */
+/* Azul oscuro encabezados */ .h-azul { background:#1f3864; color:#fff; font-weight:bold; }
+/* Azul medio filas pares  */ .f-azul  { background:#b8cce4; }
+/* Azul claro filas impares*/ .f-lblue { background:#dce6f1; }
+/* Amarillo totales        */ .f-amari { background:#ffffcc; }
+/* Sin fondo               */ .f-blanc { background:#ffffff; }
 
 /* Bordes */
 .b  { border:1px solid #7f7f7f; }
-.bb { border-bottom:1px solid #7f7f7f; }
-.bl { border-left:1px solid #7f7f7f; }
-.br { border-right:1px solid #7f7f7f; }
-.bt { border-top:1px solid #7f7f7f; }
+.tc { text-align:center; } .tr { text-align:right; } .tl { text-align:left; }
+.vm { vertical-align:middle; } .vt { vertical-align:top; }
+.nw { white-space:nowrap; }
 
-/* Alineación */
-.tc { text-align:center; }
-.tr { text-align:right;  }
-.tl { text-align:left;   }
-.vm { vertical-align:middle; }
-.vt { vertical-align:top;    }
-.nw { white-space:nowrap;    }
-.bold { font-weight:bold;    }
-
-/* ── Colores principales (paleta imagen referencia) ── */
-.bg-azul    { background:#2f5496; color:#fff; }   /* encabezados */
-.bg-fila-a  { background:#b8cce4; color:#000; }   /* filas pares */
-.bg-fila-b  { background:#dce6f1; color:#000; }   /* filas impares */
-.bg-amarillo{ background:#ffffcc; color:#000; }   /* totales sub/iva/ret */
-.bg-total   { background:#2f5496; color:#fff; }   /* fila TOTAL */
-.bg-total-v { background:#dce6f1; color:#000; }   /* valor TOTAL */
-
-/* ── Cabeceras de tabla ── */
+/* Cabeceras de la tabla de ítems */
 .th {
-    background:#2f5496; color:#fff;
-    font-weight:bold; font-size:8px;
-    padding:4px 3px;
-    border:1px solid #7f7f7f;
-    text-align:center;
+    background:#1f3864; color:#fff; font-weight:bold;
+    font-size:8px; padding:4px 4px;
+    border:1px solid #7f7f7f; text-align:center;
 }
 
-/* ── Totales ── */
-.tot-lbl {
-    font-weight:bold; text-align:right;
-    padding:3px 7px; border:1px solid #7f7f7f;
-    background:#ffffcc; font-size:8.5px;
-}
-.tot-val {
-    text-align:right; padding:3px 7px;
-    border:1px solid #7f7f7f;
-    font-size:9px; font-weight:bold;
-    background:#fff;
-}
-.grand-lbl {
-    font-weight:bold; text-align:right;
-    padding:4px 7px; border:1px solid #7f7f7f;
-    background:#2f5496; color:#fff; font-size:9px;
-}
-.grand-val {
-    text-align:right; padding:4px 7px;
-    border:1px solid #7f7f7f;
-    font-size:10px; font-weight:bold;
-    background:#dce6f1;
-}
+/* Totales: etiqueta */
+.tot-lbl { font-weight:bold; text-align:right; padding:3px 8px; border:1px solid #7f7f7f; background:#ffffcc; font-size:8.5px; }
+/* Totales: valor */
+.tot-val { text-align:right; padding:3px 8px; border:1px solid #7f7f7f; background:#fff; font-size:9.5px; font-weight:bold; }
+/* Total final: etiqueta */
+.tot-grand-lbl { font-weight:bold; text-align:right; padding:4px 8px; border:1px solid #7f7f7f; background:#1f3864; color:#fff; font-size:9px; }
+/* Total final: valor */
+.tot-grand-val { text-align:right; padding:4px 8px; border:1px solid #7f7f7f; background:#dce6f1; font-size:10.5px; font-weight:bold; }
 </style>
 </head>
 <body>
 
 <!-- ══ ENCABEZADO ══ -->
-<table style="border:1px solid #7f7f7f; margin-bottom:6px;">
+<table style="border:1px solid #7f7f7f; margin-bottom:7px;">
   <tr>
-    <!-- Logo -->
     <td style="width:22%; padding:5px 7px; border-right:1px solid #7f7f7f; text-align:center; vertical-align:middle;">
       <?php if ($imgLogoPdf): ?>
-      <img src="<?= $imgLogoPdf ?>" style="max-height:48px; max-width:125px;">
-      <?php else: ?>
-      <strong style="font-size:9px; color:#2f5496;">IMPOBIOMEDICAL</strong>
+      <img src="<?= $imgLogoPdf ?>" style="max-height:46px; max-width:120px;">
       <?php endif; ?>
     </td>
-    <!-- Título centrado -->
-    <td style="width:48%; padding:6px; border-right:1px solid #7f7f7f; text-align:center; vertical-align:middle;">
-      <div style="font-size:14px; font-weight:bold;">Orden de Compra</div>
+    <td style="width:48%; padding:7px; border-right:1px solid #7f7f7f; text-align:center; vertical-align:middle;">
+      <span style="font-size:14px; font-weight:bold;">Orden de Compra</span>
     </td>
-    <!-- Código/Fecha/Versión -->
-    <td style="width:30%; vertical-align:top; padding:0;">
-      <table style="width:100%; border-collapse:collapse; font-size:8px;">
-        <tr><td style="padding:3px 7px; border-bottom:1px solid #ccc;"><strong>Codigo:</strong> SGC-AP-GFI-FT-005</td></tr>
-        <tr><td style="padding:3px 7px; border-bottom:1px solid #ccc;"><strong>Fecha:</strong> <?= htmlspecialchars($fechaFmt) ?></td></tr>
-        <tr><td style="padding:3px 7px;"><strong>Version:</strong> 001</td></tr>
+    <td style="width:30%; padding:0; vertical-align:top;">
+      <table style="width:100%; border-collapse:collapse; font-size:8px; height:100%;">
+        <tr><td style="padding:3px 7px; border-bottom:1px solid #ccc;"><b>Codigo:</b>SGC-AP-GFI-FT-005</td></tr>
+        <tr><td style="padding:3px 7px; border-bottom:1px solid #ccc;"><b>Fecha:</b> <?= htmlspecialchars($fechaFmt) ?></td></tr>
+        <tr><td style="padding:3px 7px;"><b>Version:</b>001</td></tr>
       </table>
     </td>
   </tr>
 </table>
 
-<!-- ══ EMPRESA + P.O. BOX ══ -->
-<table style="margin-bottom:6px;">
+<!-- ══ EMPRESA + PO BOX ══ -->
+<table style="margin-bottom:7px;">
   <tr>
-    <!-- Datos empresa izquierda -->
-    <td style="vertical-align:top; padding-right:12px;">
+    <td style="vertical-align:top;">
       <div style="font-size:9.5px; font-weight:bold;">Reg.Mercantil No.121529 // Nit.900.535.843-3</div>
       <div style="font-size:8px; font-style:italic; margin-top:2px;">Cra 10 No. 9-80 Barrio Cooperativa</div>
-      <div style="font-size:8px; font-style:italic; margin-top:1px;">Telefax: (4) 322 27 79 &nbsp; Cél.317 3453644</div>
-      <div style="font-size:8px; margin-top:1px;">Florencia-Caquetá- Colombia</div>
-      <div style="font-size:7.5px; margin-top:2px;">
-        https://impobiomedical.impomin.com/&nbsp;&nbsp;
-        contabilidad@impomin.com&nbsp;&nbsp;
-        impobiomedical@impomin.com
-      </div>
+      <div style="font-size:8px; font-style:italic; margin-top:1px;">Telefax: (4) 322 27 79 &nbsp;Cél.317 3453644</div>
+      <div style="font-size:8px; margin-top:1px;">&nbsp;&nbsp;&nbsp;&nbsp;Florencia-Caquetá- Colombia</div>
+      <div style="font-size:7.5px; margin-top:2px;">https://impobiomedical.impomin.com/ &nbsp;contabilidad@impomin.com &nbsp;impobiomedical@impomin.com</div>
     </td>
-    <!-- P.O. + DATE box derecha -->
     <td style="vertical-align:top; text-align:right; white-space:nowrap; width:160px;">
       <table style="border-collapse:collapse; margin-left:auto;">
         <tr>
-          <td class="bg-azul" style="font-weight:bold; font-size:9px; padding:5px 12px; border:1px solid #2f5496; text-align:center; width:48px;">P.O</td>
-          <td style="font-size:13px; font-weight:bold; padding:3px 14px; border:1px solid #7f7f7f; border-left:none; text-align:center; min-width:70px;"><?= $po ?></td>
+          <td class="h-azul" style="padding:5px 12px; border:1px solid #1f3864; width:46px; text-align:center; font-size:9px;">P.O</td>
+          <td style="font-size:14px; font-weight:bold; padding:3px 14px; border:1px solid #7f7f7f; border-left:none; text-align:center; min-width:72px;"><?= $po ?></td>
         </tr>
         <tr>
-          <td class="bg-azul" style="font-weight:bold; font-size:9px; padding:5px 12px; border:1px solid #2f5496; border-top:none; text-align:center;">DATE:</td>
+          <td class="h-azul" style="padding:5px 12px; border:1px solid #1f3864; border-top:none; text-align:center; font-size:9px;">DATE:</td>
           <td style="font-size:8px; padding:4px 14px; border:1px solid #7f7f7f; border-top:none; border-left:none; text-align:center;"><?= htmlspecialchars($fechaFmt) ?></td>
         </tr>
       </table>
@@ -216,124 +164,110 @@ table { width:100%; border-collapse:collapse; }
 </table>
 
 <!-- ══ TO / TIPO CONTRIBUYENTE ══ -->
-<table style="margin-bottom:5px;">
+<table style="margin-bottom:6px;">
   <tr>
-    <td class="bg-azul" style="font-weight:bold; font-size:8.5px; padding:4px 8px; border:1px solid #7f7f7f; width:70px; text-align:center; vertical-align:middle;">TO:</td>
-    <td style="padding:4px 10px; border:1px solid #7f7f7f; border-left:none; font-size:9.5px; font-weight:bold; text-align:center; vertical-align:middle;">
+    <td class="h-azul" style="padding:4px 8px; border:1px solid #7f7f7f; width:68px; text-align:center; vertical-align:middle; font-size:9px;">TO:</td>
+    <td style="padding:4px 10px; border:1px solid #7f7f7f; border-left:none; font-size:10px; font-weight:bold; text-align:center; vertical-align:middle;">
       <?= mb_strtoupper(htmlspecialchars($proveedor)) ?>
     </td>
-    <td class="bg-azul" style="font-weight:bold; font-size:8.5px; padding:4px 5px; border:1px solid #7f7f7f; border-left:none; width:32px; text-align:center; vertical-align:middle;">NIT</td>
+    <td class="h-azul" style="padding:4px 5px; border:1px solid #7f7f7f; border-left:none; width:30px; text-align:center; vertical-align:middle; font-size:9px;">NIT</td>
     <td style="padding:4px 9px; border:1px solid #7f7f7f; border-left:none; font-size:9px; font-weight:bold; text-align:center; vertical-align:middle; width:115px;">
       <?= htmlspecialchars($proveedorNit) ?>
     </td>
   </tr>
   <tr>
-    <td class="bg-azul" style="font-weight:bold; font-size:8px; padding:4px 5px; border:1px solid #7f7f7f; border-top:none; text-align:center; vertical-align:middle; line-height:1.4;">TIPO DE<br>CONTRIBUYENTE</td>
+    <td class="h-azul" style="padding:4px 5px; border:1px solid #7f7f7f; border-top:none; text-align:center; vertical-align:middle; line-height:1.4; font-size:8px;">TIPO DE<br>CONTRIBUYENTE</td>
     <td colspan="3" style="padding:4px 10px; border:1px solid #7f7f7f; border-top:none; border-left:none; font-size:9.5px; font-weight:bold; text-align:center; vertical-align:middle;">
       <?= mb_strtoupper(htmlspecialchars($tipoContrib)) ?>
     </td>
   </tr>
 </table>
 
-<!-- ══ TABLA DE ÍTEMS ══ -->
+<!-- ══ TABLA ITEMS ══ -->
+<!-- Fila PURCHASE DEPARTMENT | IVA | PAYMENT TERMS -->
 <table>
-  <!-- PURCHASE DEPARTMENT / IVA / PAYMENT TERMS -->
-  <tr>
-    <td colspan="4" class="bg-azul" style="font-weight:bold; font-size:9px; padding:4px; border:1px solid #2f5496; text-align:center; letter-spacing:0.5px;">PURCHASE DEPARTMENT</td>
-    <td class="bg-azul" style="font-weight:bold; font-size:9px; padding:4px; border:1px solid #2f5496; text-align:center;">IVA</td>
-    <td colspan="3" class="bg-azul" style="font-weight:bold; font-size:9px; padding:4px; border:1px solid #2f5496; text-align:center; letter-spacing:0.5px;">PAYMENT TERMS</td>
-  </tr>
-  <tr>
-    <td colspan="4" style="text-align:center; font-size:8px; padding:2px 4px; border:1px solid #7f7f7f; border-top:none; background:#dce6f1;"><?= htmlspecialchars($deptCompras) ?></td>
-    <td style="text-align:center; font-size:8px; padding:2px 4px; border:1px solid #7f7f7f; border-top:none; border-left:none; background:#dce6f1;"><?= htmlspecialchars($iva) ?></td>
-    <td colspan="3" style="text-align:center; font-size:8px; padding:2px 4px; border:1px solid #7f7f7f; border-top:none; border-left:none; background:#dce6f1;"><?= htmlspecialchars($condicionesPago) ?></td>
-  </tr>
+<tr>
+  <td colspan="4" class="h-azul" style="padding:4px; border:1px solid #1f3864; text-align:center; font-size:9px; letter-spacing:0.5px;">PURCHASE DEPARTMENT</td>
+  <td class="h-azul" style="padding:4px; border:1px solid #1f3864; text-align:center; font-size:9px;">IVA</td>
+  <td colspan="2" class="h-azul" style="padding:4px; border:1px solid #1f3864; text-align:center; font-size:9px; letter-spacing:0.5px;">PAYMENT TERMS</td>
+</tr>
+<tr>
+  <td colspan="4" class="f-lblue" style="text-align:center; font-size:8px; padding:2px 4px; border:1px solid #7f7f7f; border-top:none;"><?= htmlspecialchars($deptCompras) ?></td>
+  <td class="f-lblue" style="text-align:center; font-size:8px; padding:2px 4px; border:1px solid #7f7f7f; border-top:none; border-left:none;"><?= htmlspecialchars($iva) ?></td>
+  <td colspan="2" class="f-lblue" style="text-align:center; font-size:8px; padding:2px 4px; border:1px solid #7f7f7f; border-top:none; border-left:none;"><?= htmlspecialchars($condicionesPago) ?></td>
+</tr>
 
-  <!-- Cabeceras columnas -->
-  <tr>
-    <th class="th" style="width:8%;">COD</th>
-    <th class="th" style="width:6%;">CANT</th>
-    <th class="th" style="width:40%;" colspan="2">DESCRIPCION Y REQUISITOS</th>
-    <th class="th" style="width:5%;">% IVA</th>
-    <th class="th" style="width:14%;">UNIT</th>
-    <th class="th" style="width:14%;">TOTAL</th>
-    <th class="th" style="width:13%;">RET <?= number_format($retencionPct, 1) ?>%</th>
-  </tr>
+<!-- Cabeceras columnas — igual que imagen: COD | CANT | DESCRIPCION Y REQUISITOS | %IVA | (imagen) | UNIT | TOTAL -->
+<tr>
+  <th class="th" style="width:9%;">COD</th>
+  <th class="th" style="width:6%;">CANT</th>
+  <th class="th" style="width:42%;" colspan="2">DESCRIPCION Y REQUISITOS</th>
+  <th class="th" style="width:5%;">% IVA</th>
+  <th class="th" style="width:16%;">UNIT</th>
+  <th class="th" style="width:16%;">TOTAL</th>
+</tr>
 
-  <!-- Filas de ítems — solo título + cod proveedor, sin descripción larga -->
-  <?php $idx = 0; foreach ($items as $it):
-      $pu      = (float)$it['precio_unit'];
-      $qty     = (int)$it['cantidad'];
-      $pct     = (float)($it['porcentaje_iva'] ?? 19);
-      $aplica  = strtolower($it['iva']) === 'si';
-      $sub     = $pu * $qty;
-      $ivaFila = $aplica ? $sub * ($pct / 100) : 0;
-      $totFila = $sub + $ivaFila;
-      $retFila = $sub * ($retencionPct / 100);
-      $cls     = ($idx % 2 === 0) ? 'bg-fila-a' : 'bg-fila-b';
-      $idx++;
+<!-- Filas de ítems -->
+<?php $idx = 0; foreach ($items as $it):
+    $pu      = (float)$it['precio_unit'];
+    $qty     = (int)$it['cantidad'];
+    $pct     = (float)($it['porcentaje_iva'] ?? 19);
+    $aplica  = strtolower($it['iva']) === 'si';
+    $sub     = $pu * $qty;
+    $ivaFila = $aplica ? $sub * ($pct / 100) : 0;
+    $totFila = $sub + $ivaFila;
+    $cls     = ($idx % 2 === 0) ? 'f-azul' : 'f-lblue';
+    $idx++;
+    $codProv  = trim($it['codigo_proveedor'] ?? '');
+    $fotoVal  = $it['foto'] ?? '';
+    $imgItem  = !empty($fotoVal) ? imgB64OC2(dirname(__DIR__, 3) . '/uploads/' . $fotoVal) : '';
+?>
+<tr class="<?= $cls ?>">
+  <td class="b tc vm" style="padding:7px 3px; font-size:8px; font-weight:bold;"><?= htmlspecialchars($codProv) ?></td>
+  <td class="b tc vm" style="padding:7px 2px; font-size:10.5px; font-weight:bold;"><?= $qty ?></td>
+  <!-- Título del producto — en mayúsculas, centrado, sin descripción -->
+  <td class="b tc vm" style="padding:7px 8px; font-size:9px; font-weight:bold;" <?= $imgItem ? '' : 'colspan="2"' ?>>
+    <?= mb_strtoupper(htmlspecialchars($it['titulo'])) ?>
+  </td>
+  <?php if ($imgItem): ?>
+  <td class="b tc vm" style="padding:3px; width:58px;">
+    <img src="<?= $imgItem ?>" style="max-height:52px; max-width:62px;">
+  </td>
+  <?php endif; ?>
+  <td class="b tc vm nw" style="padding:6px 3px;"><?= $aplica ? number_format($pct, 0) . '%' : '0%' ?></td>
+  <td class="b tr vm nw" style="padding:6px 6px;"><?= fmt($pu) ?></td>
+  <td class="b tr vm nw" style="padding:6px 6px; font-weight:bold;"><?= fmt($totFila) ?></td>
+</tr>
+<?php endforeach; ?>
 
-      // Imagen del producto
-      $fotoVal = $it['foto'] ?? '';
-      $imgItem = '';
-      if (!empty($fotoVal)) {
-          $imgItem = imgB64PO(dirname(__DIR__, 3) . '/uploads/' . $fotoVal);
-      }
-      $codProv = trim($it['codigo_proveedor'] ?? '');
-  ?>
-  <tr class="<?= $cls ?>">
-    <!-- COD -->
-    <td class="b tc vm" style="padding:6px 3px; font-size:8px; font-weight:bold;"><?= htmlspecialchars($codProv) ?></td>
-    <!-- CANT -->
-    <td class="b tc vm" style="padding:6px 2px; font-size:10px; font-weight:bold;"><?= $qty ?></td>
-    <!-- DESCRIPCIÓN — solo título en mayúsculas -->
-    <td class="b tl vm" style="padding:6px 8px;" <?= $imgItem ? '' : 'colspan="2"' ?>>
-      <strong style="font-size:9px; letter-spacing:0.2px;"><?= mb_strtoupper(htmlspecialchars($it['titulo'])) ?></strong>
-    </td>
-    <!-- Imagen (si existe) -->
-    <?php if ($imgItem): ?>
-    <td class="b tc vm" style="padding:3px; width:60px;">
-      <img src="<?= $imgItem ?>" style="max-height:55px; max-width:65px;">
-    </td>
-    <?php endif; ?>
-    <!-- % IVA -->
-    <td class="b tc vm nw" style="padding:4px 3px;"><?= $aplica ? number_format($pct, 0) . '%' : '0%' ?></td>
-    <!-- UNIT -->
-    <td class="b tr vm nw" style="padding:4px 5px;">&nbsp;$ <?= number_format($pu, 0, ',', '.') ?></td>
-    <!-- TOTAL -->
-    <td class="b tr vm nw" style="padding:4px 5px; font-weight:bold;">&nbsp;$ <?= number_format($totFila, 0, ',', '.') ?></td>
-    <!-- RET -->
-    <td class="b tr vm nw" style="padding:4px 5px;">&nbsp;$ <?= number_format($retFila, 0, ',', '.') ?></td>
-  </tr>
-  <?php endforeach; ?>
-
-  <!-- Nota (izquierda) + Totales (derecha) -->
-  <tr>
-    <td colspan="5" rowspan="4"
-        style="border:1px solid #7f7f7f; padding:7px 9px; font-size:8px; vertical-align:top; background:#fff; line-height:1.7;">
-      <?= nl2br(htmlspecialchars($nota)) ?>
-    </td>
-    <td class="tot-lbl">SUBTOTAL</td>
-    <td colspan="2" class="tot-val">&nbsp;$ <?= number_format($subtotal, 0, ',', '.') ?></td>
-  </tr>
-  <tr>
-    <td class="tot-lbl">IVA</td>
-    <td colspan="2" class="tot-val">&nbsp;$ <?= number_format($totalIva, 0, ',', '.') ?></td>
-  </tr>
-  <tr>
-    <td class="tot-lbl">RET <?= number_format($retencionPct, 1) ?>%</td>
-    <td colspan="2" class="tot-val">&nbsp;$ <?= number_format($retencion, 0, ',', '.') ?></td>
-  </tr>
-  <tr>
-    <td class="grand-lbl">TOTAL</td>
-    <td colspan="2" class="grand-val">&nbsp;$ <?= number_format($total, 0, ',', '.') ?></td>
-  </tr>
+<!-- Fila nota + totales -->
+<!-- nota ocupa cols 1-4, rowspan 4; totales en las 3 cols de la derecha -->
+<tr>
+  <td colspan="4" rowspan="4"
+      style="border:1px solid #7f7f7f; padding:8px 10px; font-size:8px; vertical-align:top; background:#fff; line-height:1.75;">
+    <?= nl2br(htmlspecialchars($nota)) ?>
+  </td>
+  <td class="tot-lbl">SUBTOTAL</td>
+  <td colspan="2" class="tot-val"><?= fmt($subtotal) ?></td>
+</tr>
+<tr>
+  <td class="tot-lbl">IVA</td>
+  <td colspan="2" class="tot-val"><?= fmt($totalIva) ?></td>
+</tr>
+<tr>
+  <td class="tot-lbl">RET <?= number_format($retencionPct, 1) ?>%</td>
+  <td colspan="2" class="tot-val"><?= fmt($retencion) ?></td>
+</tr>
+<tr>
+  <td class="tot-grand-lbl">TOTAL</td>
+  <td colspan="2" class="tot-grand-val"><?= fmt($total) ?></td>
+</tr>
 </table>
 
 <!-- ══ FOOTER ══ -->
 <table style="margin-top:6px; border:1px solid #7f7f7f;">
   <tr>
-    <td style="width:30%; padding:4px 7px; border-right:1px solid #7f7f7f; font-size:7.5px; color:#333; vertical-align:middle;">
+    <td style="width:30%; padding:4px 7px; border-right:1px solid #7f7f7f; font-size:7.5px; vertical-align:middle;">
       Documentos de: Sistema de Gestión de Calidad
     </td>
     <td style="width:38%; padding:4px 7px; border-right:1px solid #7f7f7f; text-align:center; font-size:8px; vertical-align:middle;">
@@ -360,9 +294,7 @@ $dompdf->loadHtml($html, 'UTF-8');
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
-while (ob_get_level()) {
-    ob_end_clean();
-}
+while (ob_get_level()) ob_end_clean();
 
 $dompdf->stream("orden_compra_PO{$po}.pdf", ['Attachment' => (bool)$forzar]);
 exit();
