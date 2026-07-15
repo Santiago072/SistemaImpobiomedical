@@ -112,7 +112,6 @@ class OrdenCompraController
 
         // Insertar los ítems seleccionados
         $itemsData = $_POST['items_data'] ?? [];
-        error_log('[ORDEN_CREAR] items_data recibido: ' . json_encode($itemsData));
         foreach ($itemsIds as $itemId) {
             $itemId = (int)$itemId;
             $d      = $itemsData[$itemId] ?? [];
@@ -124,8 +123,6 @@ class OrdenCompraController
             $precioUnit      = (float)($d['precio'] ?? 0);
             $ivaItem         = sanitizar_entrada($d['iva'] ?? 'si');
             $pctIva          = (float)($d['porcentaje_iva'] ?? 19);
-
-            error_log("[ORDEN_CREAR] item=$itemId cod_prov='$codigoProveedor' d_raw=" . json_encode($d['codigo_proveedor'] ?? 'NO_KEY'));
 
             $this->model->insertarItem(
                 $ordenId, $itemId, $codigoProveedor,

@@ -86,7 +86,7 @@ class OrdenCompraModel
               cantidad, precio_unit, iva, porcentaje_iva, total)
              VALUES (?,?,?,?,?,?,?,?,?,?)");
         // i i s s s i d s d d  (10 parámetros)
-        mysqli_stmt_bind_param($stmt, 'iiissidsdd',
+        mysqli_stmt_bind_param($stmt, 'iisssidsdd',
             $ordenId, $cotizacionItemId, $codigoProveedor, $titulo, $descripcion,
             $cantidad, $precioUnit, $iva, $porcentajeIva, $total);
         $ok = mysqli_stmt_execute($stmt);
