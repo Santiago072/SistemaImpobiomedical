@@ -34,9 +34,9 @@ echo "[5/5] Ejecutando migraciones de base de datos..."
 # Leer DB_PASS desde config/.env del proyecto
 DB_PASS_LOCAL=$(grep '^DB_PASS=' config/.env 2>/dev/null | cut -d '=' -f2- | tr -d '\r')
 
-if [ -z "$DB_PASS_LOCAL" ]; then
-    echo "  ⚠️  No se encontró DB_PASS en config/.env — saltando migración automática."
-    echo "     Ejecuta manualmente: docker exec -i impobiomedical_db mariadb -u impo_user -p'TU_PASS' sistema_impobiomedical < ordenes_compra_bd.sql"
+if ! grep -q '^DB_PASS=' config/.env 2>/dev/null; then
+    echo "  ⚠️  No se encontró config/.env — saltando migración automática."
+    echo "     Ejecuta manualmente: docker exec -i impobiomedical_db mariadb -u impo_user -p'TU_PASS' sistema_impobiomedical < migraciones.sql"
 else
     # Esperar a que MariaDB esté lista (máx 30 segundos)
     echo "  Esperando que la base de datos esté lista..."
