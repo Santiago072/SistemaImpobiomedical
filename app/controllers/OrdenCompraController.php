@@ -112,6 +112,7 @@ class OrdenCompraController
 
         // Insertar los ítems seleccionados
         $itemsData = $_POST['items_data'] ?? [];
+        error_log('[ORDEN_CREAR] items_data recibido: ' . json_encode($itemsData));
         foreach ($itemsIds as $itemId) {
             $itemId = (int)$itemId;
             $d      = $itemsData[$itemId] ?? [];
