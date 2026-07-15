@@ -43,12 +43,14 @@ require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-function imgB64OC2(string $ruta): string {
-    if (!file_exists($ruta)) return '';
-    $ext  = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
-    $mime = in_array($ext, ['jpg','jpeg']) ? 'jpeg' : 'png';
-    $raw  = @file_get_contents($ruta);
-    return $raw ? 'data:image/' . $mime . ';base64,' . base64_encode($raw) : '';
+if (!function_exists('imgB64OC2')) {
+    function imgB64OC2(string $ruta): string {
+        if (!file_exists($ruta)) return '';
+        $ext  = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
+        $mime = in_array($ext, ['jpg','jpeg']) ? 'jpeg' : 'png';
+        $raw  = @file_get_contents($ruta);
+        return $raw ? 'data:image/' . $mime . ';base64,' . base64_encode($raw) : '';
+    }
 }
 
 $logoDir    = dirname(__DIR__, 3) . '/logo/';
@@ -69,8 +71,10 @@ $retencion = $subtotal * ($retencionPct / 100);
 $total     = $subtotal + $totalIva - $retencion;
 
 // Formato número colombiano: punto miles, sin decimales
-function fmt(float $n): string {
-    return '$&nbsp;' . number_format($n, 0, ',', '.');
+if (!function_exists('fmt')) {
+    function fmt(float $n): string {
+        return '$&nbsp;' . number_format($n, 0, ',', '.');
+    }
 }
 
 ob_start();
