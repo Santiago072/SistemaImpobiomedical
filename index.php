@@ -1,5 +1,14 @@
 <?php
-ob_start();
+// PDFs deben saltar el ob_start() global para no generar páginas en blanco
+// Detectar peticiones de PDF antes de abrir cualquier buffer
+$_modEarly  = $_GET['module'] ?? '';
+$_actEarly  = $_GET['action'] ?? '';
+if (($_modEarly === 'ordenes'      && $_actEarly === 'generar_pdf') ||
+    ($_modEarly === 'cotizaciones' && $_actEarly === 'generar_pdf')) {
+    // No hacer ob_start() — el PDF maneja su propio output
+} else {
+    ob_start();
+}
 /**
  * index.php — Front Controller / Router principal del Sistema Impobiomedical.
  *

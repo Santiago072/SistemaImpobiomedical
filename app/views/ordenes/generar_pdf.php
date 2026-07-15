@@ -4,11 +4,6 @@
  * Diseño fiel a la imagen de referencia.
  */
 
-// Limpiar cualquier buffer previo (incluyendo el ob_start() de index.php)
-while (ob_get_level()) {
-    ob_end_clean();
-}
-
 try {
     $data = $ctrl->generarPdf();
 } catch (Exception $e) {
