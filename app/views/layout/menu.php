@@ -64,6 +64,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <h3>Cotizaciones</h3>
             <li><a href="<?= $basePath ?>?module=cotizaciones&action=crear"><i class="fas fa-plus-circle"></i> Nueva Cotización</a></li>
             <li><a href="<?= $basePath ?>?module=cotizaciones&action=consultar"><i class="fas fa-search"></i> Consultar</a></li>
+            <li><a href="<?= $basePath ?>?module=ordenes&action=consultar"><i class="fas fa-cart-arrow-down"></i> Órdenes de Compra</a></li>
             <li><a href="<?= $basePath ?>?module=clientes"><i class="fas fa-building"></i> Gestión de Clientes</a></li>
         `
     };

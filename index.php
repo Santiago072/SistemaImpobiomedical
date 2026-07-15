@@ -90,6 +90,7 @@ $rutasMap = [
     'clientes'     => true,
     'productos'    => true,
     'cotizaciones' => true,
+    'ordenes'      => true,
 ];
 
 if (!array_key_exists($module, $rutasMap)) {
@@ -251,6 +252,38 @@ if ($module === 'cotizaciones') {
             $data = $ctrl->crear();
             extract($data);
             include __DIR__ . '/app/views/cotizaciones/crear.php';
+    }
+    exit();
+}
+
+if ($module === 'ordenes') {
+    $ctrl = new OrdenCompraController($db);
+    switch ($action) {
+        case 'seleccionar_items':
+            $data = $ctrl->seleccionarItems();
+            extract($data);
+            include __DIR__ . '/app/views/ordenes/seleccionar_items.php';
+            break;
+        case 'crear':
+            $ctrl->crear();
+            break;
+        case 'consultar':
+            $data    = $ctrl->consultar();
+            $pagBaseUrl = BASE_URL . '?module=ordenes&action=consultar';
+            extract($data);
+            include __DIR__ . '/app/views/ordenes/consultar.php';
+            break;
+        case 'generar_pdf':
+            include __DIR__ . '/app/views/ordenes/generar_pdf.php';
+            break;
+        case 'eliminar':
+            $ctrl->eliminar();
+            break;
+        default:
+            $data    = $ctrl->consultar();
+            $pagBaseUrl = BASE_URL . '?module=ordenes&action=consultar';
+            extract($data);
+            include __DIR__ . '/app/views/ordenes/consultar.php';
     }
     exit();
 }
