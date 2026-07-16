@@ -180,6 +180,7 @@ $totalValorFinal      = 0;
 
                                 <!-- Estampillas acumuladas + operaciones -->
                                 <td style="text-align:right; color:#7c3aed; font-weight:600; font-size:11px; vertical-align:top;">
+                                    <?php if ($acumEstamp > $acumCalib): ?>
                                     <div style="margin-bottom:3px;">
                                         <strong>$<?= number_format($acumEstamp, 0, ',', '.') ?></strong>
                                     </div>
@@ -199,6 +200,9 @@ $totalValorFinal      = 0;
                                         endforeach;
                                         ?>
                                     </div>
+                                    <?php endif; ?>
+                                    <?php else: ?>
+                                    <span style="color:#9ca3af;">-</span>
                                     <?php endif; ?>
                                 </td>
 
