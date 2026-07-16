@@ -92,7 +92,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                             <?php else: ?>
                                 <?php foreach ($items as $it):
                                     $qty   = (int)$it['cantidad'];
-                                    $pu    = (float)$it['precio'];
+                                    $pu    = (float)($it['precio_proveedor'] ?? 0);  // Precio del proveedor, no del cliente
                                     $pct   = (float)($it['porcentaje_iva'] ?? 19);
                                     $aplica= strtolower($it['iva']) === 'si';
                                     $sub   = $pu * $qty;
@@ -162,7 +162,17 @@ include dirname(__DIR__) . '/layout/menu.php';
                                                title="Máx: <?= $qty ?>"
                                                style="width:65px; padding:4px 6px; border-radius:6px; border:1.5px solid rgba(45,190,203,.3); background:rgba(255,255,255,.08); color:inherit; font-size:13px; font-weight:600; text-align:center;">
                                     </td>
-                                    <td style="text-align:right; white-space:nowrap;">$ <?= number_format($pu, 0, ',', '.') ?></td>
+                                    <td style="text-align:right; white-space:nowrap;">
+                                        <input type="number"
+                                               step="0.01"
+                                               value="<?= $pu ?>"
+                                               class="precio-input"
+                                               data-id="<?= (int)$it['id'] ?>"
+                                               style="width:90px; padding:4px 6px; border-radius:6px; border:1.5px solid rgba(45,190,203,.3); background:rgba(255,255,255,.08); color:inherit; font-size:13px; text-align:right;">
+                                        <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][precio_proveedor]"
+                                               id="precio-hidden-<?= (int)$it['id'] ?>"
+                                               value="<?= $pu ?>">
+                                    </td>
                                     <td style="text-align:right; white-space:nowrap;"><?= $aplica ? $pct . '%' : '0%' ?></td>
                                     <td class="celda-total" style="text-align:right; white-space:nowrap; font-weight:600;"
                                         data-pu="<?= $pu ?>" data-pct="<?= $pct ?>" data-aplica="<?= $aplica ? 1 : 0 ?>">
@@ -358,6 +368,35 @@ NOTA:
                 const sub   = pu * val;
                 const iva   = aplica ? sub * (pct / 100) : 0;
                 celdaTot.textContent = '$ ' + Math.round(sub + iva).toLocaleString('es-CO');
+            }
+            actualizarResumen();
+        });
+    });
+
+    // ── Actualizar precio y total de fila ──────────────────────────────────
+    document.querySelectorAll('.precio-input').forEach(inp => {
+        inp.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') e.preventDefault();
+        });
+        inp.addEventListener('input', function() {
+            const id  = this.dataset.id;
+            const pu  = parseFloat(this.value) || 0;
+
+            const hdnPrecio = document.getElementById('precio-hidden-' + id);
+            if (hdnPrecio) hdnPrecio.value = pu;
+
+            const row      = this.closest('tr');
+            const qtyInput = row.querySelector('.qty-input');
+            const celdaTot = row.querySelector('.celda-total');
+            
+            if (celdaTot && qtyInput) {
+                const qty   = parseInt(qtyInput.value) || 1;
+                const pct   = parseFloat(celdaTot.dataset.pct)  || 0;
+                const aplica= parseInt(celdaTot.dataset.aplica) === 1;
+                const sub   = pu * qty;
+                const iva   = aplica ? sub * (pct / 100) : 0;
+                celdaTot.textContent = '$ ' + Math.round(sub + iva).toLocaleString('es-CO');
+                celdaTot.dataset.pu = pu;  // Actualizar el dataset también
             }
             actualizarResumen();
         });
