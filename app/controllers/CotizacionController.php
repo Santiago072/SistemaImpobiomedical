@@ -259,6 +259,21 @@ class CotizacionController
         exit();
     }
 
+    // ── ELIMINAR COTIZACIÓN (Solo Admin) ──────────────────────────────────────
+    public function eliminar(): void
+    {
+        verificar_admin();
+
+        if (!validar_numero($_GET['id'] ?? '')) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
+
+        $this->model->eliminar((int)$_GET['id']);
+        header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+        exit();
+    }
+
     // ── FINALIZAR (Completar datos del cliente y generar número) ─────────────
     public function finalizar(): array
     {

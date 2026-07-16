@@ -372,4 +372,23 @@ class CotizacionModel
         mysqli_stmt_close($stmt);
         return $ok;
     }
+
+    // ── ELIMINAR ───────────────────────────────────────────────────────────────
+
+    public function eliminar(int $id): bool
+    {
+        // Primero eliminar todos los ítems asociados
+        $stmtItems = mysqli_prepare($this->db, 'DELETE FROM cotizacion_items WHERE cotizacion_id = ?');
+        mysqli_stmt_bind_param($stmtItems, 'i', $id);
+        mysqli_stmt_execute($stmtItems);
+        mysqli_stmt_close($stmtItems);
+
+        // Luego eliminar la cotización
+        $stmt = mysqli_prepare($this->db, 'DELETE FROM cotizaciones WHERE id = ?');
+        mysqli_stmt_bind_param($stmt, 'i', $id);
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $ok;
+    }
 }
+

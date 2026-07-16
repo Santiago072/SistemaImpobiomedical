@@ -84,6 +84,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         title="Generar Orden de Compra">
                                         <i class="bi bi-cart-plus-fill"></i> Orden
                                     </button>
+                                    <?php if ($_SESSION['rol'] === 'admin'): ?>
+                                    <a href="<?= $basePath ?>?module=cotizaciones&action=eliminar&id=<?= (int)$cot['id'] ?>"
+                                       class="mod-btn-del"
+                                       onclick="return confirm('¿Eliminar la cotización <?= htmlspecialchars($cot['numero_cotizacion']) ?>?')">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </a>
+                                    <?php endif; ?>
                                     <?php else: ?>
                                     <span class="mod-badge badge-red">No generado</span>
                                     <?php endif; ?>
