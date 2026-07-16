@@ -33,6 +33,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <input type="hidden" name="flete" id="hdnFlete" value="<?= htmlspecialchars($datos['flete'] ?? 0) ?>">
                 <input type="hidden" name="calibracion" id="hdnCalibracion" value="<?= htmlspecialchars($datos['calibracion'] ?? 0) ?>">
                 <input type="hidden" name="estampillas" id="hdnEstampillas" value="<?= htmlspecialchars($datos['estampillas'] ?? 0) ?>">
+                <input type="hidden" name="calc_ops" id="hdnCalcOps" value="<?= htmlspecialchars($datos['calc_ops'] ?? '{}') ?>">
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
                     <!-- Columna Izquierda -->
@@ -164,12 +165,33 @@ include dirname(__DIR__) . '/layout/menu.php';
 
 <script>
 // Estado inicial de la calculadora cargado desde la BD
-let calcState = {
-    utilidad:    [{ tipo: 'suma', valor: <?= floatval($datos['porcentaje_utilidad'] ?? 0) ?> }],
-    flete:       [{ tipo: 'suma', valor: <?= floatval($datos['flete'] ?? 0) ?> }],
-    calibracion: [{ tipo: 'suma', valor: <?= floatval($datos['calibracion'] ?? 0) ?> }],
-    estampillas: [{ tipo: 'suma', valor: <?= floatval($datos['estampillas'] ?? 0) ?> }]
-};
+<?php
+$calcOpsJson = $datos['calc_ops'] ?? '{}';
+$calcOps = json_decode($calcOpsJson, true) ?: [];
+
+// Si existe calc_ops con estructura completa, usarlo; si no, crear uno con los valores antiguos
+if (!empty($calcOps) && isset($calcOps['utilidad'])) {
+    // Ya tiene la estructura JSON de operaciones
+    $stateToLoad = $calcOps;
+} else {
+    // Valores antiguos: convertir a estructura de operaciones (compatibilidad)
+    $stateToLoad = [
+        'utilidad'    => (!empty($datos['porcentaje_utilidad']) || $datos['porcentaje_utilidad'] == 0) 
+                         ? [['tipo' => 'suma', 'valor' => (float)$datos['porcentaje_utilidad']]] 
+                         : [['tipo' => 'div_pct', 'valor' => 0.70]],
+        'flete'       => (!empty($datos['flete']) || $datos['flete'] == 0) 
+                         ? [['tipo' => 'suma', 'valor' => (float)$datos['flete']]] 
+                         : [],
+        'calibracion' => (!empty($datos['calibracion']) || $datos['calibracion'] == 0) 
+                         ? [['tipo' => 'suma', 'valor' => (float)$datos['calibracion']]] 
+                         : [],
+        'estampillas' => (!empty($datos['estampillas']) || $datos['estampillas'] == 0) 
+                         ? [['tipo' => 'suma', 'valor' => (float)$datos['estampillas']]] 
+                         : [],
+    ];
+}
+?>
+let calcState = <?= json_encode($stateToLoad) ?>;
 
 function addOp(etapa) {
     calcState[etapa].push({ tipo: 'suma', valor: 0 });
@@ -278,6 +300,11 @@ function toggleIva(val) {
 // Inicializar
 toggleIva(document.getElementById('inpIva').value);
 renderCalculadoraInputs();
+
+// Serializar calcState antes de enviar
+document.querySelector('form').addEventListener('submit', function() {
+    document.getElementById('hdnCalcOps').value = JSON.stringify(calcState);
+});
 </script>
 
 <?php include dirname(__DIR__) . '/layout/footer.php'; ?>

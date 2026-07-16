@@ -145,6 +145,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                 <input type="hidden" name="flete" id="hdnFlete" value="0">
                                 <input type="hidden" name="calibracion" id="hdnCalibracion" value="0">
                                 <input type="hidden" name="estampillas" id="hdnEstampillas" value="0">
+                                <input type="hidden" name="calc_ops" id="hdnCalcOps" value="{}">
 
                                 <div class="imo-form-row">
                                     <div class="imo-form-group">
@@ -593,6 +594,11 @@ function eliminarItem(id) {
 document.addEventListener('click', e => {
     if (!e.target.closest('.search-live'))
         document.getElementById('listaProductos').style.display = 'none';
+});
+
+// Serializar calcState en hidden antes de enviar el formulario
+document.getElementById('formItem').addEventListener('submit', function() {
+    document.getElementById('hdnCalcOps').value = JSON.stringify(calcState);
 });
 
 toggleIva('si');

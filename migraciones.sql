@@ -21,7 +21,8 @@ ALTER TABLE cotizacion_items
     ADD COLUMN IF NOT EXISTS calibracion         DECIMAL(20,2) DEFAULT 0.00  AFTER flete,
     ADD COLUMN IF NOT EXISTS estampillas         DECIMAL(20,2) DEFAULT 0.00  AFTER calibracion,
     ADD COLUMN IF NOT EXISTS proveedor           VARCHAR(100)  DEFAULT NULL  AFTER estampillas,
-    ADD COLUMN IF NOT EXISTS codigo_proveedor    VARCHAR(60)   DEFAULT NULL  AFTER proveedor;
+    ADD COLUMN IF NOT EXISTS codigo_proveedor    VARCHAR(60)   DEFAULT NULL  AFTER proveedor,
+    ADD COLUMN IF NOT EXISTS calc_ops            TEXT          DEFAULT NULL  AFTER codigo_proveedor;
 
 -- ── 3. Columna codigo_proveedor en orden_compra_items ───────
 --    (por si la tabla existía antes de agregar esta columna)

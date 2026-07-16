@@ -86,6 +86,13 @@ $totalValorFinal      = 0;
 
                                 // Porcentaje de utilidad sobre precio proveedor
                                 $pctUtil = ($ppUnit > 0) ? round(($puUnit / $ppUnit) * 100, 1) : 0;
+
+                                // Operaciones del JSON
+                                $ops = json_decode($it['calc_ops'] ?? '{}', true) ?: [];
+                                $opsUtil   = $ops['utilidad']    ?? [];
+                                $opsFlete  = $ops['flete']       ?? [];
+                                $opsCalib  = $ops['calibracion'] ?? [];
+                                $opsEstamp = $ops['estampillas'] ?? [];
                             ?>
                             <tr>
                                 <td>
@@ -99,54 +106,109 @@ $totalValorFinal      = 0;
                                     <strong>$<?= number_format($ppUnit, 0, ',', '.') ?></strong>
                                 </td>
 
-                                <!-- Utilidad acumulada + diferencial -->
-                                <td style="text-align:right; color:#059669; font-weight:600;">
-                                    $<?= number_format($acumUtil, 0, ',', '.') ?>
-                                    <?php if ($puUnit != 0): ?>
-                                    <br><span style="font-size:10px; font-weight:400; color:#6b7280;">
-                                        +$<?= number_format($puUnit, 0, ',', '.') ?>
-                                        <?php if ($pctUtil > 0): ?>(<?= $pctUtil ?>%)<?php endif; ?>
-                                    </span>
+                                <!-- Utilidad acumulada + operaciones -->
+                                <td style="text-align:right; color:#059669; font-weight:600; font-size:11px; vertical-align:top;">
+                                    <div style="margin-bottom:3px;">
+                                        <strong>$<?= number_format($acumUtil, 0, ',', '.') ?></strong>
+                                    </div>
+                                    <?php if (!empty($opsUtil)): ?>
+                                    <div style="background:#f0fdf4; border-left:2px solid #059669; padding:2px 4px; margin-top:2px; line-height:1.2;">
+                                        <?php foreach ($opsUtil as $op):
+                                            $tipo  = $op['tipo']  ?? 'suma';
+                                            $valor = (float)($op['valor'] ?? 0);
+                                            if ($valor == 0) continue;
+                                            if ($tipo === 'suma') {
+                                                echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
+                                            } elseif ($tipo === 'mult_pct') {
+                                                echo '<span>+ ' . $valor . '%</span><br>';
+                                            } elseif ($tipo === 'div_pct') {
+                                                echo '<span>÷ ' . $valor . '</span><br>';
+                                            }
+                                        endforeach;
+                                        ?>
+                                    </div>
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Flete acumulado + diferencial -->
-                                <td style="text-align:right; color:#d97706;">
-                                    $<?= number_format($acumFlete, 0, ',', '.') ?>
-                                    <?php if ($pfUnit != 0): ?>
-                                    <br><span style="font-size:10px; font-weight:400; color:#6b7280;">
-                                        +$<?= number_format($pfUnit, 0, ',', '.') ?>
-                                    </span>
+                                <!-- Flete acumulado + operaciones -->
+                                <td style="text-align:right; color:#d97706; font-weight:600; font-size:11px; vertical-align:top;">
+                                    <div style="margin-bottom:3px;">
+                                        <strong>$<?= number_format($acumFlete, 0, ',', '.') ?></strong>
+                                    </div>
+                                    <?php if (!empty($opsFlete)): ?>
+                                    <div style="background:#fef3c7; border-left:2px solid #d97706; padding:2px 4px; margin-top:2px; line-height:1.2;">
+                                        <?php foreach ($opsFlete as $op):
+                                            $tipo  = $op['tipo']  ?? 'suma';
+                                            $valor = (float)($op['valor'] ?? 0);
+                                            if ($valor == 0) continue;
+                                            if ($tipo === 'suma') {
+                                                echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
+                                            } elseif ($tipo === 'mult_pct') {
+                                                echo '<span>+ ' . $valor . '%</span><br>';
+                                            } elseif ($tipo === 'div_pct') {
+                                                echo '<span>÷ ' . $valor . '</span><br>';
+                                            }
+                                        endforeach;
+                                        ?>
+                                    </div>
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Calibración acumulada + diferencial -->
-                                <td style="text-align:right; color:#2563eb;">
-                                    $<?= number_format($acumCalib, 0, ',', '.') ?>
-                                    <?php if ($pcUnit != 0): ?>
-                                    <br><span style="font-size:10px; font-weight:400; color:#6b7280;">
-                                        +$<?= number_format($pcUnit, 0, ',', '.') ?>
-                                    </span>
+                                <!-- Calibración acumulada + operaciones -->
+                                <td style="text-align:right; color:#2563eb; font-weight:600; font-size:11px; vertical-align:top;">
+                                    <div style="margin-bottom:3px;">
+                                        <strong>$<?= number_format($acumCalib, 0, ',', '.') ?></strong>
+                                    </div>
+                                    <?php if (!empty($opsCalib)): ?>
+                                    <div style="background:#dbeafe; border-left:2px solid #2563eb; padding:2px 4px; margin-top:2px; line-height:1.2;">
+                                        <?php foreach ($opsCalib as $op):
+                                            $tipo  = $op['tipo']  ?? 'suma';
+                                            $valor = (float)($op['valor'] ?? 0);
+                                            if ($valor == 0) continue;
+                                            if ($tipo === 'suma') {
+                                                echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
+                                            } elseif ($tipo === 'mult_pct') {
+                                                echo '<span>+ ' . $valor . '%</span><br>';
+                                            } elseif ($tipo === 'div_pct') {
+                                                echo '<span>÷ ' . $valor . '</span><br>';
+                                            }
+                                        endforeach;
+                                        ?>
+                                    </div>
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Estampillas acumuladas + diferencial -->
-                                <td style="text-align:right; color:#7c3aed;">
-                                    $<?= number_format($acumEstamp, 0, ',', '.') ?>
-                                    <?php if ($peUnit != 0): ?>
-                                    <br><span style="font-size:10px; font-weight:400; color:#6b7280;">
-                                        +$<?= number_format($peUnit, 0, ',', '.') ?>
-                                    </span>
+                                <!-- Estampillas acumuladas + operaciones -->
+                                <td style="text-align:right; color:#7c3aed; font-weight:600; font-size:11px; vertical-align:top;">
+                                    <div style="margin-bottom:3px;">
+                                        <strong>$<?= number_format($acumEstamp, 0, ',', '.') ?></strong>
+                                    </div>
+                                    <?php if (!empty($opsEstamp)): ?>
+                                    <div style="background:#ede9fe; border-left:2px solid #7c3aed; padding:2px 4px; margin-top:2px; line-height:1.2;">
+                                        <?php foreach ($opsEstamp as $op):
+                                            $tipo  = $op['tipo']  ?? 'suma';
+                                            $valor = (float)($op['valor'] ?? 0);
+                                            if ($valor == 0) continue;
+                                            if ($tipo === 'suma') {
+                                                echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
+                                            } elseif ($tipo === 'mult_pct') {
+                                                echo '<span>+ ' . $valor . '%</span><br>';
+                                            } elseif ($tipo === 'div_pct') {
+                                                echo '<span>÷ ' . $valor . '</span><br>';
+                                            }
+                                        endforeach;
+                                        ?>
+                                    </div>
                                     <?php endif; ?>
                                 </td>
 
                                 <!-- V/F con IVA -->
-                                <td style="text-align:right; font-weight:bold; background:#f0fdf4; color:#059669;">
-                                    $<?= number_format($valorFinalIva, 0, ',', '.') ?>
+                                <td style="text-align:right; font-weight:bold; background:#f0fdf4; color:#059669; vertical-align:top;">
+                                    <div>$<?= number_format($valorFinalIva, 0, ',', '.') ?></div>
                                     <?php if ($ivaFila > 0): ?>
-                                    <br><span style="font-size:10px; font-weight:400; color:#6b7280;">
+                                    <div style="font-size:10px; font-weight:400; color:#6b7280; margin-top:2px;">
                                         IVA: $<?= number_format($ivaFila, 0, ',', '.') ?>
-                                    </span>
+                                    </div>
                                     <?php endif; ?>
                                 </td>
                             </tr>

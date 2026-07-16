@@ -99,6 +99,7 @@ class CotizacionController
         $estampillas         = (float)($_POST['estampillas'] ?? 0);
         $proveedor           = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 100);
         $codigo_proveedor    = mb_substr(sanitizar_entrada($_POST['codigo_proveedor'] ?? ''), 0, 60);
+        $calc_ops            = $_POST['calc_ops'] ?? '{}';
 
         if (!in_array($iva, ['si', 'no'], true)) {
             $iva = 'si';
@@ -110,7 +111,7 @@ class CotizacionController
             $cotizacion_id, $producto_id, $titulo, $foto,
             $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
             $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
-            $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor
+            $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops
         );
 
         // Si es producto nuevo (no del catálogo), guardarlo en catálogo
@@ -178,6 +179,7 @@ class CotizacionController
                 $estampillas         = (float)($_POST['estampillas'] ?? 0);
                 $proveedor           = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 100);
                 $codigo_proveedor    = mb_substr(sanitizar_entrada($_POST['codigo_proveedor'] ?? ''), 0, 60);
+                $calc_ops            = $_POST['calc_ops'] ?? '{}';
 
                 if (!in_array($iva, ['si', 'no'], true)) {
                     $mensajeError = 'IVA no válido';
@@ -188,7 +190,7 @@ class CotizacionController
                     if ($this->model->actualizarItem($itemId, $cotizacion_id, $titulo, $foto,
                             $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
                             $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
-                            $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor)) {
+                            $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops)) {
                         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear&updated=1');
                         exit();
                     }

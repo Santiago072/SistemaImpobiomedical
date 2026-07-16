@@ -118,6 +118,8 @@ CREATE TABLE IF NOT EXISTS cotizacion_items (
     estampillas         DECIMAL(20,2) DEFAULT 0.00,
     proveedor           VARCHAR(100)  DEFAULT NULL,
     codigo_proveedor    VARCHAR(60)   DEFAULT NULL,
+    -- JSON con historial de operaciones de cálculo (Opción A)
+    calc_ops            JSON DEFAULT '{}',
     FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id) ON DELETE CASCADE,
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -133,6 +135,10 @@ CREATE TABLE IF NOT EXISTS cotizacion_items (
 --   ADD COLUMN estampillas      DECIMAL(20,2) DEFAULT 0.00 AFTER calibracion,
 --   ADD COLUMN proveedor        VARCHAR(100)  DEFAULT NULL AFTER estampillas,
 --   ADD COLUMN codigo_proveedor VARCHAR(60)   DEFAULT NULL AFTER proveedor;
+
+-- ══ ALTER: ejecutar en producción para agregar calc_ops (Opción A - JSON) ══
+-- ALTER TABLE cotizacion_items
+--   ADD COLUMN calc_ops JSON DEFAULT '{}' AFTER codigo_proveedor;
 
 -- ── Usuario administrador inicial ───────────────────────────
 -- Contraseña inicial: Admin2026* (cambiar tras primer acceso)

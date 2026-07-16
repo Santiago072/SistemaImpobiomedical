@@ -2,6 +2,17 @@
 
 Todas las actualizaciones, cambios y versiones importantes del sistema se documentarán en este archivo para mantener un control estricto del desarrollo.
 
+## [v1.1.0] - 2026-07-16
+### Añadido
+- **Calculadora Dinámica de Ganancias (Opción A - JSON)**: Nueva funcionalidad para capturar múltiples operaciones de cálculo por etapa (Utilidad, Flete, Calibración, Estampillas).
+- Cada operación puede ser: suma de valor fijo ($), suma de porcentaje (%), o división entre un factor.
+- Las operaciones se guardan en JSON en la columna `calc_ops` de `cotizacion_items`.
+- En la hoja de respaldo se itera el JSON y se muestran todas las operaciones de cada etapa en líneas separadas.
+- Compatibilidad hacia atrás: los valores antiguos se convierten automáticamente a la nueva estructura.
+### Modificado
+- Vista `respaldo.php` actualizada para mostrar las operaciones JSON desglosadas por etapa con colores diferenciados.
+- Vista `editar_item.php` ahora permite modificar y agregar nuevas operaciones de cálculo.
+
 ## [v1.0.1] - 2026-07-13
 ### Añadido
 - Se agregaron las columnas `% IVA` y `T/IVA` en la generación de cotizaciones en PDF.
