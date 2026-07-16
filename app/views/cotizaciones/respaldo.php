@@ -70,13 +70,13 @@ $totalValorFinal      = 0;
                                 $acumCalib  = $acumFlete + $pcUnit;
                                 $acumEstamp = $acumCalib + $peUnit;
 
-                                // Valor Final unitario CON IVA (SIN multiplicar por cantidad)
+                                // Valor Final unitario CON IVA (SIN multiplicar por cantidad para mostrar en tabla)
                                 $pct            = (float)($it['porcentaje_iva'] ?? 19);
                                 $ivaUnitario    = (strtolower($it['iva']) === 'si')
                                                   ? $acumEstamp * ($pct / 100) : 0;
                                 $valorFinalUnitario = $acumEstamp + $ivaUnitario;
                                 
-                                // Total de la fila (unitario × cantidad)
+                                // Para totales: multiplicar por cantidad
                                 $valorFinalIva  = $valorFinalUnitario * $qty;
 
                                 $totalPrecioProveedor += $ppUnit    * $qty;
@@ -208,25 +208,16 @@ $totalValorFinal      = 0;
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- V/F con IVA -->
+                                <!-- V/F con IVA (valor unitario, sin multiplicar por cantidad) -->
                                 <td style="text-align:right; font-weight:bold; background:#f0fdf4; color:#059669; vertical-align:top;">
-                                    <div>$<?= number_format($valorFinalIva, 0, ',', '.') ?></div>
+                                    <div>$<?= number_format($valorFinalUnitario, 0, ',', '.') ?></div>
                                     <?php if ($ivaUnitario > 0): ?>
                                     <div style="font-size:10px; font-weight:400; color:#6b7280; margin-top:2px;">
-                                        IVA: $<?= number_format($ivaUnitario * $qty, 0, ',', '.') ?>
+                                        IVA: $<?= number_format($ivaUnitario, 0, ',', '.') ?>
                                     </div>
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- V/F con IVA -->
-                                <td style="text-align:right; font-weight:bold; background:#f0fdf4; color:#059669; vertical-align:top;">
-                                    <div>$<?= number_format($valorFinalIva, 0, ',', '.') ?></div>
-                                    <?php if ($ivaUnitario > 0): ?>
-                                    <div style="font-size:10px; font-weight:400; color:#6b7280; margin-top:2px;">
-                                        IVA: $<?= number_format($ivaUnitario * $qty, 0, ',', '.') ?>
-                                    </div>
-                                    <?php endif; ?>
-                                </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
