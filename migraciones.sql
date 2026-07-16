@@ -8,7 +8,8 @@ USE sistema_impobiomedical;
 -- ── 1. Columnas faltantes en tabla productos ────────────────
 ALTER TABLE productos
     ADD COLUMN IF NOT EXISTS categoria        VARCHAR(100) DEFAULT NULL AFTER porcentaje_iva,
-    ADD COLUMN IF NOT EXISTS codigo_producto  VARCHAR(60)  DEFAULT NULL AFTER categoria;
+    ADD COLUMN IF NOT EXISTS codigo_producto  VARCHAR(60)  DEFAULT NULL AFTER categoria,
+    ADD COLUMN IF NOT EXISTS codigo_proveedor VARCHAR(60)  DEFAULT NULL AFTER codigo_producto;
 
 -- ── 2. Columnas faltantes en tabla cotizacion_items ─────────
 ALTER TABLE cotizacion_items
