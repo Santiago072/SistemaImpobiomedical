@@ -99,7 +99,15 @@ class CotizacionController
         $estampillas         = (float)($_POST['estampillas'] ?? 0);
         $proveedor           = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 100);
         $codigo_proveedor    = mb_substr(sanitizar_entrada($_POST['codigo_proveedor'] ?? ''), 0, 60);
-        $calc_ops            = $_POST['calc_ops'] ?? '{}';
+        
+        // Validar y sanitizar calc_ops (debe ser JSON válido)
+        $calc_ops_raw = $_POST['calc_ops'] ?? '{}';
+        $calc_ops_decoded = json_decode($calc_ops_raw, true);
+        if ($calc_ops_decoded === null) {
+            $calc_ops = '{}'; // Si no es JSON válido, usar vacío
+        } else {
+            $calc_ops = json_encode($calc_ops_decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
 
         if (!in_array($iva, ['si', 'no'], true)) {
             $iva = 'si';
@@ -179,7 +187,15 @@ class CotizacionController
                 $estampillas         = (float)($_POST['estampillas'] ?? 0);
                 $proveedor           = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 100);
                 $codigo_proveedor    = mb_substr(sanitizar_entrada($_POST['codigo_proveedor'] ?? ''), 0, 60);
-                $calc_ops            = $_POST['calc_ops'] ?? '{}';
+                
+                // Validar y sanitizar calc_ops (debe ser JSON válido)
+                $calc_ops_raw = $_POST['calc_ops'] ?? '{}';
+                $calc_ops_decoded = json_decode($calc_ops_raw, true);
+                if ($calc_ops_decoded === null) {
+                    $calc_ops = '{}'; // Si no es JSON válido, usar vacío
+                } else {
+                    $calc_ops = json_encode($calc_ops_decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                }
 
                 if (!in_array($iva, ['si', 'no'], true)) {
                     $mensajeError = 'IVA no válido';
