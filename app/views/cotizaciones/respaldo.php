@@ -64,24 +64,26 @@ $totalValorFinal      = 0;
                                 $pcUnit = (float)($it['calibracion']         ?? 0);
                                 $peUnit = (float)($it['estampillas']         ?? 0);
 
-                                // Valor Final unitario (cada columna es independiente, no acumulada)
-                                // Solo se suman para calcular el V/F final
-                                $subtotalUnitario = $ppUnit + $puUnit + $pfUnit + $pcUnit + $peUnit;
-                                
-                                // IVA sobre el total unitario
+                                // Acumulados unitarios (como estaban)
+                                $acumUtil   = $ppUnit + $puUnit;
+                                $acumFlete  = $acumUtil  + $pfUnit;
+                                $acumCalib  = $acumFlete + $pcUnit;
+                                $acumEstamp = $acumCalib + $peUnit;
+
+                                // Valor Final unitario CON IVA (SIN multiplicar por cantidad)
                                 $pct            = (float)($it['porcentaje_iva'] ?? 19);
                                 $ivaUnitario    = (strtolower($it['iva']) === 'si')
-                                                  ? $subtotalUnitario * ($pct / 100) : 0;
-                                $valorFinalUnitario = $subtotalUnitario + $ivaUnitario;
+                                                  ? $acumEstamp * ($pct / 100) : 0;
+                                $valorFinalUnitario = $acumEstamp + $ivaUnitario;
                                 
                                 // Total de la fila (unitario × cantidad)
                                 $valorFinalIva  = $valorFinalUnitario * $qty;
 
                                 $totalPrecioProveedor += $ppUnit    * $qty;
-                                $totalUtilidad        += $puUnit    * $qty;
-                                $totalFlete           += $pfUnit    * $qty;
-                                $totalCalibracion     += $pcUnit    * $qty;
-                                $totalEstampillas     += $peUnit    * $qty;
+                                $totalUtilidad        += $acumUtil  * $qty;
+                                $totalFlete           += $acumFlete * $qty;
+                                $totalCalibracion     += $acumCalib * $qty;
+                                $totalEstampillas     += $acumEstamp* $qty;
                                 $totalValorFinal      += $valorFinalIva;
 
                                 // Porcentaje de utilidad sobre precio proveedor
@@ -106,10 +108,10 @@ $totalValorFinal      = 0;
                                     <strong>$<?= number_format($ppUnit, 0, ',', '.') ?></strong>
                                 </td>
 
-                                <!-- Utilidad (no acumulada) + operaciones -->
+                                <!-- Utilidad acumulada + operaciones -->
                                 <td style="text-align:right; color:#059669; font-weight:600; font-size:11px; vertical-align:top;">
                                     <div style="margin-bottom:3px;">
-                                        <strong>$<?= number_format($puUnit, 0, ',', '.') ?></strong>
+                                        <strong>$<?= number_format($acumUtil, 0, ',', '.') ?></strong>
                                     </div>
                                     <?php if (!empty($opsUtil)): ?>
                                     <div style="background:#f0fdf4; border-left:2px solid #059669; padding:2px 4px; margin-top:2px; line-height:1.2;">
@@ -130,10 +132,10 @@ $totalValorFinal      = 0;
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Flete (no acumulado) + operaciones -->
+                                <!-- Flete acumulado + operaciones -->
                                 <td style="text-align:right; color:#d97706; font-weight:600; font-size:11px; vertical-align:top;">
                                     <div style="margin-bottom:3px;">
-                                        <strong>$<?= number_format($pfUnit, 0, ',', '.') ?></strong>
+                                        <strong>$<?= number_format($acumFlete, 0, ',', '.') ?></strong>
                                     </div>
                                     <?php if (!empty($opsFlete)): ?>
                                     <div style="background:#fef3c7; border-left:2px solid #d97706; padding:2px 4px; margin-top:2px; line-height:1.2;">
@@ -154,10 +156,10 @@ $totalValorFinal      = 0;
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Calibración (no acumulada) + operaciones -->
+                                <!-- Calibración acumulada + operaciones -->
                                 <td style="text-align:right; color:#2563eb; font-weight:600; font-size:11px; vertical-align:top;">
                                     <div style="margin-bottom:3px;">
-                                        <strong>$<?= number_format($pcUnit, 0, ',', '.') ?></strong>
+                                        <strong>$<?= number_format($acumCalib, 0, ',', '.') ?></strong>
                                     </div>
                                     <?php if (!empty($opsCalib)): ?>
                                     <div style="background:#dbeafe; border-left:2px solid #2563eb; padding:2px 4px; margin-top:2px; line-height:1.2;">
@@ -178,11 +180,11 @@ $totalValorFinal      = 0;
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Estampillas (no acumuladas) + operaciones -->
+                                <!-- Estampillas acumuladas + operaciones -->
                                 <td style="text-align:right; color:#7c3aed; font-weight:600; font-size:11px; vertical-align:top;">
-                                    <?php if ($peUnit > 0): ?>
+                                    <?php if ($acumEstamp > $acumCalib): ?>
                                     <div style="margin-bottom:3px;">
-                                        <strong>$<?= number_format($peUnit, 0, ',', '.') ?></strong>
+                                        <strong>$<?= number_format($acumEstamp, 0, ',', '.') ?></strong>
                                     </div>
                                     <?php if (!empty($opsEstamp)): ?>
                                     <div style="background:#ede9fe; border-left:2px solid #7c3aed; padding:2px 4px; margin-top:2px; line-height:1.2;">
@@ -203,6 +205,16 @@ $totalValorFinal      = 0;
                                     <?php endif; ?>
                                     <?php else: ?>
                                     <span style="color:#9ca3af;">-</span>
+                                    <?php endif; ?>
+                                </td>
+
+                                <!-- V/F con IVA -->
+                                <td style="text-align:right; font-weight:bold; background:#f0fdf4; color:#059669; vertical-align:top;">
+                                    <div>$<?= number_format($valorFinalIva, 0, ',', '.') ?></div>
+                                    <?php if ($ivaUnitario > 0): ?>
+                                    <div style="font-size:10px; font-weight:400; color:#6b7280; margin-top:2px;">
+                                        IVA: $<?= number_format($ivaUnitario * $qty, 0, ',', '.') ?>
+                                    </div>
                                     <?php endif; ?>
                                 </td>
 

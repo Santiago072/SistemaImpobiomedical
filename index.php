@@ -257,6 +257,9 @@ if ($module === 'cotizaciones') {
         case 'ajax_get_cliente':
             $ctrl->ajaxGetCliente();
             break;
+        case 'eliminar':
+            $ctrl->eliminar();
+            break;
         default:
             $data = $ctrl->crear();
             extract($data);
