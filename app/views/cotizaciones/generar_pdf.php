@@ -76,12 +76,12 @@ ob_start(); ?>
 <meta charset="UTF-8">
 <title>Cotización <?= htmlspecialchars($numero) ?></title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
+* { margin:0; padding:0; box-sizing:border-box; orphans: 0; widows: 0; }
 body {
     font-family: Arial, sans-serif;
     font-size: 9px;
     color: #000;
-    padding: 20px 25px;
+    padding: 15px 20px;
 }
 table { width:100%; border-collapse:collapse; }
 .b { border:1px solid #555; }
@@ -100,7 +100,7 @@ table { width:100%; border-collapse:collapse; }
 .hdr-wrap {
     border: 2px solid #1a8a8a;
     border-radius: 4px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     overflow: hidden;
 }
 .hdr-top {
@@ -154,6 +154,12 @@ table { width:100%; border-collapse:collapse; }
 /* filas alternas */
 .row-even { background:#f4fafa; }
 .row-odd  { background:#ffffff; }
+
+/* Evitar que una fila de item se divida entre páginas */
+.row-even, .row-odd {
+    page-break-inside: avoid;
+    page-break-after: auto;
+}
 
 /* Totals */
 .totals-wrap { margin-top:0; }
