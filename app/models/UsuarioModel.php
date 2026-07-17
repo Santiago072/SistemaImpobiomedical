@@ -3,11 +3,11 @@
  * UsuarioModel — acceso a datos de la tabla usuarios.
  *
  * - SRP: toda la lógica SQL de usuarios vive aquí.
- * - ISP: implementa RepositoryInterface (contrato estricto).
+ * - NOTA: No implementa RepositoryInterface debido a parámetros específicos del método crear()
  *
  * Campos clave: codigo (ej: EB) — usado para numerar cotizaciones.
  */
-class UsuarioModel implements RepositoryInterface
+class UsuarioModel
 {
     private \mysqli $db;
 
