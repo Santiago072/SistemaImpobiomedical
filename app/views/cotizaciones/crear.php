@@ -559,6 +559,7 @@ function calcularTotales() {
 
 function limpiarFormulario() {
     document.getElementById('hdnProductoId').value = '';
+    document.getElementById('hdnFotoActual').value = '';
     document.getElementById('badgeAuto').style.display = 'none';
     document.getElementById('formItem').reset();
     document.getElementById('inpIva').value = 'si';
