@@ -113,7 +113,18 @@ class CotizacionController
             $iva = 'si';
         }
 
-        $foto = $this->uploader->subir($_FILES['foto'] ?? [], $_POST['foto_actual'] ?? '');
+        // Si es producto existente del catálogo, usar su foto
+        $producto = null;
+        if ($producto_id !== null) {
+            $producto = $this->productoModel->buscarPorId($producto_id);
+        }
+        
+        // Si hay foto en producto existente, usarla; sino, procesar subida
+        if ($producto !== null && !empty($producto['foto'])) {
+            $foto = $producto['foto'];
+        } else {
+            $foto = $this->uploader->subir($_FILES['foto'] ?? [], $_POST['foto_actual'] ?? '');
+        }
 
         $this->model->insertarItem(
             $cotizacion_id, $producto_id, $titulo, $foto,
@@ -129,7 +140,11 @@ class CotizacionController
                 // Producto no existe: crearlo
                 $this->productoModel->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $categoria, $codigo_producto);
             } else {
-                // Producto existe: actualizar con nueva información si fue proporcionada
+                // Producto existe: usar su foto si no se subió una nueva
+                if (empty($foto) && !empty($productoExistente['foto'])) {
+                    $foto = $productoExistente['foto'];
+                }
+                // Actualizar con nueva información si fue proporcionada
                 if (!empty($foto) || !empty($descripcion) || $precio > 0 || !empty($codigo_producto)) {
                     $this->productoModel->actualizar(
                         (int)$productoExistente['id'],
