@@ -331,14 +331,8 @@ foreach ($items as $it):
     $imgProd = !empty($it['foto']) ? imgBase64(dirname(__DIR__, 3) . '/uploads/' . $it['foto']) : '';
 ?>
 <?php
-    // Truncar descripciones muy largas para evitar espacios en blanco en DomPDF
-    $descRaw    = $it['descripcion'] ?? '';
-    $descLimit  = 900; // caracteres máx antes de truncar
-    $descCorta  = mb_strlen($descRaw) > $descLimit
-                  ? mb_substr($descRaw, 0, $descLimit) . '…'
-                  : $descRaw;
-    // nl2br para respetar saltos de línea del usuario
-    $descHtml   = nl2br(htmlspecialchars($descCorta));
+    // Descripción completa — nl2br para respetar saltos de línea del usuario
+    $descHtml = nl2br(htmlspecialchars($it['descripcion'] ?? ''));
 ?>
   <tr class="<?= $rowCls ?>">
     <td class="b tc vm" style="padding:6px 2px;"><?= $qty ?></td>
