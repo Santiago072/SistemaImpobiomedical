@@ -14,6 +14,13 @@ function iniciar_sesion_segura(): void
         return;
     }
 
+    // Configurar directorio de sesiones que exista
+    $sessionPath = __DIR__ . '/../sessions';
+    if (!is_dir($sessionPath)) {
+        mkdir($sessionPath, 0755, true);
+    }
+    session_save_path($sessionPath);
+
     ini_set('session.cookie_httponly', '1');
     ini_set('session.use_only_cookies', '1');
     ini_set('session.cookie_secure', (int)($_ENV['COOKIE_SECURE'] ?? getenv('COOKIE_SECURE') ?: 0));
