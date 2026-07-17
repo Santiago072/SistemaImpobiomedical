@@ -81,7 +81,7 @@ body {
     font-family: Arial, sans-serif;
     font-size: 9px;
     color: #000;
-    padding: 15px 20px;
+    padding: 20px 25px;
 }
 table { width:100%; border-collapse:collapse; }
 .b { border:1px solid #555; }
@@ -100,7 +100,7 @@ table { width:100%; border-collapse:collapse; }
 .hdr-wrap {
     border: 2px solid #1a8a8a;
     border-radius: 4px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     overflow: hidden;
 }
 .hdr-top {
