@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS cotizacion_items (
     codigo_producto VARCHAR(60)  DEFAULT NULL,
     -- Campos de rentabilidad (uso interno, no se muestran al cliente)
     precio_proveedor    DECIMAL(20,2) DEFAULT 0.00,
-    porcentaje_utilidad DECIMAL(8,2)  DEFAULT 0.00,
+    porcentaje_utilidad DECIMAL(20,2) DEFAULT 0.00,
     flete               DECIMAL(20,2) DEFAULT 0.00,
     calibracion         DECIMAL(20,2) DEFAULT 0.00,
     estampillas         DECIMAL(20,2) DEFAULT 0.00,

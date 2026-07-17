@@ -16,7 +16,7 @@ ALTER TABLE cotizacion_items
     ADD COLUMN IF NOT EXISTS categoria           VARCHAR(100)  DEFAULT NULL  AFTER tiempo_entrega,
     ADD COLUMN IF NOT EXISTS codigo_producto     VARCHAR(60)   DEFAULT NULL  AFTER categoria,
     ADD COLUMN IF NOT EXISTS precio_proveedor    DECIMAL(20,2) DEFAULT 0.00  AFTER codigo_producto,
-    ADD COLUMN IF NOT EXISTS porcentaje_utilidad DECIMAL(8,2)  DEFAULT 0.00  AFTER precio_proveedor,
+    ADD COLUMN IF NOT EXISTS porcentaje_utilidad DECIMAL(20,2) DEFAULT 0.00  AFTER precio_proveedor,
     ADD COLUMN IF NOT EXISTS flete               DECIMAL(20,2) DEFAULT 0.00  AFTER porcentaje_utilidad,
     ADD COLUMN IF NOT EXISTS calibracion         DECIMAL(20,2) DEFAULT 0.00  AFTER flete,
     ADD COLUMN IF NOT EXISTS estampillas         DECIMAL(20,2) DEFAULT 0.00  AFTER calibracion,
@@ -32,3 +32,10 @@ ALTER TABLE orden_compra_items
 -- ── 4. Limpiar valores '0' que quedaron de registros anteriores ─────────────
 UPDATE orden_compra_items SET codigo_proveedor = NULL WHERE codigo_proveedor = '0';
 UPDATE cotizacion_items    SET codigo_proveedor = NULL WHERE codigo_proveedor = '0';
+
+-- ── 5. CRÍTICO: Ampliar porcentaje_utilidad de DECIMAL(8,2) a DECIMAL(20,2) ──
+--    DECIMAL(8,2) permite máx 999,999.99 — se desborda con ganancias grandes.
+--    Ejecutar en producción si la columna ya existe con el tipo anterior.
+ALTER TABLE cotizacion_items
+    MODIFY COLUMN porcentaje_utilidad DECIMAL(20,2) DEFAULT 0.00;
+
