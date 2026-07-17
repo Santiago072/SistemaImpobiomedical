@@ -76,7 +76,7 @@ ob_start(); ?>
 <meta charset="UTF-8">
 <title>Cotización <?= htmlspecialchars($numero) ?></title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; orphans: 0; widows: 0; }
+* { margin:0; padding:0; box-sizing:border-box; }
 body {
     font-family: Arial, sans-serif;
     font-size: 9px;
@@ -155,10 +155,13 @@ table { width:100%; border-collapse:collapse; }
 .row-even { background:#f4fafa; }
 .row-odd  { background:#ffffff; }
 
-/* Evitar que una fila de item se divida entre páginas */
-.row-even, .row-odd {
-    page-break-inside: avoid;
-    page-break-after: auto;
+/* Descripción: controlar desbordamiento y saltos */
+.col-desc-cell {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 0;
+    white-space: normal;
 }
 
 /* Totals */
@@ -327,11 +330,21 @@ foreach ($items as $it):
 
     $imgProd = !empty($it['foto']) ? imgBase64(dirname(__DIR__, 3) . '/uploads/' . $it['foto']) : '';
 ?>
+<?php
+    // Truncar descripciones muy largas para evitar espacios en blanco en DomPDF
+    $descRaw    = $it['descripcion'] ?? '';
+    $descLimit  = 900; // caracteres máx antes de truncar
+    $descCorta  = mb_strlen($descRaw) > $descLimit
+                  ? mb_substr($descRaw, 0, $descLimit) . '…'
+                  : $descRaw;
+    // nl2br para respetar saltos de línea del usuario
+    $descHtml   = nl2br(htmlspecialchars($descCorta));
+?>
   <tr class="<?= $rowCls ?>">
     <td class="b tc vm" style="padding:6px 2px;"><?= $qty ?></td>
-    <td class="b tl vt" style="padding:7px 8px;">
-      <strong style="font-size:10px;"><?= mb_strtoupper(htmlspecialchars($it['titulo'])) ?></strong><br><br>
-      <span style="font-size:9px;"><?= nl2br(htmlspecialchars($it['descripcion'])) ?></span>
+    <td class="b tl vt col-desc-cell" style="padding:6px 8px; width:30%;">
+      <strong style="font-size:9.5px; display:block; margin-bottom:3px;"><?= mb_strtoupper(htmlspecialchars($it['titulo'])) ?></strong>
+      <span style="font-size:8.5px; line-height:1.35;"><?= $descHtml ?></span>
     </td>
     <td class="b tc vm" style="padding:4px;">
       <?php if ($imgProd): ?>
