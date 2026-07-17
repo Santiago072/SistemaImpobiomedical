@@ -64,12 +64,42 @@ class CotizacionController
         $asesorNombre = $_SESSION['usuario_nombre'] ?? '';
         $asesorCargo  = $_SESSION['usuario_cargo'] ?? '';
 
+        error_log("DEBUG: recuperarOCrearBorrador - Usuario ID: $usuarioId, Session cotizacion_id: " . ($_SESSION['cotizacion_id'] ?? 'no set'));
+
         if (!isset($_SESSION['cotizacion_id'])) {
-            $id = $this->model->buscarBorradorConItems($usuarioId)
-               ?? $this->model->buscarCabeceraVacia($usuarioId)
-               ?? $this->model->crearCabecera($usuarioId, $usuarioCodigo, $asesorNombre, $asesorCargo);
+            error_log("DEBUG: No hay cotizacion_id en sesión, buscando borrador...");
+            $id = $this->model->buscarBorradorConItems($usuarioId);
+            error_log("DEBUG: buscarBorradorConItems retornó: " . ($id ?? 'null'));
+            
+            if ($id === null) {
+                $id = $this->model->buscarCabeceraVacia($usuarioId);
+                error_log("DEBUG: buscarCabeceraVacia retornó: " . ($id ?? 'null'));
+            }
+            
+            if ($id === null) {
+                $id = $this->model->crearCabecera($usuarioId, $usuarioCodigo, $asesorNombre, $asesorCargo);
+                error_log("DEBUG: crearCabecera retornó: $id");
+            }
+            
             $_SESSION['cotizacion_id'] = $id;
+            error_log("DEBUG: Se estableció cotizacion_id en sesión: $id");
+        } else {
+            // Verificar que la cotización en sesión todavía existe y es válida
+            $cotizacionExistente = $this->model->buscarPorId((int)$_SESSION['cotizacion_id']);
+            error_log("DEBUG: Cotización en sesión existe: " . ($cotizacionExistente ? 'si' : 'no') . ", estado: " . ($cotizacionExistente['estado'] ?? 'n/a'));
+            
+            if (!$cotizacionExistente || $cotizacionExistente['estado'] !== 'borrador') {
+                error_log("DEBUG: Cotización inválida, buscando nueva...");
+                // Si no existe o no es borrador, buscar uno nuevo
+                $id = $this->model->buscarBorradorConItems($usuarioId)
+                   ?? $this->model->buscarCabeceraVacia($usuarioId)
+                   ?? $this->model->crearCabecera($usuarioId, $usuarioCodigo, $asesorNombre, $asesorCargo);
+                $_SESSION['cotizacion_id'] = $id;
+                error_log("DEBUG: Se estableció nuevo cotizacion_id: $id");
+            }
         }
+        
+        error_log("DEBUG: Retornando cotizacion_id: " . $_SESSION['cotizacion_id']);
         return (int)$_SESSION['cotizacion_id'];
     }
 
