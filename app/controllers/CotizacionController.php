@@ -82,88 +82,104 @@ class CotizacionController
 
         verificar_rate_limit(20, 60, 'cot_guardar_item');
 
-        $producto_id         = validar_numero($_POST['producto_id'] ?? '') ? (int)$_POST['producto_id'] : null;
-        $titulo              = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
-        $descripcion         = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
-        $cantidad            = max(1, (int)($_POST['cantidad'] ?? 1));
-        $precio              = (float)($_POST['precio'] ?? 0);
-        $iva                 = mb_substr(sanitizar_entrada($_POST['iva'] ?? 'si'), 0, 5);
-        $porcentaje_iva      = (float)($_POST['porcentaje_iva'] ?? 19);
-        $tiempo_entrega      = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 120);
-        $categoria           = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
-        $codigo_producto     = mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
-        $precio_proveedor    = (float)($_POST['precio_proveedor'] ?? 0);
-        $porcentaje_utilidad = (float)($_POST['porcentaje_utilidad'] ?? 0);
-        $flete               = (float)($_POST['flete'] ?? 0);
-        $calibracion         = (float)($_POST['calibracion'] ?? 0);
-        $estampillas         = (float)($_POST['estampillas'] ?? 0);
-        $proveedor           = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 100);
-        $codigo_proveedor    = mb_substr(sanitizar_entrada($_POST['codigo_proveedor'] ?? ''), 0, 60);
-        
-        // Validar y sanitizar calc_ops (debe ser JSON válido)
-        $calc_ops_raw = $_POST['calc_ops'] ?? '{}';
-        $calc_ops_decoded = json_decode($calc_ops_raw, true);
-        if ($calc_ops_decoded === null) {
-            $calc_ops = '{}'; // Si no es JSON válido, usar vacío
-        } else {
-            $calc_ops = json_encode($calc_ops_decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        }
-
-        if (!in_array($iva, ['si', 'no'], true)) {
-            $iva = 'si';
-        }
-
-        // Si es producto existente del catálogo, usar su foto
-        $producto = null;
-        if ($producto_id !== null) {
-            $producto = $this->productoModel->buscarPorId($producto_id);
-        }
-        
-        // Si hay foto en producto existente, usarla; sino, procesar subida
-        if ($producto !== null && !empty($producto['foto'])) {
-            $foto = $producto['foto'];
-        } else {
-            $foto = $this->uploader->subir($_FILES['foto'] ?? [], $_POST['foto_actual'] ?? '');
-        }
-
-        $this->model->insertarItem(
-            $cotizacion_id, $producto_id, $titulo, $foto,
-            $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
-            $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
-            $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops
-        );
-
-        // Si es producto nuevo (no del catálogo), guardarlo en catálogo
-        if ($producto_id === null) {
-            $productoExistente = $this->productoModel->buscarPorTitulo($titulo);
-            if (!$productoExistente) {
-                // Producto no existe: crearlo
-                $this->productoModel->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $categoria, $codigo_producto);
+        try {
+            $producto_id         = validar_numero($_POST['producto_id'] ?? '') ? (int)$_POST['producto_id'] : null;
+            $titulo              = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
+            $descripcion         = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
+            $cantidad            = max(1, (int)($_POST['cantidad'] ?? 1));
+            $precio              = (float)($_POST['precio'] ?? 0);
+            $iva                 = mb_substr(sanitizar_entrada($_POST['iva'] ?? 'si'), 0, 5);
+            $porcentaje_iva      = (float)($_POST['porcentaje_iva'] ?? 19);
+            $tiempo_entrega      = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 120);
+            $categoria           = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
+            $codigo_producto     = mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
+            $precio_proveedor    = (float)($_POST['precio_proveedor'] ?? 0);
+            $porcentaje_utilidad = (float)($_POST['porcentaje_utilidad'] ?? 0);
+            $flete               = (float)($_POST['flete'] ?? 0);
+            $calibracion         = (float)($_POST['calibracion'] ?? 0);
+            $estampillas         = (float)($_POST['estampillas'] ?? 0);
+            $proveedor           = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 100);
+            $codigo_proveedor    = mb_substr(sanitizar_entrada($_POST['codigo_proveedor'] ?? ''), 0, 60);
+            
+            // Validar y sanitizar calc_ops (debe ser JSON válido)
+            $calc_ops_raw = $_POST['calc_ops'] ?? '{}';
+            $calc_ops_decoded = json_decode($calc_ops_raw, true);
+            if ($calc_ops_decoded === null) {
+                $calc_ops = '{}'; // Si no es JSON válido, usar vacío
             } else {
-                // Producto existe: usar su foto si no se subió una nueva
-                if (empty($foto) && !empty($productoExistente['foto'])) {
-                    $foto = $productoExistente['foto'];
-                }
-                // Actualizar con nueva información si fue proporcionada
-                if (!empty($foto) || !empty($descripcion) || $precio > 0 || !empty($codigo_producto)) {
-                    $this->productoModel->actualizar(
-                        (int)$productoExistente['id'],
-                        $titulo,
-                        !empty($foto) ? $foto : $productoExistente['foto'],
-                        !empty($descripcion) ? $descripcion : $productoExistente['descripcion'],
-                        $precio > 0 ? $precio : $productoExistente['precio'],
-                        $iva,
-                        $porcentaje_iva,
-                        'activo',
-                        !empty($categoria) ? $categoria : $productoExistente['categoria'],
-                        !empty($codigo_producto) ? $codigo_producto : $productoExistente['codigo_producto']
-                    );
+                $calc_ops = json_encode($calc_ops_decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            }
+
+            if (!in_array($iva, ['si', 'no'], true)) {
+                $iva = 'si';
+            }
+
+            // Si es producto existente del catálogo, usar su foto
+            $producto = null;
+            if ($producto_id !== null) {
+                $producto = $this->productoModel->buscarPorId($producto_id);
+            }
+            
+            // Si hay foto en producto existente, usarla; sino, procesar subida
+            if ($producto !== null && !empty($producto['foto'])) {
+                $foto = $producto['foto'];
+            } else {
+                // Manejo seguro de subida de archivos
+                $fileInput = $_FILES['foto'] ?? [];
+                $fotoActual = $_POST['foto_actual'] ?? '';
+                
+                // Si no hay archivo subido, usar foto actual o vacío
+                if (!isset($fileInput['error']) || $fileInput['error'] === UPLOAD_ERR_NO_FILE) {
+                    $foto = basename($fotoActual);
+                } else {
+                    $foto = $this->uploader->subir($fileInput, $fotoActual);
                 }
             }
-        }
 
-        header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
-        exit();
+            $this->model->insertarItem(
+                $cotizacion_id, $producto_id, $titulo, $foto,
+                $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
+                $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
+                $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops
+            );
+
+            // Si es producto nuevo (no del catálogo), guardarlo en catálogo
+            if ($producto_id === null) {
+                $productoExistente = $this->productoModel->buscarPorTitulo($titulo);
+                if (!$productoExistente) {
+                    // Producto no existe: crearlo
+                    $this->productoModel->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $categoria, $codigo_producto);
+                } else {
+                    // Producto existe: usar su foto si no se subió una nueva
+                    if (empty($foto) && !empty($productoExistente['foto'])) {
+                        $foto = $productoExistente['foto'];
+                    }
+                    // Actualizar con nueva información si fue proporcionada
+                    if (!empty($foto) || !empty($descripcion) || $precio > 0 || !empty($codigo_producto)) {
+                        $this->productoModel->actualizar(
+                            (int)$productoExistente['id'],
+                            $titulo,
+                            !empty($foto) ? $foto : $productoExistente['foto'],
+                            !empty($descripcion) ? $descripcion : $productoExistente['descripcion'],
+                            $precio > 0 ? $precio : $productoExistente['precio'],
+                            $iva,
+                            $porcentaje_iva,
+                            'activo',
+                            !empty($categoria) ? $categoria : $productoExistente['categoria'],
+                            !empty($codigo_producto) ? $codigo_producto : $productoExistente['codigo_producto']
+                        );
+                    }
+                }
+            }
+
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
+            exit();
+        } catch (\Exception $e) {
+            // Log error para debugging
+            error_log("Error en procesarGuardarItem: " . $e->getMessage());
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear&error=general');
+            exit();
+        }
     }
 
     // ── EDITAR ÍTEM ───────────────────────────────────────────────────────────
