@@ -68,6 +68,18 @@ class ClienteModel implements RepositoryInterface
         return $row ?: null;
     }
 
+    /** Buscar cliente por NIT */
+    public function buscarPorNit(string $nit): ?array
+    {
+        $stmt = mysqli_prepare($this->db, 'SELECT * FROM clientes WHERE nit = ? LIMIT 1');
+        mysqli_stmt_bind_param($stmt, 's', $nit);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row    = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+        return $row ?: null;
+    }
+
     /** Búsqueda rápida para autocompletado en cotizaciones */
     public function buscarParaSelect(string $busqueda, int $limite = 10): array
     {
@@ -101,21 +113,22 @@ class ClienteModel implements RepositoryInterface
 
     public function crear(string $nombre, string $nit, string $departamento, string $municipio,
                           string $direccion, string $nombre_contacto, string $telefono,
-                          ?string $correo): bool
+                          ?string $correo): int
     {
         $stmt = mysqli_prepare($this->db,
             'INSERT INTO clientes (nombre, nit, departamento, municipio, direccion, nombre_contacto, telefono, correo)
              VALUES (?,?,?,?,?,?,?,?)');
         mysqli_stmt_bind_param($stmt, 'ssssssss',
             $nombre, $nit, $departamento, $municipio, $direccion, $nombre_contacto, $telefono, $correo);
-        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_execute($stmt);
+        $id = (int)mysqli_stmt_insert_id($stmt);
         mysqli_stmt_close($stmt);
-        return $ok;
+        return $id;
     }
 
     public function actualizar(int $id, string $nombre, string $nit, string $departamento,
                                string $municipio, string $direccion, string $nombre_contacto,
-                               string $telefono, ?string $correo, string $estado): bool
+                               string $telefono, ?string $correo, string $estado = 'activo'): bool
     {
         $stmt = mysqli_prepare($this->db,
             'UPDATE clientes SET nombre=?,nit=?,departamento=?,municipio=?,direccion=?,

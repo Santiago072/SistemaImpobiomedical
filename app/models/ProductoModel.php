@@ -149,6 +149,19 @@ class ProductoModel implements RepositoryInterface
         return $existe;
     }
 
+    /** Buscar producto por título (sin restricción de estado, para poder actualizarlo) */
+    public function buscarPorTitulo(string $titulo): ?array
+    {
+        $stmt = mysqli_prepare($this->db,
+            "SELECT * FROM productos WHERE titulo = ? LIMIT 1");
+        mysqli_stmt_bind_param($stmt, 's', $titulo);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row    = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+        return $row ?: null;
+    }
+
     public function crear(string $titulo, string $foto, string $descripcion,
                           float $precio, string $iva, float $porcentaje_iva,
                           string $categoria = null, string $codigo_producto = null): bool

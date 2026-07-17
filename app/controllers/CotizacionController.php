@@ -123,8 +123,28 @@ class CotizacionController
         );
 
         // Si es producto nuevo (no del catálogo), guardarlo en catálogo
-        if ($producto_id === null && !$this->productoModel->existePorTitulo($titulo)) {
-            $this->productoModel->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $categoria, $codigo_producto);
+        if ($producto_id === null) {
+            $productoExistente = $this->productoModel->buscarPorTitulo($titulo);
+            if (!$productoExistente) {
+                // Producto no existe: crearlo
+                $this->productoModel->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $categoria, $codigo_producto);
+            } else {
+                // Producto existe: actualizar con nueva información si fue proporcionada
+                if (!empty($foto) || !empty($descripcion) || $precio > 0 || !empty($codigo_producto)) {
+                    $this->productoModel->actualizar(
+                        (int)$productoExistente['id'],
+                        $titulo,
+                        !empty($foto) ? $foto : $productoExistente['foto'],
+                        !empty($descripcion) ? $descripcion : $productoExistente['descripcion'],
+                        $precio > 0 ? $precio : $productoExistente['precio'],
+                        $iva,
+                        $porcentaje_iva,
+                        'activo',
+                        !empty($categoria) ? $categoria : $productoExistente['categoria'],
+                        !empty($codigo_producto) ? $codigo_producto : $productoExistente['codigo_producto']
+                    );
+                }
+            }
         }
 
         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
@@ -325,9 +345,28 @@ class CotizacionController
         }
 
         if ($clienteId === null && !empty($clienteNit)) {
-            $existe = $this->clienteModel->existeNit($clienteNit);
-            if (!$existe) {
-                $this->clienteModel->crear($clienteNombre, $clienteNit, '', $clienteCiudad, $clienteDireccion, $clienteContacto, $clienteTelefono, $clienteCorreo);
+            $clienteExistente = $this->clienteModel->buscarPorNit($clienteNit);
+            if ($clienteExistente) {
+                // Cliente existe: usar su ID y actualizar con datos nuevos si es necesario
+                $clienteId = (int)$clienteExistente['id'];
+                // Actualizar cliente con información adicional si fue proporcionada
+                if (!empty($clienteNombre) || !empty($clienteTelefono) || !empty($clienteCorreo)) {
+                    $this->clienteModel->actualizar(
+                        $clienteId,
+                        !empty($clienteNombre) ? $clienteNombre : $clienteExistente['nombre'],
+                        $clienteNit,
+                        $clienteExistente['departamento'],
+                        !empty($clienteCiudad) ? $clienteCiudad : $clienteExistente['municipio'],
+                        !empty($clienteDireccion) ? $clienteDireccion : $clienteExistente['direccion'],
+                        !empty($clienteContacto) ? $clienteContacto : $clienteExistente['nombre_contacto'],
+                        !empty($clienteTelefono) ? $clienteTelefono : $clienteExistente['telefono'],
+                        !empty($clienteCorreo) ? $clienteCorreo : $clienteExistente['correo']
+                    );
+                }
+            } else {
+                // Cliente no existe: crearlo con los datos ingresados
+                $nuevoClienteId = $this->clienteModel->crear($clienteNombre, $clienteNit, '', $clienteCiudad, $clienteDireccion, $clienteContacto, $clienteTelefono, $clienteCorreo);
+                $clienteId = $nuevoClienteId;
             }
         }
 
