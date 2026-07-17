@@ -27,11 +27,8 @@ $totalValorFinal      = 0;
             </div>
             <div>
                 <a href="<?= $basePath ?>?module=cotizaciones&action=consultar" class="btn-mod-primary" style="background:#6b7280; border:none;">
-                    <i class="bi bi-arrow-left"></i> Volver a Consultar
+                    <i class="bi bi-arrow-left"></i> Volver
                 </a>
-                <button type="button" class="btn-mod-primary" onclick="window.print()" style="margin-left:8px;">
-                    <i class="bi bi-printer-fill"></i> Imprimir
-                </button>
             </div>
         </div>
 
@@ -222,31 +219,8 @@ $totalValorFinal      = 0;
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </tbody>
-                    <!-- <tfoot>
-                        <tr style="background:#f3f4f6; font-size:14px;">
-                            <td style="text-align:right; font-weight:bold;">TOTALES:</td>
-                            <td style="text-align:right; font-weight:bold; color:#4b5563;">$<?= number_format($totalPrecioProveedor, 0, ',', '.') ?></td>
-                            <td style="text-align:right; font-weight:bold; color:#059669;">$<?= number_format($totalUtilidad, 0, ',', '.') ?></td>
-                            <td style="text-align:right; font-weight:bold; color:#d97706;">$<?= number_format($totalFlete, 0, ',', '.') ?></td>
-                            <td style="text-align:right; font-weight:bold; color:#2563eb;">$<?= number_format($totalCalibracion, 0, ',', '.') ?></td>
-                            <td style="text-align:right; font-weight:bold; color:#7c3aed;">$<?= number_format($totalEstampillas, 0, ',', '.') ?></td>
-                            <td colspan="2"></td>
-                            <td style="text-align:right; font-weight:900; color:#059669; font-size:16px;">$<?= number_format($totalValorFinal, 0, ',', '.') ?></td>
-                        </tr>
-                    </tfoot> -->
                 </table>
             </div>
-            
-            <!-- <div style="margin-top:20px; padding:15px; background:#f0fdf4; border:1px solid #6ee7b7; border-radius:8px; text-align:right;">
-                <p style="margin:0; font-size:14px; color:#064e3b;">
-                    <strong>Ganancia (Utilidad) Total Proyectada:</strong>
-                    <span style="font-size:20px; font-weight:bold;">$<?= number_format($totalUtilidad, 0, ',', '.') ?></span>
-                </p>
-                <p style="margin:5px 0 0 0; font-size:14px; color:#064e3b;">
-                    <strong>Valor Final Total con IVA:</strong>
-                    <span style="font-size:20px; font-weight:bold; color:#059669;">$<?= number_format($totalValorFinal, 0, ',', '.') ?></span>
-                </p>
-            </div> -->
         </div>
     </main>
 </div>
