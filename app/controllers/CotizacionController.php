@@ -166,12 +166,16 @@ class CotizacionController
                 }
             }
 
-            $this->model->insertarItem(
+            $inserted = $this->model->insertarItem(
                 $cotizacion_id, $producto_id, $titulo, $foto,
                 $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
                 $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
                 $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops
             );
+
+            if (!$inserted) {
+                throw new \RuntimeException('No se pudo guardar el ítem en la base de datos.');
+            }
 
             // Si es producto nuevo (no del catálogo), guardarlo en catálogo
             if ($producto_id === null) {
@@ -205,9 +209,8 @@ class CotizacionController
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
             exit();
         } catch (\Exception $e) {
-            // Log error para debugging
-            error_log("Error en procesarGuardarItem: " . $e->getMessage());
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear&error=general');
+            error_log('Error en procesarGuardarItem: ' . $e->getMessage());
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear&error=' . urlencode($e->getMessage()));
             exit();
         }
     }

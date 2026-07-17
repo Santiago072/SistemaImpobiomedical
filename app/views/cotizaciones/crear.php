@@ -28,6 +28,16 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         <div class="mod-alert mod-alert-ok"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($mensajeExito) ?></div>
         <?php endif; ?>
 
+        <?php
+        $errorUrl = htmlspecialchars(urldecode($_GET['error'] ?? ''));
+        if (!empty($errorUrl)): ?>
+        <div class="mod-alert mod-alert-err" style="background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; border-radius:10px; padding:12px 16px; margin-bottom:16px; display:flex; gap:10px; align-items:center;">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>Error al guardar el ítem: <?= $errorUrl ?></span>
+        </div>
+        <?php endif; ?>
+
+
         <div class="cot-grid">
 
             <!-- ── Panel izquierdo: Buscar / Formulario ── -->

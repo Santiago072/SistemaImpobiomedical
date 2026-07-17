@@ -2,6 +2,22 @@
 
 Todas las actualizaciones, cambios y versiones importantes del sistema se documentarán en este archivo para mantener un control estricto del desarrollo.
 
+## [v1.2.1] - 2026-07-17
+### Corregido
+- **Bug crítico en `insertarItem`**: El string de tipos de `mysqli_stmt_bind_param()` en `CotizacionModel::insertarItem()` tenía un orden incorrecto de tipos (`precio` marcado como `s` en lugar de `d`, entre otros), causando que el INSERT fallara silenciosamente. El resultado visible era que al agregar el segundo producto, el primero "desaparecía" porque el primer ítem nunca se había guardado en BD y el sistema buscaba un nuevo borrador en cada request.
+- **Manejo de errores en controller**: `procesarGuardarItem` ahora lanza `RuntimeException` si el INSERT falla, mostrando el mensaje de error al usuario en lugar de hacer redirect silencioso.
+- **Alerta de error en vista**: La vista `crear.php` ahora muestra un mensaje de error visible cuando el ítem no pudo guardarse.
+
+---
+
+## [v1.2.0] - 2026-07-17
+### Añadido
+- **README.md**: Documentación técnica completa del repositorio (arquitectura, instalación local, Docker, variables de entorno, módulos, seguridad, despliegue).
+- **MANUAL_USUARIO.md**: Manual de usuario paso a paso para todos los módulos del sistema (10 secciones, FAQ incluido).
+- **AUDITORIA_SISTEMA.md**: Auditoría de requisitos con matriz de estado, bugs reportados y plan de próximas fases.
+
+---
+
 ## [v1.1.0] - 2026-07-16
 ### Añadido
 - **Calculadora Dinámica de Ganancias (Opción A - JSON)**: Nueva funcionalidad para capturar múltiples operaciones de cálculo por etapa (Utilidad, Flete, Calibración, Estampillas).

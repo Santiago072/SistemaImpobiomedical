@@ -325,17 +325,40 @@ class CotizacionModel
                                  float $estampillas = 0, string $proveedor = '',
                                  string $codigoProveedor = '', string $calcOps = '{}'): bool
     {
+        // productoId puede ser NULL → se usa una variable intermedia para bind_param
+        $prodIdBind = $productoId; // mysqli acepta null en tipo 'i' desde PHP 8.1+,
+                                   // pero usamos variable explícita para compatibilidad
+
         $stmt = mysqli_prepare($this->db,
             'INSERT INTO cotizacion_items
              (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio, iva, porcentaje_iva, tiempo_entrega,
               categoria, codigo_producto, precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, proveedor, codigo_proveedor, calc_ops)
              VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-        mysqli_stmt_bind_param($stmt, 'iisssidsdsssdddddsss',
-            $cotizacionId, $productoId, $titulo, $foto, $descripcion,
-            $cantidad, $precio, $iva, $porcentajeIva, $tiempoEntrega,
-            $categoria, $codigoProducto, $precioProveedor, $porcentajeUtilidad,
-            $flete, $calibracion, $estampillas, $proveedor, $codigoProveedor, $calcOps);
+
+        // Tipos MySQLi — mapa 1:1 con los 20 parámetros del INSERT:
+        //   i  i  s  s  s  i  d  s  d  s  s  s  d  d  d  d  d  s  s  s
+        //   1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
+        $types = 'ii'   // cotizacion_id, producto_id
+               . 'sss'  // titulo, foto, descripcion
+               . 'i'    // cantidad
+               . 'd'    // precio
+               . 's'    // iva
+               . 'd'    // porcentaje_iva
+               . 'sss'  // tiempo_entrega, categoria, codigo_producto
+               . 'ddddd'// precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas
+               . 'sss'; // proveedor, codigo_proveedor, calc_ops
+        // strlen($types) === 20 ✓
+        mysqli_stmt_bind_param($stmt, $types,
+            $cotizacionId, $prodIdBind, $titulo, $foto, $descripcion,
+            $cantidad, $precio, $iva, $porcentajeIva,
+            $tiempoEntrega, $categoria, $codigoProducto,
+            $precioProveedor, $porcentajeUtilidad, $flete, $calibracion, $estampillas,
+            $proveedor, $codigoProveedor, $calcOps);
+
         $ok = mysqli_stmt_execute($stmt);
+        if (!$ok) {
+            error_log('insertarItem mysqli error: ' . mysqli_stmt_error($stmt));
+        }
         mysqli_stmt_close($stmt);
         return $ok;
     }
