@@ -77,7 +77,19 @@ class CotizacionModel
         $row = mysqli_fetch_assoc($result);
         return (int)($row['total'] ?? 0);
     }
+    public function contarTotalClientes(): int
+    {
+        $result = mysqli_query($this->db, "SELECT COUNT(*) AS total FROM clientes WHERE estado='activo'");
+        $row = mysqli_fetch_assoc($result);
+        return (int)($row['total'] ?? 0);
+    }
 
+    public function contarTotalProductos(): int
+    {
+        $result = mysqli_query($this->db, "SELECT COUNT(*) AS total FROM productos WHERE estado='activo'");
+        $row = mysqli_fetch_assoc($result);
+        return (int)($row['total'] ?? 0);
+    }
     // ── Cabecera ──────────────────────────────────────────────────────────────
 
     public function buscarPorId(int $id): ?array

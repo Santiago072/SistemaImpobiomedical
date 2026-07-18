@@ -24,13 +24,15 @@ class PanelController
         if ($rol === 'admin') {
             $totalCotizaciones    = $this->model->contarTotal();
             $cotizacionesMes      = $this->model->contarDelMes();
+            $totalClientes        = $this->model->contarTotalClientes();
+            $totalProductos       = $this->model->contarTotalProductos();
         } else {
             $totalCotizaciones    = $this->model->contarDelUsuario($usuarioId);
-            $cotizacionesMes      = 0; // Los usuarios solo ven su propio total
+            $cotizacionesMes      = 0;
+            $totalClientes        = 0;
+            $totalProductos       = 0;
         }
 
-        $metricasChart = $this->model->getMetricasDashboard($usuarioId, $rol);
-
-        return compact('totalCotizaciones', 'cotizacionesMes', 'metricasChart');
+        return compact('totalCotizaciones', 'cotizacionesMes', 'totalClientes', 'totalProductos');
     }
 }
