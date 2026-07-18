@@ -47,7 +47,11 @@ set_exception_handler(function (Throwable $e) {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['status' => 'error', 'message' => 'Error interno del servidor.']);
     } else {
-        echo "<h1>500 - Error Interno</h1><p>Ocurrió un error inesperado.</p>";
+        if (file_exists(__DIR__ . '/app/views/errores/500.php')) {
+            require_once __DIR__ . '/app/views/errores/500.php';
+        } else {
+            echo "<h1>500 - Error Interno</h1><p>Ocurrió un error inesperado.</p>";
+        }
     }
     exit();
 });
