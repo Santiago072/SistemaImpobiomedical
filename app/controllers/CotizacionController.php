@@ -13,17 +13,19 @@ require_once dirname(__DIR__, 2) . '/config/seguridad.php';
 class CotizacionController
 {
     private CotizacionModel   $model;
-    private ProductoModel     $productoModel;
-    private ClienteModel      $clienteModel;
     private FileUploadService $uploader;
+    private ItemCotizacionService $itemService;
+    private FinalizarCotizacionService $finalizarService;
     private int $porPagina = 10;
 
     public function __construct(\mysqli $conexion)
     {
-        $this->model         = new CotizacionModel($conexion);
-        $this->productoModel = new ProductoModel($conexion);
-        $this->clienteModel  = new ClienteModel($conexion);
-        $this->uploader      = new FileUploadService(dirname(__DIR__, 2) . '/uploads');
+        $this->model            = new CotizacionModel($conexion);
+        $this->productoModel    = new ProductoModel($conexion);
+        $this->clienteModel     = new ClienteModel($conexion);
+        $this->uploader         = new FileUploadService(dirname(__DIR__, 2) . '/uploads');
+        $this->itemService      = new ItemCotizacionService($this->model, $this->productoModel, $this->uploader);
+        $this->finalizarService = new FinalizarCotizacionService($this->model, $this->clienteModel);
     }
 
     // ── CREAR / GESTIONAR ÍTEMS ───────────────────────────────────────────────
@@ -113,99 +115,7 @@ class CotizacionController
         verificar_rate_limit(20, 60, 'cot_guardar_item');
 
         try {
-            $producto_id         = validar_numero($_POST['producto_id'] ?? '') ? (int)$_POST['producto_id'] : null;
-            $titulo              = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
-            $descripcion         = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
-            $cantidad            = max(1, (int)($_POST['cantidad'] ?? 1));
-            $precio              = (float)($_POST['precio'] ?? 0);
-            $iva                 = mb_substr(sanitizar_entrada($_POST['iva'] ?? 'si'), 0, 5);
-            $porcentaje_iva      = (float)($_POST['porcentaje_iva'] ?? 19);
-            $tiempo_entrega      = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 120);
-            $categoria           = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
-            $codigo_producto     = mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
-            $precio_proveedor    = (float)($_POST['precio_proveedor'] ?? 0);
-            $porcentaje_utilidad = (float)($_POST['porcentaje_utilidad'] ?? 0);
-            $flete               = (float)($_POST['flete'] ?? 0);
-            $calibracion         = (float)($_POST['calibracion'] ?? 0);
-            $estampillas         = (float)($_POST['estampillas'] ?? 0);
-            $proveedor           = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 100);
-            $codigo_proveedor    = mb_substr(sanitizar_entrada($_POST['codigo_proveedor'] ?? ''), 0, 60);
-            
-            // Validar y sanitizar calc_ops (debe ser JSON válido)
-            $calc_ops_raw = $_POST['calc_ops'] ?? '{}';
-            $calc_ops_decoded = json_decode($calc_ops_raw, true);
-            if ($calc_ops_decoded === null) {
-                $calc_ops = '{}'; // Si no es JSON válido, usar vacío
-            } else {
-                $calc_ops = json_encode($calc_ops_decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            }
-
-            if (!in_array($iva, ['si', 'no'], true)) {
-                $iva = 'si';
-            }
-
-            // Si es producto existente del catálogo, usar su foto
-            $producto = null;
-            if ($producto_id !== null) {
-                $producto = $this->productoModel->buscarPorId($producto_id);
-            }
-            
-            // Si hay foto en producto existente, usarla; sino, procesar subida
-            if ($producto !== null && !empty($producto['foto'])) {
-                $foto = $producto['foto'];
-            } else {
-                // Manejo seguro de subida de archivos
-                $fileInput = $_FILES['foto'] ?? [];
-                $fotoActual = $_POST['foto_actual'] ?? '';
-                
-                // Si no hay archivo subido, usar foto actual o vacío
-                if (!isset($fileInput['error']) || $fileInput['error'] === UPLOAD_ERR_NO_FILE) {
-                    $foto = basename($fotoActual);
-                } else {
-                    $foto = $this->uploader->subir($fileInput, $fotoActual);
-                }
-            }
-
-            $inserted = $this->model->insertarItem(
-                $cotizacion_id, $producto_id, $titulo, $foto,
-                $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
-                $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
-                $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops
-            );
-
-            if (!$inserted) {
-                throw new \RuntimeException('No se pudo guardar el ítem en la base de datos.');
-            }
-
-            // Si es producto nuevo (no del catálogo), guardarlo en catálogo
-            if ($producto_id === null) {
-                $productoExistente = $this->productoModel->buscarPorTitulo($titulo);
-                if (!$productoExistente) {
-                    // Producto no existe: crearlo
-                    $this->productoModel->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $categoria, $codigo_producto);
-                } else {
-                    // Producto existe: usar su foto si no se subió una nueva
-                    if (empty($foto) && !empty($productoExistente['foto'])) {
-                        $foto = $productoExistente['foto'];
-                    }
-                    // Actualizar con nueva información si fue proporcionada
-                    if (!empty($foto) || !empty($descripcion) || $precio > 0 || !empty($codigo_producto)) {
-                        $this->productoModel->actualizar(
-                            (int)$productoExistente['id'],
-                            $titulo,
-                            !empty($foto) ? $foto : $productoExistente['foto'],
-                            !empty($descripcion) ? $descripcion : $productoExistente['descripcion'],
-                            $precio > 0 ? $precio : $productoExistente['precio'],
-                            $iva,
-                            $porcentaje_iva,
-                            'activo',
-                            !empty($categoria) ? $categoria : $productoExistente['categoria'],
-                            !empty($codigo_producto) ? $codigo_producto : $productoExistente['codigo_producto']
-                        );
-                    }
-                }
-            }
-
+            $this->itemService->guardarItem($cotizacion_id, $_POST, $_FILES);
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
             exit();
         } catch (\Exception $e) {
@@ -254,47 +164,19 @@ class CotizacionController
             if (!verificar_token_csrf($_POST['csrf_token'] ?? '')) {
                 $mensajeError = 'Token de seguridad inválido';
             } else {
-                $itemId              = (int)($_POST['item_id'] ?? 0);
-                $titulo              = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
-                $descripcion         = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
-                $cantidad            = max(1, (int)($_POST['cantidad'] ?? 1));
-                $precio              = (float)($_POST['precio'] ?? 0);
-                $iva                 = mb_substr(sanitizar_entrada($_POST['iva'] ?? 'si'), 0, 5);
-                $porcentaje_iva      = (float)($_POST['porcentaje_iva'] ?? 19);
-                $tiempo_entrega      = mb_substr(sanitizar_entrada($_POST['tiempo_entrega'] ?? ''), 0, 120);
-                $categoria           = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
-                $codigo_producto     = mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
-                $precio_proveedor    = (float)($_POST['precio_proveedor'] ?? 0);
-                $porcentaje_utilidad = (float)($_POST['porcentaje_utilidad'] ?? 0);
-                $flete               = (float)($_POST['flete'] ?? 0);
-                $calibracion         = (float)($_POST['calibracion'] ?? 0);
-                $estampillas         = (float)($_POST['estampillas'] ?? 0);
-                $proveedor           = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 100);
-                $codigo_proveedor    = mb_substr(sanitizar_entrada($_POST['codigo_proveedor'] ?? ''), 0, 60);
-                
-                // Validar y sanitizar calc_ops (debe ser JSON válido)
-                $calc_ops_raw = $_POST['calc_ops'] ?? '{}';
-                $calc_ops_decoded = json_decode($calc_ops_raw, true);
-                if ($calc_ops_decoded === null) {
-                    $calc_ops = '{}'; // Si no es JSON válido, usar vacío
-                } else {
-                    $calc_ops = json_encode($calc_ops_decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-                }
-
-                if (!in_array($iva, ['si', 'no'], true)) {
-                    $mensajeError = 'IVA no válido';
-                } elseif ($cantidad <= 0 || $precio < 0) {
-                    $mensajeError = 'Cantidad y precio deben ser valores válidos';
-                } else {
-                    $foto = $this->uploader->reemplazar($_FILES['foto'] ?? [], $_POST['foto_actual'] ?? '');
-                    if ($this->model->actualizarItem($itemId, $cotizacion_id, $titulo, $foto,
-                            $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
-                            $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
-                            $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops)) {
+                try {
+                    $itemId = (int)($_POST['item_id'] ?? 0);
+                    if ($this->itemService->actualizarItem($itemId, $cotizacion_id, $_POST, $_FILES)) {
                         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear&updated=1');
                         exit();
+                    } else {
+                        $mensajeError = 'Error al actualizar el ítem';
                     }
-                    $mensajeError = 'Error al actualizar el ítem';
+                } catch (\InvalidArgumentException $e) {
+                    $mensajeError = $e->getMessage();
+                } catch (\Exception $e) {
+                    $mensajeError = 'Error inesperado al actualizar el ítem';
+                    error_log('Error en editarItem: ' . $e->getMessage());
                 }
             }
         }
@@ -390,63 +272,23 @@ class CotizacionController
             return compact('csrf_token', 'mensajeError', 'items', 'cotizacion_id');
         }
 
-        $fechaCreacion    = mb_substr(sanitizar_entrada($_POST['fecha_creacion'] ?? date('Y-m-d')), 0, 10);
-        $diasValidez      = max(1, (int)($_POST['dias_validez'] ?? 30));
-        $condicionesPago  = mb_substr(sanitizar_entrada($_POST['condiciones_pago'] ?? 'CONTADO'), 0, 100);
-        $observaciones    = mb_substr(sanitizar_entrada($_POST['observaciones'] ?? ''), 0, 1000);
-        $clienteId        = validar_numero($_POST['cliente_id'] ?? '') ? (int)$_POST['cliente_id'] : null;
-        $clienteNombre    = mb_substr(sanitizar_entrada($_POST['cliente_nombre'] ?? ''), 0, 200);
-        $clienteNit       = mb_substr(sanitizar_entrada($_POST['cliente_nit'] ?? ''), 0, 30);
-        $clienteDireccion = mb_substr(sanitizar_entrada($_POST['cliente_direccion'] ?? ''), 0, 200);
-        $clienteTelefono  = mb_substr(sanitizar_entrada($_POST['cliente_telefono'] ?? ''), 0, 30);
-        $clienteCorreo    = mb_substr(sanitizar_entrada($_POST['cliente_correo'] ?? ''), 0, 100);
-        $clienteContacto  = mb_substr(sanitizar_entrada($_POST['cliente_contacto'] ?? ''), 0, 100);
-        $clienteCiudad    = mb_substr(sanitizar_entrada($_POST['cliente_ciudad'] ?? ''), 0, 100);
-
+        $clienteNombre = mb_substr(sanitizar_entrada($_POST['cliente_nombre'] ?? ''), 0, 200);
         if (empty($clienteNombre)) {
             $mensajeError = 'El nombre del cliente es obligatorio';
             return compact('csrf_token', 'mensajeError', 'items', 'cotizacion_id');
         }
 
-        if ($clienteId === null && !empty($clienteNit)) {
-            $clienteExistente = $this->clienteModel->buscarPorNit($clienteNit);
-            if ($clienteExistente) {
-                // Cliente existe: usar su ID y actualizar con datos nuevos si es necesario
-                $clienteId = (int)$clienteExistente['id'];
-                // Actualizar cliente con información adicional si fue proporcionada
-                if (!empty($clienteNombre) || !empty($clienteTelefono) || !empty($clienteCorreo)) {
-                    $this->clienteModel->actualizar(
-                        $clienteId,
-                        !empty($clienteNombre) ? $clienteNombre : $clienteExistente['nombre'],
-                        $clienteNit,
-                        $clienteExistente['departamento'],
-                        !empty($clienteCiudad) ? $clienteCiudad : $clienteExistente['municipio'],
-                        !empty($clienteDireccion) ? $clienteDireccion : $clienteExistente['direccion'],
-                        !empty($clienteContacto) ? $clienteContacto : $clienteExistente['nombre_contacto'],
-                        !empty($clienteTelefono) ? $clienteTelefono : $clienteExistente['telefono'],
-                        !empty($clienteCorreo) ? $clienteCorreo : $clienteExistente['correo']
-                    );
-                }
-            } else {
-                // Cliente no existe: crearlo con los datos ingresados
-                $nuevoClienteId = $this->clienteModel->crear($clienteNombre, $clienteNit, '', $clienteCiudad, $clienteDireccion, $clienteContacto, $clienteTelefono, $clienteCorreo);
-                $clienteId = $nuevoClienteId;
-            }
+        try {
+            $numeroCotizacion = $this->finalizarService->procesarFinalizacion($cotizacion_id, $_POST, $_SESSION);
+            unset($_SESSION['cotizacion_id']);
+
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=generar_pdf&ver=' . urlencode($numeroCotizacion));
+            exit();
+        } catch (\Exception $e) {
+            error_log('Error al finalizar cotización: ' . $e->getMessage());
+            $mensajeError = 'Error inesperado al finalizar la cotización';
+            return compact('csrf_token', 'mensajeError', 'items', 'cotizacion_id');
         }
-
-        $numeroCotizacion = $this->model->finalizarCotizacion(
-            $cotizacion_id, $fechaCreacion, $diasValidez, $condicionesPago, $observaciones,
-            $clienteNombre, $clienteNit, $clienteDireccion, $clienteTelefono,
-            $clienteCorreo, $clienteContacto, $clienteCiudad, $clienteId,
-            $_SESSION['usuario_nombre'] ?? '',
-            $_SESSION['usuario_cargo'] ?? '',
-            $_SESSION['usuario_codigo'] ?? ''
-        );
-
-        unset($_SESSION['cotizacion_id']);
-
-        header('Location: ' . BASE_URL . '?module=cotizaciones&action=generar_pdf&ver=' . urlencode($numeroCotizacion));
-        exit();
     }
 
     // ── CONSULTAR ─────────────────────────────────────────────────────────────
