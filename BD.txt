@@ -124,21 +124,7 @@ CREATE TABLE IF NOT EXISTS cotizacion_items (
     FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ══ ALTER: ejecutar en producción para agregar las nuevas columnas ══
--- ALTER TABLE cotizacion_items
---   ADD COLUMN categoria        VARCHAR(100)  DEFAULT NULL AFTER tiempo_entrega,
---   ADD COLUMN codigo_producto  VARCHAR(60)   DEFAULT NULL AFTER categoria,
---   ADD COLUMN precio_proveedor DECIMAL(20,2) DEFAULT 0.00 AFTER codigo_producto,
---   ADD COLUMN porcentaje_utilidad DECIMAL(8,2) DEFAULT 0.00 AFTER precio_proveedor,
---   ADD COLUMN flete            DECIMAL(20,2) DEFAULT 0.00 AFTER porcentaje_utilidad,
---   ADD COLUMN calibracion      DECIMAL(20,2) DEFAULT 0.00 AFTER flete,
---   ADD COLUMN estampillas      DECIMAL(20,2) DEFAULT 0.00 AFTER calibracion,
---   ADD COLUMN proveedor        VARCHAR(100)  DEFAULT NULL AFTER estampillas,
---   ADD COLUMN codigo_proveedor VARCHAR(60)   DEFAULT NULL AFTER proveedor;
 
--- ══ ALTER: ejecutar en producción para agregar calc_ops (Opción A - JSON) ══
--- ALTER TABLE cotizacion_items
---   ADD COLUMN calc_ops JSON DEFAULT '{}' AFTER codigo_proveedor;
 
 -- ── Usuario administrador inicial ───────────────────────────
 -- Contraseña inicial: Admin2026* (cambiar tras primer acceso)
@@ -147,7 +133,3 @@ INSERT INTO `usuarios` (`codigo`, `documento`, `nombre`, `correo`, `password`, `
  '$2y$10$EOofArNIR1pB.DfysZAhzeB13ImopdK5BVeexCagCl/2jxBo4OMGK',
  '3000000000', 'Administrador', 'admin', 'activo');
 
--- ══ ALTER: ejecutar en producción para agregar columnas a productos ══
--- ALTER TABLE productos
---   ADD COLUMN categoria VARCHAR(100) DEFAULT NULL AFTER porcentaje_iva,
---   ADD COLUMN codigo_producto VARCHAR(60) DEFAULT NULL AFTER categoria;
