@@ -73,7 +73,7 @@ $base = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <h1 class="error-title">¡Ups! Algo no salió como esperábamos</h1>
             <p class="error-desc">
                 Parece que hemos tenido un inconveniente técnico intentando procesar tu solicitud. 
-                Nuestro equipo técnico ya ha sido notificado y el error ha quedado registrado.
+                Por favor, intenta nuevamente en unos momentos o regresa a la página anterior.
             </p>
             <a href="javascript:history.back()" class="btn-back">
                 <i class="bi bi-arrow-left-circle-fill"></i>

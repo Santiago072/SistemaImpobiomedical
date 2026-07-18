@@ -12,10 +12,6 @@ logs/*.log
 uploads/*
 !uploads/.gitkeep
 
-# Sesiones de PHP
-sessions/
-!sessions/.gitkeep
-
 # IDE
 .vscode/
 .idea/
