@@ -16,10 +16,11 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         include __DIR__ . '/../layout/topbar.php'; 
         ?>
         
-        <div class="page-header">
-            <h1 class="page-title"><i class="bi bi-bar-chart-fill"></i> Panel de Estadísticas</h1>
-            <p class="page-sub">Análisis de rendimiento, cotizaciones y productos.</p>
-        </div>
+        <div class="estadisticas-container">
+            <div class="page-header">
+                <h1 class="page-title"><i class="bi bi-bar-chart-fill"></i> Panel de Estadísticas</h1>
+                <p class="page-sub">Análisis de rendimiento, cotizaciones y productos.</p>
+            </div>
 
         <!-- KPIs Mejorados -->
         <div class="kpi-grid">
@@ -83,15 +84,21 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 </div>
             </div>
             
+            </div>
         </div>
 
     </main>
 </div>
 
 <style>
+.estadisticas-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
 }
@@ -102,7 +109,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     padding: 24px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -117,8 +124,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     font-size: 24px; color: #fff;
     flex-shrink: 0;
 }
-.kpi-num { font-size: 28px; font-weight: 800; color: #1f2937; line-height: 1; margin-bottom: 4px; }
-.kpi-label { font-size: 13px; color: #6b7280; font-weight: 600; text-transform: uppercase; }
+.kpi-num { font-size: 24px; font-weight: 800; color: #1f2937; line-height: 1; margin-bottom: 4px; letter-spacing: -0.5px; }
+.kpi-label { font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; }
 
 .charts-grid {
     display: grid;
@@ -166,7 +173,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     label: 'Cotizaciones Generadas',
                     data: evolucionData.cotizaciones.length ? evolucionData.cotizaciones : [0],
                     backgroundColor: 'rgba(59, 130, 246, 0.8)', // Azul
-                    borderRadius: 4
+                    borderRadius: 4,
+                    maxBarThickness: 45
                 },
                 {
                     type: 'line',
@@ -206,9 +214,13 @@ document.addEventListener('DOMContentLoaded', function() {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'right', labels: { boxWidth: 12 } }
+                legend: { 
+                    position: 'right', 
+                    labels: { boxWidth: 12, padding: 20, font: { size: 12 } } 
+                }
             },
-            cutout: '65%'
+            cutout: '70%',
+            layout: { padding: 20 }
         }
     });
 
@@ -224,7 +236,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 label: 'Cotizaciones emitidas',
                 data: clientData.data.length ? clientData.data : [0],
                 backgroundColor: 'rgba(139, 92, 246, 0.8)', // Morado
-                borderRadius: 4
+                borderRadius: 4,
+                maxBarThickness: 40
             }]
         },
         options: {
