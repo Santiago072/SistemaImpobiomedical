@@ -25,9 +25,11 @@ class EstadisticaModel
 
         $whereFechas = "";
         $whereFechasCot = "";
+        $whereFechasOrd = "";
         if ($fecha_inicio && $fecha_fin) {
             $whereFechas = " AND fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
             $whereFechasCot = " AND c.fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+            $whereFechasOrd = " AND fecha BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
         }
 
         // Cotizaciones (finalizadas)
@@ -37,7 +39,7 @@ class EstadisticaModel
         }
 
         // Órdenes
-        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM ordenes_compra WHERE 1=1 $whereFechas");
+        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM ordenes_compra WHERE 1=1 $whereFechasOrd");
         if ($res && $row = mysqli_fetch_assoc($res)) {
             $kpis['total_ordenes'] = (int)$row['total'];
         }
@@ -138,7 +140,7 @@ class EstadisticaModel
             WHERE 1=1
         ";
         if ($fecha_inicio && $fecha_fin) {
-            $query .= " AND o.fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+            $query .= " AND o.fecha BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
         }
         $query .= " GROUP BY u.id ORDER BY cantidad DESC LIMIT ?";
         $stmt = mysqli_prepare($this->db, $query);

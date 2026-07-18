@@ -100,15 +100,16 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 <div class="chart-wrapper" style="height: 300px;">
                     <canvas id="clientesChart"></canvas>
                 </div>
+            </div>
+
             <!-- Top Vendedores (Barras Horizontales) -->
             <div class="chart-container">
-                <h2 class="section-title">Top 5 Vendedores (Cotizaciones)</h2>
+                <h2 class="section-title">Top 5 Vendedores (Órdenes)</h2>
                 <div class="chart-wrapper" style="height: 300px;">
                     <canvas id="vendedoresChart"></canvas>
                 </div>
             </div>
             
-            </div>
         </div>
 
     </main>
