@@ -174,6 +174,11 @@ function verificar_autenticacion(): void
         header("Location: {$base}");
         exit();
     }
+    
+    // Prevenir caché para que el botón "Atrás" del navegador no muestre páginas protegidas
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Cache-Control: post-check=0, pre-check=0', false);
+    header('Pragma: no-cache');
 }
 
 function verificar_admin(): void

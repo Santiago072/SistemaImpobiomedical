@@ -110,8 +110,8 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
 }
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
     margin-bottom: 40px;
 }
 .kpi-card {
@@ -119,10 +119,10 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
     backdrop-filter: blur(10px);
     border: 1px solid rgba(229, 231, 235, 0.5);
     border-radius: 20px;
-    padding: 28px;
+    padding: 20px;
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 16px;
     transition: all .3s ease;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
 }
@@ -132,11 +132,11 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
     border-color: rgba(16, 117, 126, 0.2);
 }
 .kpi-icon {
-    width: 65px; height: 65px;
-    border-radius: 18px;
+    width: 55px; height: 55px;
+    border-radius: 16px;
     background: linear-gradient(135deg, #10757e, #20b2aa);
     display: flex; align-items: center; justify-content: center;
-    font-size: 28px; color: #fff;
+    font-size: 24px; color: #fff;
     flex-shrink: 0;
     box-shadow: 0 6px 15px rgba(16, 117, 126, 0.25);
 }
@@ -144,8 +144,8 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
     background: linear-gradient(135deg, #f59e0b, #d97706);
     box-shadow: 0 6px 15px rgba(245, 158, 11, 0.25);
 }
-.kpi-num { font-size: 36px; font-weight: 800; color: #1f2937; line-height: 1; letter-spacing: -1px; }
-.kpi-label { font-size: 14px; color: #6b7280; margin-top: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-num { font-size: 28px; font-weight: 800; color: #1f2937; line-height: 1; letter-spacing: -0.5px; }
+.kpi-label { font-size: 13px; color: #6b7280; margin-top: 6px; font-weight: 600; line-height: 1.2; }
 .section-title {
     font-size: 18px; font-weight: 700;
     color: #1f2937; margin-bottom: 20px;
