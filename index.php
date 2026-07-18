@@ -99,6 +99,7 @@ if ($module === '') {
 // ── Mapa de módulos (OCP) ─────────────────────────────────────────────────────
 $rutasMap = [
     'panel'        => true,
+    'estadisticas' => true,
     'usuarios'     => true,
     'clientes'     => true,
     'productos'    => true,
@@ -112,6 +113,12 @@ if (!array_key_exists($module, $rutasMap)) {
 }
 
 $db = conexion();
+
+// Prevenir caché para que el botón "Atrás" del navegador no muestre páginas protegidas (bfcache)
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+header('Expires: Sat, 26 Jul 1997 05:00:00 GMT'); // Fecha en el pasado para asegurar expiración
 
 // ── Dispatch por módulo ───────────────────────────────────────────────────────
 
