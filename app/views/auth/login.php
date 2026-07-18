@@ -109,12 +109,13 @@ $base = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                        value="<?= htmlspecialchars($csrf_token ?? '') ?>">
 
                 <div class="field">
-                    <label for="correo">Correo electrónico</label>
+                    <label for="correo">Documento o Correo electrónico</label>
                     <div class="field-wrap">
-                        <input type="email" id="correo" name="correo"
-                               placeholder="usuario@impobiomedical.com"
-                               required autocomplete="email">
-                        <i class="bi bi-envelope field-icon"></i>
+                        <!-- Se mantiene el nombre 'correo' por compatibilidad con el backend, pero acepta ambos -->
+                        <input type="text" id="correo" name="correo"
+                                placeholder="1000000000 o correo@impobiomedical.com"
+                                required autocomplete="username">
+                        <i class="bi bi-person-badge field-icon"></i>
                     </div>
                 </div>
 

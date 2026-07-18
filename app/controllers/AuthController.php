@@ -37,15 +37,15 @@ class AuthController
             return compact('mensajeError', 'csrf_token');
         }
 
-        $correo    = sanitizar_entrada($_POST['correo'] ?? '');
-        $contrasena = $_POST['contrasena'] ?? '';
+        $identificador = sanitizar_entrada($_POST['correo'] ?? '');
+        $contrasena    = $_POST['contrasena'] ?? '';
 
-        if ($correo === '' || $contrasena === '') {
+        if ($identificador === '' || $contrasena === '') {
             $mensajeError = 'Por favor complete todos los campos';
             return compact('mensajeError', 'csrf_token');
         }
 
-        $usuario = $this->model->buscarPorCorreo($correo);
+        $usuario = $this->model->buscarPorDocumentoOCorreo($identificador);
 
         if ($usuario && password_verify($contrasena, $usuario['password'])) {
             regenerar_sesion();
@@ -61,7 +61,7 @@ class AuthController
             exit();
         }
 
-        $mensajeError = 'Correo o contraseña incorrectos';
+        $mensajeError = 'Documento, correo o contraseña incorrectos';
         return compact('mensajeError', 'csrf_token');
     }
 
