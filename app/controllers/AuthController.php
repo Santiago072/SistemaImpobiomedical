@@ -28,7 +28,8 @@ class AuthController
             return compact('mensajeError', 'csrf_token');
         }
 
-        verificar_rate_limit(15, 60, 'login');
+        // Límite estricto de seguridad: 5 intentos de login cada 5 minutos (300 segundos) para evitar fuerza bruta
+        verificar_rate_limit(5, 300, 'login');
 
         $tokenPost = $_POST['csrf_token'] ?? '';
         if (!verificar_token_csrf($tokenPost)) {
