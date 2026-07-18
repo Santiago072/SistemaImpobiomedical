@@ -37,7 +37,7 @@ class AuthController
             return compact('mensajeError', 'csrf_token');
         }
 
-        $identificador = sanitizar_entrada($_POST['correo'] ?? '');
+        $identificador = sanitizar_entrada($_POST['documento'] ?? '');
         $contrasena    = $_POST['contrasena'] ?? '';
 
         if ($identificador === '' || $contrasena === '') {
@@ -61,7 +61,7 @@ class AuthController
             exit();
         }
 
-        $mensajeError = 'Documento, correo o contraseña incorrectos';
+        $mensajeError = 'Documento o contraseña incorrectos';
         return compact('mensajeError', 'csrf_token');
     }
 
