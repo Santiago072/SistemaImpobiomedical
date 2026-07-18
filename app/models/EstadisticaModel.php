@@ -1,0 +1,144 @@
+<?php
+/**
+ * EstadisticaModel — maneja todas las consultas complejas de análisis de datos.
+ * Exclusivo para administradores.
+ */
+class EstadisticaModel
+{
+    private \mysqli $db;
+
+    public function __construct(\mysqli $conexion)
+    {
+        $this->db = $conexion;
+    }
+
+    // ── 1. KPIs Generales ───────────────────────────────────────────────────
+    public function getKpisGenerales(): array
+    {
+        $kpis = [
+            'total_cotizaciones' => 0,
+            'total_ordenes' => 0,
+            'total_clientes' => 0,
+            'total_productos' => 0,
+            'monto_cotizado_mes' => 0
+        ];
+
+        // Cotizaciones (finalizadas)
+        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM cotizaciones WHERE estado = 'finalizada'");
+        if ($res && $row = mysqli_fetch_assoc($res)) {
+            $kpis['total_cotizaciones'] = (int)$row['total'];
+        }
+
+        // Órdenes
+        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM ordenes_compra");
+        if ($res && $row = mysqli_fetch_assoc($res)) {
+            $kpis['total_ordenes'] = (int)$row['total'];
+        }
+
+        // Clientes
+        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM clientes WHERE estado = 'activo'");
+        if ($res && $row = mysqli_fetch_assoc($res)) {
+            $kpis['total_clientes'] = (int)$row['total'];
+        }
+
+        // Productos
+        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM productos WHERE estado = 'activo'");
+        if ($res && $row = mysqli_fetch_assoc($res)) {
+            $kpis['total_productos'] = (int)$row['total'];
+        }
+
+        // Monto cotizado este mes
+        $queryMonto = "
+            SELECT SUM(i.cantidad * i.precio) as total_monto
+            FROM cotizacion_items i
+            JOIN cotizaciones c ON i.cotizacion_id = c.id
+            WHERE c.estado = 'finalizada' 
+              AND MONTH(c.fecha_creacion) = MONTH(CURRENT_DATE())
+              AND YEAR(c.fecha_creacion) = YEAR(CURRENT_DATE())
+        ";
+        $res = mysqli_query($this->db, $queryMonto);
+        if ($res && $row = mysqli_fetch_assoc($res)) {
+            $kpis['monto_cotizado_mes'] = (float)($row['total_monto'] ?? 0);
+        }
+
+        return $kpis;
+    }
+
+    // ── 2. Top Clientes (Bar Chart Horizontal) ──────────────────────────────
+    public function getTopClientes(int $limite = 5): array
+    {
+        $query = "
+            SELECT cliente_nombre, COUNT(*) as cantidad
+            FROM cotizaciones
+            WHERE estado = 'finalizada' AND cliente_nombre != ''
+            GROUP BY cliente_nombre
+            ORDER BY cantidad DESC
+            LIMIT ?
+        ";
+        $stmt = mysqli_prepare($this->db, $query);
+        mysqli_stmt_bind_param($stmt, 'i', $limite);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        $datos = ['labels' => [], 'data' => []];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $datos['labels'][] = mb_substr($row['cliente_nombre'], 0, 20); // truncar nombres largos
+            $datos['data'][] = (int)$row['cantidad'];
+        }
+        mysqli_stmt_close($stmt);
+        return $datos;
+    }
+
+    // ── 3. Top Productos Cotizados (Doughnut Chart) ─────────────────────────
+    public function getTopProductos(int $limite = 5): array
+    {
+        $query = "
+            SELECT p.titulo, COUNT(i.id) as cantidad
+            FROM cotizacion_items i
+            JOIN productos p ON i.producto_id = p.id
+            JOIN cotizaciones c ON i.cotizacion_id = c.id
+            WHERE c.estado = 'finalizada'
+            GROUP BY p.id
+            ORDER BY cantidad DESC
+            LIMIT ?
+        ";
+        $stmt = mysqli_prepare($this->db, $query);
+        mysqli_stmt_bind_param($stmt, 'i', $limite);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        $datos = ['labels' => [], 'data' => []];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $datos['labels'][] = mb_substr($row['titulo'], 0, 20);
+            $datos['data'][] = (int)$row['cantidad'];
+        }
+        mysqli_stmt_close($stmt);
+        return $datos;
+    }
+
+    // ── 4. Cotizaciones y Órdenes por Mes (Line Chart / Bar Chart) ──────────
+    public function getMetricasEvolucion(): array
+    {
+        // Traer últimos 6 meses
+        $query = "
+            SELECT 
+                DATE_FORMAT(c.fecha_creacion, '%Y-%m') as mes,
+                COUNT(c.id) as cotizaciones,
+                (SELECT COUNT(o.id) FROM ordenes_compra o JOIN cotizaciones c2 ON o.cotizacion_id = c2.id WHERE DATE_FORMAT(c2.fecha_creacion, '%Y-%m') = DATE_FORMAT(c.fecha_creacion, '%Y-%m')) as ordenes
+            FROM cotizaciones c
+            WHERE c.estado = 'finalizada' 
+              AND c.fecha_creacion >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+            GROUP BY mes
+            ORDER BY mes ASC
+        ";
+        $res = mysqli_query($this->db, $query);
+        
+        $datos = ['meses' => [], 'cotizaciones' => [], 'ordenes' => []];
+        while ($row = mysqli_fetch_assoc($res)) {
+            $datos['meses'][] = $row['mes'];
+            $datos['cotizaciones'][] = (int)$row['cotizaciones'];
+            $datos['ordenes'][] = (int)$row['ordenes'];
+        }
+        return $datos;
+    }
+}

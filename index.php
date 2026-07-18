@@ -123,6 +123,16 @@ if ($module === 'panel') {
     exit();
 }
 
+if ($module === 'estadisticas') {
+    require_once __DIR__ . '/app/controllers/EstadisticaController.php';
+    require_once __DIR__ . '/app/models/EstadisticaModel.php';
+    $ctrl = new EstadisticaController($db);
+    $data = $ctrl->index();
+    extract($data);
+    include __DIR__ . '/app/views/estadisticas/index.php';
+    exit();
+}
+
 if ($module === 'usuarios') {
     $ctrl = new UsuarioController($db);
     switch ($action) {
