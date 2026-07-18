@@ -54,13 +54,6 @@ else
         sleep 2
     done
 
-    docker exec -i impobiomedical_db mariadb \
-        -u impo_user \
-        -p"${DB_PASS_LOCAL}" \
-        sistema_impobiomedical \
-        < ordenes_compra_bd.sql \
-        && echo "  ✅ ordenes_compra_bd aplicado." \
-        || echo "  ⚠️  Error en ordenes_compra_bd."
 
     docker exec -i impobiomedical_db mariadb \
         -u impo_user \

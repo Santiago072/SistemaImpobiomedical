@@ -109,11 +109,10 @@ $base = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                        value="<?= htmlspecialchars($csrf_token ?? '') ?>">
 
                 <div class="field">
-                    <label for="correo">Documento o Correo electrónico</label>
+                    <label for="documento">Número de Documento</label>
                     <div class="field-wrap">
-                        <!-- Se mantiene el nombre 'correo' por compatibilidad con el backend, pero acepta ambos -->
-                        <input type="text" id="correo" name="correo"
-                                placeholder="1000000000 o correo@impobiomedical.com"
+                        <input type="text" id="documento" name="documento"
+                                placeholder="Ej: 1000000000"
                                 required autocomplete="username">
                         <i class="bi bi-person-badge field-icon"></i>
                     </div>
@@ -163,10 +162,10 @@ $base = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     });
 
     // Focus: cambiar color del ícono
-    document.getElementById('correo').addEventListener('focus', function () {
+    document.getElementById('documento').addEventListener('focus', function () {
         this.parentNode.querySelector('.field-icon').style.color = '#10757e';
     });
-    document.getElementById('correo').addEventListener('blur', function () {
+    document.getElementById('documento').addEventListener('blur', function () {
         this.parentNode.querySelector('.field-icon').style.color = '#9ca3af';
     });
     document.getElementById('contrasena').addEventListener('focus', function () {
