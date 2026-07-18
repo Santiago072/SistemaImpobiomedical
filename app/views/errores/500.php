@@ -75,9 +75,9 @@ $base = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 Parece que hemos tenido un inconveniente técnico intentando procesar tu solicitud. 
                 Nuestro equipo técnico ya ha sido notificado y el error ha quedado registrado.
             </p>
-            <a href="<?= $base ?>" class="btn-back">
-                <i class="bi bi-house-door-fill"></i>
-                Volver al inicio
+            <a href="javascript:history.back()" class="btn-back">
+                <i class="bi bi-arrow-left-circle-fill"></i>
+                Volver atrás
             </a>
         </div>
     </div>

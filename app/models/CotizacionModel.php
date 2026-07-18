@@ -22,14 +22,42 @@ class CotizacionModel
     public function contarDelUsuario(int $usuarioId): int
     {
         $stmt = mysqli_prepare($this->db,
-            "SELECT COUNT(*) AS total FROM cotizaciones
-             WHERE usuario_id = ? AND estado = 'finalizada'");
+            "SELECT COUNT(*) AS total FROM cotizaciones WHERE usuario_id = ? AND estado != 'borrador'");
         mysqli_stmt_bind_param($stmt, 'i', $usuarioId);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $row    = mysqli_fetch_assoc($result);
         mysqli_stmt_close($stmt);
         return (int)($row['total'] ?? 0);
+    }
+
+    public function getMetricasDashboard(int $usuarioId, string $rol): array
+    {
+        // Cotizaciones creadas en los últimos 6 meses (agrupadas por mes)
+        $where = "estado != 'borrador' AND fecha_creacion >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
+        if ($rol !== 'admin') {
+            $where .= " AND usuario_id = " . (int)$usuarioId;
+        }
+
+        $query = "SELECT DATE_FORMAT(fecha_creacion, '%Y-%m') AS mes, COUNT(*) AS total 
+                  FROM cotizaciones 
+                  WHERE $where 
+                  GROUP BY mes 
+                  ORDER BY mes ASC";
+                  
+        $result = mysqli_query($this->db, $query);
+        $meses = [];
+        $totales = [];
+        
+        while ($row = mysqli_fetch_assoc($result)) {
+            $meses[] = $row['mes'];
+            $totales[] = (int)$row['total'];
+        }
+        
+        return [
+            'meses' => $meses,
+            'totales' => $totales
+        ];
     }
 
     public function contarTotal(): int

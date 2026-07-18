@@ -66,12 +66,12 @@ class UsuarioModel
         return $row ?: null;
     }
 
-    public function buscarPorDocumentoOCorreo(string $identificador): ?array
+    public function buscarPorDocumento(string $documento): ?array
     {
         $stmt = mysqli_prepare($this->db,
             "SELECT id, codigo, nombre, correo, documento, password, cargo, rol
-             FROM usuarios WHERE (correo = ? OR documento = ?) AND estado = 'activo'");
-        mysqli_stmt_bind_param($stmt, 'ss', $identificador, $identificador);
+             FROM usuarios WHERE documento = ? AND estado = 'activo'");
+        mysqli_stmt_bind_param($stmt, 's', $documento);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $row    = mysqli_fetch_assoc($result);

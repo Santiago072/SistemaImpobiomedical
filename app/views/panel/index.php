@@ -75,10 +75,32 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
                 <?php endif; ?>
             </div>
         </div>
+<!-- Gráfico de Cotizaciones -->
+        <div class="chart-container">
+            <h2 class="section-title">Cotizaciones Últimos 6 Meses</h2>
+            <div class="chart-wrapper">
+                <canvas id="cotizacionesChart"></canvas>
+            </div>
+        </div>
+
     </main>
 </div>
 
 <style>
+.chart-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+}
+.chart-wrapper {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
 .badge-codigo {
     display: inline-block;
     background: linear-gradient(135deg, #10757e, #0a4f55);
@@ -169,6 +191,53 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('cotizacionesChart').getContext('2d');
+    const metricas = <?= json_encode($metricasChart) ?>;
+    
+    // Formatear meses (Ej: 2026-07 -> Jul 2026)
+    const labels = metricas.meses.map(mesStr => {
+        const [year, month] = mesStr.split('-');
+        const date = new Date(year, month - 1);
+        return date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+    });
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels.length > 0 ? labels : ['Sin datos'],
+            datasets: [{
+                label: 'Cotizaciones Creadas',
+                data: metricas.totales.length > 0 ? metricas.totales : [0],
+                borderColor: '#10757e',
+                backgroundColor: 'rgba(16, 117, 126, 0.1)',
+                borderWidth: 2,
+                pointBackgroundColor: '#20b2aa',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#20b2aa',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+});
+</script>
 <script src="<?= $basePath ?>public/js/script.js"></script>
 </body>
 </html>

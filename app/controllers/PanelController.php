@@ -29,6 +29,8 @@ class PanelController
             $cotizacionesMes      = 0; // Los usuarios solo ven su propio total
         }
 
-        return compact('totalCotizaciones', 'cotizacionesMes');
+        $metricasChart = $this->model->getMetricasDashboard($usuarioId, $rol);
+
+        return compact('totalCotizaciones', 'cotizacionesMes', 'metricasChart');
     }
 }

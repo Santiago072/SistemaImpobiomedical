@@ -45,7 +45,7 @@ class AuthController
             return compact('mensajeError', 'csrf_token');
         }
 
-        $usuario = $this->model->buscarPorDocumentoOCorreo($identificador);
+        $usuario = $this->model->buscarPorDocumento($identificador);
 
         if ($usuario && password_verify($contrasena, $usuario['password'])) {
             regenerar_sesion();
