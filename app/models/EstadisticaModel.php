@@ -13,7 +13,7 @@ class EstadisticaModel
     }
 
     // ── 1. KPIs Generales ───────────────────────────────────────────────────
-    public function getKpisGenerales(): array
+    public function getKpisGenerales(?string $fecha_inicio = null, ?string $fecha_fin = null): array
     {
         $kpis = [
             'total_cotizaciones' => 0,
@@ -47,15 +47,20 @@ class EstadisticaModel
             $kpis['total_productos'] = (int)$row['total'];
         }
 
-        // Monto cotizado este mes
+        // Monto cotizado este periodo
         $queryMonto = "
             SELECT SUM(i.cantidad * i.precio) as total_monto
             FROM cotizacion_items i
             JOIN cotizaciones c ON i.cotizacion_id = c.id
             WHERE c.estado = 'finalizada' 
-              AND MONTH(c.fecha_creacion) = MONTH(CURRENT_DATE())
-              AND YEAR(c.fecha_creacion) = YEAR(CURRENT_DATE())
         ";
+        // Si no hay filtro, usar mes actual
+        if ($fecha_inicio && $fecha_fin) {
+            $queryMonto .= " AND c.fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+        } else {
+            $queryMonto .= " AND MONTH(c.fecha_creacion) = MONTH(CURRENT_DATE()) AND YEAR(c.fecha_creacion) = YEAR(CURRENT_DATE())";
+        }
+        
         $res = mysqli_query($this->db, $queryMonto);
         if ($res && $row = mysqli_fetch_assoc($res)) {
             $kpis['monto_cotizado_mes'] = (float)($row['total_monto'] ?? 0);
@@ -82,7 +87,7 @@ class EstadisticaModel
         
         $datos = ['labels' => [], 'data' => []];
         while ($row = mysqli_fetch_assoc($result)) {
-            $datos['labels'][] = mb_substr($row['cliente_nombre'], 0, 20); // truncar nombres largos
+            $datos['labels'][] = mb_substr($row['cliente_nombre'], 0, 45); 
             $datos['data'][] = (int)$row['cantidad'];
         }
         mysqli_stmt_close($stmt);
@@ -109,14 +114,40 @@ class EstadisticaModel
         
         $datos = ['labels' => [], 'data' => []];
         while ($row = mysqli_fetch_assoc($result)) {
-            $datos['labels'][] = mb_substr($row['titulo'], 0, 20);
+            $datos['labels'][] = mb_substr($row['titulo'], 0, 45);
             $datos['data'][] = (int)$row['cantidad'];
         }
         mysqli_stmt_close($stmt);
         return $datos;
     }
 
-    // ── 4. Cotizaciones y Órdenes por Mes (Line Chart / Bar Chart) ──────────
+    // ── 4. Top Vendedores (Bar Chart Horizontal) ────────────────────────────
+    public function getTopVendedores(int $limite = 5): array
+    {
+        $query = "
+            SELECT u.nombre, COUNT(c.id) as cantidad
+            FROM cotizaciones c
+            JOIN usuarios u ON c.usuario_id = u.id
+            WHERE c.estado = 'finalizada'
+            GROUP BY u.id
+            ORDER BY cantidad DESC
+            LIMIT ?
+        ";
+        $stmt = mysqli_prepare($this->db, $query);
+        mysqli_stmt_bind_param($stmt, 'i', $limite);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        $datos = ['labels' => [], 'data' => []];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $datos['labels'][] = mb_substr($row['nombre'], 0, 45);
+            $datos['data'][] = (int)$row['cantidad'];
+        }
+        mysqli_stmt_close($stmt);
+        return $datos;
+    }
+
+    // ── 5. Cotizaciones y Órdenes por Mes (Line Chart / Bar Chart) ──────────
     public function getMetricasEvolucion(): array
     {
         // Traer últimos 6 meses

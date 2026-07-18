@@ -17,9 +17,27 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         ?>
         
         <div class="estadisticas-container">
-            <div class="page-header">
-                <h1 class="page-title"><i class="bi bi-bar-chart-fill"></i> Panel de Estadísticas</h1>
-                <p class="page-sub">Análisis de rendimiento, cotizaciones y productos.</p>
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h1 class="page-title"><i class="bi bi-bar-chart-fill"></i> Panel de Estadísticas</h1>
+                    <p class="page-sub">Análisis de rendimiento, cotizaciones y productos.</p>
+                </div>
+                
+                <form method="GET" action="<?= $basePath ?>" class="filter-form">
+                    <input type="hidden" name="module" value="estadisticas">
+                    <div class="filter-group">
+                        <label>Desde:</label>
+                        <input type="date" name="fecha_inicio" value="<?= htmlspecialchars($fechaInicio ?? '') ?>">
+                    </div>
+                    <div class="filter-group">
+                        <label>Hasta:</label>
+                        <input type="date" name="fecha_fin" value="<?= htmlspecialchars($fechaFin ?? '') ?>">
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-filter"></i> Filtrar</button>
+                    <?php if ($fechaInicio || $fechaFin): ?>
+                        <a href="<?= $basePath ?>?module=estadisticas" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Limpiar</a>
+                    <?php endif; ?>
+                </form>
             </div>
 
         <!-- KPIs Mejorados -->
@@ -82,6 +100,12 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 <div class="chart-wrapper" style="height: 300px;">
                     <canvas id="clientesChart"></canvas>
                 </div>
+            <!-- Top Vendedores (Barras Horizontales) -->
+            <div class="chart-container">
+                <h2 class="section-title">Top 5 Vendedores (Cotizaciones)</h2>
+                <div class="chart-wrapper" style="height: 300px;">
+                    <canvas id="vendedoresChart"></canvas>
+                </div>
             </div>
             
             </div>
@@ -143,6 +167,18 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     font-size: 16px; font-weight: 700; color: #374151; margin-bottom: 20px;
 }
 .chart-wrapper { position: relative; width: 100%; }
+
+.filter-form {
+    display: flex; align-items: flex-end; gap: 15px;
+    background: #fff; padding: 15px 20px; border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    border: 1px solid #e5e7eb;
+}
+.filter-group { display: flex; flex-direction: column; gap: 5px; }
+.filter-group label { font-size: 12px; font-weight: 600; color: #4b5563; }
+.filter-group input { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; outline: none; }
+.filter-group input:focus { border-color: #10757e; box-shadow: 0 0 0 3px rgba(16,117,126,0.1); }
+
 @media (max-width: 1024px) {
     .charts-grid { grid-template-columns: 1fr; }
     .chart-container[style*="grid-column"] { grid-column: auto !important; }
@@ -177,14 +213,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     maxBarThickness: 45
                 },
                 {
-                    type: 'line',
+                    type: 'bar',
                     label: 'Órdenes de Compra',
                     data: evolucionData.ordenes.length ? evolucionData.ordenes : [0],
-                    borderColor: '#10b981', // Verde
-                    backgroundColor: '#10b981',
-                    borderWidth: 3,
-                    tension: 0.3,
-                    fill: false
+                    backgroundColor: '#10b981', // Verde
+                    borderRadius: 4,
+                    maxBarThickness: 45
                 }
             ]
         },
@@ -242,6 +276,31 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         options: {
             indexAxis: 'y', // Hace que las barras sean horizontales
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+    });
+
+    // ── 4. Top Vendedores (Bar Horizontal) ──
+    const ctxVend = document.getElementById('vendedoresChart').getContext('2d');
+    const vendData = <?= json_encode($topVendedores) ?>;
+
+    new Chart(ctxVend, {
+        type: 'bar',
+        data: {
+            labels: vendData.labels.length ? vendData.labels : ['Sin datos'],
+            datasets: [{
+                label: 'Cotizaciones creadas',
+                data: vendData.data.length ? vendData.data : [0],
+                backgroundColor: 'rgba(245, 158, 11, 0.8)', // Naranja
+                borderRadius: 4,
+                maxBarThickness: 40
+            }]
+        },
+        options: {
+            indexAxis: 'y', 
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
