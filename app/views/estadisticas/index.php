@@ -33,10 +33,12 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <label>Hasta:</label>
                         <input type="date" name="fecha_fin" value="<?= htmlspecialchars($fechaFin ?? '') ?>">
                     </div>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-filter"></i> Filtrar</button>
-                    <?php if ($fechaInicio || $fechaFin): ?>
-                        <a href="<?= $basePath ?>?module=estadisticas" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Limpiar</a>
-                    <?php endif; ?>
+                    <div class="filter-actions" style="display: flex; gap: 8px;">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-filter"></i> Filtrar</button>
+                        <?php if ($fechaInicio || $fechaFin): ?>
+                            <a href="<?= $basePath ?>?module=estadisticas" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Limpiar</a>
+                        <?php endif; ?>
+                    </div>
                 </form>
             </div>
 
@@ -79,7 +81,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         <div class="charts-grid">
             
             <!-- Rendimiento Mensual (Barras y Líneas) -->
-            <div class="chart-container" style="grid-column: span 2;">
+            <div class="chart-container">
                 <h2 class="section-title">Evolución: Cotizaciones vs Órdenes (Últimos 6 meses)</h2>
                 <div class="chart-wrapper" style="height: 350px;">
                     <canvas id="evolucionChart"></canvas>
@@ -170,17 +172,17 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 .chart-wrapper { position: relative; width: 100%; }
 
 .filter-form {
-    display: flex; align-items: flex-end; gap: 10px;
+    display: flex; align-items: flex-end; gap: 15px;
     background: #fff; padding: 12px 16px; border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.02);
     border: 1px solid #e5e7eb;
-    flex-wrap: wrap;
 }
 .filter-group { display: flex; flex-direction: column; gap: 4px; }
 .filter-group label { font-size: 11px; font-weight: 700; color: #4b5563; text-transform: uppercase; }
 .filter-group input { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; font-size: 13px; }
 .filter-group input:focus { border-color: #10757e; box-shadow: 0 0 0 2px rgba(16,117,126,0.1); }
-.filter-form .btn { padding: 6px 12px; font-size: 13px; border-radius: 6px; }
+.filter-actions { display: flex; gap: 8px; }
+.filter-form .btn { padding: 8px 12px; font-size: 13px; border-radius: 6px; height: 33px; display: inline-flex; align-items: center; gap: 5px; }
 
 @media (max-width: 1024px) {
     .charts-grid { grid-template-columns: 1fr; }
