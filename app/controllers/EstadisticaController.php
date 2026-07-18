@@ -23,9 +23,9 @@ class EstadisticaController
         $fechaFin    = $_GET['fecha_fin'] ?? null;
 
         $kpis = $this->model->getKpisGenerales($fechaInicio, $fechaFin);
-        $topClientes = $this->model->getTopClientes();
-        $topProductos = $this->model->getTopProductos();
-        $topVendedores = $this->model->getTopVendedores();
+        $topClientes = $this->model->getTopClientes(5, $fechaInicio, $fechaFin);
+        $topProductos = $this->model->getTopProductos(5, $fechaInicio, $fechaFin);
+        $topVendedores = $this->model->getTopVendedores(5, $fechaInicio, $fechaFin);
         $evolucion = $this->model->getMetricasEvolucion();
 
         return compact('kpis', 'topClientes', 'topProductos', 'topVendedores', 'evolucion', 'fechaInicio', 'fechaFin');

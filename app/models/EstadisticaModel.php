@@ -23,14 +23,21 @@ class EstadisticaModel
             'monto_cotizado_mes' => 0
         ];
 
+        $whereFechas = "";
+        $whereFechasCot = "";
+        if ($fecha_inicio && $fecha_fin) {
+            $whereFechas = " AND fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+            $whereFechasCot = " AND c.fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+        }
+
         // Cotizaciones (finalizadas)
-        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM cotizaciones WHERE estado = 'finalizada'");
+        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM cotizaciones WHERE estado = 'finalizada' $whereFechas");
         if ($res && $row = mysqli_fetch_assoc($res)) {
             $kpis['total_cotizaciones'] = (int)$row['total'];
         }
 
         // Órdenes
-        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM ordenes_compra");
+        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM ordenes_compra WHERE 1=1 $whereFechas");
         if ($res && $row = mysqli_fetch_assoc($res)) {
             $kpis['total_ordenes'] = (int)$row['total'];
         }
@@ -54,11 +61,8 @@ class EstadisticaModel
             JOIN cotizaciones c ON i.cotizacion_id = c.id
             WHERE c.estado = 'finalizada' 
         ";
-        // Si no hay filtro, usar mes actual
         if ($fecha_inicio && $fecha_fin) {
             $queryMonto .= " AND c.fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
-        } else {
-            $queryMonto .= " AND MONTH(c.fecha_creacion) = MONTH(CURRENT_DATE()) AND YEAR(c.fecha_creacion) = YEAR(CURRENT_DATE())";
         }
         
         $res = mysqli_query($this->db, $queryMonto);
@@ -70,16 +74,17 @@ class EstadisticaModel
     }
 
     // ── 2. Top Clientes (Bar Chart Horizontal) ──────────────────────────────
-    public function getTopClientes(int $limite = 5): array
+    public function getTopClientes(int $limite = 5, ?string $fecha_inicio = null, ?string $fecha_fin = null): array
     {
         $query = "
             SELECT cliente_nombre, COUNT(*) as cantidad
             FROM cotizaciones
             WHERE estado = 'finalizada' AND cliente_nombre != ''
-            GROUP BY cliente_nombre
-            ORDER BY cantidad DESC
-            LIMIT ?
         ";
+        if ($fecha_inicio && $fecha_fin) {
+            $query .= " AND fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+        }
+        $query .= " GROUP BY cliente_nombre ORDER BY cantidad DESC LIMIT ?";
         $stmt = mysqli_prepare($this->db, $query);
         mysqli_stmt_bind_param($stmt, 'i', $limite);
         mysqli_stmt_execute($stmt);
@@ -95,7 +100,7 @@ class EstadisticaModel
     }
 
     // ── 3. Top Productos Cotizados (Doughnut Chart) ─────────────────────────
-    public function getTopProductos(int $limite = 5): array
+    public function getTopProductos(int $limite = 5, ?string $fecha_inicio = null, ?string $fecha_fin = null): array
     {
         $query = "
             SELECT p.titulo, COUNT(i.id) as cantidad
@@ -103,10 +108,11 @@ class EstadisticaModel
             JOIN productos p ON i.producto_id = p.id
             JOIN cotizaciones c ON i.cotizacion_id = c.id
             WHERE c.estado = 'finalizada'
-            GROUP BY p.id
-            ORDER BY cantidad DESC
-            LIMIT ?
         ";
+        if ($fecha_inicio && $fecha_fin) {
+            $query .= " AND c.fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+        }
+        $query .= " GROUP BY p.id ORDER BY cantidad DESC LIMIT ?";
         $stmt = mysqli_prepare($this->db, $query);
         mysqli_stmt_bind_param($stmt, 'i', $limite);
         mysqli_stmt_execute($stmt);
@@ -122,17 +128,19 @@ class EstadisticaModel
     }
 
     // ── 4. Top Vendedores (Bar Chart Horizontal) ────────────────────────────
-    public function getTopVendedores(int $limite = 5): array
+    public function getTopVendedores(int $limite = 5, ?string $fecha_inicio = null, ?string $fecha_fin = null): array
     {
         $query = "
-            SELECT u.nombre, COUNT(c.id) as cantidad
-            FROM cotizaciones c
+            SELECT u.nombre, COUNT(o.id) as cantidad
+            FROM ordenes_compra o
+            JOIN cotizaciones c ON o.cotizacion_id = c.id
             JOIN usuarios u ON c.usuario_id = u.id
-            WHERE c.estado = 'finalizada'
-            GROUP BY u.id
-            ORDER BY cantidad DESC
-            LIMIT ?
+            WHERE 1=1
         ";
+        if ($fecha_inicio && $fecha_fin) {
+            $query .= " AND o.fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+        }
+        $query .= " GROUP BY u.id ORDER BY cantidad DESC LIMIT ?";
         $stmt = mysqli_prepare($this->db, $query);
         mysqli_stmt_bind_param($stmt, 'i', $limite);
         mysqli_stmt_execute($stmt);

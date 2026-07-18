@@ -169,15 +169,17 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 .chart-wrapper { position: relative; width: 100%; }
 
 .filter-form {
-    display: flex; align-items: flex-end; gap: 15px;
-    background: #fff; padding: 15px 20px; border-radius: 12px;
+    display: flex; align-items: flex-end; gap: 10px;
+    background: #fff; padding: 12px 16px; border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.02);
     border: 1px solid #e5e7eb;
+    flex-wrap: wrap;
 }
-.filter-group { display: flex; flex-direction: column; gap: 5px; }
-.filter-group label { font-size: 12px; font-weight: 600; color: #4b5563; }
-.filter-group input { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; outline: none; }
-.filter-group input:focus { border-color: #10757e; box-shadow: 0 0 0 3px rgba(16,117,126,0.1); }
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-group label { font-size: 11px; font-weight: 700; color: #4b5563; text-transform: uppercase; }
+.filter-group input { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; font-size: 13px; }
+.filter-group input:focus { border-color: #10757e; box-shadow: 0 0 0 2px rgba(16,117,126,0.1); }
+.filter-form .btn { padding: 6px 12px; font-size: 13px; border-radius: 6px; }
 
 @media (max-width: 1024px) {
     .charts-grid { grid-template-columns: 1fr; }
