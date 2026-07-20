@@ -89,7 +89,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <div class="prod-name"><?= htmlspecialchars($p['titulo']) ?></div>
                     <div class="prod-meta" style="margin-bottom:8px;">
                         <?php if(!empty($p['codigo_producto'])): ?><span class="prod-tag" style="background:#e0f2fe;color:#0284c7;"><i class="bi bi-upc-scan"></i> <?= htmlspecialchars($p['codigo_producto']) ?></span><?php endif; ?>
-                        <?php if(!empty($p['categoria'])): ?><span class="prod-tag" style="background:#f3e8ff;color:#7e22ce;"><i class="bi bi-tag-fill"></i> <?= htmlspecialchars($p['categoria']) ?></span><?php endif; ?>
                     </div>
                     <div class="prod-meta">
                         <span class="prod-tag"><i class="bi bi-boxes"></i> Stock: <?= intval($p['cantidad']) ?></span>
@@ -284,7 +283,7 @@ include dirname(__DIR__) . '/layout/menu.php';
         <div class="imo-modal-body">
             <p style="color:#4b5563;">¿Seguro que deseas eliminar <strong id="nombre-eliminar"></strong>?</p>
         </div>
-        <div class="imo-modal-footer" style="display:flex; justify-content:flex-end; gap:12px;">
+        <div class="imo-modal-footer" style="display:flex; justify-content:flex-end; gap:12px; padding:20px;">
             <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
             <button id="btn-eliminar" class="imo-btn-danger" onclick="ejecutarEliminar()" style="display:inline-flex; align-items:center; justify-content:center; gap:6px; height:38px; padding:0 16px; border:none; border-radius:6px; cursor:pointer;"><i class="bi bi-trash-fill"></i> Eliminar</button>
         </div>

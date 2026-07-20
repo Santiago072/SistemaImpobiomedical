@@ -153,6 +153,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <span style="font-size:11px; color:var(--text-soft);">—</span>
                                         <?php endif; ?>
                                     </td>
+                                    <td style="text-align:right;">
                                         <input type="number"
                                                min="1" max="<?= $qty ?>"
                                                value="<?= $qty ?>"
