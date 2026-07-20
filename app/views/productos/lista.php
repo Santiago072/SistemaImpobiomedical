@@ -167,22 +167,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <label>Descripción *</label>
                         <textarea name="descripcion" required maxlength="5000" rows="3" style="padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:14px;resize:vertical;outline:none;"></textarea>
                     </div>
-                    <div class="imo-form-row">
-                        <div class="imo-form-group">
-                            <label>Cantidad *</label>
-                            <input type="number" name="cantidad" required min="0" max="99" value="1">
-                        </div>
-                        <div class="imo-form-group">
-                            <label>Precio Unitario *</label>
-                            <input type="number" name="precio" required min="0" step="0.01">
-                        </div>
-                    </div>
                     <div class="imo-form-group">
                         <label>¿Aplica IVA? *</label>
                         <select name="iva" required>
                             <option value="si">Sí — Aplicar IVA</option>
                             <option value="no">No — Sin IVA</option>
                         </select>
+                        <input type="hidden" name="precio" value="0">
                     </div>
                 </div>
                 <div class="prod-edit-right">
@@ -248,21 +239,12 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                     <div class="imo-form-row">
                         <div class="imo-form-group">
-                            <label>Cantidad *</label>
-                            <input type="number" id="e_cantidad" name="cantidad" required min="0" max="99">
-                        </div>
-                        <div class="imo-form-group">
-                            <label>Precio Unitario *</label>
-                            <input type="number" id="e_precio" name="precio" required min="0" step="0.01">
-                        </div>
-                    </div>
-                    <div class="imo-form-row">
-                        <div class="imo-form-group">
                             <label>¿Aplica IVA? *</label>
                             <select id="e_iva" name="iva" required>
                                 <option value="si">Sí — Aplicar IVA</option>
                                 <option value="no">No — Sin IVA</option>
                             </select>
+                            <input type="hidden" id="e_precio" name="precio" value="0">
                         </div>
                         <div class="imo-form-group">
                             <label>Estado *</label>
@@ -302,9 +284,9 @@ include dirname(__DIR__) . '/layout/menu.php';
         <div class="imo-modal-body">
             <p style="color:#4b5563;">¿Seguro que deseas eliminar <strong id="nombre-eliminar"></strong>?</p>
         </div>
-        <div class="imo-modal-footer">
+        <div class="imo-modal-footer" style="display:flex; justify-content:flex-end; gap:12px;">
             <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
-            <a id="link-eliminar" href="#" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</a>
+            <a id="link-eliminar" href="#" class="imo-btn-danger" style="text-decoration:none;"><i class="bi bi-trash-fill"></i> Eliminar</a>
         </div>
     </div>
 </div>

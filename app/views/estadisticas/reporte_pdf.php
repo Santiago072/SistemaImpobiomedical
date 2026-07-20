@@ -130,8 +130,8 @@ table { width:100%; border-collapse:collapse; }
     </td>
     <td class="kpi-cell">
       <div class="kpi-box teal">
-        <div class="kpi-num"><?= fmtR($kpis['monto_pedido']) ?></div>
-        <div class="kpi-lbl">Monto Pedido (Órdenes)</div>
+        <div class="kpi-num"><?= fmtR($kpis['monto_vendido'] ?? 0) ?></div>
+        <div class="kpi-lbl">Monto Vendido (Reales)</div>
       </div>
     </td>
     <td class="kpi-cell">

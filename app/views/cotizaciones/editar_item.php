@@ -35,8 +35,8 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <input type="hidden" name="estampillas" id="hdnEstampillas" value="<?= htmlspecialchars($datos['estampillas'] ?? 0) ?>">
                 <input type="hidden" name="calc_ops" id="hdnCalcOps" value="<?= htmlspecialchars($datos['calc_ops'] ?? '{}') ?>">
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
-                    <!-- Columna Izquierda -->
+                <div style="display:flex; flex-direction:column; gap:20px; margin-bottom:20px;">
+                    <!-- Columna Única -->
                     <div>
                         <div class="imo-form-group">
                             <label>Nombre del Producto *</label>
@@ -95,7 +95,9 @@ include dirname(__DIR__) . '/layout/menu.php';
                         </div>
                     </div>
 
-                    <!-- Columna Derecha -->
+                    </div>
+
+                    <!-- Segunda Sección -->
                     <div>
                         <div class="imo-form-group">
                             <label>Foto del Producto</label>
@@ -278,12 +280,19 @@ function calcularTotales() {
     const elCalib = document.getElementById('acum_calibracion'); if(elCalib) elCalib.textContent = formatMoney(totalCalib);
     const elEstamp = document.getElementById('acum_estampillas'); if(elEstamp) elEstamp.textContent = formatMoney(totalEstamp);
 
+    // ── Autocompletar Precio Unitario con el valor de Estampillas ─────────
+    if (totalEstamp > 0) {
+        const inpPrecio = document.getElementById('inpPrecio');
+        if (inpPrecio) {
+            inpPrecio.value = Math.round(totalEstamp);
+        }
+    }
+
     const ivaVal = document.getElementById('inpIva')?.value || 'si';
     const pctIva = parseFloat(document.getElementById('inpPctIva')?.value) || 0;
     const ivaFinal = ivaVal === 'si' ? totalEstamp * (pctIva / 100) : 0;
     const resFinal = document.getElementById('resValorFinal');
     if (resFinal) resFinal.textContent = '$' + Math.round(totalEstamp + ivaFinal).toLocaleString('es-CO');
-    // NOTA: inpPrecio NO se modifica aquí. El precio del cliente es independiente.
 }
 
 function toggleIva(val) {

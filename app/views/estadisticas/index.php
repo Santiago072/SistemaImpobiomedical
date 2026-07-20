@@ -59,8 +59,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <div class="kpi-card">
                 <div class="kpi-icon" style="background: linear-gradient(135deg, #10757e, #0a4f55);"><i class="bi bi-bag-check-fill"></i></div>
                 <div class="kpi-info">
-                    <div class="kpi-num">$<?= number_format($kpis['monto_pedido'], 0) ?></div>
-                    <div class="kpi-label">Monto Pedido (Órdenes)</div>
+                    <div class="kpi-num">$<?= number_format($kpis['monto_vendido'] ?? 0, 0) ?></div>
+                    <div class="kpi-label">Monto Vendido (Ventas Reales)</div>
                 </div>
             </div>
 
@@ -80,13 +80,6 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 </div>
             </div>
 
-            <div class="kpi-card">
-                <div class="kpi-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><i class="bi bi-people-fill"></i></div>
-                <div class="kpi-info">
-                    <div class="kpi-num"><?= number_format($kpis['total_clientes']) ?></div>
-                    <div class="kpi-label">Clientes Registrados</div>
-                </div>
-            </div>
         </div>
 
         <!-- Gráficos -->

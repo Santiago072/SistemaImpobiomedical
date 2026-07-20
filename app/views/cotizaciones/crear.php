@@ -104,10 +104,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
                                 <!-- Resultado calculado -->
                                 <div class="ganancia-resultado">
-                                    <div class="ganancia-res-row" style="margin-bottom:6px;">
-                                        <span>💰 Valor Estampillas (Precio al cliente, sin IVA):</span>
-                                        <strong id="resEstampillas" style="color:#059669; font-size:15px;">$0</strong>
-                                    </div>
+                                    <!-- Se eliminó Valor Estampillas -->
                                     <div class="ganancia-res-row total-row" style="border-top:1px solid #d1fae5; padding-top:8px; margin-top:4px;">
                                         <span>💵 Valor Final con IVA para el Cliente:</span>
                                         <strong id="resValorFinal" style="color:#059669; font-size:16px;">$0</strong>
@@ -458,7 +455,8 @@ function calcularPreview() {
     document.getElementById('prevBase').textContent = '$' + (pu * qty).toLocaleString('es-CO', {minimumFractionDigits:0});
     document.getElementById('prevIva').textContent  = '$' + (iva * qty).toLocaleString('es-CO', {minimumFractionDigits:0});
     document.getElementById('prevTotal').textContent = '$' + total.toLocaleString('es-CO', {minimumFractionDigits:0});
-    if (typeof calcularTotales === 'function') calcularTotales();
+    
+    // Se eliminó la llamada a calcularTotales() para evitar un bucle infinito que ralentizaba la página.
 }
 
 function toggleGanancias() {
@@ -577,10 +575,8 @@ function calcularTotales() {
         }
     }
 
-    // Mostrar estampillas y valor final
-    const resEst  = document.getElementById('resEstampillas');
-    if (resEst) resEst.textContent = '$' + Math.round(totalEstamp).toLocaleString('es-CO');
-
+    // Ya no mostramos resEstampillas por separado.
+    
     const ivaVal  = document.getElementById('inpIva')?.value || 'si';
     const pctIva  = parseFloat(document.getElementById('inpPctIva')?.value) || 0;
     const ivaFinal = ivaVal === 'si' ? totalEstamp * (pctIva / 100) : 0;

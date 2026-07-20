@@ -21,7 +21,7 @@ class EstadisticaModel
             'total_clientes'     => 0,
             'total_productos'    => 0,
             'monto_cotizado_mes' => 0,
-            'monto_pedido'       => 0,
+            'monto_vendido'      => 0,
         ];
 
         $whereFechas    = '';
@@ -68,17 +68,20 @@ class EstadisticaModel
             $kpis['monto_cotizado_mes'] = (float)($row['total_monto'] ?? 0);
         }
 
-        // Monto pedido (suma real de ítems en órdenes de compra: precio_proveedor * cantidad + iva)
-        $q2 = "SELECT SUM(oi.total) as total_pedido
-               FROM orden_compra_items oi
-               JOIN ordenes_compra o ON oi.orden_id = o.id
-               WHERE 1=1";
+        // Monto Vendido (ítems de cotizaciones finalizadas que generaron orden de compra)
+        $q2 = "SELECT SUM(ci.cantidad * ci.precio) as total_vendido
+               FROM cotizacion_items ci
+               JOIN cotizaciones c ON ci.cotizacion_id = c.id
+               WHERE c.estado = 'finalizada'
+               AND EXISTS (
+                   SELECT 1 FROM ordenes_compra o WHERE o.cotizacion_id = c.id
+               )";
         if ($fecha_inicio && $fecha_fin) {
-            $q2 .= " AND o.fecha BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+            $q2 .= " AND c.fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
         }
         $res = mysqli_query($this->db, $q2);
         if ($res && $row = mysqli_fetch_assoc($res)) {
-            $kpis['monto_pedido'] = (float)($row['total_pedido'] ?? 0);
+            $kpis['monto_vendido'] = (float)($row['total_vendido'] ?? 0);
         }
 
         return $kpis;
