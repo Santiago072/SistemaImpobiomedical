@@ -89,18 +89,20 @@ class ItemCotizacionService
         if ($producto_id === null) {
             $productoExistente = $this->productoModel->buscarPorTitulo($titulo);
             if (!$productoExistente) {
-                $this->productoModel->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $categoria, $codigo_producto);
+                // El precio unitario NO se guarda en el catálogo (varía por cotización).
+                $this->productoModel->crear($titulo, $foto, $descripcion, 0, $iva, $porcentaje_iva, $categoria, $codigo_producto);
             } else {
                 if (empty($foto) && !empty($productoExistente['foto'])) {
                     $foto = $productoExistente['foto'];
                 }
-                if (!empty($foto) || !empty($descripcion) || $precio > 0 || !empty($codigo_producto)) {
+                // Actualizar info del catálogo SIN sobreescribir precio (no se almacena)
+                if (!empty($foto) || !empty($descripcion) || !empty($codigo_producto)) {
                     $this->productoModel->actualizar(
                         (int)$productoExistente['id'],
                         $titulo,
                         !empty($foto) ? $foto : $productoExistente['foto'],
                         !empty($descripcion) ? $descripcion : $productoExistente['descripcion'],
-                        $precio > 0 ? $precio : $productoExistente['precio'],
+                        0,                    // precio no se persiste en el catálogo
                         $iva,
                         $porcentaje_iva,
                         'activo',

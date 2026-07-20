@@ -64,6 +64,60 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <input type="hidden" name="producto_id" id="hdnProductoId" value="">
                         <input type="hidden" name="foto_actual" id="hdnFotoActual" value="">
 
+                        <!-- ── PASO 1: Calculadora de Ganancias (antes del formulario) ── -->
+                        <div class="ganancias-section">
+                            <button type="button" class="ganancias-toggle" onclick="toggleGanancias()">
+                                <span><i class="bi bi-percent"></i> Porcentajes de Ganancias (Calculadora Dinámica)</span>
+                                <i class="bi bi-chevron-down" id="iconGanancias"></i>
+                            </button>
+                            <div id="panelGanancias" class="ganancias-panel" style="display:none;">
+                                <div class="ganancias-aviso" style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#92400e;">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    Completa el precio del proveedor y configura los porcentajes. Al finalizar, el <strong>valor de Estampillas</strong> se asignará automáticamente como <strong>Precio Unitario</strong> del producto en la cotización.
+                                </div>
+                                <!-- Campos ocultos para guardar resultados -->
+                                <input type="hidden" name="porcentaje_utilidad" id="hdnPctUtilidad" value="0">
+                                <input type="hidden" name="flete" id="hdnFlete" value="0">
+                                <input type="hidden" name="calibracion" id="hdnCalibracion" value="0">
+                                <input type="hidden" name="estampillas" id="hdnEstampillas" value="0">
+                                <input type="hidden" name="calc_ops" id="hdnCalcOps" value="{}">
+
+                                <div class="imo-form-row">
+                                    <div class="imo-form-group">
+                                        <label>Precio Proveedor Base ($) *</label>
+                                        <input type="number" name="precio_proveedor" id="inpPrecioProveedor"
+                                               min="0" step="0.01" placeholder="0.00" oninput="calcularTotales()">
+                                    </div>
+                                    <div class="imo-form-group">
+                                        <label>Proveedor</label>
+                                        <input type="text" name="proveedor" id="inpProveedor" maxlength="100" placeholder="Ej: ALENO SAS">
+                                    </div>
+                                </div>
+                                <div class="imo-form-row">
+                                    <div class="imo-form-group">
+                                        <label>Código Producto Proveedor</label>
+                                        <input type="text" name="codigo_proveedor" id="inpCodigoProveedor" maxlength="60" placeholder="Ej: PROV-001">
+                                    </div>
+                                </div>
+
+                                <div id="calc-container" style="margin-top: 15px;"></div>
+
+                                <!-- Resultado calculado -->
+                                <div class="ganancia-resultado">
+                                    <div class="ganancia-res-row" style="margin-bottom:6px;">
+                                        <span>💰 Valor Estampillas (Precio al cliente, sin IVA):</span>
+                                        <strong id="resEstampillas" style="color:#059669; font-size:15px;">$0</strong>
+                                    </div>
+                                    <div class="ganancia-res-row total-row" style="border-top:1px solid #d1fae5; padding-top:8px; margin-top:4px;">
+                                        <span>💵 Valor Final con IVA para el Cliente:</span>
+                                        <strong id="resValorFinal" style="color:#059669; font-size:16px;">$0</strong>
+                                    </div>
+                                    <p style="font-size:10px; color:#6b7280; margin-top:4px;">* El valor de Estampillas se asigna automáticamente como Precio Unitario del ítem.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── PASO 2: Formulario de agregar producto ── -->
                         <div class="imo-form-group">
                             <label>Categoría *</label>
                             <select name="categoria" id="inpCategoria">
@@ -97,7 +151,9 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                 <input type="number" name="cantidad" id="inpCantidad" min="1" value="<?= $producto['cantidad'] ?? 1 ?>" required>
                             </div>
                             <div class="imo-form-group">
-                                <label>Precio Unitario (antes de IVA) *</label>
+                                <label>Precio Unitario (sin IVA) *
+                                    <span id="lblPrecioFuente" style="font-size:10px; color:#059669; font-weight:600;"></span>
+                                </label>
                                 <input type="number" name="precio" id="inpPrecio" min="0" step="0.01"
                                        value="<?= $producto['precio'] ?? '' ?>" required placeholder="0.00">
                             </div>
@@ -141,53 +197,6 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             <div class="prev-row"><span>Precio base:</span> <strong id="prevBase">$0</strong></div>
                             <div class="prev-row"><span>IVA:</span> <strong id="prevIva">$0</strong></div>
                             <div class="prev-row total-row"><span>Total unitario:</span> <strong id="prevTotal">$0</strong></div>
-                        </div>
-
-                        <!-- Sección Porcentajes Ganancias -->
-                        <div class="ganancias-section">
-                            <button type="button" class="ganancias-toggle" onclick="toggleGanancias()">
-                                <i class="bi bi-percent"></i> Porcentajes Ganancias (Calculadora Dinámica)
-                                <i class="bi bi-chevron-down" id="iconGanancias"></i>
-                            </button>
-                            <div id="panelGanancias" class="ganancias-panel" style="display:none;">
-                                <!-- Campos ocultos donde guardaremos los totales finales para la Base de Datos -->
-                                <input type="hidden" name="porcentaje_utilidad" id="hdnPctUtilidad" value="0">
-                                <input type="hidden" name="flete" id="hdnFlete" value="0">
-                                <input type="hidden" name="calibracion" id="hdnCalibracion" value="0">
-                                <input type="hidden" name="estampillas" id="hdnEstampillas" value="0">
-                                <input type="hidden" name="calc_ops" id="hdnCalcOps" value="{}">
-
-                                <div class="imo-form-row">
-                                    <div class="imo-form-group">
-                                        <label>Precio Proveedor Base ($) *</label>
-                                        <input type="number" name="precio_proveedor" id="inpPrecioProveedor"
-                                               min="0" step="0.01" placeholder="0.00" oninput="calcularTotales()">
-                                    </div>
-                                    <div class="imo-form-group">
-                                        <label>Proveedor</label>
-                                        <input type="text" name="proveedor" id="inpProveedor" maxlength="100" placeholder="Ej: ALENO SAS">
-                                    </div>
-                                </div>
-                                <div class="imo-form-row">
-                                    <div class="imo-form-group">
-                                        <label>Código Producto Proveedor</label>
-                                        <input type="text" name="codigo_proveedor" id="inpCodigoProveedor" maxlength="60" placeholder="Ej: PROV-001">
-                                    </div>
-                                </div>
-
-                                <div id="calc-container" style="margin-top: 15px;">
-                                    <!-- Aquí se renderiza la calculadora dinámica con JS -->
-                                </div>
-
-                                <!-- Resultado calculado -->
-                                <div class="ganancia-resultado">
-                                    <div class="ganancia-res-row total-row" style="border-top:1px solid #d1fae5; padding-top:8px; margin-top:4px;">
-                                        <span>💰 Valor Final con IVA para el Cliente:</span>
-                                        <strong id="resValorFinal" style="color:#059669; font-size:16px;">$0</strong>
-                                    </div>
-                                    <p style="font-size:10px; color:#6b7280; margin-top:4px;">* Los totales de cada etapa se guardarán automáticamente en la cotización.</p>
-                                </div>
-                            </div>
                         </div>
 
                         <div class="imo-modal-footer" style="border-top:none; padding-top:0;">
@@ -538,33 +547,45 @@ function calcularTotales() {
     
     // Cálculos en cascada
     const totalUtilidad = aplicarOperaciones(precioBase, calcState.utilidad);
-    const totalFlete = aplicarOperaciones(totalUtilidad, calcState.flete);
-    const totalCalib = aplicarOperaciones(totalFlete, calcState.calibracion);
-    const totalEstamp = aplicarOperaciones(totalCalib, calcState.estampillas);
+    const totalFlete    = aplicarOperaciones(totalUtilidad, calcState.flete);
+    const totalCalib    = aplicarOperaciones(totalFlete, calcState.calibracion);
+    const totalEstamp   = aplicarOperaciones(totalCalib, calcState.estampillas);
 
-    // Guardar totales finales en los inputs hidden para enviar al backend (Camino 1)
-    document.getElementById('hdnPctUtilidad').value = (totalUtilidad - precioBase).toFixed(2);
-    document.getElementById('hdnFlete').value = (totalFlete - totalUtilidad).toFixed(2);
-    document.getElementById('hdnCalibracion').value = (totalCalib - totalFlete).toFixed(2);
-    document.getElementById('hdnEstampillas').value = (totalEstamp - totalCalib).toFixed(2);
+    // Guardar totales finales en los inputs hidden
+    document.getElementById('hdnPctUtilidad').value  = (totalUtilidad - precioBase).toFixed(2);
+    document.getElementById('hdnFlete').value        = (totalFlete - totalUtilidad).toFixed(2);
+    document.getElementById('hdnCalibracion').value  = (totalCalib - totalFlete).toFixed(2);
+    document.getElementById('hdnEstampillas').value  = (totalEstamp - totalCalib).toFixed(2);
 
     const formatMoney = v => 'Acumulado: $' + Math.round(v).toLocaleString('es-CO');
 
-    // Actualizar los spans de acumulados sin redibujar los inputs
-    const elUtil = document.getElementById('acum_utilidad'); if(elUtil) elUtil.textContent = formatMoney(totalUtilidad);
-    const elFlete = document.getElementById('acum_flete'); if(elFlete) elFlete.textContent = formatMoney(totalFlete);
+    // Actualizar spans de acumulados
+    const elUtil  = document.getElementById('acum_utilidad');    if(elUtil)  elUtil.textContent  = formatMoney(totalUtilidad);
+    const elFlete = document.getElementById('acum_flete');       if(elFlete) elFlete.textContent = formatMoney(totalFlete);
     const elCalib = document.getElementById('acum_calibracion'); if(elCalib) elCalib.textContent = formatMoney(totalCalib);
-    const elEstamp = document.getElementById('acum_estampillas'); if(elEstamp) elEstamp.textContent = formatMoney(totalEstamp);
+    const elEstamp= document.getElementById('acum_estampillas'); if(elEstamp)elEstamp.textContent= formatMoney(totalEstamp);
 
-    // IVA Final — muestra el precio final solo en el panel de ganancias
-    const ivaVal = document.getElementById('inpIva')?.value || 'si';
-    const pctIva = parseFloat(document.getElementById('inpPctIva')?.value) || 0;
+    // ── Autocompletar Precio Unitario con el valor de Estampillas ─────────
+    if (totalEstamp > 0) {
+        const inpPrecio = document.getElementById('inpPrecio');
+        if (inpPrecio) {
+            inpPrecio.value = Math.round(totalEstamp);
+            // Indicar visualmente que el precio viene de la calculadora
+            const lbl = document.getElementById('lblPrecioFuente');
+            if (lbl) lbl.textContent = '(← de Estampillas)';
+            calcularPreview();
+        }
+    }
+
+    // Mostrar estampillas y valor final
+    const resEst  = document.getElementById('resEstampillas');
+    if (resEst) resEst.textContent = '$' + Math.round(totalEstamp).toLocaleString('es-CO');
+
+    const ivaVal  = document.getElementById('inpIva')?.value || 'si';
+    const pctIva  = parseFloat(document.getElementById('inpPctIva')?.value) || 0;
     const ivaFinal = ivaVal === 'si' ? totalEstamp * (pctIva / 100) : 0;
     const resFinal = document.getElementById('resValorFinal');
     if (resFinal) resFinal.textContent = '$' + Math.round(totalEstamp + ivaFinal).toLocaleString('es-CO');
-    // NOTA: inpPrecio NO se modifica aquí. El precio del cliente se gestiona
-    // de forma independiente (catálogo o entrada manual). La calculadora de
-    // ganancias es solo informativa/interna para la empresa.
 }
 
 function limpiarFormulario() {
