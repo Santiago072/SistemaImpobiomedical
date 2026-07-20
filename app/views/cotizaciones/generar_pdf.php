@@ -302,7 +302,7 @@ table { width:100%; border-collapse:collapse; }
   <th class="th-item col-vu">V/U</th>
   <th class="th-item col-iva">IVA</th>
   <th class="th-item col-tiva">T/IVA</th>
-  <th class="th-item col-vt">V/T</th>
+  <th class="th-item col-vt">VT/SV</th>
   <th class="th-item col-te">TIEMPO ENTREGA</th>
 </tr>
 <tbody>

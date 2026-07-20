@@ -80,10 +80,10 @@ include dirname(__DIR__) . '/layout/menu.php';
                                 <th>CÓD. PRD. PROVEEDOR</th>
                                 <th>Producto / Descripción</th>
                                 <th>Proveedor</th>
-                                <th style="text-align:right;">Cant. O.C.</th>
+                                <th style="text-align:right;">Cant. a pedir</th>
                                 <th style="text-align:right;">Precio Prov.</th>
                                 <th style="text-align:right;">IVA</th>
-                                <th style="text-align:right;">Total O.C.</th>
+                                <th style="text-align:right;">Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -196,7 +196,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                     <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:center; padding-top:10px; border-top:1px solid rgba(45,190,203,.2);">
                         <span style="color:#f59e0b;">Retención (<span id="lblRetPct">2.5</span>%): <strong id="cntRet" style="color:#f59e0b;">$ 0</strong></span>
-                        <div style="font-weight:bold; color:var(--white);">TOTAL O.C.: <span id="cntTotal" style="color:var(--amber); font-size:15px;">$ 0</span></div>
+                        <div style="font-weight:bold; color:var(--white);">TOTAL: <span id="cntTotal" style="color:var(--amber); font-size:15px;">$ 0</span></div>
                     </div>
                 </div>
             </div>
