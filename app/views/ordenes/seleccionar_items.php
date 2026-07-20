@@ -186,9 +186,16 @@ include dirname(__DIR__) . '/layout/menu.php';
                 </div>
 
                 <!-- Resumen de selección -->
-                <div id="resumenSeleccion" style="margin-top:14px; padding:12px 16px; background:rgba(45,190,203,.08); border:1px solid rgba(45,190,203,.2); border-radius:8px; display:flex; gap:24px; flex-wrap:wrap; align-items:center; font-size:13px;">
-                    <span>Ítems seleccionados: <strong id="cntItems">0</strong></span>
-                    <span>Subtotal estimado: <strong id="cntSubtotal">$ 0</strong></span>
+                <div id="resumenSeleccion" style="margin-top:14px; padding:16px 20px; background:rgba(45,190,203,.08); border:1px solid rgba(45,190,203,.2); border-radius:10px; font-size:13px;">
+                    <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:center; margin-bottom:10px;">
+                        <span>Ítems seleccionados: <strong id="cntItems">0</strong></span>
+                        <span>Subtotal: <strong id="cntSubtotal">$ 0</strong></span>
+                        <span>IVA: <strong id="cntIva">$ 0</strong></span>
+                    </div>
+                    <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:center; padding-top:10px; border-top:1px solid rgba(45,190,203,.2);">
+                        <span style="color:#f59e0b;">Retención (<span id="lblRetPct">2.5</span>%): <strong id="cntRet" style="color:#f59e0b;">$ 0</strong></span>
+                        <span style="font-size:15px; font-weight:800; color:#2dbecb;">TOTAL NETO: <strong id="cntTotal">$ 0</strong></span>
+                    </div>
                 </div>
             </div>
 
@@ -246,8 +253,8 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
 
                     <div class="oc-field-group">
-                        <label class="oc-label"><i class="bi bi-calculator"></i> Retención 2.5% (%) — Se aplica sobre subtotal</label>
-                        <input type="number" name="retencion" class="oc-input"
+                        <label class="oc-label"><i class="bi bi-calculator"></i> Retención (%) — Se aplica sobre subtotal</label>
+                        <input type="number" name="retencion" class="oc-input" id="inputRetencion"
                                placeholder="Ej: 2.5" min="0" max="100" step="0.01" value="2.5">
                     </div>
 
@@ -402,18 +409,24 @@ NOTA:
         });
     });
 
-    // Evitar que Enter en el campo código dispare el submit
+    // ── Evitar Enter en campos de código ──────────────────────────────────
     document.querySelectorAll('.oc-cod-input').forEach(inp => {
         inp.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') e.preventDefault();
         });
     });
 
+    // ── Actualizar resumen cuando cambia el % de retención ────────────────
+    const retInput = document.getElementById('inputRetencion');
+    if (retInput) {
+        retInput.addEventListener('input', actualizarResumen);
+    }
+
     // ── Resumen de selección ──────────────────────────────────────────────
     const alertaProveedor = document.getElementById('alertaProveedorMixto');
 
     function actualizarResumen() {
-        let cnt = 0, sub = 0;
+        let cnt = 0, subSinIva = 0, ivaTotal = 0;
         const proveedoresSeleccionados = new Set();
 
         checks.forEach(c => {
@@ -422,16 +435,39 @@ NOTA:
                 const row      = c.closest('tr');
                 const prov     = row.dataset.proveedor || '';
                 if (prov) proveedoresSeleccionados.add(prov);
+
+                // Leer precio, cantidad, IVA de la fila
+                const qtyInp = row.querySelector('.qty-input');
+                const puInp  = row.querySelector('.precio-input');
                 const celdaTot = row.querySelector('.celda-total');
-                if (celdaTot) {
-                    const txt = celdaTot.textContent.replace(/[^\d]/g, '');
-                    sub += parseInt(txt) || 0;
-                }
+
+                const qty    = parseInt(qtyInp ? qtyInp.value : 1) || 1;
+                const pu     = parseFloat(puInp ? puInp.value : 0) || 0;
+                const pct    = parseFloat(celdaTot ? celdaTot.dataset.pct : 0) || 0;
+                const aplica = parseInt(celdaTot ? celdaTot.dataset.aplica : 0) === 1;
+                const sub    = pu * qty;
+                subSinIva += sub;
+                ivaTotal  += aplica ? sub * (pct / 100) : 0;
             }
         });
 
+        // Leer porcentaje de retención del input
+        const retInput = document.getElementById('inputRetencion');
+        const retPct   = retInput ? (parseFloat(retInput.value) || 0) : 0;
+        const retVal   = subSinIva * (retPct / 100);
+        const totalNeto = subSinIva + ivaTotal - retVal;
+
         cntItems.textContent = cnt;
-        cntSub.textContent   = '$ ' + sub.toLocaleString('es-CO', {minimumFractionDigits:0});
+        cntSub.textContent   = '$ ' + Math.round(subSinIva).toLocaleString('es-CO');
+
+        const cntIva  = document.getElementById('cntIva');
+        const cntRet  = document.getElementById('cntRet');
+        const cntTot  = document.getElementById('cntTotal');
+        const lblRet  = document.getElementById('lblRetPct');
+        if (cntIva)  cntIva.textContent  = '$ ' + Math.round(ivaTotal).toLocaleString('es-CO');
+        if (cntRet)  cntRet.textContent  = '$ ' + Math.round(retVal).toLocaleString('es-CO');
+        if (cntTot)  cntTot.textContent  = '$ ' + Math.round(totalNeto).toLocaleString('es-CO');
+        if (lblRet)  lblRet.textContent  = retPct.toString();
 
         const provMixto = proveedoresSeleccionados.size > 1;
         if (alertaProveedor) {
