@@ -67,7 +67,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <!-- ── PASO 1: Calculadora de Ganancias (antes del formulario) ── -->
                         <div class="ganancias-section">
                             <button type="button" class="ganancias-toggle" onclick="toggleGanancias()">
-                                <span><i class="bi bi-percent"></i> Porcentajes de Ganancias (Calculadora Dinámica)</span>
+                                <i class="bi bi-percent"></i> Porcentajes de Ganancias (Calculadora Dinámica)
                                 <i class="bi bi-chevron-down" id="iconGanancias"></i>
                             </button>
                             <div id="panelGanancias" class="ganancias-panel" style="display:none;">
