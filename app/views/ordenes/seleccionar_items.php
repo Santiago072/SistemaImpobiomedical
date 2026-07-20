@@ -83,7 +83,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                 <th style="text-align:right;">Cant. O.C.</th>
                                 <th style="text-align:right;">Precio Prov.</th>
                                 <th style="text-align:right;">IVA</th>
-                                <th style="text-align:right;">Total Prov.</th>
+                                <th style="text-align:right;">Total O.C.</th>
                             </tr>
                         </thead>
                         <tbody>

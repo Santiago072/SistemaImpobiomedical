@@ -85,7 +85,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <?php endif; ?>
 
                 <div class="prod-body">
-                    <div class="prod-price">$<?= number_format($p['precio'], 0, ',', '.') ?></div>
                     <div class="prod-name"><?= htmlspecialchars($p['titulo']) ?></div>
                     <div class="prod-meta" style="margin-bottom:8px;">
                         <?php if(!empty($p['codigo_producto'])): ?><span class="prod-tag" style="background:#e0f2fe;color:#0284c7;"><i class="bi bi-upc-scan"></i> <?= htmlspecialchars($p['codigo_producto']) ?></span><?php endif; ?>
