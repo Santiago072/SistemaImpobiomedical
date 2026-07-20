@@ -134,6 +134,11 @@ if ($module === 'estadisticas') {
     require_once __DIR__ . '/app/controllers/EstadisticaController.php';
     require_once __DIR__ . '/app/models/EstadisticaModel.php';
     $ctrl = new EstadisticaController($db);
+
+    if ($action === 'reporte_pdf') {
+        $ctrl->reportePdf(); // genera PDF y sale con exit()
+    }
+
     $data = $ctrl->index();
     extract($data);
     include __DIR__ . '/app/views/estadisticas/index.php';

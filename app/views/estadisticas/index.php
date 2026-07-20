@@ -38,20 +38,32 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <?php if ($fechaInicio || $fechaFin): ?>
                             <a href="<?= $basePath ?>?module=estadisticas" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Limpiar</a>
                         <?php endif; ?>
+                        <a href="<?= $basePath ?>?module=estadisticas&action=reporte_pdf<?= $fechaInicio ? '&fecha_inicio='.urlencode($fechaInicio) : '' ?><?= $fechaFin ? '&fecha_fin='.urlencode($fechaFin) : '' ?>"
+                           class="btn btn-pdf" target="_blank" title="Exportar PDF del reporte actual">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+                        </a>
                     </div>
                 </form>
             </div>
 
-        <!-- KPIs Mejorados -->
+        <!-- KPIs -->
         <div class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-icon" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="bi bi-currency-dollar"></i></div>
                 <div class="kpi-info">
                     <div class="kpi-num">$<?= number_format($kpis['monto_cotizado_mes'], 0) ?></div>
-                    <div class="kpi-label">Monto Cotizado (Mes)</div>
+                    <div class="kpi-label">Monto Cotizado<?= ($fechaInicio && $fechaFin) ? '' : ' (Mes)' ?></div>
                 </div>
             </div>
-            
+
+            <div class="kpi-card">
+                <div class="kpi-icon" style="background: linear-gradient(135deg, #10757e, #0a4f55);"><i class="bi bi-bag-check-fill"></i></div>
+                <div class="kpi-info">
+                    <div class="kpi-num">$<?= number_format($kpis['monto_pedido'], 0) ?></div>
+                    <div class="kpi-label">Monto Pedido (Órdenes)</div>
+                </div>
+            </div>
+
             <div class="kpi-card">
                 <div class="kpi-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><i class="bi bi-file-earmark-check-fill"></i></div>
                 <div class="kpi-info">
@@ -183,6 +195,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 .filter-group input:focus { border-color: #10757e; box-shadow: 0 0 0 2px rgba(16,117,126,0.1); }
 .filter-actions { display: flex; gap: 8px; }
 .filter-form .btn { padding: 8px 12px; font-size: 13px; border-radius: 6px; height: 33px; display: inline-flex; align-items: center; gap: 5px; }
+.btn-pdf { background: #dc2626; color: #fff; text-decoration: none; border: none; cursor: pointer; }
+.btn-pdf:hover { background: #b91c1c; }
 
 @media (max-width: 1024px) {
     .charts-grid { grid-template-columns: 1fr; }
