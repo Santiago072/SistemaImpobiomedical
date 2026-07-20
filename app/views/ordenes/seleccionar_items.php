@@ -80,10 +80,10 @@ include dirname(__DIR__) . '/layout/menu.php';
                                 <th>CÓD. PRD. PROVEEDOR</th>
                                 <th>Producto / Descripción</th>
                                 <th>Proveedor</th>
-                                <th style="text-align:right;">Cant. a pedir</th>
-                                <th style="text-align:right;">Precio U.</th>
+                                <th style="text-align:right;">Cant. O.C.</th>
+                                <th style="text-align:right;">Precio Prov.</th>
                                 <th style="text-align:right;">IVA</th>
-                                <th style="text-align:right;">Total</th>
+                                <th style="text-align:right;">Total Prov.</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -153,14 +153,14 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <span style="font-size:11px; color:var(--text-soft);">—</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td style="text-align:right;">
                                         <input type="number"
                                                min="1" max="<?= $qty ?>"
                                                value="<?= $qty ?>"
                                                class="qty-input"
                                                data-id="<?= (int)$it['id'] ?>"
                                                title="Máx: <?= $qty ?>"
-                                               style="width:65px; padding:4px 6px; border-radius:6px; border:1.5px solid rgba(45,190,203,.3); background:rgba(255,255,255,.08); color:inherit; font-size:13px; font-weight:600; text-align:center;">
+                                               style="width:65px; padding:4px 6px; border-radius:6px; border:1.5px solid rgba(45,190,203,.3); background:rgba(255,255,255,.08); color:inherit; font-size:13px; font-weight:600; text-align:center;"
+                                               oninput="document.getElementById('hdn-qty-<?= (int)$it['id'] ?>').value=this.value; actualizarFila(this.closest('tr'))">
                                     </td>
                                     <td style="text-align:right; white-space:nowrap;">
                                         <input type="number"
@@ -168,7 +168,8 @@ include dirname(__DIR__) . '/layout/menu.php';
                                                value="<?= $pu ?>"
                                                class="precio-input"
                                                data-id="<?= (int)$it['id'] ?>"
-                                               style="width:90px; padding:4px 6px; border-radius:6px; border:1.5px solid rgba(45,190,203,.3); background:rgba(255,255,255,.08); color:inherit; font-size:13px; text-align:right;">
+                                               style="width:90px; padding:4px 6px; border-radius:6px; border:1.5px solid rgba(45,190,203,.3); background:rgba(255,255,255,.08); color:inherit; font-size:13px; text-align:right;"
+                                               oninput="document.getElementById('precio-hidden-<?= (int)$it['id'] ?>').value=this.value; actualizarFila(this.closest('tr'))">
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][precio_proveedor]"
                                                id="precio-hidden-<?= (int)$it['id'] ?>"
                                                value="<?= $pu ?>">
@@ -194,7 +195,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                     <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:center; padding-top:10px; border-top:1px solid rgba(45,190,203,.2);">
                         <span style="color:#f59e0b;">Retención (<span id="lblRetPct">2.5</span>%): <strong id="cntRet" style="color:#f59e0b;">$ 0</strong></span>
-                        <span style="font-size:15px; font-weight:800; color:#2dbecb;">TOTAL NETO: <strong id="cntTotal">$ 0</strong></span>
+                        <div style="font-weight:bold; color:var(--white);">TOTAL O.C.: <span id="cntTotal" style="color:var(--amber); font-size:15px;">$ 0</span></div>
                     </div>
                 </div>
             </div>
@@ -484,6 +485,25 @@ NOTA:
         checkAll.indeterminate = cnt > 0 && cnt < checks.length;
         checkAll.checked       = cnt === checks.length && checks.length > 0;
     }
+
+    window.actualizarFila = function(row) {
+        const qtyInp = row.querySelector('.qty-input');
+        const puInp  = row.querySelector('.precio-input');
+        const celdaTot = row.querySelector('.celda-total');
+        if (!qtyInp || !puInp || !celdaTot) return;
+        
+        const qty = parseInt(qtyInp.value) || 0;
+        const pu  = parseFloat(puInp.value) || 0;
+        const pct = parseFloat(celdaTot.dataset.pct) || 0;
+        const aplica = parseInt(celdaTot.dataset.aplica) === 1;
+        
+        const sub = pu * qty;
+        const ivaVal = aplica ? sub * (pct / 100) : 0;
+        const total = sub + ivaVal;
+        
+        celdaTot.textContent = '$ ' + Math.round(total).toLocaleString('es-CO');
+        actualizarResumen();
+    };
 
     checkAll.addEventListener('change', function(){
         document.querySelectorAll('.item-row:not(.oculta) .item-check').forEach(c => c.checked = this.checked);

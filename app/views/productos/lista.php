@@ -286,7 +286,7 @@ include dirname(__DIR__) . '/layout/menu.php';
         </div>
         <div class="imo-modal-footer" style="display:flex; justify-content:flex-end; gap:12px;">
             <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
-            <a id="link-eliminar" href="#" class="imo-btn-danger" style="text-decoration:none;"><i class="bi bi-trash-fill"></i> Eliminar</a>
+            <button id="btn-eliminar" class="imo-btn-danger" onclick="ejecutarEliminar()" style="display:inline-flex; align-items:center; justify-content:center; gap:6px; height:38px; padding:0 16px; border:none; border-radius:6px; cursor:pointer;"><i class="bi bi-trash-fill"></i> Eliminar</button>
         </div>
     </div>
 </div>
@@ -325,8 +325,7 @@ function abrirModalEditar(p) {
     document.getElementById('e_id').value          = p.id;
     document.getElementById('e_titulo').value      = p.titulo || '';
     document.getElementById('e_descripcion').value = p.descripcion || '';
-    document.getElementById('e_cantidad').value    = p.cantidad || 0;
-    document.getElementById('e_precio').value      = p.precio || 0;
+    if (document.getElementById('e_precio')) document.getElementById('e_precio').value = p.precio || 0;
     document.getElementById('e_iva').value         = p.iva || 'no';
     document.getElementById('e_estado').value      = p.estado || 'activo';
     document.getElementById('e_foto_actual').value = p.foto || '';
@@ -365,11 +364,15 @@ document.getElementById('e_foto')?.addEventListener('change', function() {
     reader.readAsDataURL(file);
 });
 
+let urlEliminar = '';
 function confirmarEliminar(id, nombre) {
     document.getElementById('nombre-eliminar').textContent = nombre;
-    document.getElementById('link-eliminar').href = BASE + '?module=productos&action=eliminar&id=' + id;
+    urlEliminar = BASE + '?module=productos&action=eliminar&id=' + id;
     document.getElementById('modal-eliminar').classList.add('open');
     document.body.style.overflow = 'hidden';
+}
+function ejecutarEliminar() {
+    if (urlEliminar) window.location.href = urlEliminar;
 }
 
 function cerrarModal(id, evento) {

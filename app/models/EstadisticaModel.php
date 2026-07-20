@@ -68,16 +68,15 @@ class EstadisticaModel
             $kpis['monto_cotizado_mes'] = (float)($row['total_monto'] ?? 0);
         }
 
-        // Monto Vendido (ítems de cotizaciones finalizadas que generaron orden de compra)
-        $q2 = "SELECT SUM(ci.cantidad * ci.precio) as total_vendido
-               FROM cotizacion_items ci
-               JOIN cotizaciones c ON ci.cotizacion_id = c.id
-               WHERE c.estado = 'finalizada'
-               AND EXISTS (
-                   SELECT 1 FROM ordenes_compra o WHERE o.cotizacion_id = c.id
-               )";
+        // Monto Vendido (cantidad de items pedidos * precio al cliente)
+        $q2 = "SELECT SUM(oi.cantidad * ci.precio) as total_vendido
+               FROM orden_compra_items oi
+               JOIN ordenes_compra o ON oi.orden_id = o.id
+               JOIN cotizacion_items ci ON oi.cotizacion_item_id = ci.id
+               JOIN cotizaciones c ON o.cotizacion_id = c.id
+               WHERE c.estado = 'finalizada'";
         if ($fecha_inicio && $fecha_fin) {
-            $q2 .= " AND c.fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+            $q2 .= " AND o.fecha BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
         }
         $res = mysqli_query($this->db, $q2);
         if ($res && $row = mysqli_fetch_assoc($res)) {
