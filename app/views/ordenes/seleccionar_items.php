@@ -115,8 +115,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][cantidad]"
                                                id="hdn-qty-<?= (int)$it['id'] ?>"
                                                value="<?= $qty ?>">
-                                        <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][precio]"
-                                               value="<?= $pu ?>">
+
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][iva]"
                                                value="<?= htmlspecialchars($it['iva']) ?>">
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][porcentaje_iva]"
@@ -171,7 +170,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                                data-id="<?= (int)$it['id'] ?>"
                                                style="width:90px; padding:4px 6px; border-radius:6px; border:1.5px solid rgba(45,190,203,.3); background:rgba(255,255,255,.08); color:inherit; font-size:13px; text-align:right;"
                                                oninput="document.getElementById('precio-hidden-<?= (int)$it['id'] ?>').value=this.value; actualizarFila(this.closest('tr'))">
-                                        <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][precio_proveedor]"
+                                        <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][precio]"
                                                id="precio-hidden-<?= (int)$it['id'] ?>"
                                                value="<?= $pu ?>">
                                     </td>
