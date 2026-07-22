@@ -90,7 +90,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <?php if(!empty($p['codigo_producto'])): ?><span class="prod-tag" style="background:#e0f2fe;color:#0284c7;"><i class="bi bi-upc-scan"></i> <?= htmlspecialchars($p['codigo_producto']) ?></span><?php endif; ?>
                     </div>
                     <div class="prod-meta">
-                        <span class="prod-tag"><i class="bi bi-boxes"></i> Stock: <?= intval($p['cantidad']) ?></span>
                         <span class="prod-tag <?= $p['iva'] === 'si' ? 'tag-iva' : 'tag-noiva' ?>">
                             IVA: <?= $p['iva'] === 'si' ? 'Sí' : 'No' ?>
                         </span>
@@ -171,7 +170,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                             <option value="si">Sí — Aplicar IVA</option>
                             <option value="no">No — Sin IVA</option>
                         </select>
-                        <input type="hidden" name="precio" value="0">
                     </div>
                 </div>
                 <div class="prod-edit-right">
@@ -242,7 +240,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                                 <option value="si">Sí — Aplicar IVA</option>
                                 <option value="no">No — Sin IVA</option>
                             </select>
-                            <input type="hidden" id="e_precio" name="precio" value="0">
                         </div>
                         <div class="imo-form-group">
                             <label>Estado *</label>
@@ -323,7 +320,6 @@ function abrirModalEditar(p) {
     document.getElementById('e_id').value          = p.id;
     document.getElementById('e_titulo').value      = p.titulo || '';
     document.getElementById('e_descripcion').value = p.descripcion || '';
-    if (document.getElementById('e_precio')) document.getElementById('e_precio').value = p.precio || 0;
     document.getElementById('e_iva').value         = p.iva || 'no';
     document.getElementById('e_estado').value      = p.estado || 'activo';
     document.getElementById('e_foto_actual').value = p.foto || '';

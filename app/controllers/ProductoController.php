@@ -65,15 +65,14 @@ class ProductoController
 
         $titulo         = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
         $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
-        $precio         = (float)($_POST['precio'] ?? 0);
         $iva            = mb_substr(sanitizar_entrada($_POST['iva'] ?? ''), 0, 5);
         $porcentaje_iva = (float)($_POST['porcentaje_iva'] ?? 19);
 
         $categoria      = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
         $codigo_producto= mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
 
-        if (!$titulo || !$descripcion || $precio < 0) {
-            $mensajeError = 'Todos los campos son obligatorios y el precio debe ser válido';
+        if (!$titulo || !$descripcion) {
+            $mensajeError = 'Todos los campos son obligatorios';
             return compact('mensajeError', 'csrf_token');
         }
 
@@ -84,7 +83,7 @@ class ProductoController
 
         $foto = $this->uploader->subir($_FILES['foto'] ?? [], '');
 
-        if ($this->model->crear($titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $categoria, $codigo_producto)) {
+        if ($this->model->crear($titulo, $foto, $descripcion, $iva, $porcentaje_iva, $categoria, $codigo_producto)) {
             header('Location: ' . BASE_URL . '?module=productos&created=1');
             exit();
         }
@@ -125,7 +124,6 @@ class ProductoController
 
         $titulo         = mb_substr(sanitizar_entrada($_POST['titulo'] ?? ''), 0, 255);
         $descripcion    = mb_substr(sanitizar_entrada($_POST['descripcion'] ?? ''), 0, 5000);
-        $precio         = (float)($_POST['precio'] ?? 0);
         $iva            = mb_substr(sanitizar_entrada($_POST['iva'] ?? ''), 0, 5);
         $porcentaje_iva = (float)($_POST['porcentaje_iva'] ?? 19);
         $estado         = mb_substr(sanitizar_entrada($_POST['estado'] ?? 'activo'), 0, 10);
@@ -134,14 +132,14 @@ class ProductoController
         $categoria      = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
         $codigo_producto= mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
 
-        if (!$titulo || !$descripcion || $precio < 0) {
+        if (!$titulo || !$descripcion) {
             $mensajeError = 'Todos los campos son obligatorios';
             return compact('producto', 'mensajeError', 'csrf_token');
         }
 
         $foto = $this->uploader->reemplazar($_FILES['foto'] ?? [], $producto['foto'] ?? '');
 
-        if ($this->model->actualizar($id, $titulo, $foto, $descripcion, $precio, $iva, $porcentaje_iva, $estado, $categoria, $codigo_producto)) {
+        if ($this->model->actualizar($id, $titulo, $foto, $descripcion, $iva, $porcentaje_iva, $estado, $categoria, $codigo_producto)) {
             header('Location: ' . BASE_URL . '?module=productos&updated=1');
             exit();
         }
