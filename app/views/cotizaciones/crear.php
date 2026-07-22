@@ -14,7 +14,12 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
     <main class="contenido-principal">
         <div class="page-header">
+            <?php if(isset($_SESSION['cotizacion_revision_de'])): ?>
+            <h1 class="page-title"><i class="bi bi-pencil-square"></i> Modificando Cotización: <?= htmlspecialchars($_SESSION['cotizacion_revision_de']) ?></h1>
+            <p style="color:#f59e0b; font-size:13px; margin-bottom:10px;"><i class="bi bi-info-circle-fill"></i> Puedes editar, eliminar o agregar productos. El nuevo PDF tendrá un número derivado al finalizar.</p>
+            <?php else: ?>
             <h1 class="page-title"><i class="bi bi-plus-circle-fill"></i> Nueva Cotización</h1>
+            <?php endif; ?>
             <p class="page-sub">Ítems agregados: <strong><?= $totalItems ?></strong>
                 <?php if ($totalItems > 0): ?>
                 | <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">

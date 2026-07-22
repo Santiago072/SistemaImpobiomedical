@@ -297,6 +297,7 @@ class CotizacionController
 
         $cotizacion_id = (int)$_SESSION['cotizacion_id'];
         $items         = $this->model->obtenerItems($cotizacion_id);
+        $cotizacion    = $this->model->buscarPorId($cotizacion_id);
 
         if (empty($items)) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear&error=no_items');
@@ -304,7 +305,7 @@ class CotizacionController
         }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            return compact('csrf_token', 'mensajeError', 'items', 'cotizacion_id');
+            return compact('csrf_token', 'mensajeError', 'items', 'cotizacion_id', 'cotizacion');
         }
 
         verificar_rate_limit(10, 60, 'cot_finalizar');

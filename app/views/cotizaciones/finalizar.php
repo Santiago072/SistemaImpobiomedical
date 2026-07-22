@@ -45,39 +45,39 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <div class="imo-form-row">
                             <div class="imo-form-group">
                                 <label>Nombre / Entidad *</label>
-                                <input type="text" name="cliente_nombre" id="inpClienteNombre" required maxlength="200">
+                                <input type="text" name="cliente_nombre" id="inpClienteNombre" required maxlength="200" value="<?= htmlspecialchars($cotizacion['cliente_nombre'] ?? '') ?>">
                             </div>
                             <div class="imo-form-group">
                                 <label>NIT / CC</label>
-                                <input type="text" name="cliente_nit" id="inpClienteNit" maxlength="30">
+                                <input type="text" name="cliente_nit" id="inpClienteNit" maxlength="30" value="<?= htmlspecialchars($cotizacion['cliente_nit'] ?? '') ?>">
                             </div>
                         </div>
 
                         <div class="imo-form-row">
                             <div class="imo-form-group">
                                 <label>Nombre Contacto</label>
-                                <input type="text" name="cliente_contacto" id="inpClienteContacto" maxlength="100">
+                                <input type="text" name="cliente_contacto" id="inpClienteContacto" maxlength="100" value="<?= htmlspecialchars($cotizacion['cliente_contacto'] ?? '') ?>">
                             </div>
                             <div class="imo-form-group">
                                 <label>Ciudad</label>
-                                <input type="text" name="cliente_ciudad" id="inpClienteCiudad" maxlength="100">
+                                <input type="text" name="cliente_ciudad" id="inpClienteCiudad" maxlength="100" value="<?= htmlspecialchars($cotizacion['cliente_ciudad'] ?? '') ?>">
                             </div>
                         </div>
 
                         <div class="imo-form-row">
                             <div class="imo-form-group">
                                 <label>Teléfono</label>
-                                <input type="text" name="cliente_telefono" id="inpClienteTel" maxlength="30">
+                                <input type="text" name="cliente_telefono" id="inpClienteTel" maxlength="30" value="<?= htmlspecialchars($cotizacion['cliente_telefono'] ?? '') ?>">
                             </div>
                             <div class="imo-form-group">
                                 <label>Correo</label>
-                                <input type="email" name="cliente_correo" id="inpClienteEmail" maxlength="100">
+                                <input type="email" name="cliente_correo" id="inpClienteEmail" maxlength="100" value="<?= htmlspecialchars($cotizacion['cliente_correo'] ?? '') ?>">
                             </div>
                         </div>
 
                         <div class="imo-form-group">
                             <label>Dirección</label>
-                            <input type="text" name="cliente_direccion" id="inpClienteDir" maxlength="200">
+                            <input type="text" name="cliente_direccion" id="inpClienteDir" maxlength="200" value="<?= htmlspecialchars($cotizacion['cliente_direccion'] ?? '') ?>">
                         </div>
 
                         <hr style="border:none; border-top:1px solid #e5e7eb; margin:24px 0;">
@@ -96,7 +96,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
                         <div class="imo-form-group">
                             <label>Condiciones de Pago</label>
-                            <input type="text" name="condiciones_pago" maxlength="100" value="CONTADO">
+                            <input type="text" name="condiciones_pago" maxlength="100" value="<?= htmlspecialchars($cotizacion['condiciones_pago'] ?? 'CONTADO') ?>">
                         </div>
 
                         <div class="imo-form-group">
