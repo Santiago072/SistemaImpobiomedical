@@ -47,6 +47,10 @@ class UsuarioController
             ];
             $mensajeError = $mapa[$_GET['error']] ?? 'Error al procesar la solicitud';
         }
+        if (isset($_SESSION['mensajeError'])) {
+            $mensajeError = $_SESSION['mensajeError'];
+            unset($_SESSION['mensajeError']);
+        }
 
         $csrf_token = generar_token_csrf();
 
@@ -247,7 +251,11 @@ class UsuarioController
             exit();
         }
 
-        $responderError('Error al eliminar', 'delete_failed');
+        $err = $_SESSION['db_error'] ?? 'delete_failed';
+        unset($_SESSION['db_error']);
+        $_SESSION['mensajeError'] = 'Error al eliminar: ' . $err;
+        header('Location: ' . BASE_URL . '?module=usuarios');
+        exit();
     }
 
     // ── Validación ────────────────────────────────────────────────────────────

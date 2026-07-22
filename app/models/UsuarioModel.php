@@ -154,9 +154,13 @@ class UsuarioModel
             $stmt = mysqli_prepare($this->db, 'DELETE FROM usuarios WHERE id = ?');
             mysqli_stmt_bind_param($stmt, 'i', $id);
             $ok = mysqli_stmt_execute($stmt);
+            if (!$ok) {
+                $_SESSION['db_error'] = mysqli_stmt_error($stmt);
+            }
             mysqli_stmt_close($stmt);
             return $ok;
         } catch (\mysqli_sql_exception $e) {
+            $_SESSION['db_error'] = $e->getMessage();
             return false;
         }
     }
