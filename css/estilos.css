@@ -2954,7 +2954,7 @@ td .estado-no-generado::before {
     font-weight: 700;
     color: var(--white);
     background: linear-gradient(135deg, var(--gold), var(--gold-light));
-    -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 10px;
 }
@@ -4847,7 +4847,7 @@ body:not(.login-premium) .control-label {
 }
 .login-page-body .hero-title .accent {
     background: linear-gradient(135deg, #2bebfb, #a5f3fc);
-    -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 .login-page-body .hero-sub {

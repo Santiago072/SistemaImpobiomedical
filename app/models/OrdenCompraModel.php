@@ -198,11 +198,7 @@ class OrdenCompraModel
             $params[]      = '%' . $filtros['proveedor'] . '%';
             $types        .= 's';
         }
-        if (!empty($filtros['numero_po'])) {
-            $condiciones[] = 'o.numero_po = ?';
-            $params[]      = (int)$filtros['numero_po'];
-            $types        .= 'i';
-        }
+
         if (!empty($filtros['cotizacion_numero'])) {
             $condiciones[] = 'o.cotizacion_numero LIKE ?';
             $params[]      = '%' . $filtros['cotizacion_numero'] . '%';

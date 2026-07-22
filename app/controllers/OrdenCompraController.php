@@ -169,7 +169,6 @@ class OrdenCompraController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $filtros = [];
             if (!empty($_POST['proveedor']))          $filtros['proveedor']          = sanitizar_entrada($_POST['proveedor']);
-            if (!empty($_POST['numero_po']))           $filtros['numero_po']           = sanitizar_entrada($_POST['numero_po']);
             if (!empty($_POST['cotizacion_numero']))   $filtros['cotizacion_numero']   = sanitizar_entrada($_POST['cotizacion_numero']);
             if (!empty($_POST['fecha']))               $filtros['fecha']               = sanitizar_entrada($_POST['fecha']);
             $_SESSION['orden_filtros'] = $filtros;
@@ -189,12 +188,11 @@ class OrdenCompraController
         $ordenes      = $this->model->listarConFiltros($filtros, $offset, $this->porPagina, $usuarioId, $rol);
 
         $busquedaProveedor  = $filtros['proveedor'] ?? '';
-        $busquedaPO         = $filtros['numero_po'] ?? '';
         $busquedaCotizacion = $filtros['cotizacion_numero'] ?? '';
         $busquedaFecha      = $filtros['fecha'] ?? '';
 
         return compact('ordenes', 'csrf_token', 'paginaActual', 'totalPaginas',
-                       'busquedaProveedor', 'busquedaPO', 'busquedaCotizacion', 'busquedaFecha');
+                       'busquedaProveedor', 'busquedaCotizacion', 'busquedaFecha');
     }
 
     // ── GENERAR PDF ───────────────────────────────────────────────────────────

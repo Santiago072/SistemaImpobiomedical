@@ -30,8 +30,6 @@ $rol = $_SESSION['rol'] ?? 'usuario';
                   class="mod-search-form" style="display:flex; gap:10px; align-items:center; flex:1; flex-wrap:wrap;">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                 <span class="mod-search-icon"><i class="bi bi-funnel"></i></span>
-                <input type="number" name="numero_po" value="<?= htmlspecialchars($busquedaPO) ?>"
-                       placeholder="P.O. #" min="1" class="mod-search-input" style="flex:0.35;">
                 <input type="text" name="proveedor" value="<?= htmlspecialchars($busquedaProveedor) ?>"
                        placeholder="Proveedor..." maxlength="60" class="mod-search-input" style="flex:1;">
                 <input type="text" name="cotizacion_numero" value="<?= htmlspecialchars($busquedaCotizacion) ?>"
@@ -42,7 +40,7 @@ $rol = $_SESSION['rol'] ?? 'usuario';
                 <button type="submit" class="imo-btn-save" style="padding:10px 15px; border-radius:9px;">
                     <i class="bi bi-search"></i> Buscar
                 </button>
-                <?php if ($busquedaProveedor || $busquedaPO || $busquedaCotizacion || $busquedaFecha): ?>
+                <?php if ($busquedaProveedor || $busquedaCotizacion || $busquedaFecha): ?>
                 <a href="<?= $basePath ?>?module=ordenes&action=consultar&limpiar=1" class="mod-btn-clear" title="Limpiar">
                     <i class="bi bi-x-lg"></i>
                 </a>
