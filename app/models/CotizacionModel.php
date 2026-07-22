@@ -31,6 +31,20 @@ class CotizacionModel
         return (int)($row['total'] ?? 0);
     }
 
+    public function contarMesDelUsuario(int $usuarioId): int
+    {
+        $stmt = mysqli_prepare($this->db,
+            "SELECT COUNT(*) AS total FROM cotizaciones 
+             WHERE usuario_id = ? AND estado != 'borrador' AND MONTH(fecha_creacion)=MONTH(CURDATE()) 
+             AND YEAR(fecha_creacion)=YEAR(CURDATE())");
+        mysqli_stmt_bind_param($stmt, 'i', $usuarioId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $row    = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+        return (int)($row['total'] ?? 0);
+    }
+
     public function getMetricasDashboard(int $usuarioId, string $rol): array
     {
         // Cotizaciones creadas en los últimos 6 meses (agrupadas por mes)

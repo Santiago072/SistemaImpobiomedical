@@ -24,14 +24,12 @@ class PanelController
         if ($rol === 'admin') {
             $totalCotizaciones    = $this->model->contarTotal();
             $cotizacionesMes      = $this->model->contarDelMes();
-            $totalClientes        = $this->model->contarTotalClientes();
-            $totalProductos       = $this->model->contarTotalProductos();
         } else {
             $totalCotizaciones    = $this->model->contarDelUsuario($usuarioId);
-            $cotizacionesMes      = 0;
-            $totalClientes        = 0;
-            $totalProductos       = 0;
+            $cotizacionesMes      = $this->model->contarMesDelUsuario($usuarioId);
         }
+        $totalClientes        = $this->model->contarTotalClientes();
+        $totalProductos       = $this->model->contarTotalProductos();
 
         return compact('totalCotizaciones', 'cotizacionesMes', 'totalClientes', 'totalProductos');
     }
