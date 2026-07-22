@@ -4616,7 +4616,7 @@ body:not(.login-premium) .control-label {
 .imo-form-group input, .imo-form-group select { padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 14px; color: #1f2937; transition: border-color .2s, box-shadow .2s; outline: none; background: #fff; width: 100%; box-sizing: border-box; }
 .imo-form-group input:focus, .imo-form-group select:focus { border-color: #10757e; box-shadow: 0 0 0 3px rgba(16,117,126,.1); }
 
-.imo-modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 8px; border-top: 1px solid #f1f5f9; margin-top: 8px; }
+.imo-modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 28px 24px 28px; border-top: 1px solid #f1f5f9; margin-top: 8px; }
 .imo-btn-cancel { padding: 10px 20px; border: 1.5px solid #e5e7eb; background: #fff; color: #374151; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; }
 .imo-btn-cancel:hover { background: #f9fafb; }
 .imo-btn-save { padding: 10px 22px; background: #10757e; color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
