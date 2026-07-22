@@ -286,6 +286,9 @@ if ($module === 'cotizaciones') {
         case 'eliminar':
             $ctrl->eliminar();
             break;
+        case 'modificar':
+            $ctrl->modificar();
+            break;
         default:
             $data = $ctrl->crear();
             extract($data);
