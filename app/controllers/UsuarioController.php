@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once dirname(__DIR__, 2) . '/config/seguridad.php';
 
 /**
@@ -145,6 +145,7 @@ class UsuarioController
         $cargo    = mb_substr(sanitizar_entrada($_POST['cargo'] ?? ''), 0, 50);
         $rol      = mb_substr(sanitizar_entrada($_POST['rol'] ?? ''), 0, 10);
         $estado   = mb_substr(sanitizar_entrada($_POST['estado'] ?? ''), 0, 10);
+        $password = mb_substr($_POST['password'] ?? '', 0, 255);
 
         $mensajeError = $this->validarCampos($codigo, $doc, $nombre, $correo, $telefono, $rol, '', true);
 
@@ -160,7 +161,9 @@ class UsuarioController
             return compact('usuario', 'mensajeError', 'csrf_token');
         }
 
-        if ($this->model->actualizar($id, $codigo, $doc, $nombre, $correo, $telefono, $cargo, $rol, $estado)) {
+        $passwordHash = !empty($password) ? password_hash($password, PASSWORD_BCRYPT) : null;
+
+        if ($this->model->actualizar($id, $codigo, $doc, $nombre, $correo, $telefono, $cargo, $rol, $estado, $passwordHash)) {
             if ($id === (int)$_SESSION['usuario_id']) {
                 $_SESSION['usuario_nombre'] = $nombre;
                 $_SESSION['usuario_codigo'] = $codigo;

@@ -126,12 +126,6 @@ class UsuarioModel
         if ($passwordHash !== null) {
             $stmt = mysqli_prepare($this->db,
                 'UPDATE usuarios SET codigo=?,documento=?,nombre=?,correo=?,password=?,telefono=?,cargo=?,rol=?,estado=? WHERE id=?');
-            mysqli_stmt_bind_param($stmt, 'ssssssssi',
-                $codigo, $documento, $nombre, $correo, $passwordHash, $telefono, $cargo, $rol, $id);
-            // Rebind with estado
-            mysqli_stmt_close($stmt);
-            $stmt = mysqli_prepare($this->db,
-                'UPDATE usuarios SET codigo=?,documento=?,nombre=?,correo=?,password=?,telefono=?,cargo=?,rol=?,estado=? WHERE id=?');
             mysqli_stmt_bind_param($stmt, 'sssssssssi',
                 $codigo, $documento, $nombre, $correo, $passwordHash, $telefono, $cargo, $rol, $estado, $id);
         } else {
