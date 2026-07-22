@@ -91,9 +91,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                     <div class="prod-meta">
                         <span class="prod-tag"><i class="bi bi-boxes"></i> Stock: <?= intval($p['cantidad']) ?></span>
-                        <span class="prod-tag <?= $p['iva'] === 'si' ? 'tag-iva' : 'tag-noiva' ?>">
-                            IVA: <?= $p['iva'] === 'si' ? 'Sí' : 'No' ?>
-                        </span>
                         <?php if ($p['estado'] !== 'activo'): ?>
                             <span class="prod-tag" style="background:#fee2e2;color:#991b1b;"><i class="bi bi-x-circle-fill"></i> Inactivo</span>
                         <?php endif; ?>
@@ -165,14 +162,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <label>Descripción *</label>
                         <textarea name="descripcion" required maxlength="5000" rows="3" style="padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:14px;resize:vertical;outline:none;"></textarea>
                     </div>
-                    <div class="imo-form-group">
-                        <label>¿Aplica IVA? *</label>
-                        <select name="iva" required>
-                            <option value="si">Sí — Aplicar IVA</option>
-                            <option value="no">No — Sin IVA</option>
-                        </select>
-                        <input type="hidden" name="precio" value="0">
-                    </div>
+
                 </div>
                 <div class="prod-edit-right">
                     <label style="font-size:12px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;">Imagen del Producto</label>
@@ -236,14 +226,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <textarea id="e_descripcion" name="descripcion" required maxlength="5000" rows="3" style="padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:14px;resize:vertical;outline:none;"></textarea>
                     </div>
                     <div class="imo-form-row">
-                        <div class="imo-form-group">
-                            <label>¿Aplica IVA? *</label>
-                            <select id="e_iva" name="iva" required>
-                                <option value="si">Sí — Aplicar IVA</option>
-                                <option value="no">No — Sin IVA</option>
-                            </select>
-                            <input type="hidden" id="e_precio" name="precio" value="0">
-                        </div>
                         <div class="imo-form-group">
                             <label>Estado *</label>
                             <select id="e_estado" name="estado" required>
@@ -324,7 +306,6 @@ function abrirModalEditar(p) {
     document.getElementById('e_titulo').value      = p.titulo || '';
     document.getElementById('e_descripcion').value = p.descripcion || '';
     if (document.getElementById('e_precio')) document.getElementById('e_precio').value = p.precio || 0;
-    document.getElementById('e_iva').value         = p.iva || 'no';
     document.getElementById('e_estado').value      = p.estado || 'activo';
     document.getElementById('e_foto_actual').value = p.foto || '';
     document.getElementById('e_categoria').value   = p.categoria || '';
