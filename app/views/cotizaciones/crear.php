@@ -406,7 +406,8 @@ function buscarProductos(q) {
                     div.className = 'sugerencia-item';
                     div.innerHTML = `
                         ${p.foto ? `<img src="${BASE}uploads/${p.foto}">` : '<div style="width:36px;height:36px;border-radius:6px;background:#e5e7eb;flex-shrink:0;"></div>'}
-                        <div><div class="sugerencia-nombre">${p.titulo}</div>`;
+                        <div><div class="sugerencia-nombre">${p.titulo}</div>
+                             <div class="sugerencia-precio">$${Number(p.precio).toLocaleString('es-CO')} | IVA: ${p.iva === 'si' ? p.porcentaje_iva + '%' : 'No'}</div></div>`;
                     div.addEventListener('click', () => autocompletar(p));
                     lista.appendChild(div);
                 });
