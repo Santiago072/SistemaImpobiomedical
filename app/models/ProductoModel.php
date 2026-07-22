@@ -104,7 +104,7 @@ class ProductoModel implements RepositoryInterface
     public function buscarPorId(int $id): ?array
     {
         $stmt = mysqli_prepare($this->db,
-            "SELECT * FROM productos WHERE id = ? AND estado='activo'");
+            "SELECT * FROM productos WHERE id = ?");
         mysqli_stmt_bind_param($stmt, 'i', $id);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
