@@ -64,7 +64,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                             <td><strong><?= htmlspecialchars($cot['numero_cotizacion'] ?: 'Sin número') ?></strong></td>
                             <td><?= htmlspecialchars($cot['fecha_creacion']) ?></td>
                             <td><?= htmlspecialchars($cot['cliente_nombre'] ?? '') ?></td>
-                            <td><?= htmlspecialchars($cot['cliente_nit'] ?? '') ?></td>
                             <td><?= htmlspecialchars($cot['cliente_ciudad'] ?? '') ?></td>
                             <td>
                                 <div class="mod-actions">
