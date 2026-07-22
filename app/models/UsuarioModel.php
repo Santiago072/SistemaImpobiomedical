@@ -151,6 +151,12 @@ class UsuarioModel
     public function eliminar(int $id): bool
     {
         try {
+            // Limpiar cotizaciones en estado borrador (basura) para evitar bloqueo de FK
+            $stmtClean = mysqli_prepare($this->db, "DELETE FROM cotizaciones WHERE usuario_id = ? AND estado = 'borrador'");
+            mysqli_stmt_bind_param($stmtClean, 'i', $id);
+            mysqli_stmt_execute($stmtClean);
+            mysqli_stmt_close($stmtClean);
+
             $stmt = mysqli_prepare($this->db, 'DELETE FROM usuarios WHERE id = ?');
             mysqli_stmt_bind_param($stmt, 'i', $id);
             $ok = mysqli_stmt_execute($stmt);
