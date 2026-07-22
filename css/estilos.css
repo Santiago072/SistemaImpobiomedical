@@ -1265,9 +1265,10 @@ body.login-page {
 }
 
 .rol-usuario {
-    background: linear-gradient(135deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, .05));
-    border: 1px solid rgba(255, 255, 255, .2);
-    color: var(--cream);
+    background: linear-gradient(135deg, rgba(45, 190, 203, .2), rgba(16, 117, 126, .1));
+    border: 1px solid rgba(45, 190, 203, .3);
+    color: var(--gold-light);
+    box-shadow: 0 0 20px rgba(45, 190, 203, .1);
 }
 
 /* ════════════════════════════════════════════════════════════
