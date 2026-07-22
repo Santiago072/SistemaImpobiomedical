@@ -49,10 +49,13 @@ RUN composer dump-autoload --no-dev --optimize --no-interaction
 # Crear carpetas con permisos correctos
 RUN mkdir -p /var/www/html/logs \
     && mkdir -p /var/www/html/uploads \
+    && mkdir -p /var/www/html/sessions \
     && chown -R www-data:www-data /var/www/html/logs \
     && chown -R www-data:www-data /var/www/html/uploads \
+    && chown -R www-data:www-data /var/www/html/sessions \
     && chown -R www-data:www-data /var/www/html/vendor \
-    && chmod 755 /var/www/html/uploads
+    && chmod 755 /var/www/html/uploads \
+    && chmod 755 /var/www/html/sessions
 
 # Script de inicio con Caddy + PHP-FPM
 RUN echo '#!/bin/bash\n\

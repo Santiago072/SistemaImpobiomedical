@@ -13,7 +13,7 @@ services:
       - DB_PASS=${DB_PASS:-}
       - APP_BASE=${APP_BASE:-/}
       - SESSION_LIFETIME=${SESSION_LIFETIME:-3600}
-      - COOKIE_SECURE=${COOKIE_SECURE:-1}
+      - COOKIE_SECURE=${COOKIE_SECURE:-0}
       - UPLOAD_MAX_SIZE=${UPLOAD_MAX_SIZE:-5242880}
       - ALLOWED_EXTENSIONS=${ALLOWED_EXTENSIONS:-jpg,jpeg,png,gif,webp}
     volumes:
