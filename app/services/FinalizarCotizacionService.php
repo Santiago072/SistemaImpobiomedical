@@ -24,7 +24,7 @@ class FinalizarCotizacionService
      * @param array $sessionData Datos de la sesión actual (usuario, rol, etc).
      * @return string El número de cotización generado.
      */
-    public function procesarFinalizacion(int $cotizacion_id, array $postData, array $sessionData): string
+    public function procesarFinalizacion(int $cotizacion_id, array $postData, array $sessionData, ?string $revisionDe = null): string
     {
         $fechaCreacion    = mb_substr(sanitizar_entrada($postData['fecha_creacion'] ?? date('Y-m-d')), 0, 10);
         $diasValidez      = max(1, (int)($postData['dias_validez'] ?? 30));
@@ -71,7 +71,8 @@ class FinalizarCotizacionService
             $clienteCorreo, $clienteContacto, $clienteCiudad, $clienteId,
             $sessionData['usuario_nombre'] ?? '',
             $sessionData['usuario_cargo'] ?? '',
-            $sessionData['usuario_codigo'] ?? ''
+            $sessionData['usuario_codigo'] ?? '',
+            $revisionDe
         );
 
         return $numeroCotizacion;

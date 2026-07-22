@@ -78,6 +78,10 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=ver_respaldo&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Hoja de Respaldo Proveedores">
                                         <i class="bi bi-file-earmark-spreadsheet"></i> Respaldo
                                     </button>
+                                    <button type="button" class="mod-btn-edit" style="width:auto; padding:0 12px; font-weight:600; background:rgba(234,179,8,.15); color:#ca8a04; border:1.5px solid #ca8a04; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; height:34px; font-size:12px; transition:all .2s;"
+                                        onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=modificar&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Crear nueva versión / Modificar Cotización">
+                                        <i class="bi bi-pencil-square"></i> Modificar
+                                    </button>
                                     <button type="button"
                                         style="width:auto; padding:0 12px; font-weight:600; background:rgba(34,197,94,.15); color:#22c55e; border:1.5px solid #22c55e; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; height:34px; font-size:12px; transition:all .2s;"
                                         onclick="window.location.href='<?= $basePath ?>?module=ordenes&action=seleccionar_items&cotizacion=<?= urlencode($cot['numero_cotizacion']) ?>'"

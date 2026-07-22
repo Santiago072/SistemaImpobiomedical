@@ -160,6 +160,47 @@ class CotizacionModel
         return $id;
     }
 
+    public function clonarDatosCabecera(int $oldId, int $newId): void
+    {
+        $stmt = mysqli_prepare($this->db,
+            "UPDATE cotizaciones c_new
+             JOIN cotizaciones c_old ON c_old.id = ?
+             SET c_new.cliente_id = c_old.cliente_id,
+                 c_new.cliente_nombre = c_old.cliente_nombre,
+                 c_new.cliente_nit = c_old.cliente_nit,
+                 c_new.cliente_direccion = c_old.cliente_direccion,
+                 c_new.cliente_telefono = c_old.cliente_telefono,
+                 c_new.cliente_correo = c_old.cliente_correo,
+                 c_new.cliente_contacto = c_old.cliente_contacto,
+                 c_new.cliente_ciudad = c_old.cliente_ciudad,
+                 c_new.dias_validez = c_old.dias_validez,
+                 c_new.condiciones_pago = c_old.condiciones_pago,
+                 c_new.observaciones = c_old.observaciones
+             WHERE c_new.id = ?");
+        mysqli_stmt_bind_param($stmt, 'ii', $oldId, $newId);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
+
+    public function clonarItems(int $oldId, int $newId): void
+    {
+        $stmt = mysqli_prepare($this->db,
+            "INSERT INTO cotizacion_items 
+             (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio, 
+              iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto,
+              precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, 
+              proveedor, codigo_proveedor, calc_ops)
+             SELECT ?, producto_id, titulo, foto, descripcion, cantidad, precio, 
+                    iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto,
+                    precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, 
+                    proveedor, codigo_proveedor, calc_ops
+             FROM cotizacion_items WHERE cotizacion_id = ?");
+        mysqli_stmt_bind_param($stmt, 'ii', $newId, $oldId);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
+
+
     /**
      * Genera el número de cotización: CODIGO_USUARIO + consecutivo mensual de 2 dígitos.
      * Ejemplo: EB01, EB02, ..., EB99
@@ -182,7 +223,8 @@ class CotizacionModel
         ?int   $clienteId = null,
         string $asesorNombre = '',
         string $asesorCargo = '',
-        string $usuarioCodigo = ''
+        string $usuarioCodigo = '',
+        ?string $revisionDe = null
     ): string {
         mysqli_begin_transaction($this->db);
         try {
@@ -200,22 +242,44 @@ class CotizacionModel
                 mysqli_stmt_close($stmtCodigo);
             }
 
-            // Contar cotizaciones finalizadas de este usuario en el mes actual
-            $mes  = date('Y-m');
-            $like = $codigo . '%';
-            $stmtCnt = mysqli_prepare($this->db,
-                "SELECT COUNT(*) AS total FROM cotizaciones
-                 WHERE usuario_codigo = ?
-                   AND estado = 'finalizada'
-                   AND DATE_FORMAT(fecha_creacion, '%Y-%m') = ?
-                 FOR UPDATE");
-            mysqli_stmt_bind_param($stmtCnt, 'ss', $codigo, $mes);
-            mysqli_stmt_execute($stmtCnt);
-            $resCnt = mysqli_stmt_get_result($stmtCnt);
-            $cnt    = (int)mysqli_fetch_assoc($resCnt)['total'];
-            mysqli_stmt_close($stmtCnt);
+            if (!empty($revisionDe)) {
+                // Es una revisión, buscar el último sufijo de esta base
+                $likeBase = $revisionDe . '_%';
+                $stmtRev = mysqli_prepare($this->db,
+                    "SELECT numero_cotizacion FROM cotizaciones
+                     WHERE numero_cotizacion LIKE ?
+                     ORDER BY CHAR_LENGTH(numero_cotizacion) DESC, numero_cotizacion DESC
+                     LIMIT 1 FOR UPDATE");
+                mysqli_stmt_bind_param($stmtRev, 's', $likeBase);
+                mysqli_stmt_execute($stmtRev);
+                $resRev = mysqli_stmt_get_result($stmtRev);
+                $rowRev = mysqli_fetch_assoc($resRev);
+                mysqli_stmt_close($stmtRev);
 
-            $numeroCotizacion = trim($codigo) . ' ' . str_pad($cnt + 1, 2, '0', STR_PAD_LEFT);
+                if ($rowRev && preg_match('/_(\d+)$/', $rowRev['numero_cotizacion'], $matches)) {
+                    $nextSuffix = (int)$matches[1] + 1;
+                } else {
+                    $nextSuffix = 1;
+                }
+                $numeroCotizacion = $revisionDe . '_' . str_pad($nextSuffix, 2, '0', STR_PAD_LEFT);
+            } else {
+                // Contar cotizaciones finalizadas de este usuario en el mes actual
+                $mes  = date('Y-m');
+                $stmtCnt = mysqli_prepare($this->db,
+                    "SELECT COUNT(*) AS total FROM cotizaciones
+                     WHERE usuario_codigo = ?
+                       AND estado = 'finalizada'
+                       AND DATE_FORMAT(fecha_creacion, '%Y-%m') = ?
+                       AND numero_cotizacion NOT LIKE '%\_%'
+                     FOR UPDATE");
+                mysqli_stmt_bind_param($stmtCnt, 'ss', $codigo, $mes);
+                mysqli_stmt_execute($stmtCnt);
+                $resCnt = mysqli_stmt_get_result($stmtCnt);
+                $cnt    = (int)mysqli_fetch_assoc($resCnt)['total'];
+                mysqli_stmt_close($stmtCnt);
+
+                $numeroCotizacion = trim($codigo) . ' ' . str_pad($cnt + 1, 2, '0', STR_PAD_LEFT);
+            }
 
             // Calcular fecha de validez
             $fechaValidez = date('Y-m-d', strtotime($fechaCreacion . " + $diasValidez days"));

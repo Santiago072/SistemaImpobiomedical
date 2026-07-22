@@ -240,6 +240,48 @@ class CotizacionController
         exit();
     }
 
+    // ── MODIFICAR COTIZACIÓN (Clonar y nueva versión) ─────────────────────────
+    public function modificar(): void
+    {
+        verificar_autenticacion();
+        $numero = $_GET['numero'] ?? '';
+        if (empty($numero)) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
+
+        $cotizacionOriginal = $this->model->buscarPorNumero($numero);
+        if (!$cotizacionOriginal) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
+
+        // Crear una nueva cabecera clonando la original pero en estado borrador
+        $usuarioId = (int)$_SESSION['usuario_id'];
+        $usuarioCodigo = $_SESSION['usuario_codigo'] ?? '';
+        $asesorNombre = $cotizacionOriginal['asesor_nombre'];
+        $asesorCargo = $cotizacionOriginal['asesor_cargo'];
+
+        $nuevoCotizacionId = $this->model->crearCabecera($usuarioId, $usuarioCodigo, $asesorNombre, $asesorCargo);
+
+        // Copiar los datos del cliente de la original a la nueva
+        $this->model->clonarDatosCabecera($cotizacionOriginal['id'], $nuevoCotizacionId);
+
+        // Clonar los ítems
+        $this->model->clonarItems($cotizacionOriginal['id'], $nuevoCotizacionId);
+
+        // Establecer la nueva cotización como activa en la sesión
+        $_SESSION['cotizacion_id'] = $nuevoCotizacionId;
+        
+        // Guardar la referencia de que es una revisión
+        // Base de la revisión, por si es EB 08 o EB 08_01, extraer EB 08
+        $partes = explode('_', $cotizacionOriginal['numero_cotizacion']);
+        $_SESSION['cotizacion_revision_de'] = trim($partes[0]);
+
+        header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
+        exit();
+    }
+
     // ── FINALIZAR (Completar datos del cliente y generar número) ─────────────
     public function finalizar(): array
     {
@@ -279,8 +321,9 @@ class CotizacionController
         }
 
         try {
-            $numeroCotizacion = $this->finalizarService->procesarFinalizacion($cotizacion_id, $_POST, $_SESSION);
-            unset($_SESSION['cotizacion_id']);
+            $revisionDe = $_SESSION['cotizacion_revision_de'] ?? null;
+            $numeroCotizacion = $this->finalizarService->procesarFinalizacion($cotizacion_id, $_POST, $_SESSION, $revisionDe);
+            unset($_SESSION['cotizacion_id'], $_SESSION['cotizacion_revision_de']);
 
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=generar_pdf&ver=' . urlencode($numeroCotizacion));
             exit();
