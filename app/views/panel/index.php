@@ -34,7 +34,6 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
                     <div class="kpi-label"><?= $rol === 'admin' ? 'Cotizaciones Totales' : 'Mis Cotizaciones' ?></div>
                 </div>
             </div>
-            <?php if ($rol === 'admin'): ?>
             <div class="kpi-card">
                 <div class="kpi-icon kpi-icon-alt"><i class="bi bi-calendar-check-fill"></i></div>
                 <div class="kpi-info">
@@ -58,7 +57,6 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
                     <div class="kpi-label">Productos Activos</div>
                 </div>
             </div>
-            <?php endif; ?>
         </div>
 
         <!-- Accesos rápidos -->
