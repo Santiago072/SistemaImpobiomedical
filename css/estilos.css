@@ -4380,8 +4380,15 @@ body:not(.login-premium) .control-label {
     width: calc(100% - 140px);
     position: fixed; left: 0;
     top: 0;
+    transition: margin-left .4s cubic-bezier(.4, 0, .2, 1), width .4s cubic-bezier(.4, 0, .2, 1);
     z-index: 100;
 }
+
+.contenido-principal.completo .cabecera-superior {
+    margin-left: 0;
+    width: 100%;
+}
+
 .contenido-principal {
     margin-top: 80px; /* Altura de la cabecera */
     margin-left: 140px; /* Ancho del men� */
