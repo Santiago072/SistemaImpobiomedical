@@ -177,8 +177,14 @@ class CotizacionModel
                  c_new.condiciones_pago = c_old.condiciones_pago,
                  c_new.observaciones = c_old.observaciones
              WHERE c_new.id = ?");
+        if (!$stmt) {
+            error_log('Error prepare clonarDatosCabecera: ' . mysqli_error($this->db));
+            return;
+        }
         mysqli_stmt_bind_param($stmt, 'ii', $oldId, $newId);
-        mysqli_stmt_execute($stmt);
+        if (!mysqli_stmt_execute($stmt)) {
+            error_log('Error execute clonarDatosCabecera: ' . mysqli_stmt_error($stmt));
+        }
         mysqli_stmt_close($stmt);
     }
 
@@ -195,8 +201,14 @@ class CotizacionModel
                     precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, 
                     proveedor, codigo_proveedor, calc_ops
              FROM cotizacion_items WHERE cotizacion_id = ?");
+        if (!$stmt) {
+            error_log('Error prepare clonarItems: ' . mysqli_error($this->db));
+            return;
+        }
         mysqli_stmt_bind_param($stmt, 'ii', $newId, $oldId);
-        mysqli_stmt_execute($stmt);
+        if (!mysqli_stmt_execute($stmt)) {
+            error_log('Error execute clonarItems: ' . mysqli_stmt_error($stmt));
+        }
         mysqli_stmt_close($stmt);
     }
 

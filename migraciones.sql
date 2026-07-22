@@ -26,11 +26,11 @@ ALTER TABLE cotizacion_items
 
 -- ── 3. Columna codigo_proveedor en orden_compra_items ───────
 --    (por si la tabla existía antes de agregar esta columna)
-ALTER TABLE orden_compra_items
-    ADD COLUMN IF NOT EXISTS codigo_proveedor VARCHAR(60) DEFAULT NULL AFTER cotizacion_item_id;
+-- ALTER TABLE orden_compra_items
+--     ADD COLUMN IF NOT EXISTS codigo_proveedor VARCHAR(60) DEFAULT NULL AFTER cotizacion_item_id;
 
 -- ── 4. Limpiar valores '0' que quedaron de registros anteriores ─────────────
-UPDATE orden_compra_items SET codigo_proveedor = NULL WHERE codigo_proveedor = '0';
+-- UPDATE orden_compra_items SET codigo_proveedor = NULL WHERE codigo_proveedor = '0';
 UPDATE cotizacion_items    SET codigo_proveedor = NULL WHERE codigo_proveedor = '0';
 
 -- ── 5. CRÍTICO: Ampliar porcentaje_utilidad de DECIMAL(8,2) a DECIMAL(20,2) ──
