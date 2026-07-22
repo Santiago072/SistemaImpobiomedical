@@ -20,13 +20,17 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <?php else: ?>
             <h1 class="page-title"><i class="bi bi-plus-circle-fill"></i> Nueva Cotización</h1>
             <?php endif; ?>
-            <p class="page-sub">Ítems agregados: <strong><?= $totalItems ?></strong>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px;">
+                <p class="page-sub" style="margin:0;">Ítems agregados: <strong><?= $totalItems ?></strong></p>
                 <?php if ($totalItems > 0): ?>
-                | <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+                <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
                     <i class="bi bi-arrow-right-circle-fill"></i> Continuar → Datos Cliente y PDF
                 </a>
+                <a href="<?= $basePath ?>?module=cotizaciones&action=limpiar_borrador" class="btn-mod-del" onclick="return confirm('¿Seguro que deseas descartar esta cotización y empezar de cero?');" style="padding: 6px 12px; font-size: 12px; text-decoration: none; background: #fee2e2; color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; font-weight: 500;">
+                    <i class="bi bi-trash-fill"></i> Descartar
+                </a>
                 <?php endif; ?>
-            </p>
+            </div>
         </div>
 
         <?php if (!empty($mensajeExito)): ?>

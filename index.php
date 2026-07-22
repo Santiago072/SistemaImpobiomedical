@@ -286,6 +286,9 @@ if ($module === 'cotizaciones') {
         case 'eliminar':
             $ctrl->eliminar();
             break;
+        case 'limpiar_borrador':
+            $ctrl->limpiarBorrador();
+            break;
         case 'modificar':
             $ctrl->modificar();
             break;

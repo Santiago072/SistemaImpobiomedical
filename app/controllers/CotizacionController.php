@@ -282,6 +282,18 @@ class CotizacionController
         exit();
     }
 
+    // ── DESCARTAR BORRADOR ────────────────────────────────────────────────────
+    public function limpiarBorrador(): void
+    {
+        verificar_autenticacion();
+        if (isset($_SESSION['cotizacion_id'])) {
+            $this->model->eliminar((int)$_SESSION['cotizacion_id']);
+            unset($_SESSION['cotizacion_id'], $_SESSION['cotizacion_revision_de']);
+        }
+        header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
+        exit();
+    }
+
     // ── FINALIZAR (Completar datos del cliente y generar número) ─────────────
     public function finalizar(): array
     {
