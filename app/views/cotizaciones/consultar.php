@@ -52,8 +52,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <tr>
                         <th>N° Cotización</th>
                         <th>Fecha</th>
-                        <th>Nombre del cliente</th>
-                        <th>Entidad</th>
+                        <th>Cliente / Entidad</th>
                         <th>Ciudad</th>
                         <th>Acciones</th>
                     </tr>
