@@ -166,7 +166,11 @@ class UsuarioModel
             mysqli_stmt_close($stmt);
             return $ok;
         } catch (\mysqli_sql_exception $e) {
-            $_SESSION['db_error'] = $e->getMessage();
+            if ($e->getCode() == 1451) {
+                $_SESSION['db_error'] = 'El usuario tiene registros asociados (ej. Cotizaciones) y no puede ser eliminado. Recomendación: Cambie su estado a Inactivo.';
+            } else {
+                $_SESSION['db_error'] = 'Error interno: ' . $e->getMessage();
+            }
             return false;
         }
     }
