@@ -166,7 +166,7 @@ class ProductoController
         $busqueda = sanitizar_entrada($_GET['busqueda'] ?? '');
         $categoriaSel = sanitizar_entrada($_GET['categoria'] ?? '');
         
-        $productos = $this->model->listarTodos($busqueda, $categoriaSel);
+        $productos = $this->model->listarParaExportar($busqueda, $categoriaSel);
 
         header("Content-Type: application/vnd.ms-excel; charset=utf-8");
         header("Content-Disposition: attachment; filename=Catalogo_Productos_" . date('Ymd_His') . ".xls");
@@ -183,7 +183,7 @@ class ProductoController
         $busqueda = sanitizar_entrada($_GET['busqueda'] ?? '');
         $categoriaSel = sanitizar_entrada($_GET['categoria'] ?? '');
         
-        $productos = $this->model->listarTodos($busqueda, $categoriaSel);
+        $productos = $this->model->listarParaExportar($busqueda, $categoriaSel);
 
         ob_start();
         require dirname(__DIR__, 2) . '/app/views/productos/pdf.php';

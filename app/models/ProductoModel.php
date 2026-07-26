@@ -55,7 +55,7 @@ class ProductoModel implements RepositoryInterface
         return $rows;
     }
 
-    public function listarTodos(string $busqueda = '', string $categoria = ''): array
+    public function listarParaExportar(string $busqueda = '', string $categoria = ''): array
     {
         $where = [];
         $params = [];
