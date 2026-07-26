@@ -55,6 +55,42 @@ class ProductoModel implements RepositoryInterface
         return $rows;
     }
 
+    public function listarTodos(string $busqueda = '', string $categoria = ''): array
+    {
+        $where = [];
+        $params = [];
+        $types = '';
+
+        if ($busqueda !== '') {
+            $where[] = "titulo LIKE ?";
+            $params[] = "%$busqueda%";
+            $types .= 's';
+        }
+
+        if ($categoria !== '') {
+            $where[] = "categoria = ?";
+            $params[] = $categoria;
+            $types .= 's';
+        }
+
+        $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+        $sql = "SELECT * FROM productos $whereClause ORDER BY titulo";
+
+        $stmt = mysqli_prepare($this->db, $sql);
+        if (!empty($params)) {
+            mysqli_stmt_bind_param($stmt, $types, ...$params);
+        }
+        
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $rows   = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+        mysqli_stmt_close($stmt);
+        return $rows;
+    }
+
     public function contar(string $busqueda = '', string $categoria = ''): int
     {
         $where = [];

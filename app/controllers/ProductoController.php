@@ -159,4 +159,49 @@ class ProductoController
         header('Location: ' . BASE_URL . '?module=productos&deleted=1');
         exit();
     }
+
+    public function exportarExcel(): void
+    {
+        verificar_autenticacion();
+        $busqueda = sanitizar_entrada($_GET['busqueda'] ?? '');
+        $categoriaSel = sanitizar_entrada($_GET['categoria'] ?? '');
+        
+        $productos = $this->model->listarTodos($busqueda, $categoriaSel);
+
+        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+        header("Content-Disposition: attachment; filename=Catalogo_Productos_" . date('Ymd_His') . ".xls");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+
+        require_once dirname(__DIR__, 2) . '/app/views/productos/excel.php';
+        exit();
+    }
+
+    public function exportarPdf(): void
+    {
+        verificar_autenticacion();
+        $busqueda = sanitizar_entrada($_GET['busqueda'] ?? '');
+        $categoriaSel = sanitizar_entrada($_GET['categoria'] ?? '');
+        
+        $productos = $this->model->listarTodos($busqueda, $categoriaSel);
+
+        ob_start();
+        require dirname(__DIR__, 2) . '/app/views/productos/pdf.php';
+        $html = ob_get_clean();
+
+        $dompdf = new \Dompdf\Dompdf();
+        
+        $options = $dompdf->getOptions();
+        $options->set('defaultFont', 'Helvetica');
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $dompdf->setOptions($options);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $dompdf->stream("Catalogo_Productos_" . date('Ymd_His') . ".pdf", ["Attachment" => true]);
+        exit();
+    }
 }

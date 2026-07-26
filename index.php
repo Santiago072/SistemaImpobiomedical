@@ -218,6 +218,12 @@ if ($module === 'productos') {
         case 'eliminar':
             $ctrl->eliminar();
             break;
+        case 'exportarExcel':
+            $ctrl->exportarExcel();
+            break;
+        case 'exportarPdf':
+            $ctrl->exportarPdf();
+            break;
         case 'crear':
         case 'editar':
             $dataForm = $action === 'crear' ? $ctrl->crear() : $ctrl->editar();

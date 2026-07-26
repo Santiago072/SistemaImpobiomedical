@@ -19,11 +19,24 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <h1 class="mod-title"><i class="bi bi-box-seam-fill"></i> Catálogo de Productos</h1>
                 <p class="mod-sub"><?= $total ?? 0 ?> producto(s) en catálogo</p>
             </div>
-            <?php if ($_SESSION['rol'] === 'admin'): ?>
-            <button class="btn-mod-primary" onclick="abrirModalCrear()">
-                <i class="bi bi-plus-lg"></i> Nuevo Producto
-            </button>
-            <?php endif; ?>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <?php 
+                $exportUrl = $basePath . '?module=productos'
+                           . (!empty($categoriaSel) ? '&categoria=' . urlencode($categoriaSel) : '')
+                           . (!empty($busqueda) ? '&busqueda=' . urlencode($busqueda) : '');
+                ?>
+                <a href="<?= $exportUrl ?>&action=exportarExcel" class="btn-mod-primary" style="background:#10b981; border:none; text-decoration:none;">
+                    <i class="bi bi-file-earmark-excel"></i> Excel
+                </a>
+                <a href="<?= $exportUrl ?>&action=exportarPdf" class="btn-mod-primary" style="background:#ef4444; border:none; text-decoration:none;">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                </a>
+                <?php if ($_SESSION['rol'] === 'admin'): ?>
+                <button class="btn-mod-primary" onclick="abrirModalCrear()">
+                    <i class="bi bi-plus-lg"></i> Nuevo Producto
+                </button>
+                <?php endif; ?>
+            </div>
         </div>
 
         <?php if (!empty($mensajeExito)): ?>
