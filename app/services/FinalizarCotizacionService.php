@@ -40,24 +40,43 @@ class FinalizarCotizacionService
         $clienteContacto  = mb_substr(sanitizar_entrada($postData['cliente_contacto'] ?? ''), 0, 100);
         $clienteCiudad    = mb_substr(sanitizar_entrada($postData['cliente_ciudad'] ?? ''), 0, 100);
 
-        if ($clienteId === null && !empty($clienteNit)) {
+        if (!empty($clienteNit)) {
             $clienteExistente = $this->clienteModel->buscarPorNit($clienteNit);
-            if ($clienteExistente) {
-                $clienteId = (int)$clienteExistente['id'];
-                if (!empty($clienteNombre) || !empty($clienteCiudad) || !empty($clienteDireccion) || !empty($clienteContacto) || !empty($clienteTelefono) || !empty($clienteCorreo)) {
+
+            if ($clienteId !== null) {
+                // Se usó autocompletado
+                if ($clienteExistente && $clienteExistente['id'] != $clienteId) {
+                    // Cambió el NIT por uno que le pertenece a otro cliente distinto.
+                    // Asignamos el ID de ese otro cliente para actualizarlo a él.
+                    $clienteId = (int)$clienteExistente['id'];
+                }
+            } else {
+                // No se usó autocompletado
+                if ($clienteExistente) {
+                    $clienteId = (int)$clienteExistente['id'];
+                }
+            }
+
+            if ($clienteId !== null) {
+                // Actualizar info del catálogo (prevenir TypeError con (string))
+                if (!$clienteExistente || $clienteExistente['id'] != $clienteId) {
+                    $clienteExistente = $this->clienteModel->buscarPorId($clienteId);
+                }
+                if ($clienteExistente) {
                     $this->clienteModel->actualizar(
                         $clienteId,
-                        !empty($clienteNombre) ? $clienteNombre : $clienteExistente['nombre'],
+                        !empty($clienteNombre) ? $clienteNombre : (string)($clienteExistente['nombre'] ?? ''),
                         $clienteNit,
-                        $clienteExistente['departamento'],
-                        !empty($clienteCiudad) ? $clienteCiudad : $clienteExistente['municipio'],
-                        !empty($clienteDireccion) ? $clienteDireccion : $clienteExistente['direccion'],
-                        !empty($clienteContacto) ? $clienteContacto : $clienteExistente['nombre_contacto'],
-                        !empty($clienteTelefono) ? $clienteTelefono : $clienteExistente['telefono'],
-                        !empty($clienteCorreo) ? $clienteCorreo : $clienteExistente['correo']
+                        (string)($clienteExistente['departamento'] ?? ''),
+                        !empty($clienteCiudad) ? $clienteCiudad : (string)($clienteExistente['municipio'] ?? ''),
+                        !empty($clienteDireccion) ? $clienteDireccion : (string)($clienteExistente['direccion'] ?? ''),
+                        !empty($clienteContacto) ? $clienteContacto : (string)($clienteExistente['nombre_contacto'] ?? ''),
+                        !empty($clienteTelefono) ? $clienteTelefono : (string)($clienteExistente['telefono'] ?? ''),
+                        !empty($clienteCorreo) ? $clienteCorreo : (string)($clienteExistente['correo'] ?? '')
                     );
                 }
             } else {
+                // Crear nuevo cliente
                 $clienteId = $this->clienteModel->crear(
                     $clienteNombre, $clienteNit, '', $clienteCiudad, 
                     $clienteDireccion, $clienteContacto, $clienteTelefono, $clienteCorreo
