@@ -317,6 +317,9 @@ if ($module === 'ordenes') {
             extract($data);
             include __DIR__ . '/app/views/ordenes/consultar.php';
             break;
+        case 'exportarExcel':
+            $ctrl->exportarExcel();
+            break;
         case 'generar_pdf':
             include __DIR__ . '/app/views/ordenes/generar_pdf.php';
             break;

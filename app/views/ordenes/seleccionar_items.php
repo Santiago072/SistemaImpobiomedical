@@ -154,11 +154,11 @@ include dirname(__DIR__) . '/layout/menu.php';
                                     </td>
                                     <td style="text-align:right;">
                                         <input type="number"
-                                               min="1" max="<?= $qty ?>"
+                                               min="1"
                                                value="<?= $qty ?>"
                                                class="qty-input"
                                                data-id="<?= (int)$it['id'] ?>"
-                                               title="Máx: <?= $qty ?>"
+                                               title="Cantidad a pedir"
                                                style="width:65px; padding:4px 6px; border-radius:6px; border:1.5px solid rgba(45,190,203,.3); background:rgba(255,255,255,.08); color:inherit; font-size:13px; font-weight:600; text-align:center;"
                                                oninput="document.getElementById('hdn-qty-<?= (int)$it['id'] ?>').value=this.value; actualizarFila(this.closest('tr'))">
                                     </td>
@@ -386,10 +386,8 @@ NOTA:
         });
         inp.addEventListener('input', function() {
             const id  = this.dataset.id;
-            const max = parseInt(this.max) || 9999;
             let val   = parseInt(this.value) || 1;
             if (val < 1)   { val = 1;   this.value = 1; }
-            if (val > max) { val = max; this.value = max; }
 
             const hdnQty = document.getElementById('hdn-qty-' + id);
             if (hdnQty) hdnQty.value = val;
