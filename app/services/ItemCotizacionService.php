@@ -86,19 +86,37 @@ class ItemCotizacionService
             throw new \RuntimeException('No se pudo guardar el ítem en la base de datos.');
         }
 
-        if ($producto_id === null) {
+        if (!empty($titulo)) {
             $productoExistente = $this->productoModel->buscarPorTitulo($titulo);
-            if (!$productoExistente) {
-                // El precio unitario NO se guarda en el catálogo (varía por cotización).
-                $this->productoModel->crear($titulo, $foto, $descripcion, $iva, $porcentaje_iva, $categoria, $codigo_producto);
-            } else {
-                if (empty($foto) && !empty($productoExistente['foto'])) {
-                    $foto = $productoExistente['foto'];
+            
+            if ($producto_id !== null) {
+                // Se usó autocompletado
+                if ($productoExistente && $productoExistente['id'] != $producto_id) {
+                    // Cambió el título por uno que le pertenece a otro producto distinto.
+                    $producto_id = (int)$productoExistente['id'];
+                } elseif (!$productoExistente) {
+                    // Usó autocompletado pero cambió el título a algo completamente nuevo,
+                    // se asume que quiere crear un producto nuevo en lugar de sobreescribir el nombre del anterior.
+                    $producto_id = null;
                 }
-                // Actualizar info del catálogo SIN sobreescribir precio (no se almacena)
-                if (!empty($foto) || !empty($descripcion) || !empty($codigo_producto)) {
+            } else {
+                // No se usó autocompletado
+                if ($productoExistente) {
+                    $producto_id = (int)$productoExistente['id'];
+                }
+            }
+
+            if ($producto_id !== null) {
+                // Actualizar el producto existente en el catálogo
+                if (!$productoExistente || $productoExistente['id'] != $producto_id) {
+                    $productoExistente = $this->productoModel->buscarPorId($producto_id);
+                }
+                if ($productoExistente) {
+                    if (empty($foto) && !empty($productoExistente['foto'])) {
+                        $foto = $productoExistente['foto'];
+                    }
                     $this->productoModel->actualizar(
-                        (int)$productoExistente['id'],
+                        $producto_id,
                         $titulo,
                         !empty($foto) ? $foto : (string)($productoExistente['foto'] ?? ''),
                         !empty($descripcion) ? $descripcion : (string)($productoExistente['descripcion'] ?? ''),
@@ -109,6 +127,9 @@ class ItemCotizacionService
                         !empty($codigo_producto) ? $codigo_producto : ($productoExistente['codigo_producto'] ?? null)
                     );
                 }
+            } else {
+                // Crear un producto totalmente nuevo
+                $this->productoModel->crear($titulo, $foto, $descripcion, $iva, $porcentaje_iva, $categoria, $codigo_producto);
             }
         }
     }
