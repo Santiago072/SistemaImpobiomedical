@@ -265,13 +265,6 @@ El script ejecuta: `git pull` → rebuild Docker si hay cambios → reinicio del
 
 > ⚠️ El archivo `config/.env` **no se sube al repositorio**. Mantenerlo manualmente en el VPS.
 
-### Migraciones de BD
-
-```bash
-# Ejecutar ALTERs del archivo de migraciones
-docker compose exec db mysql -u root -p sistema_impobiomedical < migraciones.sql
-```
-
 ---
 
 ## 🗂 Documentación Adicional
