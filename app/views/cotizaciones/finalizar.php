@@ -99,12 +99,6 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             <input type="text" name="condiciones_pago" maxlength="100" value="<?= htmlspecialchars($cotizacion['condiciones_pago'] ?? 'CONTADO') ?>">
                         </div>
 
-                        <div class="imo-form-group">
-                            <label>Observaciones</label>
-                            <textarea name="observaciones" style="padding:11px 14px; border:1.5px solid #e2e8f0; border-radius:9px; width:100%; height:100px; resize:vertical; outline:none;" maxlength="1000"
-                                      placeholder="Información adicional para el cliente..."></textarea>
-                        </div>
-
                         <div class="imo-modal-footer" style="border-top:none; padding-top:0;">
                             <a href="<?= $basePath ?>?module=cotizaciones&action=crear" class="imo-btn-cancel" style="text-decoration:none;">
                                 <i class="bi bi-arrow-left"></i> Volver a ítems
