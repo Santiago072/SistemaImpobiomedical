@@ -44,7 +44,17 @@
             <tr><td><strong>Nº Cotización:</strong></td><td><?= htmlspecialchars($filtros['cotizacion_numero']) ?></td></tr>
             <?php endif; ?>
             <?php if (!empty($filtros['fecha_inicio']) || !empty($filtros['fecha_fin'])): ?>
-            <tr><td><strong>Rango de Fechas:</strong></td><td><?= htmlspecialchars($filtros['fecha_inicio'] ?? '') ?> a <?= htmlspecialchars($filtros['fecha_fin'] ?? '') ?></td></tr>
+            <tr><td><strong>Rango de Fechas:</strong></td><td>
+                <?php 
+                    if (!empty($filtros['fecha_inicio']) && !empty($filtros['fecha_fin'])) {
+                        echo htmlspecialchars($filtros['fecha_inicio']) . ' a ' . htmlspecialchars($filtros['fecha_fin']);
+                    } elseif (!empty($filtros['fecha_inicio'])) {
+                        echo 'Desde ' . htmlspecialchars($filtros['fecha_inicio']);
+                    } elseif (!empty($filtros['fecha_fin'])) {
+                        echo 'Hasta ' . htmlspecialchars($filtros['fecha_fin']);
+                    }
+                ?>
+            </td></tr>
             <?php endif; ?>
         </tbody>
     </table>

@@ -23,10 +23,10 @@
         /* Zebra striping for better readability */
         tbody tr:nth-child(even) { background-color: #f8fafc; }
         
-        .col-codigo { width: 15%; font-weight: bold; color: #0f766e; }
-        .col-categoria { width: 15%; color: #64748b; font-size: 10px; font-style: italic; }
+        .col-codigo { width: 12%; font-weight: bold; color: #0f766e; }
+        .col-categoria { width: 13%; color: #64748b; font-size: 10px; font-style: italic; }
         .col-nombre { width: 22%; font-weight: bold; color: #1e293b; }
-        .col-desc { width: 30%; font-size: 10px; color: #475569; line-height: 1.3; }
+        .col-desc { width: 35%; font-size: 10px; color: #475569; line-height: 1.3; }
         .col-iva { width: 8%; text-align: center; }
         .col-estado { width: 10%; text-align: center; }
         
@@ -37,7 +37,7 @@
 <body>
     <div class="header">
         <h1>Catálogo de Productos</h1>
-        <p>Generado el: <?= date('d/m/Y H:i') ?></p>
+        <p>Generado el: <?= date('d/m/Y') ?></p>
         <p class="subtext">Total de registros: <?= count($productos) ?></p>
     </div>
 
