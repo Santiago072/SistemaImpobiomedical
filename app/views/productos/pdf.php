@@ -23,12 +23,12 @@
         /* Zebra striping for better readability */
         tbody tr:nth-child(even) { background-color: #f8fafc; }
         
-        .col-codigo { width: 12%; font-weight: bold; color: #0f766e; }
-        .col-categoria { width: 13%; color: #64748b; font-size: 10px; font-style: italic; }
-        .col-nombre { width: 22%; font-weight: bold; color: #1e293b; }
-        .col-desc { width: 35%; font-size: 10px; color: #475569; line-height: 1.3; }
-        .col-iva { width: 8%; text-align: center; }
-        .col-estado { width: 10%; text-align: center; }
+        td.col-codigo { width: 12%; font-weight: bold; color: #0f766e; }
+        td.col-categoria { width: 13%; color: #64748b; font-size: 10px; font-style: italic; }
+        td.col-nombre { width: 22%; font-weight: bold; color: #1e293b; }
+        td.col-desc { width: 35%; font-size: 10px; color: #475569; line-height: 1.3; }
+        td.col-iva { width: 8%; text-align: center; }
+        td.col-estado { width: 10%; text-align: center; }
         
         .tag-activo { color: #166534; font-weight: bold; background-color: #dcfce7; padding: 3px 6px; border-radius: 4px; display: inline-block; font-size: 10px; }
         .tag-inactivo { color: #991b1b; font-weight: bold; background-color: #fee2e2; padding: 3px 6px; border-radius: 4px; display: inline-block; font-size: 10px; }

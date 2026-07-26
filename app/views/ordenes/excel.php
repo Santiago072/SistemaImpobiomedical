@@ -25,7 +25,7 @@
 <body>
     <table>
         <tr>
-            <td colspan="8" class="title-row" style="border: none; padding-bottom: 15px;">Reporte de Órdenes de Compra - <?= date('d/m/Y') ?></td>
+            <td colspan="8" class="title-row" style="border: none; padding-bottom: 15px;">Reporte de Órdenes de Compra (Generado el: <?= date('d/m/Y') ?>)</td>
         </tr>
     </table>
 

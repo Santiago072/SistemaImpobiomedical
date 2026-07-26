@@ -63,12 +63,12 @@
         <tbody>
             <?php foreach ($productos as $row): ?>
             <tr>
-                <td class="codigo" style="mso-number-format:'\@';"><?= htmlspecialchars($row['codigo_producto'] ?? '') ?></td>
-                <td><?= htmlspecialchars($row['categoria'] ?? '') ?></td>
-                <td><strong><?= htmlspecialchars($row['titulo'] ?? '') ?></strong></td>
+                <td class="codigo" style="mso-number-format:'\@'; text-align: center; vertical-align: middle;"><?= htmlspecialchars($row['codigo_producto'] ?? '') ?></td>
+                <td style="text-align: center; vertical-align: middle;"><?= htmlspecialchars($row['categoria'] ?? '') ?></td>
+                <td style="text-align: center; vertical-align: middle;"><strong><?= htmlspecialchars($row['titulo'] ?? '') ?></strong></td>
                 <td><?= nl2br(htmlspecialchars($row['descripcion'] ?? '')) ?></td>
-                <td><?= (strtolower($row['iva'] ?? '') === 'si') ? 'Sí' : 'No' ?></td>
-                <td class="<?= (strtolower($row['estado'] ?? '') === 'activo') ? 'tag-activo' : 'tag-inactivo' ?>">
+                <td style="text-align: center; vertical-align: middle;"><?= (strtolower($row['iva'] ?? '') === 'si') ? 'Sí' : 'No' ?></td>
+                <td class="<?= (strtolower($row['estado'] ?? '') === 'activo') ? 'tag-activo' : 'tag-inactivo' ?>" style="text-align: center; vertical-align: middle;">
                     <?= (strtolower($row['estado'] ?? '') === 'activo') ? 'Activo' : 'Inactivo' ?>
                 </td>
             </tr>
