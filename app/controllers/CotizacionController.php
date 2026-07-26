@@ -33,6 +33,12 @@ class CotizacionController
     {
         verificar_autenticacion();
 
+        if (isset($_GET['nueva']) && $_GET['nueva'] === '1') {
+            unset($_SESSION['cotizacion_id'], $_SESSION['cotizacion_revision_de']);
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
+            exit();
+        }
+
         $csrf_token = generar_token_csrf();
         $busqueda   = sanitizar_entrada($_GET['busqueda'] ?? '');
         $productos  = $this->productoModel->listarTodos($busqueda);
