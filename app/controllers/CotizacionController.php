@@ -34,7 +34,13 @@ class CotizacionController
         verificar_autenticacion();
 
         if (isset($_GET['nueva']) && $_GET['nueva'] === '1') {
-            unset($_SESSION['cotizacion_id'], $_SESSION['cotizacion_revision_de']);
+            if (isset($_SESSION['cotizacion_id'])) {
+                $cot = $this->model->buscarPorId((int)$_SESSION['cotizacion_id']);
+                if ($cot && $cot['estado'] === 'borrador') {
+                    $this->model->eliminar((int)$_SESSION['cotizacion_id']);
+                }
+                unset($_SESSION['cotizacion_id'], $_SESSION['cotizacion_revision_de']);
+            }
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
             exit();
         }
@@ -262,6 +268,13 @@ class CotizacionController
             exit();
         }
 
+        // Prevenir modificar una revisión (solo se puede modificar la original)
+        if (strpos($cotizacionOriginal['numero_cotizacion'], '_') !== false) {
+            $original = explode('_', $cotizacionOriginal['numero_cotizacion'])[0];
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=ya_modificada&original=' . urlencode($original));
+            exit();
+        }
+
         // Crear una nueva cabecera clonando la original pero en estado borrador
         $usuarioId = (int)$_SESSION['usuario_id'];
         $usuarioCodigo = $_SESSION['usuario_codigo'] ?? '';
@@ -358,6 +371,10 @@ class CotizacionController
     {
         verificar_autenticacion();
         $mensajeError = '';
+        if (isset($_GET['error']) && $_GET['error'] === 'ya_modificada') {
+            $orig = sanitizar_entrada($_GET['original'] ?? '');
+            $mensajeError = "No se puede modificar una revisión. Debe modificar la cotización original " . ($orig ? "($orig)" : "") . " para crear una nueva versión.";
+        }
         $csrf_token   = generar_token_csrf();
         $cotizaciones = [];
         $totalPaginas = 0;
