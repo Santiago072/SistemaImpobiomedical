@@ -88,6 +88,10 @@ class OrdenCompraController
         $nota               = mb_substr(sanitizar_entrada($_POST['nota'] ?? ''), 0, 1000);
         $retencion          = (float)($_POST['retencion'] ?? 0);
         $fecha              = mb_substr(sanitizar_entrada($_POST['fecha'] ?? date('Y-m-d')), 0, 10);
+        
+        $bancoNombre        = mb_substr(sanitizar_entrada($_POST['banco_nombre'] ?? ''), 0, 100);
+        $bancoCuenta        = mb_substr(sanitizar_entrada($_POST['banco_cuenta'] ?? ''), 0, 100);
+        $bancoTipoCuenta    = mb_substr(sanitizar_entrada($_POST['banco_tipo_cuenta'] ?? ''), 0, 100);
 
         if (!$cotizacionId || empty($proveedor)) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=datos');
@@ -123,7 +127,8 @@ class OrdenCompraController
             $cotizacionId, $cotizacionNumero, $usuarioId,
             $proveedor, $proveedorNit, $tipoContribuyente,
             $condicionesPago, $iva, $departamentoCompras,
-            $nota, $retencion, $fecha
+            $nota, $retencion, $fecha,
+            $bancoNombre, $bancoCuenta, $bancoTipoCuenta
         );
 
         // Insertar los ítems seleccionados
@@ -170,7 +175,8 @@ class OrdenCompraController
             $filtros = [];
             if (!empty($_POST['proveedor']))          $filtros['proveedor']          = sanitizar_entrada($_POST['proveedor']);
             if (!empty($_POST['cotizacion_numero']))   $filtros['cotizacion_numero']   = sanitizar_entrada($_POST['cotizacion_numero']);
-            if (!empty($_POST['fecha']))               $filtros['fecha']               = sanitizar_entrada($_POST['fecha']);
+            if (!empty($_POST['fecha_inicio']))        $filtros['fecha_inicio']        = sanitizar_entrada($_POST['fecha_inicio']);
+            if (!empty($_POST['fecha_fin']))           $filtros['fecha_fin']           = sanitizar_entrada($_POST['fecha_fin']);
             $_SESSION['orden_filtros'] = $filtros;
             header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
             exit();
@@ -189,10 +195,61 @@ class OrdenCompraController
 
         $busquedaProveedor  = $filtros['proveedor'] ?? '';
         $busquedaCotizacion = $filtros['cotizacion_numero'] ?? '';
-        $busquedaFecha      = $filtros['fecha'] ?? '';
+        $busquedaFechaInicio = $filtros['fecha_inicio'] ?? '';
+        $busquedaFechaFin    = $filtros['fecha_fin'] ?? '';
 
         return compact('ordenes', 'csrf_token', 'paginaActual', 'totalPaginas',
-                       'busquedaProveedor', 'busquedaCotizacion', 'busquedaFecha');
+                       'busquedaProveedor', 'busquedaCotizacion', 'busquedaFechaInicio', 'busquedaFechaFin');
+    }
+
+    // ── EXPORTAR A EXCEL ──────────────────────────────────────────────────────
+
+    public function exportarExcel(): void
+    {
+        verificar_autenticacion();
+        $usuarioId = (int)$_SESSION['usuario_id'];
+        $rol       = $_SESSION['rol'] ?? 'usuario';
+        $filtros   = $_SESSION['orden_filtros'] ?? [];
+
+        $ordenes = $this->model->listarParaExcel($filtros, $usuarioId, $rol);
+
+        // Preparamos los datos sumando los ítems
+        $datosExcel = [];
+        foreach ($ordenes as $ord) {
+            $items = $this->model->obtenerItems((int)$ord['id']);
+            $subtotal = 0;
+            $totalIva = 0;
+            foreach ($items as $it) {
+                $pu     = (float)$it['precio_unit'];
+                $qty    = (int)$it['cantidad'];
+                $pct    = (float)($it['porcentaje_iva'] ?? 19);
+                $aplica = strtolower($it['iva']) === 'si';
+                $sub    = $pu * $qty;
+                $subtotal += $sub;
+                $totalIva += $aplica ? $sub * ($pct / 100) : 0;
+            }
+            $retencion = $subtotal * ((float)$ord['retencion'] / 100);
+            $valorPagar = $subtotal + $totalIva - $retencion;
+
+            $datosExcel[] = [
+                'proveedor' => $ord['proveedor'],
+                'numero_po' => $ord['numero_po'],
+                'banco_nombre' => $ord['banco_nombre'] ?? '',
+                'banco_cuenta' => $ord['banco_cuenta'] ?? '',
+                'banco_tipo_cuenta' => $ord['banco_tipo_cuenta'] ?? '',
+                'nit' => $ord['proveedor_nit'],
+                'valor_pagar' => $valorPagar,
+                'cliente' => $ord['cliente_nombre'] ?? ''
+            ];
+        }
+
+        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
+        header("Content-Disposition: attachment; filename=Reporte_Ordenes_" . date('Ymd_His') . ".xls");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+
+        require_once dirname(__DIR__, 2) . '/app/views/ordenes/excel.php';
+        exit();
     }
 
     // ── GENERAR PDF ───────────────────────────────────────────────────────────

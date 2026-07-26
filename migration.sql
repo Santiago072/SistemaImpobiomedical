@@ -1,0 +1,3 @@
+﻿ALTER TABLE ordenes_compra ADD COLUMN banco_nombre VARCHAR(100) DEFAULT NULL;
+ALTER TABLE ordenes_compra ADD COLUMN banco_cuenta VARCHAR(100) DEFAULT NULL;
+ALTER TABLE ordenes_compra ADD COLUMN banco_tipo_cuenta VARCHAR(100) DEFAULT NULL;

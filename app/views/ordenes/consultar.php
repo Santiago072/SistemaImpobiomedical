@@ -33,14 +33,24 @@ $rol = $_SESSION['rol'] ?? 'usuario';
                 <input type="text" name="proveedor" value="<?= htmlspecialchars($busquedaProveedor) ?>"
                        placeholder="Proveedor..." maxlength="60" class="mod-search-input" style="flex:1;">
                 <input type="text" name="cotizacion_numero" value="<?= htmlspecialchars($busquedaCotizacion) ?>"
-                       placeholder="N° Cotización..." maxlength="20" class="mod-search-input" style="flex:0.8;">
-                <input type="date" name="fecha" value="<?= htmlspecialchars($busquedaFecha) ?>"
-                       class="mod-search-input" style="flex:0.5; border:1.5px solid #e2e8f0; border-radius:9px; padding:10px;"
-                       onchange="this.form.submit()">
+                       placeholder="N° Cot." maxlength="20" class="mod-search-input" style="flex:0.8;">
+                <div style="display:flex; align-items:center; gap:5px; flex:1;">
+                    <label style="font-size:12px; color:var(--text-soft); font-weight:600;">Desde:</label>
+                    <input type="date" name="fecha_inicio" value="<?= htmlspecialchars($busquedaFechaInicio ?? '') ?>"
+                           class="mod-search-input" style="border:1.5px solid #e2e8f0; border-radius:9px; padding:8px; width:100%;">
+                </div>
+                <div style="display:flex; align-items:center; gap:5px; flex:1;">
+                    <label style="font-size:12px; color:var(--text-soft); font-weight:600;">Hasta:</label>
+                    <input type="date" name="fecha_fin" value="<?= htmlspecialchars($busquedaFechaFin ?? '') ?>"
+                           class="mod-search-input" style="border:1.5px solid #e2e8f0; border-radius:9px; padding:8px; width:100%;">
+                </div>
                 <button type="submit" class="imo-btn-save" style="padding:10px 15px; border-radius:9px;">
                     <i class="bi bi-search"></i> Buscar
                 </button>
-                <?php if ($busquedaProveedor || $busquedaCotizacion || $busquedaFecha): ?>
+                <a href="<?= $basePath ?>?module=ordenes&action=exportarExcel" class="imo-btn-save" style="padding:10px 15px; border-radius:9px; background:#10b981; text-decoration:none;">
+                    <i class="bi bi-file-earmark-excel"></i> Excel
+                </a>
+                <?php if ($busquedaProveedor || $busquedaCotizacion || !empty($busquedaFechaInicio) || !empty($busquedaFechaFin)): ?>
                 <a href="<?= $basePath ?>?module=ordenes&action=consultar&limpiar=1" class="mod-btn-clear" title="Limpiar">
                     <i class="bi bi-x-lg"></i>
                 </a>

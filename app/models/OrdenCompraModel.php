@@ -40,7 +40,10 @@ class OrdenCompraModel
         string $departamentoCompras,
         string $nota,
         float  $retencion,
-        string $fecha
+        string $fecha,
+        string $bancoNombre = '',
+        string $bancoCuenta = '',
+        string $bancoTipoCuenta = ''
     ): int {
         mysqli_begin_transaction($this->db);
         try {
@@ -49,14 +52,16 @@ class OrdenCompraModel
                 "INSERT INTO ordenes_compra
                  (numero_po, cotizacion_id, cotizacion_numero, usuario_id,
                   proveedor, proveedor_nit, tipo_contribuyente,
-                  condiciones_pago, iva, departamento_compras, nota, retencion, fecha)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
-            // i i s i s s s s s s s d s  (13 parámetros)
-            mysqli_stmt_bind_param($stmt, 'iisisssssssds',
+                  condiciones_pago, iva, departamento_compras, nota, retencion, fecha,
+                  banco_nombre, banco_cuenta, banco_tipo_cuenta)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+            // i i s i s s s s s s s d s s s s (16 parámetros)
+            mysqli_stmt_bind_param($stmt, 'iisisssssssdssss',
                 $po, $cotizacionId, $cotizacionNumero, $usuarioId,
                 $proveedor, $proveedorNit, $tipoContribuyente,
                 $condicionesPago, $iva, $departamentoCompras,
-                $nota, $retencion, $fecha);
+                $nota, $retencion, $fecha,
+                $bancoNombre, $bancoCuenta, $bancoTipoCuenta);
             mysqli_stmt_execute($stmt);
             $id = (int)mysqli_stmt_insert_id($stmt);
             mysqli_stmt_close($stmt);
@@ -144,14 +149,39 @@ class OrdenCompraModel
     public function listarConFiltros(array $filtros, int $offset, int $limite, int $usuarioId, string $rol): array
     {
         [$where, $params, $types] = $this->construirWhere($filtros, $usuarioId, $rol);
-        $sql = "SELECT o.*, u.nombre AS nombre_usuario
+        $sql = "SELECT o.*, u.nombre AS nombre_usuario, c.cliente_nombre
                 FROM ordenes_compra o
-                LEFT JOIN usuarios u ON o.usuario_id = u.id"
+                LEFT JOIN usuarios u ON o.usuario_id = u.id
+                LEFT JOIN cotizaciones c ON o.cotizacion_id = c.id"
              . ($where ? " WHERE $where" : '')
              . " ORDER BY o.numero_po DESC LIMIT ? OFFSET ?";
         $types   .= 'ii';
         $params[] = $limite;
         $params[] = $offset;
+
+        $stmt = mysqli_prepare($this->db, $sql);
+        if ($params) {
+            mysqli_stmt_bind_param($stmt, $types, ...$params);
+        }
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $rows   = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+        mysqli_stmt_close($stmt);
+        return $rows;
+    }
+
+    public function listarParaExcel(array $filtros, int $usuarioId, string $rol): array
+    {
+        [$where, $params, $types] = $this->construirWhere($filtros, $usuarioId, $rol);
+        $sql = "SELECT o.*, u.nombre AS nombre_usuario, c.cliente_nombre
+                FROM ordenes_compra o
+                LEFT JOIN usuarios u ON o.usuario_id = u.id
+                LEFT JOIN cotizaciones c ON o.cotizacion_id = c.id"
+             . ($where ? " WHERE $where" : '')
+             . " ORDER BY o.numero_po DESC";
 
         $stmt = mysqli_prepare($this->db, $sql);
         if ($params) {
@@ -204,9 +234,14 @@ class OrdenCompraModel
             $params[]      = '%' . $filtros['cotizacion_numero'] . '%';
             $types        .= 's';
         }
-        if (!empty($filtros['fecha'])) {
-            $condiciones[] = 'DATE(o.fecha) = ?';
-            $params[]      = $filtros['fecha'];
+        if (!empty($filtros['fecha_inicio'])) {
+            $condiciones[] = 'DATE(o.fecha) >= ?';
+            $params[]      = $filtros['fecha_inicio'];
+            $types        .= 's';
+        }
+        if (!empty($filtros['fecha_fin'])) {
+            $condiciones[] = 'DATE(o.fecha) <= ?';
+            $params[]      = $filtros['fecha_fin'];
             $types        .= 's';
         }
 

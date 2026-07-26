@@ -261,6 +261,32 @@ include dirname(__DIR__) . '/layout/menu.php';
 
                 </div>
 
+                <div style="margin-top:24px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1);">
+                    <h4 style="color:var(--amber); margin-bottom:16px; font-size:14px;">
+                        <i class="bi bi-bank"></i> Datos Bancarios (No visibles en PDF)
+                    </h4>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:16px;">
+                        <div class="oc-field-group">
+                            <label class="oc-label">Nombre del Banco</label>
+                            <input type="text" name="banco_nombre" class="oc-input"
+                                   placeholder="Ej: Bancolombia" maxlength="100">
+                        </div>
+                        <div class="oc-field-group">
+                            <label class="oc-label">Número de Cuenta</label>
+                            <input type="text" name="banco_cuenta" class="oc-input"
+                                   placeholder="Ej: 123456789" maxlength="100">
+                        </div>
+                        <div class="oc-field-group">
+                            <label class="oc-label">Tipo de Cuenta</label>
+                            <select name="banco_tipo_cuenta" class="oc-input">
+                                <option value="">Seleccione...</option>
+                                <option value="Ahorros">Ahorros</option>
+                                <option value="Corriente">Corriente</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="margin-top:16px;">
                     <label class="oc-label"><i class="bi bi-chat-left-text"></i> Nota / Descripción (izquierda del PDF)</label>
                     <textarea name="nota" class="oc-input" rows="4"
