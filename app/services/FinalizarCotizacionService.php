@@ -50,10 +50,6 @@ class FinalizarCotizacionService
             if ($clienteExistente && $clienteExistente['id'] != $clienteId) {
                 // Cambió el NIT por uno que le pertenece a otro cliente distinto.
                 $clienteId = (int)$clienteExistente['id'];
-            } elseif (!empty($clienteNit) && !$clienteExistente) {
-                // Usó autocompletado pero cambió a un NIT completamente nuevo.
-                // Es un cliente nuevo.
-                $clienteId = null;
             }
         } else {
             // No se usó autocompletado
