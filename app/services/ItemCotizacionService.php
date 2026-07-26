@@ -100,13 +100,13 @@ class ItemCotizacionService
                     $this->productoModel->actualizar(
                         (int)$productoExistente['id'],
                         $titulo,
-                        !empty($foto) ? $foto : $productoExistente['foto'],
-                        !empty($descripcion) ? $descripcion : $productoExistente['descripcion'],
+                        !empty($foto) ? $foto : (string)($productoExistente['foto'] ?? ''),
+                        !empty($descripcion) ? $descripcion : (string)($productoExistente['descripcion'] ?? ''),
                         $iva,
                         $porcentaje_iva,
                         'activo',
-                        !empty($categoria) ? $categoria : $productoExistente['categoria'],
-                        !empty($codigo_producto) ? $codigo_producto : $productoExistente['codigo_producto']
+                        !empty($categoria) ? $categoria : ($productoExistente['categoria'] ?? null),
+                        !empty($codigo_producto) ? $codigo_producto : ($productoExistente['codigo_producto'] ?? null)
                     );
                 }
             }
