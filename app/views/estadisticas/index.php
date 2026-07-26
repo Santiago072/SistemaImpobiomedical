@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: vendData.labels.length ? vendData.labels : ['Sin datos'],
             datasets: [{
-                label: 'Cotizaciones creadas',
+                label: 'Monto Vendido ($)',
                 data: vendData.data.length ? vendData.data : [0],
                 backgroundColor: 'rgba(245, 158, 11, 0.8)', // Naranja
                 borderRadius: 4,
@@ -315,8 +315,17 @@ document.addEventListener('DOMContentLoaded', function() {
             indexAxis: 'y', 
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Monto Vendido: $' + context.raw.toLocaleString('es-CO');
+                        }
+                    }
+                }
+            },
+            scales: { x: { beginAtZero: true } }
         }
     });
 

@@ -240,14 +240,14 @@ table { width:100%; border-collapse:collapse; }
 <div class="section-spacer"></div>
 
 <!-- ══ Top Vendedores ══ -->
-<h2>Top Vendedores (por Órdenes Generadas)</h2>
+<h2>Top Vendedores (por Monto Vendido)</h2>
 <table class="top-table">
   <thead>
     <tr>
       <th style="width:30px;">#</th>
       <th>Vendedor</th>
-      <th>Órdenes generadas</th>
-      <th style="width:60px; text-align:right;">Total</th>
+      <th>Proporción de ventas</th>
+      <th style="width:120px; text-align:right;">Monto Vendido</th>
     </tr>
   </thead>
   <tbody>
@@ -263,7 +263,7 @@ table { width:100%; border-collapse:collapse; }
           <div class="bar-inner amber" style="width:<?= barPct($topVendedores['data'][$i], $maxVendedores) ?>%;"></div>
         </div>
       </td>
-      <td style="text-align:right; font-weight:bold;"><?= $topVendedores['data'][$i] ?></td>
+      <td style="text-align:right; font-weight:bold;"><?= fmtR($topVendedores['data'][$i]) ?></td>
     </tr>
     <?php endforeach; ?>
     <?php endif; ?>

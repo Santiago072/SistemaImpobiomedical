@@ -134,14 +134,16 @@ class EstadisticaModel
         return $datos;
     }
 
-    // ── 4. Top Vendedores (por Órdenes generadas) ───────────────────────────
+    // ── 4. Top Vendedores (por Monto Vendido) ───────────────────────────
     public function getTopVendedores(int $limite = 5, ?string $fi = null, ?string $ff = null): array
     {
-        $q = "SELECT u.nombre, COUNT(o.id) as cantidad
-              FROM ordenes_compra o
+        $q = "SELECT u.nombre, SUM(oi.cantidad * ci.precio) as cantidad
+              FROM orden_compra_items oi
+              JOIN ordenes_compra o ON oi.orden_id = o.id
+              JOIN cotizacion_items ci ON oi.cotizacion_item_id = ci.id
               JOIN cotizaciones c ON o.cotizacion_id = c.id
               JOIN usuarios u ON c.usuario_id = u.id
-              WHERE 1=1";
+              WHERE c.estado = 'finalizada'";
         if ($fi && $ff) {
             $q .= " AND o.fecha BETWEEN '$fi 00:00:00' AND '$ff 23:59:59'";
         }
@@ -153,7 +155,7 @@ class EstadisticaModel
         $datos  = ['labels' => [], 'data' => []];
         while ($row = mysqli_fetch_assoc($result)) {
             $datos['labels'][] = mb_substr($row['nombre'], 0, 45);
-            $datos['data'][]   = (int)$row['cantidad'];
+            $datos['data'][]   = (float)($row['cantidad'] ?? 0);
         }
         mysqli_stmt_close($stmt);
         return $datos;
