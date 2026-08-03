@@ -65,34 +65,39 @@ $totalRegistros = count($productos);
             width: 100%;
             border-collapse: collapse;
             margin-top: 5px;
-            border: 2px solid #10757e; /* Tabla con mayor grosor */
+            border: 2px solid #10757e;
         }
         table.prod-table th {
             background-color: #10757e;
             color: #ffffff;
             font-weight: bold;
             padding: 8px 6px;
-            text-align: center; /* Centrado */
+            text-align: center;
             font-size: 9.5px;
             text-transform: uppercase;
             border: 1.5px solid #0d5c63;
         }
         table.prod-table td {
-            border: 1.5px solid #cbd5e1; /* Líneas con más grosor y definición */
+            border: 1.5px solid #cbd5e1;
             padding: 7px 6px;
             vertical-align: middle;
-            text-align: center; /* Información centrada */
             font-size: 8.5px;
         }
         
         /* Filas alternas */
         table.prod-table tbody tr:nth-child(even) { background-color: #f8fafc; }
 
-        /* Columnas específicas */
+        /* Alineaciones solicitadas por el usuario:
+           - Primeras 3 columnas (Código, Categoría, Nombre) -> Centradas
+           - Descripción -> Izquierda (no centrada)
+           - Últimas 2 columnas (IVA, Estado) -> Centradas
+        */
         td.col-codigo { font-weight: bold; color: #0f766e; text-align: center; }
         td.col-categoria { color: #475569; font-style: italic; font-weight: bold; text-align: center; }
         td.col-nombre { font-weight: bold; color: #1e293b; text-align: center; }
-        td.col-desc { text-align: left; font-size: 8px; color: #475569; line-height: 1.3; }
+        td.col-desc { text-align: left; font-size: 8px; color: #475569; line-height: 1.35; word-wrap: break-word; }
+        td.col-iva { text-align: center; }
+        td.col-estado { text-align: center; }
 
         .tag-activo { color: #166534; font-weight: bold; background-color: #dcfce7; border: 1px solid #86efac; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 8px; }
         .tag-inactivo { color: #991b1b; font-weight: bold; background-color: #fee2e2; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 8px; }
@@ -103,7 +108,7 @@ $totalRegistros = count($productos);
 </head>
 <body>
 
-<!-- ENCABEZADO CORPORATIVO -->
+<!-- ENCABEZADO CORPORATIVO CON LOGOS -->
 <div class="hdr-wrap">
   <div style="background:#10757e; height:5px;"></div>
   <table style="width:100%; border-collapse:collapse; background:#ffffff;">
@@ -170,8 +175,8 @@ $totalRegistros = count($productos);
             <td class="col-categoria"><?= htmlspecialchars($p['categoria'] ?? '') ?></td>
             <td class="col-nombre"><?= htmlspecialchars($p['titulo'] ?? '') ?></td>
             <td class="col-desc"><?= nl2br(htmlspecialchars($p['descripcion'] ?? '')) ?></td>
-            <td><?= (strtolower($p['iva'] ?? '') === 'si') ? 'Sí' : 'No' ?></td>
-            <td>
+            <td class="col-iva"><?= (strtolower($p['iva'] ?? '') === 'si') ? 'Sí' : 'No' ?></td>
+            <td class="col-estado">
                 <?php if (strtolower($p['estado'] ?? '') === 'activo'): ?>
                     <span class="tag-activo">Activo</span>
                 <?php else: ?>
