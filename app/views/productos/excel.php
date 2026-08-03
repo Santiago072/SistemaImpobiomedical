@@ -28,13 +28,13 @@ $totalRegistros = count($productos ?? []);
         td { mso-data-placement: same-cell; }
         
         /* ── Encabezado Corporativo Excel ── */
-        table.hdr-table { border: 2px solid #10757e; width: 100%; margin-bottom: 15px; border-collapse: collapse; background: #ffffff; }
+        table.hdr-table { border: 2px solid #10757e; width: 100%; margin-bottom: 12px; border-collapse: collapse; background: #ffffff; }
         
-        table.data-table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; margin-top: 15px; }
+        table.data-table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; margin-top: 10px; }
         table.data-table th { background-color: #10757e; color: #ffffff; font-weight: bold; font-size: 12px; text-transform: uppercase; border: 1.5px solid #0d5c63; padding: 8px; text-align: center; }
         table.data-table td { border: 1px solid #cbd5e1; padding: 8px; font-size: 11px; vertical-align: middle; }
         
-        .filter-table { border-collapse: collapse; margin-bottom: 15px; width: 50%; }
+        .filter-table { border-collapse: collapse; margin-bottom: 12px; width: 50%; }
         .filter-table th { background-color: #1f3864; color: #ffffff; border: 1px solid #1f3864; padding: 6px; font-size: 11px; text-align: left; }
         .filter-table td { border: 1px solid #cbd5e1; padding: 6px; font-size: 11px; }
         
@@ -45,19 +45,13 @@ $totalRegistros = count($productos ?? []);
 </head>
 <body>
 
-    <!-- ENCABEZADO CORPORATIVO EN EXCEL CON ALTURA DE FILA EXPLÍCITA -->
+    <!-- ENCABEZADO CORPORATIVO EN EXCEL (FILA ÚNICA CON BORDES TEAL E IDENTICO AL PDF) -->
     <table class="hdr-table">
-        <!-- Barra superior teal -->
-        <tr height="6" style="background:#10757e; height:6pt;">
-            <td colspan="6" style="background:#10757e; height:6pt; padding:0; border:none;"></td>
-        </tr>
-
-        <!-- Fila principal del encabezado con altura fija de 95pt para que Excel expanda la fila 2 -->
-        <tr height="95" style="height:95pt; background:#ffffff;">
+        <tr>
             <!-- COL 1: Logo IMPOMIN + Datos Corporativos -->
-            <td colspan="2" style="width:34%; text-align:left; vertical-align:top; padding:10px 12px; border-right:1px solid #e2e8f0; border-top:none; border-bottom:none; border-left:none;">
+            <td colspan="2" style="width:34%; text-align:left; vertical-align:top; padding:10px 12px; border-right:1px solid #cbd5e1; border-top:5px solid #10757e; border-bottom:5px solid #10757e;">
                 <?php if (!empty($logoImpUrl)): ?>
-                    <img src="<?= $logoImpUrl ?>" width="120" height="28" style="display:block; margin-bottom:4px;"><br style="mso-data-placement:same-cell;">
+                    <img src="<?= $logoImpUrl ?>" width="130" height="30" style="display:block; margin-bottom:5px;"><br style="mso-data-placement:same-cell;">
                 <?php endif; ?>
                 <font face="Arial" size="2" color="#1f3864"><b>IMPOMIN S.A.S</b></font><br style="mso-data-placement:same-cell;">
                 <font face="Arial" size="1" color="#10757e"><b>Nit. 900.535.843-3</b></font><br style="mso-data-placement:same-cell;">
@@ -66,30 +60,19 @@ $totalRegistros = count($productos ?? []);
                 <font face="Arial" size="1" color="#475569">impobiomedical@impomin.com</font>
             </td>
 
-            <!-- COL 2: Título, Subtítulo y Metadatos -->
-            <td colspan="2" style="width:36%; text-align:center; vertical-align:middle; padding:10px 12px; border-right:1px solid #e2e8f0; border-top:none; border-bottom:none; border-left:none;">
+            <!-- COL 2: Título, Subtítulo y Metadatos en texto plano centrado (idéntico al PDF) -->
+            <td colspan="2" style="width:36%; text-align:center; vertical-align:middle; padding:10px 12px; border-right:1px solid #cbd5e1; border-top:5px solid #10757e; border-bottom:5px solid #10757e;">
                 <font face="Arial" size="4" color="#1f3864"><b>CATÁLOGO DE PRODUCTOS</b></font><br style="mso-data-placement:same-cell;">
-                <font face="Arial" size="2" color="#10757e"><b>Sistema Impobiomedical</b></font><br style="mso-data-placement:same-cell;"><br style="mso-data-placement:same-cell;">
-                <table align="center" style="margin:0 auto; border-collapse:collapse;">
-                    <tr>
-                        <td style="background-color:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:4px 12px; font-size:11px; font-weight:bold; text-align:center;">
-                            Fecha: <?= $fechaSoloFecha ?> &nbsp;|&nbsp; Registros: <?= $totalRegistros ?>
-                        </td>
-                    </tr>
-                </table>
+                <font face="Arial" size="2" color="#10757e"><b>Sistema Impobiomedical</b></font><br style="mso-data-placement:same-cell;">
+                <font face="Arial" size="1" color="#64748b">Fecha: <?= $fechaSoloFecha ?> &nbsp;|&nbsp; Registros: <?= $totalRegistros ?></font>
             </td>
 
             <!-- COL 3: Logo IMPOBIOMEDICAL -->
-            <td colspan="2" style="width:30%; text-align:center; vertical-align:middle; padding:10px 12px; border:none;">
+            <td colspan="2" style="width:30%; text-align:center; vertical-align:middle; padding:10px 12px; border-top:5px solid #10757e; border-bottom:5px solid #10757e;">
                 <?php if (!empty($logoPdfUrl)): ?>
-                    <img src="<?= $logoPdfUrl ?>" width="160" height="40" style="display:block; margin:0 auto;">
+                    <img src="<?= $logoPdfUrl ?>" width="170" height="42" style="display:block; margin:0 auto;">
                 <?php endif; ?>
             </td>
-        </tr>
-
-        <!-- Barra inferior teal -->
-        <tr height="5" style="background:#10757e; height:5pt;">
-            <td colspan="6" style="background:#10757e; height:5pt; padding:0; border:none;"></td>
         </tr>
     </table>
 
