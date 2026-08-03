@@ -209,7 +209,7 @@ $options->set('isPhpEnabled', false);
 
 $dompdf = new Dompdf($options);
 $dompdf->loadHtml($html, 'UTF-8');
-$dompdf->setPaper('A4', 'landscape');
+$dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
 while (ob_get_level()) ob_end_clean();
