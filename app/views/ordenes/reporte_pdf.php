@@ -11,8 +11,8 @@ require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-if (!function_exists('imgBase64Ordenes')) {
-    function imgBase64Ordenes(string $ruta): string {
+if (!function_exists('imgBase64')) {
+    function imgBase64(string $ruta): string {
         if (!file_exists($ruta)) return '';
         $ext  = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
         $mime = in_array($ext, ['jpg','jpeg']) ? 'jpeg' : ($ext === 'png' ? 'png' : $ext);
@@ -23,8 +23,8 @@ if (!function_exists('imgBase64Ordenes')) {
 }
 
 $logoDir    = dirname(__DIR__, 3) . '/logo/';
-$imgLogoPdf = imgBase64Ordenes($logoDir . 'logopdf.png');
-$imgLogoImp = imgBase64Ordenes($logoDir . 'logoimp.png');
+$imgLogoPdf = imgBase64($logoDir . 'logopdf.png');
+$imgLogoImp = imgBase64($logoDir . 'logoimp.png');
 
 $fechaSoloFecha = date('d/m/Y');
 $totalRegistros = count($datosPdf ?? []);

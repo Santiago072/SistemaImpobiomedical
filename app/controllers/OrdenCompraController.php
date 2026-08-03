@@ -242,7 +242,8 @@ class OrdenCompraController
             ];
         }
 
-        require_once dirname(__DIR__, 2) . '/app/views/ordenes/reporte_pdf.php';
+        while (ob_get_level() > 0) { ob_end_clean(); }
+        include dirname(__DIR__, 2) . '/app/views/ordenes/reporte_pdf.php';
         exit();
     }
 
