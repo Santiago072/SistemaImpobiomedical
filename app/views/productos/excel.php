@@ -22,6 +22,8 @@ $fechaSoloFecha = date('d/m/Y');
     <title>Catálogo de Productos</title>
     <style>
         body { font-family: Arial, sans-serif; }
+        br { mso-data-placement: same-cell; }
+        td { mso-data-placement: same-cell; }
         
         /* ── Encabezado Corporativo Excel ── */
         .hdr-table { border: 2px solid #10757e; width: 100%; margin-bottom: 15px; border-collapse: collapse; background: #ffffff; }
@@ -41,7 +43,7 @@ $fechaSoloFecha = date('d/m/Y');
 </head>
 <body>
 
-    <!-- ENCABEZADO CORPORATIVO EN EXCEL IDÉNTICO AL HEADER DEL PDF -->
+    <!-- ENCABEZADO CORPORATIVO EN EXCEL CON REGLA MSO PARA EVITAR MULTIPLICACIÓN DE FILAS -->
     <table class="hdr-table">
         <!-- Barra superior teal -->
         <tr height="5" style="background:#10757e; height:5px;">
@@ -52,21 +54,19 @@ $fechaSoloFecha = date('d/m/Y');
             <!-- COL 1: Logo IMPOMIN + Datos -->
             <td colspan="2" style="width:34%; text-align:left; vertical-align:top; padding:8px 10px; border-right:1px solid #e2e8f0; border-top:none; border-bottom:none; border-left:none;">
                 <?php if (!empty($logoImpUrl)): ?>
-                    <img src="<?= $logoImpUrl ?>" width="120" height="28" style="display:block; margin-bottom:4px;"><br>
+                    <img src="<?= $logoImpUrl ?>" width="120" height="28" style="display:block; margin-bottom:4px;"><br style="mso-data-placement:same-cell;">
                 <?php endif; ?>
-                <strong style="color:#1f3864; font-size:11px;">IMPOMIN S.A.S</strong><br>
-                <strong style="color:#10757e; font-size:9.5px;">Nit. 900.535.843-3</strong><br>
-                <span style="color:#475569; font-size:8px; line-height:1.2;">
-                    Cra 10 No. 9-80 Barrio Cooperativa - Florencia<br>
-                    Calle 33A No 71 A 27 - Laureles - Medellín<br>
-                    impobiomedical@impomin.com
-                </span>
+                <span style="font-size:11px; font-weight:bold; color:#1f3864;">IMPOMIN S.A.S</span><br style="mso-data-placement:same-cell;">
+                <span style="font-size:9.5px; font-weight:bold; color:#10757e;">Nit. 900.535.843-3</span><br style="mso-data-placement:same-cell;">
+                <span style="font-size:8px; color:#475569;">Cra 10 No. 9-80 Barrio Cooperativa - Florencia</span><br style="mso-data-placement:same-cell;">
+                <span style="font-size:8px; color:#475569;">Calle 33A No 71 A 27 - Laureles - Medellín</span><br style="mso-data-placement:same-cell;">
+                <span style="font-size:8px; color:#475569;">impobiomedical@impomin.com</span>
             </td>
 
             <!-- COL 2: Título y Fecha -->
             <td colspan="2" style="width:36%; text-align:center; vertical-align:middle; padding:8px 10px; border-right:1px solid #e2e8f0; border-top:none; border-bottom:none; border-left:none;">
-                <strong style="font-size:14px; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">CATÁLOGO DE PRODUCTOS</strong><br>
-                <strong style="font-size:10px; color:#10757e;">Sistema Impobiomedical</strong><br><br>
+                <span style="font-size:14px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">CATÁLOGO DE PRODUCTOS</span><br style="mso-data-placement:same-cell;">
+                <span style="font-size:10px; font-weight:bold; color:#10757e;">Sistema Impobiomedical</span><br style="mso-data-placement:same-cell;"><br style="mso-data-placement:same-cell;">
                 <span style="display:inline-block; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:3px 10px; border-radius:10px; font-size:8.5px; font-weight:bold;">
                     Fecha: <?= $fechaSoloFecha ?>
                 </span>
