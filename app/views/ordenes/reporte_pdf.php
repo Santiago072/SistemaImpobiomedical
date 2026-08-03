@@ -203,14 +203,18 @@ table.ord-table tbody tr:nth-child(even) { background-color: #f8fafc; }
 $html = ob_get_clean();
 
 $options = new Options();
-$options->set('isHtml5ParserEnabled', true);
-$options->set('isRemoteEnabled', true);
+$options->set('isRemoteEnabled', false);
 $options->set('defaultFont', 'Arial');
+$options->set('isPhpEnabled', false);
 
 $dompdf = new Dompdf($options);
-$dompdf->loadHtml($html);
+$dompdf->loadHtml($html, 'UTF-8');
 $dompdf->setPaper('A4', 'landscape');
 $dompdf->render();
 
-$dompdf->stream("Reporte_Ordenes_Compra_" . date('Ymd_His') . ".pdf", ["Attachment" => true]);
+while (ob_get_level()) ob_end_clean();
+
+$nombreArchivo = 'Reporte_Ordenes_Compra_' . date('Ymd_His') . '.pdf';
+$dompdf->stream($nombreArchivo, ['Attachment' => true]);
 exit();
+
