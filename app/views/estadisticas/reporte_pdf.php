@@ -1,7 +1,7 @@
 <?php
 /**
- * Vista: PDF de Reporte de Estadísticas — IMPOMIN S.A.S
- * Generado con DomPDF. Incluye KPIs, Top Clientes, Top Productos, Top Vendedores y Evolución mensual.
+ * Vista: PDF de Reporte de Estadísticas — IMPOMIN S.A.S / Impobiomedical
+ * Generado con DomPDF. Incluye logos corporativos, KPIs, Top Clientes, Top Productos, Top Vendedores y Evolución mensual.
  */
 
 // Limpiar cualquier buffer previo
@@ -20,6 +20,21 @@ function barPct(int $val, int $max): int {
     return $max > 0 ? (int)min(100, ($val / $max) * 100) : 0;
 }
 
+// Convertir imagen local a Base64 para DomPDF
+function imgBase64(string $ruta): string {
+    if (!file_exists($ruta)) return '';
+    $ext  = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
+    $mime = in_array($ext, ['jpg','jpeg']) ? 'jpeg' : ($ext === 'png' ? 'png' : $ext);
+    $d    = @file_get_contents($ruta);
+    if (!$d) return '';
+    return 'data:image/' . $mime . ';base64,' . base64_encode($d);
+}
+
+// Cargar logos de la carpeta logo/
+$logoDir    = dirname(__DIR__, 3) . '/logo/';
+$imgLogoPdf = imgBase64($logoDir . 'logopdf.png');
+$imgLogoImp = imgBase64($logoDir . 'logoimp.png');
+
 // Periodo del reporte
 $periodoLabel = '';
 if (!empty($fechaInicio) && !empty($fechaFin)) {
@@ -31,16 +46,17 @@ if (!empty($fechaInicio) && !empty($fechaFin)) {
 $fechaGenerado = date('d/m/Y H:i');
 
 // Máximos para barras proporcionales
-$maxClientes  = !empty($topClientes['data'])   ? max($topClientes['data'])   : 1;
-$maxProductos = !empty($topProductos['data'])  ? max($topProductos['data'])  : 1;
-$maxVendedores= !empty($topVendedores['data']) ? max($topVendedores['data']) : 1;
+$maxClientes   = !empty($topClientes['data'])   ? max($topClientes['data'])   : 1;
+$maxProductos  = !empty($topProductos['data'])  ? max($topProductos['data'])  : 1;
+$maxVendedores = !empty($topVendedores['data']) ? max($topVendedores['data']) : 1;
 
 // Meses formateados
 $mesesFmt = array_map(function($m) {
+    if (!$m || strpos($m, '-') === false) return $m;
     [$y, $mo] = explode('-', $m);
     $nombres = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
     return $nombres[(int)$mo - 1] . ' ' . $y;
-}, $evolucion['meses']);
+}, $evolucion['meses'] ?? []);
 
 ob_start();
 ?>
@@ -51,80 +67,122 @@ ob_start();
 <title>Reporte de Estadísticas — Impobiomedical</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: Arial, sans-serif; font-size: 9px; color: #1f2937; padding: 18px 20px; }
-h1  { font-size: 16px; font-weight: bold; color: #1f3864; }
-h2  { font-size: 11px; font-weight: bold; color: #1f3864; margin-bottom: 8px; border-bottom: 2px solid #10757e; padding-bottom: 3px; }
+body { font-family: Arial, sans-serif; font-size: 8.5px; color: #1f2937; padding: 15px 18px; }
+
+h2 { 
+    font-size: 10.5px; 
+    font-weight: bold; 
+    color: #1f3864; 
+    margin-bottom: 6px; 
+    border-bottom: 2px solid #10757e; 
+    padding-bottom: 3px; 
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
 table { width:100%; border-collapse:collapse; }
 
-/* Encabezado */
-.hdr-table td { vertical-align: middle; }
-.hdr-logo { width: 160px; }
-.hdr-title { text-align: center; }
-.hdr-meta  { text-align: right; font-size: 8px; color: #6b7280; }
-.hdr-bar   { height: 4px; background: linear-gradient(90deg, #10757e, #3b82f6); margin: 10px 0 16px; }
+/* ── Encabezado Corporativo ── */
+.hdr-wrap {
+    border: 1.5px solid #10757e;
+    border-radius: 4px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    background: #ffffff;
+}
 
-/* KPI Cards — tabla 3 columnas */
-.kpi-table { margin-bottom: 20px; }
-.kpi-cell  { width: 33.33%; padding: 0 6px 0 0; vertical-align: top; }
-.kpi-box   { border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px; background: #f9fafb; }
-.kpi-box.green  { border-left: 4px solid #10b981; }
-.kpi-box.blue   { border-left: 4px solid #3b82f6; }
-.kpi-box.purple { border-left: 4px solid #8b5cf6; }
-.kpi-box.amber  { border-left: 4px solid #f59e0b; }
-.kpi-box.teal   { border-left: 4px solid #10757e; }
-.kpi-num  { font-size: 16px; font-weight: bold; color: #111827; line-height: 1.1; }
-.kpi-lbl  { font-size: 7.5px; color: #6b7280; font-weight: bold; text-transform: uppercase; margin-top: 2px; }
+/* ── KPI Cards ── */
+.kpi-table { margin-bottom: 14px; }
+.kpi-cell  { width: 33.33%; padding: 0 4px; vertical-align: top; }
+.kpi-box   { border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 10px; background: #f8fafc; }
+.kpi-box.green  { border-left: 4px solid #10b981; background: #f0fdf4; }
+.kpi-box.teal   { border-left: 4px solid #10757e; background: #f0fdfa; }
+.kpi-box.blue   { border-left: 4px solid #3b82f6; background: #eff6ff; }
+.kpi-box.purple { border-left: 4px solid #8b5cf6; background: #f5f3ff; }
+.kpi-box.amber  { border-left: 4px solid #f59e0b; background: #fffbeb; }
+.kpi-box.cyan   { border-left: 4px solid #06b6d4; background: #ecfeff; }
 
-/* Tabla de tops */
-.top-table th { background: #1f3864; color: #fff; padding: 5px 8px; font-size: 8px; text-align: left; }
-.top-table td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; font-size: 8.5px; vertical-align: middle; }
-.top-table tr:nth-child(even) td { background: #f3f4f6; }
-.bar-outer { background: #e5e7eb; border-radius: 3px; height: 8px; width: 100%; }
-.bar-inner { background: #10757e; border-radius: 3px; height: 8px; }
+.kpi-num { font-size: 14px; font-weight: bold; color: #0f172a; line-height: 1.1; }
+.kpi-lbl { font-size: 7.5px; color: #475569; font-weight: bold; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.2px; }
+
+/* ── Tablas de Tops ── */
+.top-table th { background: #1f3864; color: #ffffff; padding: 5px 8px; font-size: 8px; text-align: left; font-weight: bold; }
+.top-table td { padding: 4.5px 8px; border-bottom: 1px solid #e2e8f0; font-size: 8px; vertical-align: middle; }
+.top-table tr:nth-child(even) td { background: #f8fafc; }
+.bar-outer { background: #e2e8f0; border-radius: 3px; height: 7px; width: 100%; overflow: hidden; }
+.bar-inner { background: #10757e; border-radius: 3px; height: 7px; }
 .bar-inner.blue   { background: #3b82f6; }
 .bar-inner.amber  { background: #f59e0b; }
 
-/* Evolución mensual */
-.evo-table th { background: #1f3864; color: #fff; padding: 5px 8px; font-size: 8px; text-align: center; }
-.evo-table td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; font-size: 8.5px; text-align: center; vertical-align: middle; }
-.evo-table tr:nth-child(even) td { background: #f3f4f6; }
-.evo-table .mes-col { text-align: left; font-weight: bold; }
+/* ── Evolución mensual ── */
+.evo-table th { background: #1f3864; color: #ffffff; padding: 5px 8px; font-size: 8px; text-align: center; font-weight: bold; }
+.evo-table td { padding: 4.5px 8px; border-bottom: 1px solid #e2e8f0; font-size: 8px; text-align: center; vertical-align: middle; }
+.evo-table tr:nth-child(even) td { background: #f8fafc; }
+.evo-table .mes-col { text-align: left; font-weight: bold; color: #1e293b; }
 
-/* Layout 2 columnas */
-.two-col { width: 100%; }
-.two-col .col-l { width: 50%; padding-right: 10px; vertical-align: top; }
-.two-col .col-r { width: 50%; padding-left: 10px; vertical-align: top; }
+/* ── Layout 2 columnas ── */
+.two-col { width: 100%; margin-bottom: 10px; }
+.two-col .col-l { width: 50%; padding-right: 6px; vertical-align: top; }
+.two-col .col-r { width: 50%; padding-left: 6px; vertical-align: top; }
 
-/* Footer */
-.footer { margin-top: 20px; padding-top: 8px; border-top: 1px solid #e5e7eb; font-size: 7.5px; color: #9ca3af; display: flex; justify-content: space-between; }
-.badge-periodo { display: inline-block; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 3px 10px; border-radius: 20px; font-size: 8px; font-weight: bold; margin-bottom: 14px; }
-.section-spacer { height: 16px; }
+.section-spacer { height: 12px; }
+
+/* ── Footer ── */
+.footer-table { margin-top: 14px; border-top: 1px solid #cbd5e1; padding-top: 5px; }
+.footer-table td { font-size: 7.5px; color: #64748b; }
 </style>
 </head>
 <body>
 
-<!-- ══ ENCABEZADO ══ -->
-<table class="hdr-table" style="margin-bottom:6px;">
-  <tr>
-    <td class="hdr-title">
-      <h1>Reporte de Estadísticas</h1>
-      <div style="font-size:9px; color:#6b7280; margin-top:2px;">IMPOMIN S.A.S — Sistema Impobiomedical</div>
-    </td>
-    <td class="hdr-meta" style="width:180px;">
-      <div>Generado: <?= $fechaGenerado ?></div>
-      <div style="margin-top:3px; color:#10757e; font-weight:bold;"><?= $periodoLabel ?></div>
-    </td>
-  </tr>
-</table>
-<div class="hdr-bar"></div>
+<!-- ══ ENCABEZADO CORPORATIVO CON LOGOS ══ -->
+<div class="hdr-wrap">
+  <!-- Barra superior teal -->
+  <div style="background:#10757e; height:5px;"></div>
 
-<!-- ══ KPIs ══ -->
-<div class="badge-periodo"><?= $periodoLabel ?></div>
+  <table style="width:100%; border-collapse:collapse; background:#ffffff;">
+    <tr>
+      <!-- COL 1: Logo IMPOMIN + Datos de contacto -->
+      <td style="width:34%; padding:7px 10px; vertical-align:top; border-right:1px solid #e2e8f0;">
+        <?php if ($imgLogoImp): ?>
+          <img src="<?= $imgLogoImp ?>" style="height:32px; object-fit:contain; margin-bottom:3px;"><br>
+        <?php endif; ?>
+        <div style="font-size:10px; font-weight:bold; color:#1f3864;">IMPOMIN S.A.S</div>
+        <div style="font-size:8px; font-weight:bold; color:#10757e;">Nit. 900.535.843-3</div>
+        <div style="font-size:7px; color:#475569; margin-top:2px; line-height:1.2;">
+          Cra 10 No. 9-80 Barrio Cooperativa - Florencia<br>
+          Calle 33A No 71 A 27 - Laureles - Medellín<br>
+          impobiomedical@impomin.com
+        </div>
+      </td>
+
+      <!-- COL 2: Título del reporte y Filtro de fechas -->
+      <td style="width:36%; text-align:center; vertical-align:middle; padding:6px 8px; border-right:1px solid #e2e8f0;">
+        <div style="font-size:13px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">Reporte de Estadísticas</div>
+        <div style="font-size:9px; font-weight:bold; color:#10757e; margin-top:1px;">Sistema Impobiomedical</div>
+        <div style="margin-top:6px; display:inline-block; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:2px 8px; border-radius:10px; font-size:7.5px; font-weight:bold;">
+          <?= htmlspecialchars($periodoLabel) ?>
+        </div>
+      </td>
+
+      <!-- COL 3: Logo IMPOBIOMEDICAL grande -->
+      <td style="width:30%; text-align:center; vertical-align:middle; padding:6px 8px;">
+        <?php if ($imgLogoPdf): ?>
+          <img src="<?= $imgLogoPdf ?>" style="max-width:170px; max-height:65px; object-fit:contain;">
+        <?php endif; ?>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Barra inferior teal -->
+  <div style="background:#10757e; height:3px;"></div>
+</div>
+
+<!-- ══ METRICAS PRINCIPALES (KPIs) ══ -->
 <table class="kpi-table">
   <tr>
     <td class="kpi-cell">
       <div class="kpi-box green">
-        <div class="kpi-num"><?= fmtR($kpis['monto_cotizado_mes']) ?></div>
+        <div class="kpi-num"><?= fmtR($kpis['monto_cotizado_mes'] ?? 0) ?></div>
         <div class="kpi-lbl">Monto Cotizado</div>
       </div>
     </td>
@@ -136,28 +194,28 @@ table { width:100%; border-collapse:collapse; }
     </td>
     <td class="kpi-cell">
       <div class="kpi-box blue">
-        <div class="kpi-num"><?= number_format($kpis['total_cotizaciones']) ?></div>
+        <div class="kpi-num"><?= number_format($kpis['total_cotizaciones'] ?? 0) ?></div>
         <div class="kpi-lbl">Cotizaciones Finalizadas</div>
       </div>
     </td>
   </tr>
-  <tr><td colspan="3" style="height:8px;"></td></tr>
+  <tr><td colspan="3" style="height:6px;"></td></tr>
   <tr>
     <td class="kpi-cell">
       <div class="kpi-box purple">
-        <div class="kpi-num"><?= number_format($kpis['total_ordenes']) ?></div>
+        <div class="kpi-num"><?= number_format($kpis['total_ordenes'] ?? 0) ?></div>
         <div class="kpi-lbl">Órdenes de Compra</div>
       </div>
     </td>
     <td class="kpi-cell">
       <div class="kpi-box amber">
-        <div class="kpi-num"><?= number_format($kpis['total_clientes']) ?></div>
+        <div class="kpi-num"><?= number_format($kpis['total_clientes'] ?? 0) ?></div>
         <div class="kpi-lbl">Clientes Registrados</div>
       </div>
     </td>
     <td class="kpi-cell">
-      <div class="kpi-box green">
-        <div class="kpi-num"><?= number_format($kpis['total_productos']) ?></div>
+      <div class="kpi-box cyan">
+        <div class="kpi-num"><?= number_format($kpis['total_productos'] ?? 0) ?></div>
         <div class="kpi-lbl">Productos Activos</div>
       </div>
     </td>
@@ -175,15 +233,15 @@ table { width:100%; border-collapse:collapse; }
       <table class="top-table">
         <thead>
           <tr>
-            <th>#</th>
+            <th style="width:22px;">#</th>
             <th>Cliente</th>
-            <th style="width:35%;">Frecuencia</th>
-            <th style="width:40px; text-align:right;">Cot.</th>
+            <th style="width:32%;">Frecuencia</th>
+            <th style="width:35px; text-align:right;">Cot.</th>
           </tr>
         </thead>
         <tbody>
           <?php if (empty($topClientes['labels'])): ?>
-          <tr><td colspan="4" style="text-align:center; color:#9ca3af;">Sin datos</td></tr>
+          <tr><td colspan="4" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados</td></tr>
           <?php else: ?>
           <?php foreach ($topClientes['labels'] as $i => $label): ?>
           <tr>
@@ -194,7 +252,7 @@ table { width:100%; border-collapse:collapse; }
                 <div class="bar-inner" style="width:<?= barPct($topClientes['data'][$i], $maxClientes) ?>%;"></div>
               </div>
             </td>
-            <td style="text-align:right; font-weight:bold;"><?= $topClientes['data'][$i] ?></td>
+            <td style="text-align:right; font-weight:bold; color:#0f172a;"><?= $topClientes['data'][$i] ?></td>
           </tr>
           <?php endforeach; ?>
           <?php endif; ?>
@@ -208,15 +266,15 @@ table { width:100%; border-collapse:collapse; }
       <table class="top-table">
         <thead>
           <tr>
-            <th>#</th>
+            <th style="width:22px;">#</th>
             <th>Producto</th>
-            <th style="width:35%;">Frecuencia</th>
-            <th style="width:40px; text-align:right;">Veces</th>
+            <th style="width:32%;">Frecuencia</th>
+            <th style="width:35px; text-align:right;">Veces</th>
           </tr>
         </thead>
         <tbody>
           <?php if (empty($topProductos['labels'])): ?>
-          <tr><td colspan="4" style="text-align:center; color:#9ca3af;">Sin datos</td></tr>
+          <tr><td colspan="4" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados</td></tr>
           <?php else: ?>
           <?php foreach ($topProductos['labels'] as $i => $label): ?>
           <tr>
@@ -227,7 +285,7 @@ table { width:100%; border-collapse:collapse; }
                 <div class="bar-inner blue" style="width:<?= barPct($topProductos['data'][$i], $maxProductos) ?>%;"></div>
               </div>
             </td>
-            <td style="text-align:right; font-weight:bold;"><?= $topProductos['data'][$i] ?></td>
+            <td style="text-align:right; font-weight:bold; color:#0f172a;"><?= $topProductos['data'][$i] ?></td>
           </tr>
           <?php endforeach; ?>
           <?php endif; ?>
@@ -244,26 +302,26 @@ table { width:100%; border-collapse:collapse; }
 <table class="top-table">
   <thead>
     <tr>
-      <th style="width:30px;">#</th>
+      <th style="width:25px;">#</th>
       <th>Vendedor</th>
       <th>Proporción de ventas</th>
-      <th style="width:120px; text-align:right;">Monto Vendido</th>
+      <th style="width:110px; text-align:right;">Monto Vendido</th>
     </tr>
   </thead>
   <tbody>
     <?php if (empty($topVendedores['labels'])): ?>
-    <tr><td colspan="4" style="text-align:center; color:#9ca3af;">Sin datos</td></tr>
+    <tr><td colspan="4" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados</td></tr>
     <?php else: ?>
     <?php foreach ($topVendedores['labels'] as $i => $label): ?>
     <tr>
       <td style="font-weight:bold; color:#f59e0b;"><?= $i+1 ?></td>
-      <td><?= htmlspecialchars($label) ?></td>
+      <td style="font-weight:bold; color:#334155;"><?= htmlspecialchars($label) ?></td>
       <td>
         <div class="bar-outer">
           <div class="bar-inner amber" style="width:<?= barPct($topVendedores['data'][$i], $maxVendedores) ?>%;"></div>
         </div>
       </td>
-      <td style="text-align:right; font-weight:bold;"><?= fmtR($topVendedores['data'][$i]) ?></td>
+      <td style="text-align:right; font-weight:bold; color:#0f172a;"><?= fmtR($topVendedores['data'][$i]) ?></td>
     </tr>
     <?php endforeach; ?>
     <?php endif; ?>
@@ -284,19 +342,19 @@ table { width:100%; border-collapse:collapse; }
   </thead>
   <tbody>
     <?php if (empty($evolucion['meses'])): ?>
-    <tr><td colspan="3" style="text-align:center; color:#9ca3af;">Sin datos en este período</td></tr>
+    <tr><td colspan="3" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados en este período</td></tr>
     <?php else: ?>
     <?php foreach ($evolucion['meses'] as $i => $mes): ?>
     <tr>
       <td class="mes-col"><?= htmlspecialchars($mesesFmt[$i] ?? $mes) ?></td>
       <td>
-        <div style="display:inline-block; background:#3b82f6; color:#fff; border-radius:4px; padding:2px 8px; font-weight:bold;">
-          <?= (int)$evolucion['cotizaciones'][$i] ?>
+        <div style="display:inline-block; background:#3b82f6; color:#ffffff; border-radius:4px; padding:2px 8px; font-weight:bold;">
+          <?= (int)($evolucion['cotizaciones'][$i] ?? 0) ?>
         </div>
       </td>
       <td>
-        <div style="display:inline-block; background:#10b981; color:#fff; border-radius:4px; padding:2px 8px; font-weight:bold;">
-          <?= (int)$evolucion['ordenes'][$i] ?>
+        <div style="display:inline-block; background:#10b981; color:#ffffff; border-radius:4px; padding:2px 8px; font-weight:bold;">
+          <?= (int)($evolucion['ordenes'][$i] ?? 0) ?>
         </div>
       </td>
     </tr>
@@ -306,10 +364,10 @@ table { width:100%; border-collapse:collapse; }
 </table>
 
 <!-- ══ FOOTER ══ -->
-<table style="margin-top:18px; border-top:1px solid #e5e7eb; padding-top:6px;">
+<table class="footer-table">
   <tr>
-    <td style="font-size:7.5px; color:#9ca3af;">Documento generado automáticamente por Sistema Impobiomedical</td>
-    <td style="text-align:right; font-size:7.5px; color:#9ca3af;">Fecha de generación: <?= $fechaGenerado ?></td>
+    <td style="font-size:7.5px; color:#64748b;">Documento generado automáticamente por el Sistema Impobiomedical</td>
+    <td style="text-align:right; font-size:7.5px; color:#64748b;">Fecha y Hora de Generación: <?= $fechaGenerado ?></td>
   </tr>
 </table>
 
