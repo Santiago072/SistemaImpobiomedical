@@ -1,75 +1,194 @@
 <?php
 /**
  * Vista: Exportar Productos a PDF
- * Variables: $productos
+ * Variables: $productos, $busqueda, $categoriaSel
  */
+
+// Limpiar cualquier buffer previo
+while (ob_get_level() > 0) { ob_end_clean(); }
+
+if (!function_exists('imgBase64')) {
+    function imgBase64(string $ruta): string {
+        if (!file_exists($ruta)) return '';
+        $ext  = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
+        $mime = in_array($ext, ['jpg','jpeg']) ? 'jpeg' : ($ext === 'png' ? 'png' : $ext);
+        $d    = @file_get_contents($ruta);
+        if (!$d) return '';
+        return 'data:image/' . $mime . ';base64,' . base64_encode($d);
+    }
+}
+
+$logoDir    = dirname(__DIR__, 3) . '/logo/';
+$imgLogoPdf = imgBase64($logoDir . 'logopdf.png');
+$imgLogoImp = imgBase64($logoDir . 'logoimp.png');
+
+$fechaGenerado  = date('d/m/Y H:i');
+$totalRegistros = count($productos);
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Catálogo de Productos</title>
+    <title>Catálogo de Productos — Impobiomedical</title>
     <style>
-        body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #333; margin: 0; padding: 10px; }
-        .header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid #10757e; padding-bottom: 15px; }
-        .header h1 { margin: 0; color: #10757e; font-size: 24px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .header p { margin: 5px 0 0; color: #d97706; font-size: 12px; font-weight: bold; }
-        .header .subtext { color: #64748b; font-weight: normal; margin-top: 2px; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: Arial, Helvetica, sans-serif; font-size: 9px; color: #1f2937; padding: 15px 18px; }
+
+        /* ── Encabezado Corporativo ── */
+        .hdr-wrap {
+            border: 2px solid #10757e;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        /* ── Filtros Badges ── */
+        .meta-bar {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .filter-badge {
+            display: inline-block;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 8.5px;
+            font-weight: bold;
+            margin: 0 4px;
+        }
+
+        /* ── Tabla Principal con mayor grosor y bordes definidos ── */
+        table.prod-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            border: 2px solid #10757e; /* Tabla con mayor grosor */
+        }
+        table.prod-table th {
+            background-color: #10757e;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 8px 6px;
+            text-align: center; /* Centrado */
+            font-size: 9.5px;
+            text-transform: uppercase;
+            border: 1.5px solid #0d5c63;
+        }
+        table.prod-table td {
+            border: 1.5px solid #cbd5e1; /* Líneas con más grosor y definición */
+            padding: 7px 6px;
+            vertical-align: middle;
+            text-align: center; /* Información centrada */
+            font-size: 8.5px;
+        }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #e2e8f0; }
-        th { background-color: #10757e; color: #ffffff; font-weight: bold; padding: 10px 8px; text-align: left; font-size: 11px; text-transform: uppercase; }
-        td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; padding: 10px 8px; vertical-align: top; }
-        
-        /* Zebra striping for better readability */
-        tbody tr:nth-child(even) { background-color: #f8fafc; }
-        
-        td.col-codigo { width: 12%; font-weight: bold; color: #0f766e; }
-        td.col-categoria { width: 13%; color: #64748b; font-size: 10px; font-style: italic; }
-        td.col-nombre { width: 22%; font-weight: bold; color: #1e293b; }
-        td.col-desc { width: 35%; font-size: 10px; color: #475569; line-height: 1.3; }
-        td.col-iva { width: 8%; text-align: center; }
-        td.col-estado { width: 10%; text-align: center; }
-        
-        .tag-activo { color: #166534; font-weight: bold; background-color: #dcfce7; padding: 3px 6px; border-radius: 4px; display: inline-block; font-size: 10px; }
-        .tag-inactivo { color: #991b1b; font-weight: bold; background-color: #fee2e2; padding: 3px 6px; border-radius: 4px; display: inline-block; font-size: 10px; }
+        /* Filas alternas */
+        table.prod-table tbody tr:nth-child(even) { background-color: #f8fafc; }
+
+        /* Columnas específicas */
+        td.col-codigo { font-weight: bold; color: #0f766e; text-align: center; }
+        td.col-categoria { color: #475569; font-style: italic; font-weight: bold; text-align: center; }
+        td.col-nombre { font-weight: bold; color: #1e293b; text-align: center; }
+        td.col-desc { text-align: left; font-size: 8px; color: #475569; line-height: 1.3; }
+
+        .tag-activo { color: #166534; font-weight: bold; background-color: #dcfce7; border: 1px solid #86efac; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 8px; }
+        .tag-inactivo { color: #991b1b; font-weight: bold; background-color: #fee2e2; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 8px; }
+
+        .footer-table { margin-top: 14px; border-top: 1px solid #cbd5e1; padding-top: 5px; width:100%; }
+        .footer-table td { font-size: 7.5px; color: #64748b; border:none; text-align: left; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Catálogo de Productos</h1>
-        <p>Generado el: <?= date('d/m/Y') ?></p>
-        <p class="subtext">Total de registros: <?= count($productos) ?></p>
-    </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th class="col-codigo">Código</th>
-                <th class="col-categoria">Categoría</th>
-                <th class="col-nombre">Nombre</th>
-                <th class="col-desc">Descripción</th>
-                <th class="col-iva">IVA</th>
-                <th class="col-estado">Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($productos as $p): ?>
-            <tr>
-                <td class="col-codigo"><?= htmlspecialchars($p['codigo_producto'] ?? '') ?></td>
-                <td class="col-categoria"><?= htmlspecialchars($p['categoria'] ?? '') ?></td>
-                <td class="col-nombre"><?= htmlspecialchars($p['titulo'] ?? '') ?></td>
-                <td class="col-desc"><?= nl2br(htmlspecialchars($p['descripcion'] ?? '')) ?></td>
-                <td class="col-iva"><?= (strtolower($p['iva'] ?? '') === 'si') ? 'Sí' : 'No' ?></td>
-                <td class="col-estado">
-                    <?php if (strtolower($p['estado'] ?? '') === 'activo'): ?>
-                        <span class="tag-activo">Activo</span>
-                    <?php else: ?>
-                        <span class="tag-inactivo">Inactivo</span>
-                    <?php endif; ?>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+<!-- ENCABEZADO CORPORATIVO -->
+<div class="hdr-wrap">
+  <div style="background:#10757e; height:5px;"></div>
+  <table style="width:100%; border-collapse:collapse; background:#ffffff;">
+    <tr>
+      <!-- COL 1: Logo IMPOMIN + Datos -->
+      <td style="width:34%; padding:7px 10px; vertical-align:top; border-right:1px solid #e2e8f0; text-align:left;">
+        <?php if ($imgLogoImp): ?>
+          <img src="<?= $imgLogoImp ?>" style="height:32px; object-fit:contain; margin-bottom:3px;"><br>
+        <?php endif; ?>
+        <div style="font-size:10px; font-weight:bold; color:#1f3864;">IMPOMIN S.A.S</div>
+        <div style="font-size:8px; font-weight:bold; color:#10757e;">Nit. 900.535.843-3</div>
+        <div style="font-size:7px; color:#475569; margin-top:2px; line-height:1.2;">
+          Cra 10 No. 9-80 Barrio Cooperativa - Florencia<br>
+          Calle 33A No 71 A 27 - Laureles - Medellín<br>
+          impobiomedical@impomin.com
+        </div>
+      </td>
+
+      <!-- COL 2: Título y Filtros -->
+      <td style="width:36%; text-align:center; vertical-align:middle; padding:6px 8px; border-right:1px solid #e2e8f0;">
+        <div style="font-size:13px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">Catálogo de Productos</div>
+        <div style="font-size:9px; font-weight:bold; color:#10757e; margin-top:1px;">Sistema Impobiomedical</div>
+        <div style="font-size:7.5px; color:#64748b; margin-top:4px;">Generado el: <?= $fechaGenerado ?> | Registros: <?= $totalRegistros ?></div>
+      </td>
+
+      <!-- COL 3: Logo IMPOBIOMEDICAL -->
+      <td style="width:30%; text-align:center; vertical-align:middle; padding:6px 8px;">
+        <?php if ($imgLogoPdf): ?>
+          <img src="<?= $imgLogoPdf ?>" style="max-width:170px; max-height:65px; object-fit:contain;">
+        <?php endif; ?>
+      </td>
+    </tr>
+  </table>
+  <div style="background:#10757e; height:3px;"></div>
+</div>
+
+<!-- MOSTRAR FILTROS SI SE ESTÁ EN UNA CATEGORÍA O BÚSQUEDA -->
+<?php if (!empty($categoriaSel) || !empty($busqueda)): ?>
+<div class="meta-bar">
+    <?php if (!empty($categoriaSel)): ?>
+        <span class="filter-badge">Categoría: <?= htmlspecialchars($categoriaSel) ?></span>
+    <?php endif; ?>
+    <?php if (!empty($busqueda)): ?>
+        <span class="filter-badge">Búsqueda: "<?= htmlspecialchars($busqueda) ?>"</span>
+    <?php endif; ?>
+</div>
+<?php endif; ?>
+
+<table class="prod-table">
+    <thead>
+        <tr>
+            <th style="width: 12%;">Código</th>
+            <th style="width: 15%;">Categoría</th>
+            <th style="width: 23%;">Nombre</th>
+            <th style="width: 32%;">Descripción</th>
+            <th style="width: 8%;">IVA</th>
+            <th style="width: 10%;">Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($productos as $p): ?>
+        <tr>
+            <td class="col-codigo"><?= htmlspecialchars($p['codigo_producto'] ?? '') ?></td>
+            <td class="col-categoria"><?= htmlspecialchars($p['categoria'] ?? '') ?></td>
+            <td class="col-nombre"><?= htmlspecialchars($p['titulo'] ?? '') ?></td>
+            <td class="col-desc"><?= nl2br(htmlspecialchars($p['descripcion'] ?? '')) ?></td>
+            <td><?= (strtolower($p['iva'] ?? '') === 'si') ? 'Sí' : 'No' ?></td>
+            <td>
+                <?php if (strtolower($p['estado'] ?? '') === 'activo'): ?>
+                    <span class="tag-activo">Activo</span>
+                <?php else: ?>
+                    <span class="tag-inactivo">Inactivo</span>
+                <?php endif; ?>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+<table class="footer-table">
+  <tr>
+    <td>Documento generado automáticamente por el Sistema Impobiomedical</td>
+    <td style="text-align:right;">Fecha de generación: <?= $fechaGenerado ?></td>
+  </tr>
+</table>
+
 </body>
 </html>
