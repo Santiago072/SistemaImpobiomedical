@@ -56,12 +56,12 @@ $totalRegistros = count($datosExcel ?? []);
             <td colspan="8" style="background:#10757e; height:6pt; padding:0; border-top:1.5px solid #10757e; border-left:1.5px solid #10757e; border-right:1.5px solid #10757e; border-bottom:none;"></td>
         </tr>
 
-        <!-- 3. Contenido Principal del Encabezado (Altura fija de 100pt) -->
-        <tr height="100" style="height:100pt; background:#ffffff;">
+        <!-- 3. Contenido Principal del Encabezado (Altura fija de 105pt) -->
+        <tr height="105" style="height:105pt; background:#ffffff;">
             <!-- COL 1: Logo IMPOMIN + Datos Corporativos (colspan=3: A+B+C ~440px de ancho) -->
-            <td colspan="3" style="width:38%; text-align:left; vertical-align:top; padding:8px 12px; border-left:1.5px solid #10757e; border-right:1px solid #cbd5e1; border-top:none; border-bottom:none;">
+            <td colspan="3" style="width:38%; text-align:left; vertical-align:top; padding:10px 12px 8px 12px; border-left:1.5px solid #10757e; border-right:1px solid #cbd5e1; border-top:none; border-bottom:none;">
                 <?php if (!empty($logoImpUrl)): ?>
-                    <img src="<?= $logoImpUrl ?>" width="130" height="30" style="display:block; margin-bottom:4px;"><br style="mso-data-placement:same-cell;">
+                    <img src="<?= $logoImpUrl ?>" width="125" height="28" style="display:block; margin-top:4px; margin-bottom:5px;"><br style="mso-data-placement:same-cell;">
                 <?php endif; ?>
                 <font face="Arial" size="2" color="#1f3864"><b>IMPOMIN S.A.S</b></font><br style="mso-data-placement:same-cell;">
                 <font face="Arial" size="1" color="#10757e"><b>Nit. 900.535.843-3</b></font><br style="mso-data-placement:same-cell;">
@@ -78,9 +78,9 @@ $totalRegistros = count($datosExcel ?? []);
             </td>
 
             <!-- COL 3: Logo IMPOBIOMEDICAL (colspan=2: Columnas G+H ~380px de ancho) -->
-            <td colspan="2" style="width:28%; text-align:center; vertical-align:middle; padding:8px 12px; border-right:1.5px solid #10757e; border-top:none; border-bottom:none; border-left:none;">
+            <td colspan="2" style="width:28%; text-align:center; vertical-align:middle; padding:12px; border-right:1.5px solid #10757e; border-top:none; border-bottom:none; border-left:none;">
                 <?php if (!empty($logoPdfUrl)): ?>
-                    <img src="<?= $logoPdfUrl ?>" width="150" height="38" style="display:block; margin:0 auto;">
+                    <img src="<?= $logoPdfUrl ?>" width="145" height="36" style="display:block; margin:0 auto;">
                 <?php endif; ?>
             </td>
         </tr>
