@@ -27,12 +27,12 @@ $totalRegistros = count($datosExcel ?? []);
         br { mso-data-placement: same-cell; }
         td { mso-data-placement: same-cell; }
         
-        /* ── Encabezado Corporativo Ejecutivo Excel ── */
-        table.excel-hdr { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; margin-bottom: 10px; background: #ffffff; }
+        /* ── Encabezado Corporativo Excel (Diseño Caja Tipo PDF) ── */
+        table.hdr-table { border-collapse: collapse; width: 100%; margin-bottom: 10px; background: #ffffff; }
         
         /* ── Tabla de Datos ── */
         table.data-table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; margin-top: 10px; }
-        table.data-table th { background-color: #10757e; color: #ffffff; font-weight: bold; font-size: 11px; text-transform: uppercase; border: 1.5px solid #0d5c63; padding: 8px; text-align: center; }
+        table.data-table th { background-color: #10757e; color: #ffffff; font-weight: bold; font-size: 12px; text-transform: uppercase; border: 1.5px solid #0d5c63; padding: 8px; text-align: center; }
         table.data-table td { border: 1px solid #cbd5e1; padding: 8px; font-size: 11px; vertical-align: middle; }
         
         .filter-table { border-collapse: collapse; margin-bottom: 12px; width: 50%; }
@@ -44,48 +44,53 @@ $totalRegistros = count($datosExcel ?? []);
 </head>
 <body>
 
-    <!-- ENCABEZADO CORPORATIVO EJECUTIVO EN EXCEL -->
-    <table class="excel-hdr">
-        <!-- 1. Barra superior teal -->
+    <!-- ENCABEZADO CORPORATIVO EN EXCEL (DISEÑO CAJA TIPO PDF EN COLUMNAS A a H) -->
+    <table class="hdr-table">
+        <!-- 1. Margen superior para que el encabezado no se pegue al marco de Excel -->
+        <tr height="10" style="height:10pt;">
+            <td colspan="8" style="border:none;"></td>
+        </tr>
+
+        <!-- 2. Barra superior teal con marco superior, izquierdo y derecho -->
         <tr height="6" style="background:#10757e; height:6pt;">
-            <td colspan="8" style="background:#10757e; height:6pt; padding:0; border:none;"></td>
+            <td colspan="8" style="background:#10757e; height:6pt; padding:0; border-top:1.5px solid #10757e; border-left:1.5px solid #10757e; border-right:1.5px solid #10757e; border-bottom:none;"></td>
         </tr>
 
-        <!-- 2. Fila de Logos y Empresa -->
-        <tr height="55" style="height:55pt; background:#ffffff;">
-            <td colspan="4" style="text-align:left; vertical-align:middle; padding:8px 12px; border:none;">
+        <!-- 3. Contenido Principal del Encabezado (Altura fija de 100pt) -->
+        <tr height="100" style="height:100pt; background:#ffffff;">
+            <!-- COL 1: Logo IMPOMIN + Datos Corporativos (colspan=3: A+B+C ~440px de ancho) -->
+            <td colspan="3" style="width:38%; text-align:left; vertical-align:top; padding:8px 12px; border-left:1.5px solid #10757e; border-right:1px solid #cbd5e1; border-top:none; border-bottom:none;">
                 <?php if (!empty($logoImpUrl)): ?>
-                    <img src="<?= $logoImpUrl ?>" width="135" height="30" style="display:inline-block; vertical-align:middle; margin-right:10px;"><br style="mso-data-placement:same-cell;">
+                    <img src="<?= $logoImpUrl ?>" width="130" height="30" style="display:block; margin-bottom:4px;"><br style="mso-data-placement:same-cell;">
                 <?php endif; ?>
-                <font face="Arial" size="2" color="#1f3864"><b>IMPOMIN S.A.S</b></font> &nbsp;&nbsp;|&nbsp;&nbsp; 
-                <font face="Arial" size="1" color="#10757e"><b>Nit. 900.535.843-3</b></font>
+                <font face="Arial" size="2" color="#1f3864"><b>IMPOMIN S.A.S</b></font><br style="mso-data-placement:same-cell;">
+                <font face="Arial" size="1" color="#10757e"><b>Nit. 900.535.843-3</b></font><br style="mso-data-placement:same-cell;">
+                <font face="Arial" size="1" color="#475569">Cra 10 No. 9-80 Barrio Cooperativa - Florencia</font><br style="mso-data-placement:same-cell;">
+                <font face="Arial" size="1" color="#475569">Calle 33A No 71 A 27 - Laureles - Medellín</font><br style="mso-data-placement:same-cell;">
+                <font face="Arial" size="1" color="#475569">impobiomedical@impomin.com</font>
             </td>
-            <td colspan="4" style="text-align:right; vertical-align:middle; padding:8px 12px; border:none;">
+
+            <!-- COL 2: Título, Subtítulo y Metadatos (colspan=3: D+E+F ~350px de ancho) -->
+            <td colspan="3" style="width:34%; text-align:center; vertical-align:middle; padding:8px 12px; border-right:1px solid #cbd5e1; border-top:none; border-bottom:none; border-left:none;">
+                <font face="Arial" size="4" color="#1f3864"><b>REPORTE DE ÓRDENES DE COMPRA</b></font><br style="mso-data-placement:same-cell;">
+                <font face="Arial" size="2" color="#10757e"><b>Sistema Impobiomedical</b></font><br style="mso-data-placement:same-cell;">
+                <font face="Arial" size="1" color="#64748b">Fecha: <?= $fechaSoloFecha ?> &nbsp;|&nbsp; Registros: <?= $totalRegistros ?></font>
+            </td>
+
+            <!-- COL 3: Logo IMPOBIOMEDICAL (colspan=2: Columnas G+H ~380px de ancho) -->
+            <td colspan="2" style="width:28%; text-align:center; vertical-align:middle; padding:8px 12px; border-right:1.5px solid #10757e; border-top:none; border-bottom:none; border-left:none;">
                 <?php if (!empty($logoPdfUrl)): ?>
-                    <img src="<?= $logoPdfUrl ?>" width="165" height="42" style="display:inline-block; vertical-align:middle;">
+                    <img src="<?= $logoPdfUrl ?>" width="150" height="38" style="display:block; margin:0 auto;">
                 <?php endif; ?>
             </td>
         </tr>
 
-        <!-- 3. Franja Principal del Título (Azul Institucional #1f3864) -->
-        <tr height="32" style="background:#1f3864; height:32pt;">
-            <td colspan="8" style="background:#1f3864; color:#ffffff; text-align:center; vertical-align:middle; font-size:14px; font-weight:bold; border:none;">
-                <font face="Arial" color="#ffffff" size="4"><b>REPORTE DE ÓRDENES DE COMPRA — SISTEMA IMPOBIOMEDICAL</b></font>
-            </td>
+        <!-- 4. Barra inferior teal con marco inferior, izquierdo y derecho -->
+        <tr height="5" style="background:#10757e; height:5pt;">
+            <td colspan="8" style="background:#10757e; height:5pt; padding:0; border-bottom:1.5px solid #10757e; border-left:1.5px solid #10757e; border-right:1.5px solid #10757e; border-top:none;"></td>
         </tr>
 
-        <!-- 4. Franja de Metadatos y Contacto Corporativo -->
-        <tr height="22" style="background:#eff6ff; height:22pt;">
-            <td colspan="8" style="background:#eff6ff; text-align:center; vertical-align:middle; border-bottom:2px solid #10757e; border-top:none; border-left:none; border-right:none;">
-                <font face="Arial" size="1" color="#1e40af">
-                    Fecha de Reporte: <b><?= $fechaSoloFecha ?></b> &nbsp;|&nbsp; 
-                    Total Registros: <b><?= $totalRegistros ?></b> &nbsp;|&nbsp; 
-                    Florencia - Medellín &nbsp;|&nbsp; impobiomedical@impomin.com
-                </font>
-            </td>
-        </tr>
-
-        <!-- 5. Espacio de separación antes de la tabla -->
+        <!-- 5. Espacio de separación antes de los filtros o tabla de datos -->
         <tr height="10" style="height:10pt;">
             <td colspan="8" style="border:none;"></td>
         </tr>

@@ -160,22 +160,6 @@ class ProductoController
         exit();
     }
 
-    public function exportarExcel(): void
-    {
-        verificar_autenticacion();
-        $busqueda = sanitizar_entrada($_GET['busqueda'] ?? '');
-        $categoriaSel = sanitizar_entrada($_GET['categoria'] ?? '');
-        
-        $productos = $this->model->listarParaExportar($busqueda, $categoriaSel);
-
-        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
-        header("Content-Disposition: attachment; filename=Catalogo_Productos_" . date('Ymd_His') . ".xls");
-        header("Pragma: no-cache");
-        header("Expires: 0");
-
-        require_once dirname(__DIR__, 2) . '/app/views/productos/excel.php';
-        exit();
-    }
 
     public function exportarPdf(): void
     {

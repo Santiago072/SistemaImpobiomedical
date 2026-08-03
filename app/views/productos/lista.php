@@ -25,9 +25,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                            . (!empty($categoriaSel) ? '&categoria=' . urlencode($categoriaSel) : '')
                            . (!empty($busqueda) ? '&busqueda=' . urlencode($busqueda) : '');
                 ?>
-                <a href="<?= $exportUrl ?>&action=exportarExcel" class="btn-mod-primary" style="background:#10b981; border:none; text-decoration:none;">
-                    <i class="bi bi-file-earmark-excel"></i> Excel
-                </a>
                 <a href="<?= $exportUrl ?>&action=exportarPdf" download="Catalogo_Productos.pdf" class="btn-mod-primary" style="background:#ef4444; border:none; text-decoration:none;">
                     <i class="bi bi-file-earmark-pdf"></i> PDF
                 </a>
