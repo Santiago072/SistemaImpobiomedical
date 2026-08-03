@@ -4,16 +4,33 @@
  * Variables: $productos, $busqueda, $categoriaSel
  */
 
+$logoDir = dirname(__DIR__, 3) . '/logo/';
 $baseUrl = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 if (strpos($baseUrl, 'http') !== 0) {
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
     $host     = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $baseUrl  = $protocol . $host . '/' . ltrim($baseUrl, '/');
 }
-$logoImpUrl = rtrim($baseUrl, '/') . '/logo/logoimp.png';
-$logoPdfUrl = rtrim($baseUrl, '/') . '/logo/logopdf.png';
+
+if (!function_exists('imgBase64OrUrl')) {
+    function imgBase64OrUrl(string $localPath, string $httpUrl): string {
+        if (file_exists($localPath)) {
+            $ext  = strtolower(pathinfo($localPath, PATHINFO_EXTENSION));
+            $mime = in_array($ext, ['jpg','jpeg']) ? 'jpeg' : ($ext === 'png' ? 'png' : $ext);
+            $d    = @file_get_contents($localPath);
+            if ($d) {
+                return 'data:image/' . $mime . ';base64,' . base64_encode($d);
+            }
+        }
+        return $httpUrl;
+    }
+}
+
+$imgLogoImp = imgBase64OrUrl($logoDir . 'logoimp.png', rtrim($baseUrl, '/') . '/logo/logoimp.png');
+$imgLogoPdf = imgBase64OrUrl($logoDir . 'logopdf.png', rtrim($baseUrl, '/') . '/logo/logopdf.png');
 
 $fechaSoloFecha = date('d/m/Y');
+$totalRegistros = count($productos ?? []);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -53,8 +70,8 @@ $fechaSoloFecha = date('d/m/Y');
         <tr>
             <!-- COL 1: Logo IMPOMIN + Datos -->
             <td colspan="2" style="width:34%; text-align:left; vertical-align:top; padding:8px 10px; border-right:1px solid #e2e8f0; border-top:none; border-bottom:none; border-left:none;">
-                <?php if (!empty($logoImpUrl)): ?>
-                    <img src="<?= $logoImpUrl ?>" width="120" height="28" style="display:block; margin-bottom:4px;"><br style="mso-data-placement:same-cell;">
+                <?php if (!empty($imgLogoImp)): ?>
+                    <img src="<?= $imgLogoImp ?>" width="120" height="28" style="display:block; margin-bottom:4px;"><br style="mso-data-placement:same-cell;">
                 <?php endif; ?>
                 <span style="font-size:11px; font-weight:bold; color:#1f3864;">IMPOMIN S.A.S</span><br style="mso-data-placement:same-cell;">
                 <span style="font-size:9.5px; font-weight:bold; color:#10757e;">Nit. 900.535.843-3</span><br style="mso-data-placement:same-cell;">
@@ -68,14 +85,14 @@ $fechaSoloFecha = date('d/m/Y');
                 <span style="font-size:14px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">CATÁLOGO DE PRODUCTOS</span><br style="mso-data-placement:same-cell;">
                 <span style="font-size:10px; font-weight:bold; color:#10757e;">Sistema Impobiomedical</span><br style="mso-data-placement:same-cell;"><br style="mso-data-placement:same-cell;">
                 <span style="display:inline-block; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:3px 10px; border-radius:10px; font-size:8.5px; font-weight:bold;">
-                    Fecha: <?= $fechaSoloFecha ?>
+                    Fecha: <?= $fechaSoloFecha ?> | Registros: <?= $totalRegistros ?>
                 </span>
             </td>
 
             <!-- COL 3: Logo IMPOBIOMEDICAL -->
             <td colspan="2" style="width:30%; text-align:center; vertical-align:middle; padding:8px 10px; border:none;">
-                <?php if (!empty($logoPdfUrl)): ?>
-                    <img src="<?= $logoPdfUrl ?>" width="140" height="35" style="display:block; margin:0 auto;">
+                <?php if (!empty($imgLogoPdf)): ?>
+                    <img src="<?= $imgLogoPdf ?>" width="140" height="35" style="display:block; margin:0 auto;">
                 <?php endif; ?>
             </td>
         </tr>
