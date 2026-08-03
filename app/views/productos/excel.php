@@ -25,7 +25,6 @@ $fechaSoloFecha = date('d/m/Y');
         
         /* ── Encabezado Corporativo Excel ── */
         .hdr-table { border: 2px solid #10757e; width: 100%; margin-bottom: 15px; border-collapse: collapse; background: #ffffff; }
-        .hdr-table td { padding: 4px 6px; border: none; vertical-align: middle; }
         
         table.data-table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; margin-top: 15px; }
         table.data-table th { background-color: #10757e; color: #ffffff; font-weight: bold; font-size: 12px; text-transform: uppercase; border: 1.5px solid #0d5c63; padding: 8px; text-align: center; }
@@ -42,56 +41,46 @@ $fechaSoloFecha = date('d/m/Y');
 </head>
 <body>
 
-    <!-- ENCABEZADO CORPORATIVO EN EXCEL (LOGOS Y TEXTOS EN COLUMNAS SEPARADAS) -->
+    <!-- ENCABEZADO CORPORATIVO EN EXCEL IDÉNTICO AL HEADER DEL PDF -->
     <table class="hdr-table">
-        <!-- Fila 1: Barra de acento superior teal -->
-        <tr height="6" style="background:#10757e; height:6px;">
-            <td colspan="6" style="background:#10757e; height:6px; padding:0; border:none;"></td>
+        <!-- Barra superior teal -->
+        <tr height="5" style="background:#10757e; height:5px;">
+            <td colspan="6" style="background:#10757e; height:5px; padding:0; border:none;"></td>
         </tr>
-        
-        <!-- Fila 2: Contenido del Encabezado -->
-        <tr height="65" style="height:65px;">
-            <!-- Col A: Logo IMPOMIN -->
-            <td style="width:12%; text-align:left; vertical-align:middle; padding:6px; border:none;">
-                <?php if (!empty($logoImpUrl)): ?>
-                    <img src="<?= $logoImpUrl ?>" height="34" style="height:34px;">
-                <?php endif; ?>
-            </td>
 
-            <!-- Col B: IMPOMIN Datos -->
-            <td style="width:23%; text-align:left; vertical-align:middle; padding:6px; border:none;">
+        <tr>
+            <!-- COL 1: Logo IMPOMIN + Datos -->
+            <td colspan="2" style="width:34%; text-align:left; vertical-align:top; padding:8px 10px; border-right:1px solid #e2e8f0; border-top:none; border-bottom:none; border-left:none;">
+                <?php if (!empty($logoImpUrl)): ?>
+                    <img src="<?= $logoImpUrl ?>" width="120" height="28" style="display:block; margin-bottom:4px;"><br>
+                <?php endif; ?>
                 <strong style="color:#1f3864; font-size:11px;">IMPOMIN S.A.S</strong><br>
-                <span style="color:#10757e; font-size:9.5px; font-weight:bold;">Nit. 900.535.843-3</span><br>
-                <span style="color:#475569; font-size:8px;">
-                    Cra 10 No. 9-80 Barrio Coop. - Florencia<br>
-                    Calle 33A No 71 A 27 - Medellín
+                <strong style="color:#10757e; font-size:9.5px;">Nit. 900.535.843-3</strong><br>
+                <span style="color:#475569; font-size:8px; line-height:1.2;">
+                    Cra 10 No. 9-80 Barrio Cooperativa - Florencia<br>
+                    Calle 33A No 71 A 27 - Laureles - Medellín<br>
+                    impobiomedical@impomin.com
                 </span>
             </td>
 
-            <!-- Col C-D: Título y Fecha -->
-            <td colspan="2" style="width:35%; text-align:center; vertical-align:middle; padding:6px; border:none;">
-                <span style="font-size:14px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">CATÁLOGO DE PRODUCTOS</span><br>
-                <span style="font-size:10px; font-weight:bold; color:#10757e;">Sistema Impobiomedical</span><br><br>
-                <span style="display:inline-block; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:2px 8px; border-radius:10px; font-size:8.5px; font-weight:bold;">
+            <!-- COL 2: Título y Fecha -->
+            <td colspan="2" style="width:36%; text-align:center; vertical-align:middle; padding:8px 10px; border-right:1px solid #e2e8f0; border-top:none; border-bottom:none; border-left:none;">
+                <strong style="font-size:14px; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">CATÁLOGO DE PRODUCTOS</strong><br>
+                <strong style="font-size:10px; color:#10757e;">Sistema Impobiomedical</strong><br><br>
+                <span style="display:inline-block; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:3px 10px; border-radius:10px; font-size:8.5px; font-weight:bold;">
                     Fecha: <?= $fechaSoloFecha ?>
                 </span>
             </td>
 
-            <!-- Col E: IMPOBIOMEDICAL Texto -->
-            <td style="width:18%; text-align:right; vertical-align:middle; padding:6px; border:none;">
-                <strong style="color:#10757e; font-size:11px;">IMPOBIOMEDICAL</strong><br>
-                <span style="color:#475569; font-size:8px;">impobiomedical@impomin.com</span>
-            </td>
-
-            <!-- Col F: Logo IMPOBIOMEDICAL -->
-            <td style="width:12%; text-align:right; vertical-align:middle; padding:6px; border:none;">
+            <!-- COL 3: Logo IMPOBIOMEDICAL -->
+            <td colspan="2" style="width:30%; text-align:center; vertical-align:middle; padding:8px 10px; border:none;">
                 <?php if (!empty($logoPdfUrl)): ?>
-                    <img src="<?= $logoPdfUrl ?>" height="42" style="height:42px;">
+                    <img src="<?= $logoPdfUrl ?>" width="140" height="35" style="display:block; margin:0 auto;">
                 <?php endif; ?>
             </td>
         </tr>
 
-        <!-- Fila 3: Barra de acento inferior teal -->
+        <!-- Barra inferior teal -->
         <tr height="4" style="background:#10757e; height:4px;">
             <td colspan="6" style="background:#10757e; height:4px; padding:0; border:none;"></td>
         </tr>
