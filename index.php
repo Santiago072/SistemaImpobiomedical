@@ -3,7 +3,7 @@
 // Detectar peticiones de PDF antes de abrir cualquier buffer
 $_modEarly  = $_GET['module'] ?? '';
 $_actEarly  = $_GET['action'] ?? '';
-if (($_modEarly === 'ordenes'      && $_actEarly === 'generar_pdf') ||
+if (($_modEarly === 'ordenes'      && ($_actEarly === 'generar_pdf' || $_actEarly === 'exportarPdf')) ||
     ($_modEarly === 'cotizaciones' && $_actEarly === 'generar_pdf') ||
     ($_modEarly === 'estadisticas' && $_actEarly === 'reporte_pdf') ||
     ($_modEarly === 'productos'    && $_actEarly === 'exportarPdf')) {
