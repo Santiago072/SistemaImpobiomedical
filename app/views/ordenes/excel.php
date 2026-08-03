@@ -25,7 +25,7 @@ $fechaSoloFecha = date('d/m/Y');
         
         /* ── Encabezado Corporativo Excel ── */
         .hdr-table { border: 2px solid #10757e; width: 100%; margin-bottom: 15px; border-collapse: collapse; background: #ffffff; }
-        .hdr-table td { padding: 6px 10px; border: none; vertical-align: middle; }
+        .hdr-table td { padding: 4px 8px; border: none; }
         
         table.data-table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; margin-top: 15px; }
         table.data-table th { background-color: #10757e; color: #ffffff; font-weight: bold; font-size: 12px; text-transform: uppercase; border: 1.5px solid #0d5c63; padding: 8px; text-align: center; }
@@ -40,33 +40,31 @@ $fechaSoloFecha = date('d/m/Y');
 </head>
 <body>
 
-    <!-- ENCABEZADO CORPORATIVO EN EXCEL CON ESTRUCTURA LIMPIA -->
+    <!-- ENCABEZADO CORPORATIVO EN EXCEL ESTILO REPORTES -->
     <table class="hdr-table">
-        <tr>
-            <td colspan="3" style="text-align:left; vertical-align:middle;">
-                <img src="<?= $logoImpUrl ?>" height="36">
-            </td>
-            <td colspan="3" style="text-align:center; vertical-align:middle;">
-                <span style="font-size:15px; font-weight:bold; color:#1f3864;">REPORTE DE ÓRDENES DE COMPRA</span>
-            </td>
-            <td colspan="2" style="text-align:right; vertical-align:middle;">
-                <img src="<?= $logoPdfUrl ?>" height="42">
-            </td>
+        <tr style="background:#10757e; height:6px;">
+            <td colspan="8" style="background:#10757e; height:6px; padding:0; border:none;"></td>
         </tr>
         <tr>
-            <td colspan="3" style="text-align:left; vertical-align:top;">
+            <td colspan="3" style="text-align:left; vertical-align:top; border:none; padding:8px 10px;">
+                <img src="<?= $logoImpUrl ?>" height="34" style="display:block; margin-bottom:4px;"><br>
                 <strong style="color:#1f3864; font-size:11px;">IMPOMIN S.A.S</strong><br>
                 <span style="color:#10757e; font-size:9.5px; font-weight:bold;">Nit. 900.535.843-3</span><br>
                 <span style="color:#64748b; font-size:8.5px;">Florencia - Caquetá / Medellín - Colombia</span>
             </td>
-            <td colspan="3" style="text-align:center; vertical-align:top;">
-                <span style="font-size:10.5px; font-weight:bold; color:#10757e;">Sistema Impobiomedical</span><br>
-                <span style="font-size:9.5px; color:#64748b; font-weight:bold;">Fecha: <?= $fechaSoloFecha ?></span>
+            <td colspan="3" style="text-align:center; vertical-align:middle; border:none; padding:8px 10px;">
+                <span style="font-size:15px; font-weight:bold; color:#1f3864;">REPORTE DE ÓRDENES DE COMPRA</span><br>
+                <span style="font-size:10px; font-weight:bold; color:#10757e;">Sistema Impobiomedical</span><br><br>
+                <span style="font-size:9px; color:#1d4ed8; font-weight:bold; background:#eff6ff; border:1px solid #bfdbfe; padding:2px 8px; border-radius:10px;">Fecha: <?= $fechaSoloFecha ?></span>
             </td>
-            <td colspan="2" style="text-align:right; vertical-align:top;">
+            <td colspan="2" style="text-align:right; vertical-align:top; border:none; padding:8px 10px;">
+                <img src="<?= $logoPdfUrl ?>" height="40" style="display:block; margin-left:auto;"><br>
                 <strong style="color:#10757e; font-size:11px;">IMPOBIOMEDICAL</strong><br>
                 <span style="color:#64748b; font-size:8.5px;">impobiomedical@impomin.com</span>
             </td>
+        </tr>
+        <tr style="background:#10757e; height:4px;">
+            <td colspan="8" style="background:#10757e; height:4px; padding:0; border:none;"></td>
         </tr>
     </table>
 

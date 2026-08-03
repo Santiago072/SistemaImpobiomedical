@@ -4,8 +4,10 @@
 $_modEarly  = $_GET['module'] ?? '';
 $_actEarly  = $_GET['action'] ?? '';
 if (($_modEarly === 'ordenes'      && $_actEarly === 'generar_pdf') ||
-    ($_modEarly === 'cotizaciones' && $_actEarly === 'generar_pdf')) {
-    // No hacer ob_start() — el PDF maneja su propio output
+    ($_modEarly === 'cotizaciones' && $_actEarly === 'generar_pdf') ||
+    ($_modEarly === 'estadisticas' && $_actEarly === 'reporte_pdf') ||
+    ($_modEarly === 'productos'    && $_actEarly === 'exportarPdf')) {
+    // No hacer ob_start() — los PDFs manejan su propio output binario
 } else {
     ob_start();
 }

@@ -185,6 +185,10 @@ class ProductoController
         
         $productos = $this->model->listarParaExportar($busqueda, $categoriaSel);
 
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         ob_start();
         require dirname(__DIR__, 2) . '/app/views/productos/pdf.php';
         $html = ob_get_clean();
@@ -197,11 +201,20 @@ class ProductoController
         $options->set('isRemoteEnabled', true);
         $dompdf->setOptions($options);
 
-        $dompdf->loadHtml($html);
+        $dompdf->loadHtml($html, 'UTF-8');
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $dompdf->stream("Catalogo_Productos_" . date('Ymd_His') . ".pdf", ["Attachment" => true]);
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="Catalogo_Productos_' . date('Ymd_His') . '.pdf"');
+        header('Cache-Control: private, max-age=0, must-revalidate');
+        header('Pragma: public');
+
+        echo $dompdf->output();
         exit();
     }
 }
