@@ -22,7 +22,6 @@ $logoDir    = dirname(__DIR__, 3) . '/logo/';
 $imgLogoPdf = imgBase64($logoDir . 'logopdf.png');
 $imgLogoImp = imgBase64($logoDir . 'logoimp.png');
 
-$fechaGenerado  = date('d/m/Y H:i');
 $totalRegistros = count($productos);
 ?>
 <!DOCTYPE html>
@@ -87,9 +86,9 @@ $totalRegistros = count($productos);
         /* Filas alternas */
         table.prod-table tbody tr:nth-child(even) { background-color: #f8fafc; }
 
-        /* Alineaciones solicitadas por el usuario:
+        /* Alineaciones:
            - Primeras 3 columnas (Código, Categoría, Nombre) -> Centradas
-           - Descripción -> Izquierda (no centrada)
+           - Descripción -> Izquierda
            - Últimas 2 columnas (IVA, Estado) -> Centradas
         */
         td.col-codigo { font-weight: bold; color: #0f766e; text-align: center; }
@@ -131,7 +130,7 @@ $totalRegistros = count($productos);
       <td style="width:36%; text-align:center; vertical-align:middle; padding:6px 8px; border-right:1px solid #e2e8f0;">
         <div style="font-size:13px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">Catálogo de Productos</div>
         <div style="font-size:9px; font-weight:bold; color:#10757e; margin-top:1px;">Sistema Impobiomedical</div>
-        <div style="font-size:7.5px; color:#64748b; margin-top:4px;">Generado el: <?= $fechaGenerado ?> | Registros: <?= $totalRegistros ?></div>
+        <div style="font-size:8px; color:#64748b; margin-top:4px;">Total de registros: <?= $totalRegistros ?></div>
       </td>
 
       <!-- COL 3: Logo IMPOBIOMEDICAL -->
@@ -191,7 +190,6 @@ $totalRegistros = count($productos);
 <table class="footer-table">
   <tr>
     <td>Documento generado automáticamente por el Sistema Impobiomedical</td>
-    <td style="text-align:right;">Fecha de generación: <?= $fechaGenerado ?></td>
   </tr>
 </table>
 

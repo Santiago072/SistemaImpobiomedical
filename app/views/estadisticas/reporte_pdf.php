@@ -367,9 +367,9 @@ table { width:100%; border-collapse:collapse; }
 <table class="footer-table">
   <tr>
     <td style="font-size:7.5px; color:#64748b;">Documento generado automáticamente por el Sistema Impobiomedical</td>
-    <td style="text-align:right; font-size:7.5px; color:#64748b;">Fecha y Hora de Generación: <?= $fechaGenerado ?></td>
   </tr>
 </table>
+
 
 </body>
 </html>

@@ -4,7 +4,14 @@
  * Variables: $productos, $busqueda, $categoriaSel
  */
 
-$fechaGenerado = date('d/m/Y H:i');
+$baseUrl = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
+if (strpos($baseUrl, 'http') !== 0) {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+    $host     = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $baseUrl  = $protocol . $host . '/' . ltrim($baseUrl, '/');
+}
+$logoImpUrl = rtrim($baseUrl, '/') . '/logo/logoimp.png';
+$logoPdfUrl = rtrim($baseUrl, '/') . '/logo/logopdf.png';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -33,21 +40,22 @@ $fechaGenerado = date('d/m/Y H:i');
 </head>
 <body>
 
-    <!-- ENCABEZADO CORPORATIVO LIMPIO EN EXCEL (Sin etiquetas <img> para evitar imagen rota en Excel) -->
+    <!-- ENCABEZADO CORPORATIVO EN EXCEL CON IMÁGENES HTTP ABSOLUTAS -->
     <table class="hdr-table">
         <tr>
             <td colspan="2" style="width:35%; text-align:left; vertical-align:top;">
-                <strong style="color:#1f3864; font-size:14px;">IMPOMIN S.A.S</strong><br>
-                <span style="color:#10757e; font-size:11px; font-weight:bold;">Nit. 900.535.843-3</span><br>
+                <img src="<?= $logoImpUrl ?>" height="38"><br>
+                <strong style="color:#1f3864; font-size:12px;">IMPOMIN S.A.S</strong><br>
+                <span style="color:#10757e; font-size:10px; font-weight:bold;">Nit. 900.535.843-3</span><br>
                 <span style="color:#64748b; font-size:9px;">Florencia - Caquetá / Medellín - Colombia</span>
             </td>
             <td colspan="2" style="width:35%; text-align:center; vertical-align:middle;">
                 <span style="font-size:16px; font-weight:bold; color:#1f3864;">CATÁLOGO DE PRODUCTOS</span><br>
-                <span style="font-size:11px; font-weight:bold; color:#10757e;">Sistema Impobiomedical</span><br>
-                <span style="font-size:10px; color:#64748b;">Generado el: <?= $fechaGenerado ?></span>
+                <span style="font-size:11px; font-weight:bold; color:#10757e;">Sistema Impobiomedical</span>
             </td>
             <td colspan="2" style="width:30%; text-align:right; vertical-align:top;">
-                <strong style="color:#10757e; font-size:14px;">IMPOBIOMEDICAL</strong><br>
+                <img src="<?= $logoPdfUrl ?>" height="45"><br>
+                <strong style="color:#10757e; font-size:12px;">IMPOBIOMEDICAL</strong><br>
                 <span style="color:#64748b; font-size:9px;">impobiomedical@impomin.com</span>
             </td>
         </tr>
