@@ -1,11 +1,15 @@
 <?php
 /**
- * Vista: Exportar Productos a PDF
- * Variables: $productos, $busqueda, $categoriaSel
+ * Vista: PDF de Catálogo de Productos — IMPOMIN S.A.S / Impobiomedical
+ * Generado con DomPDF.
  */
 
 // Limpiar cualquier buffer previo
 while (ob_get_level() > 0) { ob_end_clean(); }
+
+require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 if (!function_exists('imgBase64')) {
     function imgBase64(string $ruta): string {
@@ -23,88 +27,90 @@ $imgLogoPdf = imgBase64($logoDir . 'logopdf.png');
 $imgLogoImp = imgBase64($logoDir . 'logoimp.png');
 
 $fechaSoloFecha = date('d/m/Y');
-$totalRegistros = count($productos);
+$totalRegistros = count($productos ?? []);
+
+ob_start();
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Catálogo de Productos — Impobiomedical</title>
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: Arial, Helvetica, sans-serif; font-size: 9px; color: #1f2937; padding: 15px 18px; }
+<meta charset="UTF-8">
+<title>Catálogo de Productos — Impobiomedical</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 8.5px; color: #1f2937; padding: 15px 18px; }
 
-        /* ── Encabezado Corporativo ── */
-        .hdr-wrap {
-            border: 2px solid #10757e;
-            border-radius: 4px;
-            margin-bottom: 12px;
-            overflow: hidden;
-            background: #ffffff;
-        }
+/* ── Encabezado Corporativo ── */
+.hdr-wrap {
+    border: 1.5px solid #10757e;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    background: #ffffff;
+}
 
-        /* ── Filtros Badges ── */
-        .meta-bar {
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        .filter-badge {
-            display: inline-block;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            color: #1d4ed8;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 8.5px;
-            font-weight: bold;
-            margin: 0 4px;
-        }
+/* ── Filtros Badges ── */
+.meta-bar {
+    margin-bottom: 10px;
+    text-align: center;
+}
+.filter-badge {
+    display: inline-block;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 8.5px;
+    font-weight: bold;
+    margin: 0 4px;
+}
 
-        /* ── Tabla Principal con mayor grosor y bordes definidos ── */
-        table.prod-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 5px;
-            border: 2px solid #10757e;
-        }
-        table.prod-table th {
-            background-color: #10757e;
-            color: #ffffff;
-            font-weight: bold;
-            padding: 8px 6px;
-            text-align: center;
-            font-size: 9.5px;
-            text-transform: uppercase;
-            border: 1.5px solid #0d5c63;
-        }
-        table.prod-table td {
-            border: 1.5px solid #cbd5e1;
-            padding: 7px 6px;
-            vertical-align: middle;
-            font-size: 8.5px;
-        }
-        
-        /* Filas alternas */
-        table.prod-table tbody tr:nth-child(even) { background-color: #f8fafc; }
+/* ── Tabla Principal con mayor grosor y bordes definidos ── */
+table.prod-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 5px;
+    border: 2px solid #10757e;
+}
+table.prod-table th {
+    background-color: #10757e;
+    color: #ffffff;
+    font-weight: bold;
+    padding: 7px 6px;
+    text-align: center;
+    font-size: 9px;
+    text-transform: uppercase;
+    border: 1.5px solid #0d5c63;
+}
+table.prod-table td {
+    border: 1.5px solid #cbd5e1;
+    padding: 6px 6px;
+    vertical-align: middle;
+    font-size: 8px;
+}
 
-        /* Alineaciones:
-           - Primeras 3 columnas (Código, Categoría, Nombre) -> Centradas
-           - Descripción -> Izquierda
-           - Últimas 2 columnas (IVA, Estado) -> Centradas
-        */
-        td.col-codigo { font-weight: bold; color: #0f766e; text-align: center; }
-        td.col-categoria { color: #475569; font-style: italic; font-weight: bold; text-align: center; }
-        td.col-nombre { font-weight: bold; color: #1e293b; text-align: center; }
-        td.col-desc { text-align: left; font-size: 8px; color: #475569; line-height: 1.35; word-wrap: break-word; }
-        td.col-iva { text-align: center; }
-        td.col-estado { text-align: center; }
+/* Filas alternas */
+table.prod-table tbody tr:nth-child(even) { background-color: #f8fafc; }
 
-        .tag-activo { color: #166534; font-weight: bold; background-color: #dcfce7; border: 1px solid #86efac; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 8px; }
-        .tag-inactivo { color: #991b1b; font-weight: bold; background-color: #fee2e2; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 8px; }
+/* Alineaciones:
+   - Primeras 3 columnas (Código, Categoría, Nombre) -> Centradas
+   - Descripción -> Izquierda
+   - Últimas 2 columnas (IVA, Estado) -> Centradas
+*/
+td.col-codigo { font-weight: bold; color: #0f766e; text-align: center; }
+td.col-categoria { color: #475569; font-style: italic; font-weight: bold; text-align: center; }
+td.col-nombre { font-weight: bold; color: #1e293b; text-align: center; }
+td.col-desc { text-align: left; font-size: 8px; color: #475569; line-height: 1.35; word-wrap: break-word; }
+td.col-iva { text-align: center; }
+td.col-estado { text-align: center; }
 
-        .footer-table { margin-top: 14px; border-top: 1px solid #cbd5e1; padding-top: 5px; width:100%; }
-        .footer-table td { font-size: 7.5px; color: #64748b; border:none; text-align: left; }
-    </style>
+.tag-activo { color: #166534; font-weight: bold; background-color: #dcfce7; border: 1px solid #86efac; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 8px; }
+.tag-inactivo { color: #991b1b; font-weight: bold; background-color: #fee2e2; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 8px; }
+
+.footer-table { margin-top: 14px; border-top: 1px solid #cbd5e1; padding-top: 5px; width:100%; }
+.footer-table td { font-size: 7.5px; color: #64748b; border:none; text-align: left; }
+</style>
 </head>
 <body>
 
@@ -196,3 +202,21 @@ $totalRegistros = count($productos);
 
 </body>
 </html>
+<?php
+$html = ob_get_clean();
+
+$options = new Options();
+$options->set('isRemoteEnabled', false);
+$options->set('defaultFont', 'Arial');
+$options->set('isPhpEnabled', false);
+
+$dompdf = new Dompdf($options);
+$dompdf->loadHtml($html, 'UTF-8');
+$dompdf->setPaper('A4', 'portrait');
+$dompdf->render();
+
+while (ob_get_level()) ob_end_clean();
+
+$nombreArchivo = 'Catalogo_Productos_' . date('Ymd_Hi') . '.pdf';
+$dompdf->stream($nombreArchivo, ['Attachment' => true]);
+exit();

@@ -25,7 +25,7 @@ $fechaSoloFecha = date('d/m/Y');
         
         /* ── Encabezado Corporativo Excel ── */
         .hdr-table { border: 2px solid #10757e; width: 100%; margin-bottom: 15px; border-collapse: collapse; background: #ffffff; }
-        .hdr-table td { padding: 4px 8px; border: none; }
+        .hdr-table td { padding: 4px 8px; border: none; vertical-align: middle; }
         
         table.data-table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; margin-top: 15px; }
         table.data-table th { background-color: #10757e; color: #ffffff; font-weight: bold; font-size: 12px; text-transform: uppercase; border: 1.5px solid #0d5c63; padding: 8px; text-align: center; }
@@ -40,29 +40,50 @@ $fechaSoloFecha = date('d/m/Y');
 </head>
 <body>
 
-    <!-- ENCABEZADO CORPORATIVO EN EXCEL ESTILO REPORTES -->
+    <!-- ENCABEZADO CORPORATIVO EN EXCEL CON ESTRUCTURA LIMPIA Y SEPARADA EN FILAS -->
     <table class="hdr-table">
+        <!-- Fila 1: Barra de acento superior teal -->
         <tr style="background:#10757e; height:6px;">
             <td colspan="8" style="background:#10757e; height:6px; padding:0; border:none;"></td>
         </tr>
+        
+        <!-- Fila 2: Fila dedicada a los Logos -->
         <tr>
-            <td colspan="3" style="text-align:left; vertical-align:top; border:none; padding:8px 10px;">
-                <img src="<?= $logoImpUrl ?>" height="34" style="display:block; margin-bottom:4px;"><br>
+            <td colspan="3" style="text-align:left; vertical-align:middle; padding:6px 10px;">
+                <?php if (!empty($logoImpUrl)): ?>
+                    <img src="<?= $logoImpUrl ?>" height="36" style="height:36px;">
+                <?php endif; ?>
+            </td>
+            <td colspan="3" style="text-align:center; vertical-align:middle; padding:6px 10px;">
+                <span style="font-size:15px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">REPORTE DE ÓRDENES DE COMPRA</span>
+            </td>
+            <td colspan="2" style="text-align:right; vertical-align:middle; padding:6px 10px;">
+                <?php if (!empty($logoPdfUrl)): ?>
+                    <img src="<?= $logoPdfUrl ?>" height="42" style="height:42px;">
+                <?php endif; ?>
+            </td>
+        </tr>
+
+        <!-- Fila 3: Fila dedicada a la Información textual -->
+        <tr>
+            <td colspan="3" style="text-align:left; vertical-align:top; padding:0 10px 8px 10px;">
                 <strong style="color:#1f3864; font-size:11px;">IMPOMIN S.A.S</strong><br>
                 <span style="color:#10757e; font-size:9.5px; font-weight:bold;">Nit. 900.535.843-3</span><br>
                 <span style="color:#64748b; font-size:8.5px;">Florencia - Caquetá / Medellín - Colombia</span>
             </td>
-            <td colspan="3" style="text-align:center; vertical-align:middle; border:none; padding:8px 10px;">
-                <span style="font-size:15px; font-weight:bold; color:#1f3864;">REPORTE DE ÓRDENES DE COMPRA</span><br>
+            <td colspan="3" style="text-align:center; vertical-align:top; padding:0 10px 8px 10px;">
                 <span style="font-size:10px; font-weight:bold; color:#10757e;">Sistema Impobiomedical</span><br><br>
-                <span style="font-size:9px; color:#1d4ed8; font-weight:bold; background:#eff6ff; border:1px solid #bfdbfe; padding:2px 8px; border-radius:10px;">Fecha: <?= $fechaSoloFecha ?></span>
+                <span style="display:inline-block; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:2px 8px; border-radius:10px; font-size:8.5px; font-weight:bold;">
+                    Fecha: <?= $fechaSoloFecha ?>
+                </span>
             </td>
-            <td colspan="2" style="text-align:right; vertical-align:top; border:none; padding:8px 10px;">
-                <img src="<?= $logoPdfUrl ?>" height="40" style="display:block; margin-left:auto;"><br>
+            <td colspan="2" style="text-align:right; vertical-align:top; padding:0 10px 8px 10px;">
                 <strong style="color:#10757e; font-size:11px;">IMPOBIOMEDICAL</strong><br>
                 <span style="color:#64748b; font-size:8.5px;">impobiomedical@impomin.com</span>
             </td>
         </tr>
+
+        <!-- Fila 4: Barra de acento inferior teal -->
         <tr style="background:#10757e; height:4px;">
             <td colspan="8" style="background:#10757e; height:4px; padding:0; border:none;"></td>
         </tr>
