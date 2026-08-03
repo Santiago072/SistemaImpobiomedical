@@ -214,7 +214,7 @@ $dompdf->render();
 
 while (ob_get_level()) ob_end_clean();
 
-$nombreArchivo = 'Reporte_Ordenes_Compra_' . date('Ymd_His') . '.pdf';
+$nombreArchivo = 'Reporte_Ordenes_Compra.pdf';
 $dompdf->stream($nombreArchivo, ['Attachment' => true]);
 exit();
 
