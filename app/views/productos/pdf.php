@@ -22,6 +22,7 @@ $logoDir    = dirname(__DIR__, 3) . '/logo/';
 $imgLogoPdf = imgBase64($logoDir . 'logopdf.png');
 $imgLogoImp = imgBase64($logoDir . 'logoimp.png');
 
+$fechaSoloFecha = date('d/m/Y');
 $totalRegistros = count($productos);
 ?>
 <!DOCTYPE html>
@@ -130,7 +131,7 @@ $totalRegistros = count($productos);
       <td style="width:36%; text-align:center; vertical-align:middle; padding:6px 8px; border-right:1px solid #e2e8f0;">
         <div style="font-size:13px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">Catálogo de Productos</div>
         <div style="font-size:9px; font-weight:bold; color:#10757e; margin-top:1px;">Sistema Impobiomedical</div>
-        <div style="font-size:8px; color:#64748b; margin-top:4px;">Total de registros: <?= $totalRegistros ?></div>
+        <div style="font-size:8px; color:#64748b; margin-top:4px;">Fecha: <?= $fechaSoloFecha ?> | Registros: <?= $totalRegistros ?></div>
       </td>
 
       <!-- COL 3: Logo IMPOBIOMEDICAL -->
@@ -189,7 +190,7 @@ $totalRegistros = count($productos);
 
 <table class="footer-table">
   <tr>
-    <td>Documento generado automáticamente por el Sistema Impobiomedical</td>
+    <td>Documento generado automáticamente por el Sistema Impobiomedical | Fecha: <?= $fechaSoloFecha ?></td>
   </tr>
 </table>
 

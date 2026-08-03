@@ -185,10 +185,6 @@ class ProductoController
         
         $productos = $this->model->listarParaExportar($busqueda, $categoriaSel);
 
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
-
         ob_start();
         require dirname(__DIR__, 2) . '/app/views/productos/pdf.php';
         $html = ob_get_clean();
@@ -204,10 +200,6 @@ class ProductoController
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
 
         $dompdf->stream("Catalogo_Productos_" . date('Ymd_His') . ".pdf", ["Attachment" => true]);
         exit();
