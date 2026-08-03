@@ -165,14 +165,14 @@ table.ord-table tbody tr:nth-child(even) { background-color: #f8fafc; }
 <table class="ord-table">
     <thead>
         <tr>
-            <th style="width:20%;">Proveedor</th>
-            <th style="width:8%;">N° Orden</th>
-            <th style="width:12%;">Banco</th>
-            <th style="width:15%;">N° Cuenta</th>
-            <th style="width:10%;">Tipo Cuenta</th>
+            <th style="width:20%;">Nombre del Proveedor</th>
+            <th style="width:9%;">Número de Orden</th>
+            <th style="width:12%;">Nombre de Banco</th>
+            <th style="width:14%;">Número de Cuenta</th>
+            <th style="width:10%;">Tipo de Cuenta</th>
             <th style="width:12%;">NIT / Identificación</th>
-            <th style="width:11%;">Valor a Pagar</th>
-            <th style="width:12%;">Cliente</th>
+            <th style="width:11%;">Valor a Pagar ($)</th>
+            <th style="width:12%;">Cliente a Entregar</th>
         </tr>
     </thead>
     <tbody>

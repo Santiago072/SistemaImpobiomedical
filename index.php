@@ -326,7 +326,8 @@ if ($module === 'ordenes') {
             include __DIR__ . '/app/views/ordenes/consultar.php';
             break;
         case 'exportarExcel':
-            $ctrl->exportarExcel();
+        case 'exportarPdf':
+            $ctrl->exportarPdf();
             break;
         case 'generar_pdf':
             include __DIR__ . '/app/views/ordenes/generar_pdf.php';
