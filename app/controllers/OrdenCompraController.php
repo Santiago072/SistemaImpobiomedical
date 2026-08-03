@@ -202,9 +202,9 @@ class OrdenCompraController
                        'busquedaProveedor', 'busquedaCotizacion', 'busquedaFechaInicio', 'busquedaFechaFin');
     }
 
-    // ── EXPORTAR A EXCEL ──────────────────────────────────────────────────────
+    // ── EXPORTAR REPORTE PDF DE ÓRDENES DE COMPRA ───────────────────────────
 
-    public function exportarExcel(): void
+    public function exportarPdf(): void
     {
         verificar_autenticacion();
         $usuarioId = (int)$_SESSION['usuario_id'];
@@ -213,8 +213,7 @@ class OrdenCompraController
 
         $ordenes = $this->model->listarParaExcel($filtros, $usuarioId, $rol);
 
-        // Preparamos los datos sumando los ítems
-        $datosExcel = [];
+        $datosPdf = [];
         foreach ($ordenes as $ord) {
             $items = $this->model->obtenerItems((int)$ord['id']);
             $subtotal = 0;
@@ -231,7 +230,7 @@ class OrdenCompraController
             $retencion = $subtotal * ((float)$ord['retencion'] / 100);
             $valorPagar = $subtotal + $totalIva - $retencion;
 
-            $datosExcel[] = [
+            $datosPdf[] = [
                 'proveedor' => $ord['proveedor'],
                 'numero_po' => $ord['numero_po'],
                 'banco_nombre' => $ord['banco_nombre'] ?? '',
@@ -243,14 +242,15 @@ class OrdenCompraController
             ];
         }
 
-        header("Content-Type: application/vnd.ms-excel; charset=utf-8");
-        header("Content-Disposition: attachment; filename=Reporte_Ordenes_" . date('Ymd_His') . ".xls");
-        header("Pragma: no-cache");
-        header("Expires: 0");
-
-        require_once dirname(__DIR__, 2) . '/app/views/ordenes/excel.php';
+        require_once dirname(__DIR__, 2) . '/app/views/ordenes/reporte_pdf.php';
         exit();
     }
+
+    public function exportarExcel(): void
+    {
+        $this->exportarPdf();
+    }
+
 
     // ── GENERAR PDF ───────────────────────────────────────────────────────────
 

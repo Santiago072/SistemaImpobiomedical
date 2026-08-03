@@ -47,8 +47,8 @@ $rol = $_SESSION['rol'] ?? 'usuario';
                 <button type="submit" class="imo-btn-save" style="padding:10px 15px; border-radius:9px;">
                     <i class="bi bi-search"></i> Buscar
                 </button>
-                <a href="<?= $basePath ?>?module=ordenes&action=exportarExcel" class="imo-btn-save" style="padding:10px 15px; border-radius:9px; background:#10b981; text-decoration:none;">
-                    <i class="bi bi-file-earmark-excel"></i> Excel
+                <a href="<?= $basePath ?>?module=ordenes&action=exportarPdf" download="Reporte_Ordenes_Compra.pdf" class="imo-btn-save" style="padding:10px 15px; border-radius:9px; background:#ef4444; text-decoration:none;">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF
                 </a>
                 <?php if ($busquedaProveedor || $busquedaCotizacion || !empty($busquedaFechaInicio) || !empty($busquedaFechaFin)): ?>
                 <a href="<?= $basePath ?>?module=ordenes&action=consultar&limpiar=1" class="mod-btn-clear" title="Limpiar">
