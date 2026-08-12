@@ -135,6 +135,7 @@ $rutasMap = [
     'productos'    => true,
     'cotizaciones' => true,
     'ordenes'      => true,
+    'admin'        => true,
 ];
 
 if (!array_key_exists($module, $rutasMap)) {
@@ -143,6 +144,20 @@ if (!array_key_exists($module, $rutasMap)) {
 }
 
 $db = conexion();
+
+// Mapeo de alias de administración
+if ($module === 'admin') {
+    if ($action === 'clientes') {
+        $module = 'clientes';
+        $action = 'lista';
+    } elseif ($action === 'productos') {
+        $module = 'productos';
+        $action = 'lista';
+    } else {
+        $module = 'usuarios';
+        $action = 'lista';
+    }
+}
 
 // Prevenir caché para que el botón "Atrás" del navegador no muestre páginas protegidas (bfcache)
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -327,6 +342,14 @@ if ($module === 'cotizaciones') {
             break;
         case 'modificar':
             $ctrl->modificar();
+            break;
+        case 'estadisticas':
+            require_once __DIR__ . '/app/controllers/EstadisticaController.php';
+            require_once __DIR__ . '/app/models/EstadisticaModel.php';
+            $ctrlEst = new EstadisticaController($db);
+            $data = $ctrlEst->index();
+            extract($data);
+            include __DIR__ . '/app/views/estadisticas/index.php';
             break;
         default:
             $data = $ctrl->crear();

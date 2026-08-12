@@ -57,16 +57,16 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     const menus = {
         admin: `
             <h3>Administración</h3>
-            <li><a href="<?= $basePath ?>?module=estadisticas"><i class="fas fa-chart-bar"></i> Estadísticas</a></li>
             <li><a href="<?= $basePath ?>?module=usuarios"><i class="fas fa-users"></i> Gestión de Usuarios</a></li>
             <li><a href="<?= $basePath ?>?module=productos"><i class="fas fa-box-open"></i> Gestión de Productos</a></li>
+            <li><a href="<?= $basePath ?>?module=clientes"><i class="fas fa-building"></i> Gestión de Clientes</a></li>
         `,
         cotizaciones: `
             <h3>Cotizaciones</h3>
             <li><a href="<?= $basePath ?>?module=cotizaciones&action=crear&nueva=1"><i class="fas fa-plus-circle"></i> Nueva Cotización</a></li>
             <li><a href="<?= $basePath ?>?module=cotizaciones&action=consultar"><i class="fas fa-search"></i> Consultar</a></li>
             <li><a href="<?= $basePath ?>?module=ordenes&action=consultar"><i class="fas fa-cart-arrow-down"></i> Órdenes de Compra</a></li>
-            <li><a href="<?= $basePath ?>?module=clientes"><i class="fas fa-building"></i> Gestión de Clientes</a></li>
+            <li><a href="<?= $basePath ?>?module=estadisticas"><i class="fas fa-chart-bar"></i> Estadísticas y Reportes</a></li>
         `
     };
 
