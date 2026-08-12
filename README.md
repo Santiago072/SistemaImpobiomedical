@@ -7,23 +7,25 @@
 [![Licencia](https://img.shields.io/badge/Licencia-Comercial%20Propietaria-e03c3c?style=flat-square)](LICENSE)
 [![Versión](https://img.shields.io/badge/Versión-v2.0.0-10757e?style=flat-square)](CHANGELOG.md)
 
-Sistema web MVC de gestión comercial y médica para **Impobiomedical — Soluciones y Servicios de Tecnología Biomédica**. Administra el ciclo completo de cotizaciones dinámicas con calculadora de ganancias, catálogo de productos médicos, directorio de entidades/clientes, órdenes de compra por proveedor (P.O.), reportes estadísticos y control de acceso por roles.
+Bienvenido al **Sistema Impobiomedical**. Es una solución web integral de gestión comercial y médica desarrollada para **Impobiomedical — Soluciones y Servicios de Tecnología Biomédica**. Administra el ciclo comercial completo: creación de cotizaciones dinámicas con calculadora de márgenes de ganancia, generación de PDFs oficiales para clientes, hojas internas de respaldo de proveedores, órdenes de compra por proveedor (P.O.), catálogo de productos con fotos sanitizadas y reportes estadísticos avanzados.
 
 ---
 
-## 📚 Documentación Técnica y Manuales
-
-Toda la documentación especializada y diagramas se encuentran centralizados en el directorio [`docs/`](docs/):
-
-* 🏗️ **[Arquitectura y Componentes](docs/ARQUITECTURA_Y_COMPONENTES.md):** Diagramas C4/Mermaid, capas de persistencia PDO, matriz SOLID y flujos de datos.
-* 🤝 **[Guía para Desarrolladores y Colaboradores](docs/CONTRIBUTING.md):** Estándares PSR-12, convenciones de commit, tipado y ejecución de pruebas.
-* 🚀 **[Guía de Despliegue y Mantenimiento](docs/DESPLIEGUE_Y_MANTENIMIENTO.md):** Despliegue en VPS (Ubuntu/Nginx/Apache), Docker, políticas de backup y certificados SSL.
-* 📋 **[Especificación de Requisitos](docs/ESPECIFICACION_REQUISITOS.md):** Requisitos funcionales (RF) y no funcionales (RNF) módulo por módulo.
-* 📖 **[Manual de Usuario](docs/MANUAL_DE_USUARIO.md):** Guía operativa detallada para administradores y asesores comerciales.
+| Documento | Descripción |
+|-----------|-------------|
+| 👤 [Manual de Usuario](MANUAL_USUARIO.md) | Guía de uso de la aplicación para usuarios finales y asesores comerciales |
+| 📜 [Registro de Cambios](CHANGELOG.md) | Historial de versiones y modificaciones del sistema (v2.0.0) |
+| 📋 [Plan de Implementación](docs/PLAN_DE_IMPLEMENTACION.md) | Fases del proyecto, stack tecnológico y arquitectura empresarial |
+| 📖 [Documentación Técnica](docs/documentacion-tecnica.md) | Arquitectura de carpetas, endpoints, persistencia PDO y seguridad |
+| 📋 [Especificación de Requisitos](docs/ESPECIFICACION_REQUISITOS.md) | Requisitos funcionales (RF), RNF, calculadora comercial y modelo de datos |
+| 🚀 [Manual de Despliegue VPS](docs/DESPLIEGUE_VPS.md) | Guía paso a paso para instalar y actualizar en el VPS con Docker y Nginx |
+| 🏗️ [Arquitectura y Componentes](docs/ARQUITECTURA_Y_COMPONENTES.md) | Diagramas Mermaid: componentes MVC, flujo comercial y capas de seguridad |
+| 🤝 [Guía para Colaboradores](docs/CONTRIBUTING.md) | Configuración local, uso de PHPUnit, convenciones de commits y checklist de PR |
+| ⚖️ [Licencia Comercial](LICENSE) | Términos legales de propiedad intelectual, uso comercial y mantenimiento |
 
 ---
 
-## 🛠 Stack Tecnológico
+## 🛠️ Tecnologías Utilizadas
 
 * **Backend:** PHP 8.1+ / 8.2 (Arquitectura MVC sin framework pesado).
 * **Persistencia:** `PDO` (PHP Data Objects) con sentencias preparadas y parámetros nombrados.
@@ -36,7 +38,7 @@ Toda la documentación especializada y diagramas se encuentran centralizados en 
 
 ---
 
-## 🏛 Arquitectura del Sistema
+## 🏛️ Arquitectura del Sistema
 
 ```
 index.php (Front Controller & Router con Security Headers)
@@ -102,4 +104,4 @@ composer test
 
 ## 📄 Licencia
 
-Este software se distribuye bajo una **Licencia Comercial Propietaria**. Todos los derechos reservados © 2026 Santiago Lizcano. Consulta el archivo [LICENSE](LICENSE) para conocer los términos y restricciones legales.
+Este software se distribuye bajo una **Licencia Comercial Propietaria**. Todos los derechos reservados © 2026 Santiago Lizcano. Consulta el archivo [LICENSE](LICENSE) para conocer los términos de uso, explotación comercial y facultades de mantenimiento interno.
