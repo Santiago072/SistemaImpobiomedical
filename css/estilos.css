@@ -2,7 +2,7 @@
  * estilos.css — Hoja de Estilos Principal (Modularizada)
  * Sistema Impobiomedical — Arquitectura de Diseño Modular
  *
- * Estructura dividida en 8 submódulos independientes en css/modules/
+ * Estructura dividida en 7 submódulos independientes en css/modules/
  * para facilitar el mantenimiento, la legibilidad y la escalabilidad del sistema.
  */
 
@@ -24,8 +24,5 @@
 /* ── 6. Autenticación y Pantalla de Inicio de Sesión ──────── */
 @import url('modules/auth.css');
 
-/* ── 7. Tema Claro / Modo Día ─────────────────────────────── */
-@import url('modules/theme-day.css');
-
-/* ── 8. Diseño Adaptativo (Responsive Design) ─────────────── */
+/* ── 7. Diseño Adaptativo (Responsive Design) ─────────────── */
 @import url('modules/responsive.css');
