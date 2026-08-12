@@ -1,4 +1,4 @@
-﻿# Entorno
+# Entorno
 config/.env
 .env
 
@@ -22,3 +22,7 @@ Thumbs.db
 
 # Sesiones
 sessions/
+
+# PHPUnit
+.phpunit.cache/
+.phpunit.result.cache

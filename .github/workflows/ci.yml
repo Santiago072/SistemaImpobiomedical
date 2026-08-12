@@ -1,0 +1,60 @@
+name: CI — Sistema Impobiomedical
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  tests:
+    name: PHPUnit Tests & Quality Check (PHP ${{ matrix.php-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: [ "8.2" ]
+
+    steps:
+      # ── 1. Clonar el repositorio ────────────────────────────────────────────
+      - name: 📥 Checkout del código
+        uses: actions/checkout@v4
+
+      # ── 2. Configurar PHP con extensiones requeridas ────────────────────────
+      - name: 🐘 Configurar PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, pdo, pdo_mysql, openssl, fileinfo
+          coverage: none
+
+      # ── 3. Caché de dependencias Composer ──────────────────────────────────
+      - name: 🗄️ Caché de Composer
+        id: composer-cache
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      # ── 4. Instalar dependencias ────────────────────────────────────────────
+      - name: 📦 Instalar dependencias (composer install)
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      # ── 5. Validación de sintaxis PHP en controladores, modelos y servicios ──
+      - name: 🔍 Chequeo de sintaxis PHP (Linting)
+        run: |
+          find app/ config/ index.php -name "*.php" -exec php -l {} +
+
+      # ── 6. Verificar binario de PHPUnit ─────────────────────────────────────
+      - name: ✅ Verificar versión de PHPUnit
+        run: vendor/bin/phpunit --version
+
+      # ── 7. Ejecutar suite de pruebas unitarias ──────────────────────────────
+      - name: 🧪 Ejecutar pruebas unitarias
+        run: vendor/bin/phpunit --testdox
+        env:
+          APP_ENV: testing
+          SESSION_LIFETIME: 3600
