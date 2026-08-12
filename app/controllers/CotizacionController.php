@@ -18,7 +18,7 @@ class CotizacionController
     private FinalizarCotizacionService $finalizarService;
     private int $porPagina = 10;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->model            = new CotizacionModel($conexion);
         $this->productoModel    = new ProductoModel($conexion);
@@ -497,3 +497,4 @@ class CotizacionController
         exit();
     }
 }
+

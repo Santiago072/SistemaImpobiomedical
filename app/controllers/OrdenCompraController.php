@@ -17,7 +17,7 @@ class OrdenCompraController
     private CotizacionModel  $cotizacionModel;
     private int $porPagina = 10;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->model           = new OrdenCompraModel($conexion);
         $this->cotizacionModel = new CotizacionModel($conexion);
@@ -292,3 +292,4 @@ class OrdenCompraController
         exit();
     }
 }
+

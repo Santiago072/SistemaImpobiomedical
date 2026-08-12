@@ -14,7 +14,7 @@ class UsuarioController
     private UsuarioModel $model;
     private int $porPagina = 10;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->model = new UsuarioModel($conexion);
     }
@@ -287,3 +287,4 @@ class UsuarioController
         return '';
     }
 }
+

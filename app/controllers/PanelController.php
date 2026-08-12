@@ -9,7 +9,7 @@ class PanelController
 {
     private CotizacionModel $model;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->model = new CotizacionModel($conexion);
     }
@@ -34,3 +34,4 @@ class PanelController
         return compact('totalCotizaciones', 'cotizacionesMes', 'totalClientes', 'totalProductos');
     }
 }
+

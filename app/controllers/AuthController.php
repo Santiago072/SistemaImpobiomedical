@@ -10,7 +10,7 @@ class AuthController
 {
     private UsuarioModel $model;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->model = new UsuarioModel($conexion);
     }
@@ -74,3 +74,4 @@ class AuthController
         exit();
     }
 }
+

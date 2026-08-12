@@ -11,7 +11,7 @@ class ProductoController
     private FileUploadService $uploader;
     private int $porPagina = 12;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->model    = new ProductoModel($conexion);
         $this->uploader = new FileUploadService(dirname(__DIR__, 2) . '/uploads');
@@ -173,3 +173,4 @@ class ProductoController
         exit();
     }
 }
+

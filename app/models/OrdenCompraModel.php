@@ -1,6 +1,6 @@
 <?php
 /**
- * OrdenCompraModel — acceso a datos de órdenes de compra.
+ * OrdenCompraModel — acceso a datos de órdenes de compra (migrado a PDO).
  *
  * Flujo:
  *   1. Se crea una orden ligada a una cotización + proveedor.
@@ -9,9 +9,9 @@
  */
 class OrdenCompraModel
 {
-    private \mysqli $db;
+    private \PDO $db;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->db = $conexion;
     }
@@ -20,10 +20,9 @@ class OrdenCompraModel
 
     private function siguientePO(): int
     {
-        $result = mysqli_query($this->db,
-            "SELECT COALESCE(MAX(numero_po), 0) + 1 AS siguiente FROM ordenes_compra");
-        $row = mysqli_fetch_assoc($result);
-        return (int)($row['siguiente'] ?? 1);
+        $stmt = $this->db->prepare("SELECT COALESCE(MAX(numero_po), 0) + 1 AS siguiente FROM ordenes_compra");
+        $stmt->execute();
+        return (int)$stmt->fetchColumn();
     }
 
     // ── CRUD Orden ────────────────────────────────────────────────────────────
@@ -45,30 +44,42 @@ class OrdenCompraModel
         string $bancoCuenta = '',
         string $bancoTipoCuenta = ''
     ): int {
-        mysqli_begin_transaction($this->db);
+        $this->db->beginTransaction();
         try {
             $po   = $this->siguientePO();
-            $stmt = mysqli_prepare($this->db,
+            $stmt = $this->db->prepare(
                 "INSERT INTO ordenes_compra
                  (numero_po, cotizacion_id, cotizacion_numero, usuario_id,
                   proveedor, proveedor_nit, tipo_contribuyente,
                   condiciones_pago, iva, departamento_compras, nota, retencion, fecha,
                   banco_nombre, banco_cuenta, banco_tipo_cuenta)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-            // i i s i s s s s s s s d s s s s (16 parámetros)
-            mysqli_stmt_bind_param($stmt, 'iisisssssssdssss',
-                $po, $cotizacionId, $cotizacionNumero, $usuarioId,
-                $proveedor, $proveedorNit, $tipoContribuyente,
-                $condicionesPago, $iva, $departamentoCompras,
-                $nota, $retencion, $fecha,
-                $bancoNombre, $bancoCuenta, $bancoTipoCuenta);
-            mysqli_stmt_execute($stmt);
-            $id = (int)mysqli_stmt_insert_id($stmt);
-            mysqli_stmt_close($stmt);
-            mysqli_commit($this->db);
+                 VALUES (:po, :cid, :cnum, :uid, :prov, :pnit, :tcont,
+                         :condpago, :iva, :depto, :nota, :ret, :fecha,
+                         :bnom, :bcuenta, :btipo)"
+            );
+            $stmt->execute([
+                ':po'      => $po,
+                ':cid'     => $cotizacionId,
+                ':cnum'    => $cotizacionNumero,
+                ':uid'     => $usuarioId,
+                ':prov'    => $proveedor,
+                ':pnit'    => $proveedorNit,
+                ':tcont'   => $tipoContribuyente,
+                ':condpago'=> $condicionesPago,
+                ':iva'     => $iva,
+                ':depto'   => $departamentoCompras,
+                ':nota'    => $nota,
+                ':ret'     => $retencion,
+                ':fecha'   => $fecha,
+                ':bnom'    => $bancoNombre,
+                ':bcuenta' => $bancoCuenta,
+                ':btipo'   => $bancoTipoCuenta,
+            ]);
+            $id = (int)$this->db->lastInsertId();
+            $this->db->commit();
             return $id;
         } catch (\Exception $e) {
-            mysqli_rollback($this->db);
+            $this->db->rollBack();
             throw $e;
         }
     }
@@ -85,97 +96,86 @@ class OrdenCompraModel
         float  $porcentajeIva
     ): bool {
         $total = $precioUnit * $cantidad;
-        $stmt  = mysqli_prepare($this->db,
+        $stmt  = $this->db->prepare(
             "INSERT INTO orden_compra_items
              (orden_id, cotizacion_item_id, codigo_proveedor, titulo, descripcion,
               cantidad, precio_unit, iva, porcentaje_iva, total)
-             VALUES (?,?,?,?,?,?,?,?,?,?)");
-        // i i s s s i d s d d  (10 parámetros)
-        mysqli_stmt_bind_param($stmt, 'iisssidsdd',
-            $ordenId, $cotizacionItemId, $codigoProveedor, $titulo, $descripcion,
-            $cantidad, $precioUnit, $iva, $porcentajeIva, $total);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
+             VALUES (:oid, :ciid, :cprov, :tit, :desc, :cant, :prec, :iva, :porciva, :total)"
+        );
+        return $stmt->execute([
+            ':oid'    => $ordenId,
+            ':ciid'   => $cotizacionItemId,
+            ':cprov'  => $codigoProveedor,
+            ':tit'    => $titulo,
+            ':desc'   => $descripcion,
+            ':cant'   => $cantidad,
+            ':prec'   => $precioUnit,
+            ':iva'    => $iva,
+            ':porciva'=> $porcentajeIva,
+            ':total'  => $total,
+        ]);
     }
 
     // ── Consultas ─────────────────────────────────────────────────────────────
 
     public function buscarPorId(int $id): ?array
     {
-        $stmt = mysqli_prepare($this->db,
+        $stmt = $this->db->prepare(
             "SELECT o.*, u.nombre AS nombre_usuario
              FROM ordenes_compra o
              LEFT JOIN usuarios u ON o.usuario_id = u.id
-             WHERE o.id = ?");
-        mysqli_stmt_bind_param($stmt, 'i', $id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+             WHERE o.id = :id"
+        );
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch();
         return $row ?: null;
     }
 
     public function buscarPorPO(int $po): ?array
     {
-        $stmt = mysqli_prepare($this->db,
+        $stmt = $this->db->prepare(
             "SELECT o.*, u.nombre AS nombre_usuario
              FROM ordenes_compra o
              LEFT JOIN usuarios u ON o.usuario_id = u.id
-             WHERE o.numero_po = ?");
-        mysqli_stmt_bind_param($stmt, 'i', $po);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+             WHERE o.numero_po = :po"
+        );
+        $stmt->execute([':po' => $po]);
+        $row = $stmt->fetch();
         return $row ?: null;
     }
 
     public function obtenerItems(int $ordenId): array
     {
-        $stmt = mysqli_prepare($this->db,
-            "SELECT * FROM orden_compra_items WHERE orden_id = ? ORDER BY id ASC");
-        mysqli_stmt_bind_param($stmt, 'i', $ordenId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $rows   = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row;
-        }
-        mysqli_stmt_close($stmt);
-        return $rows;
+        $stmt = $this->db->prepare(
+            "SELECT * FROM orden_compra_items WHERE orden_id = :oid ORDER BY id ASC"
+        );
+        $stmt->execute([':oid' => $ordenId]);
+        return $stmt->fetchAll();
     }
 
     public function listarConFiltros(array $filtros, int $offset, int $limite, int $usuarioId, string $rol): array
     {
-        [$where, $params, $types] = $this->construirWhere($filtros, $usuarioId, $rol);
+        [$where, $params] = $this->construirWhere($filtros, $usuarioId, $rol);
         $sql = "SELECT o.*, u.nombre AS nombre_usuario, c.cliente_nombre
                 FROM ordenes_compra o
                 LEFT JOIN usuarios u ON o.usuario_id = u.id
                 LEFT JOIN cotizaciones c ON o.cotizacion_id = c.id"
              . ($where ? " WHERE $where" : '')
-             . " ORDER BY o.numero_po DESC LIMIT ? OFFSET ?";
-        $types   .= 'ii';
-        $params[] = $limite;
-        $params[] = $offset;
+             . " ORDER BY o.numero_po DESC LIMIT :limit OFFSET :offset";
 
-        $stmt = mysqli_prepare($this->db, $sql);
-        if ($params) {
-            mysqli_stmt_bind_param($stmt, $types, ...$params);
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
         }
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $rows   = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row;
-        }
-        mysqli_stmt_close($stmt);
-        return $rows;
+        $stmt->bindValue(':limit',  $limite, \PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
     public function listarParaExcel(array $filtros, int $usuarioId, string $rol): array
     {
-        [$where, $params, $types] = $this->construirWhere($filtros, $usuarioId, $rol);
+        [$where, $params] = $this->construirWhere($filtros, $usuarioId, $rol);
         $sql = "SELECT o.*, u.nombre AS nombre_usuario, c.cliente_nombre
                 FROM ordenes_compra o
                 LEFT JOIN usuarios u ON o.usuario_id = u.id
@@ -183,81 +183,55 @@ class OrdenCompraModel
              . ($where ? " WHERE $where" : '')
              . " ORDER BY o.numero_po DESC";
 
-        $stmt = mysqli_prepare($this->db, $sql);
-        if ($params) {
-            mysqli_stmt_bind_param($stmt, $types, ...$params);
-        }
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $rows   = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row;
-        }
-        mysqli_stmt_close($stmt);
-        return $rows;
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     public function contarConFiltros(array $filtros, int $usuarioId, string $rol): int
     {
-        [$where, $params, $types] = $this->construirWhere($filtros, $usuarioId, $rol);
+        [$where, $params] = $this->construirWhere($filtros, $usuarioId, $rol);
         $sql  = "SELECT COUNT(*) AS total FROM ordenes_compra o" . ($where ? " WHERE $where" : '');
-        $stmt = mysqli_prepare($this->db, $sql);
-        if ($params) {
-            mysqli_stmt_bind_param($stmt, $types, ...$params);
-        }
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
-        return (int)($row['total'] ?? 0);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
     }
 
     private function construirWhere(array $filtros, int $usuarioId, string $rol): array
     {
         $condiciones = [];
         $params      = [];
-        $types       = '';
 
         if ($rol !== 'admin' && $usuarioId > 0) {
-            $condiciones[] = 'o.usuario_id = ?';
-            $params[]      = $usuarioId;
-            $types        .= 'i';
+            $condiciones[]   = 'o.usuario_id = :uid';
+            $params[':uid']  = $usuarioId;
         }
         if (!empty($filtros['proveedor'])) {
-            $condiciones[] = 'o.proveedor LIKE ?';
-            $params[]      = '%' . $filtros['proveedor'] . '%';
-            $types        .= 's';
+            $condiciones[]       = 'o.proveedor LIKE :prov';
+            $params[':prov']     = '%' . $filtros['proveedor'] . '%';
         }
-
         if (!empty($filtros['cotizacion_numero'])) {
-            $condiciones[] = 'o.cotizacion_numero LIKE ?';
-            $params[]      = '%' . $filtros['cotizacion_numero'] . '%';
-            $types        .= 's';
+            $condiciones[]       = 'o.cotizacion_numero LIKE :cnum';
+            $params[':cnum']     = '%' . $filtros['cotizacion_numero'] . '%';
         }
         if (!empty($filtros['fecha_inicio'])) {
-            $condiciones[] = 'DATE(o.fecha) >= ?';
-            $params[]      = $filtros['fecha_inicio'];
-            $types        .= 's';
+            $condiciones[]       = 'DATE(o.fecha) >= :fi';
+            $params[':fi']       = $filtros['fecha_inicio'];
         }
         if (!empty($filtros['fecha_fin'])) {
-            $condiciones[] = 'DATE(o.fecha) <= ?';
-            $params[]      = $filtros['fecha_fin'];
-            $types        .= 's';
+            $condiciones[]       = 'DATE(o.fecha) <= :ff';
+            $params[':ff']       = $filtros['fecha_fin'];
         }
 
         return [
             $condiciones ? implode(' AND ', $condiciones) : '',
             $params,
-            $types,
         ];
     }
 
     public function eliminar(int $id): bool
     {
-        $stmt = mysqli_prepare($this->db, "DELETE FROM ordenes_compra WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, 'i', $id);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
+        $stmt = $this->db->prepare("DELETE FROM ordenes_compra WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
     }
 }

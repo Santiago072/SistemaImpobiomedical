@@ -1,13 +1,16 @@
 <?php
 /**
- * EstadisticaModel — maneja todas las consultas complejas de análisis de datos.
+ * EstadisticaModel — consultas complejas de análisis de datos (migrado a PDO).
+ *
+ * SEGURIDAD: Se eliminó la concatenación directa de fechas en SQL (SQLi).
+ * Ahora todas las fechas se pasan como parámetros enlazados via PDO.
  * Exclusivo para administradores.
  */
 class EstadisticaModel
 {
-    private \mysqli $db;
+    private \PDO $db;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->db = $conexion;
     }
@@ -24,64 +27,89 @@ class EstadisticaModel
             'monto_vendido'      => 0,
         ];
 
-        $whereFechas    = '';
-        $whereFechasOrd = '';
-        if ($fecha_inicio && $fecha_fin) {
-            $whereFechas    = " AND fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
-            $whereFechasOrd = " AND o.fecha BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
-        }
+        $tieneFechas = ($fecha_inicio && $fecha_fin);
 
         // Cotizaciones finalizadas
-        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM cotizaciones WHERE estado = 'finalizada' $whereFechas");
-        if ($res && $row = mysqli_fetch_assoc($res)) {
-            $kpis['total_cotizaciones'] = (int)$row['total'];
+        if ($tieneFechas) {
+            $stmt = $this->db->prepare(
+                "SELECT COUNT(*) as total FROM cotizaciones
+                 WHERE estado = 'finalizada'
+                 AND fecha_creacion BETWEEN :fi AND :ff"
+            );
+            $stmt->execute([':fi' => "$fecha_inicio 00:00:00", ':ff' => "$fecha_fin 23:59:59"]);
+        } else {
+            $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM cotizaciones WHERE estado = 'finalizada'");
+            $stmt->execute();
         }
+        $kpis['total_cotizaciones'] = (int)$stmt->fetchColumn();
 
         // Órdenes de compra
-        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM ordenes_compra o WHERE 1=1 $whereFechasOrd");
-        if ($res && $row = mysqli_fetch_assoc($res)) {
-            $kpis['total_ordenes'] = (int)$row['total'];
+        if ($tieneFechas) {
+            $stmt = $this->db->prepare(
+                "SELECT COUNT(*) as total FROM ordenes_compra WHERE fecha BETWEEN :fi AND :ff"
+            );
+            $stmt->execute([':fi' => "$fecha_inicio 00:00:00", ':ff' => "$fecha_fin 23:59:59"]);
+        } else {
+            $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM ordenes_compra");
+            $stmt->execute();
         }
+        $kpis['total_ordenes'] = (int)$stmt->fetchColumn();
 
         // Clientes activos
-        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM clientes WHERE estado = 'activo'");
-        if ($res && $row = mysqli_fetch_assoc($res)) {
-            $kpis['total_clientes'] = (int)$row['total'];
-        }
+        $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM clientes WHERE estado = 'activo'");
+        $stmt->execute();
+        $kpis['total_clientes'] = (int)$stmt->fetchColumn();
 
         // Productos activos
-        $res = mysqli_query($this->db, "SELECT COUNT(*) as total FROM productos WHERE estado = 'activo'");
-        if ($res && $row = mysqli_fetch_assoc($res)) {
-            $kpis['total_productos'] = (int)$row['total'];
-        }
+        $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM productos WHERE estado = 'activo'");
+        $stmt->execute();
+        $kpis['total_productos'] = (int)$stmt->fetchColumn();
 
         // Monto cotizado (ítems de cotizaciones finalizadas * precio cliente)
-        $q = "SELECT SUM(i.cantidad * i.precio) as total_monto
-              FROM cotizacion_items i
-              JOIN cotizaciones c ON i.cotizacion_id = c.id
-              WHERE c.estado = 'finalizada'";
-        if ($fecha_inicio && $fecha_fin) {
-            $q .= " AND c.fecha_creacion BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+        if ($tieneFechas) {
+            $stmt = $this->db->prepare(
+                "SELECT SUM(i.cantidad * i.precio) as total_monto
+                 FROM cotizacion_items i
+                 JOIN cotizaciones c ON i.cotizacion_id = c.id
+                 WHERE c.estado = 'finalizada'
+                 AND c.fecha_creacion BETWEEN :fi AND :ff"
+            );
+            $stmt->execute([':fi' => "$fecha_inicio 00:00:00", ':ff' => "$fecha_fin 23:59:59"]);
+        } else {
+            $stmt = $this->db->prepare(
+                "SELECT SUM(i.cantidad * i.precio) as total_monto
+                 FROM cotizacion_items i
+                 JOIN cotizaciones c ON i.cotizacion_id = c.id
+                 WHERE c.estado = 'finalizada'"
+            );
+            $stmt->execute();
         }
-        $res = mysqli_query($this->db, $q);
-        if ($res && $row = mysqli_fetch_assoc($res)) {
-            $kpis['monto_cotizado_mes'] = (float)($row['total_monto'] ?? 0);
-        }
+        $kpis['monto_cotizado_mes'] = (float)($stmt->fetchColumn() ?? 0);
 
-        // Monto Vendido (cantidad de items pedidos * precio al cliente)
-        $q2 = "SELECT SUM(oi.cantidad * ci.precio) as total_vendido
-               FROM orden_compra_items oi
-               JOIN ordenes_compra o ON oi.orden_id = o.id
-               JOIN cotizacion_items ci ON oi.cotizacion_item_id = ci.id
-               JOIN cotizaciones c ON o.cotizacion_id = c.id
-               WHERE c.estado = 'finalizada'";
-        if ($fecha_inicio && $fecha_fin) {
-            $q2 .= " AND o.fecha BETWEEN '$fecha_inicio 00:00:00' AND '$fecha_fin 23:59:59'";
+        // Monto Vendido
+        if ($tieneFechas) {
+            $stmt = $this->db->prepare(
+                "SELECT SUM(oi.cantidad * ci.precio) as total_vendido
+                 FROM orden_compra_items oi
+                 JOIN ordenes_compra o ON oi.orden_id = o.id
+                 JOIN cotizacion_items ci ON oi.cotizacion_item_id = ci.id
+                 JOIN cotizaciones c ON o.cotizacion_id = c.id
+                 WHERE c.estado = 'finalizada'
+                 AND o.fecha BETWEEN :fi AND :ff"
+            );
+            $stmt->execute([':fi' => "$fecha_inicio 00:00:00", ':ff' => "$fecha_fin 23:59:59"]);
+        } else {
+            $stmt = $this->db->prepare(
+                "SELECT SUM(oi.cantidad * ci.precio) as total_vendido
+                 FROM orden_compra_items oi
+                 JOIN ordenes_compra o ON oi.orden_id = o.id
+                 JOIN cotizacion_items ci ON oi.cotizacion_item_id = ci.id
+                 JOIN cotizaciones c ON o.cotizacion_id = c.id
+                 WHERE c.estado = 'finalizada'"
+            );
+            $stmt->execute();
         }
-        $res = mysqli_query($this->db, $q2);
-        if ($res && $row = mysqli_fetch_assoc($res)) {
-            $kpis['monto_vendido'] = (float)($row['total_vendido'] ?? 0);
-        }
+        $kpis['monto_vendido'] = (float)($stmt->fetchColumn() ?? 0);
 
         return $kpis;
     }
@@ -89,54 +117,67 @@ class EstadisticaModel
     // ── 2. Top Clientes ──────────────────────────────────────────────────────
     public function getTopClientes(int $limite = 5, ?string $fi = null, ?string $ff = null): array
     {
+        $params = [];
         $q = "SELECT cliente_nombre, COUNT(*) as cantidad
               FROM cotizaciones
               WHERE estado = 'finalizada' AND cliente_nombre != ''";
+
         if ($fi && $ff) {
-            $q .= " AND fecha_creacion BETWEEN '$fi 00:00:00' AND '$ff 23:59:59'";
+            $q .= " AND fecha_creacion BETWEEN :fi AND :ff";
+            $params = [':fi' => "$fi 00:00:00", ':ff' => "$ff 23:59:59"];
         }
-        $q .= " GROUP BY cliente_nombre ORDER BY cantidad DESC LIMIT ?";
-        $stmt = mysqli_prepare($this->db, $q);
-        mysqli_stmt_bind_param($stmt, 'i', $limite);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $datos  = ['labels' => [], 'data' => []];
-        while ($row = mysqli_fetch_assoc($result)) {
+
+        $q .= " GROUP BY cliente_nombre ORDER BY cantidad DESC LIMIT :limite";
+        $stmt = $this->db->prepare($q);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->bindValue(':limite', $limite, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        $datos = ['labels' => [], 'data' => []];
+        foreach ($stmt->fetchAll() as $row) {
             $datos['labels'][] = mb_substr($row['cliente_nombre'], 0, 45);
             $datos['data'][]   = (int)$row['cantidad'];
         }
-        mysqli_stmt_close($stmt);
         return $datos;
     }
 
     // ── 3. Top Productos Cotizados ───────────────────────────────────────────
     public function getTopProductos(int $limite = 5, ?string $fi = null, ?string $ff = null): array
     {
+        $params = [];
         $q = "SELECT p.titulo, COUNT(i.id) as cantidad
               FROM cotizacion_items i
               JOIN productos p ON i.producto_id = p.id
               JOIN cotizaciones c ON i.cotizacion_id = c.id
               WHERE c.estado = 'finalizada'";
+
         if ($fi && $ff) {
-            $q .= " AND c.fecha_creacion BETWEEN '$fi 00:00:00' AND '$ff 23:59:59'";
+            $q .= " AND c.fecha_creacion BETWEEN :fi AND :ff";
+            $params = [':fi' => "$fi 00:00:00", ':ff' => "$ff 23:59:59"];
         }
-        $q .= " GROUP BY p.id ORDER BY cantidad DESC LIMIT ?";
-        $stmt = mysqli_prepare($this->db, $q);
-        mysqli_stmt_bind_param($stmt, 'i', $limite);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $datos  = ['labels' => [], 'data' => []];
-        while ($row = mysqli_fetch_assoc($result)) {
+
+        $q .= " GROUP BY p.id ORDER BY cantidad DESC LIMIT :limite";
+        $stmt = $this->db->prepare($q);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->bindValue(':limite', $limite, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        $datos = ['labels' => [], 'data' => []];
+        foreach ($stmt->fetchAll() as $row) {
             $datos['labels'][] = mb_substr($row['titulo'], 0, 45);
             $datos['data'][]   = (int)$row['cantidad'];
         }
-        mysqli_stmt_close($stmt);
         return $datos;
     }
 
     // ── 4. Top Vendedores (por Monto Vendido) ───────────────────────────
     public function getTopVendedores(int $limite = 5, ?string $fi = null, ?string $ff = null): array
     {
+        $params = [];
         $q = "SELECT u.nombre, SUM(oi.cantidad * ci.precio) as cantidad
               FROM orden_compra_items oi
               JOIN ordenes_compra o ON oi.orden_id = o.id
@@ -144,28 +185,35 @@ class EstadisticaModel
               JOIN cotizaciones c ON o.cotizacion_id = c.id
               JOIN usuarios u ON c.usuario_id = u.id
               WHERE c.estado = 'finalizada'";
+
         if ($fi && $ff) {
-            $q .= " AND o.fecha BETWEEN '$fi 00:00:00' AND '$ff 23:59:59'";
+            $q .= " AND o.fecha BETWEEN :fi AND :ff";
+            $params = [':fi' => "$fi 00:00:00", ':ff' => "$ff 23:59:59"];
         }
-        $q .= " GROUP BY u.id ORDER BY cantidad DESC LIMIT ?";
-        $stmt = mysqli_prepare($this->db, $q);
-        mysqli_stmt_bind_param($stmt, 'i', $limite);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $datos  = ['labels' => [], 'data' => []];
-        while ($row = mysqli_fetch_assoc($result)) {
+
+        $q .= " GROUP BY u.id ORDER BY cantidad DESC LIMIT :limite";
+        $stmt = $this->db->prepare($q);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->bindValue(':limite', $limite, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        $datos = ['labels' => [], 'data' => []];
+        foreach ($stmt->fetchAll() as $row) {
             $datos['labels'][] = mb_substr($row['nombre'], 0, 45);
             $datos['data'][]   = (float)($row['cantidad'] ?? 0);
         }
-        mysqli_stmt_close($stmt);
         return $datos;
     }
 
     // ── 5. Evolución mensual Cotizaciones vs Órdenes ─────────────────────────
     public function getMetricasEvolucion(?string $fi = null, ?string $ff = null): array
     {
+        $params = [];
         if ($fi && $ff) {
-            $whereEvo = " AND c.fecha_creacion BETWEEN '$fi 00:00:00' AND '$ff 23:59:59'";
+            $whereEvo  = " AND c.fecha_creacion BETWEEN :fi AND :ff";
+            $params = [':fi' => "$fi 00:00:00", ':ff' => "$ff 23:59:59"];
         } else {
             $whereEvo = " AND c.fecha_creacion >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
         }
@@ -179,14 +227,15 @@ class EstadisticaModel
               FROM cotizaciones c
               WHERE c.estado = 'finalizada' $whereEvo
               GROUP BY mes ORDER BY mes ASC";
-        $res  = mysqli_query($this->db, $q);
+
+        $stmt = $this->db->prepare($q);
+        $stmt->execute($params);
+
         $datos = ['meses' => [], 'cotizaciones' => [], 'ordenes' => []];
-        if ($res) {
-            while ($row = mysqli_fetch_assoc($res)) {
-                $datos['meses'][]        = $row['mes'];
-                $datos['cotizaciones'][] = (int)$row['cotizaciones'];
-                $datos['ordenes'][]      = (int)$row['ordenes'];
-            }
+        foreach ($stmt->fetchAll() as $row) {
+            $datos['meses'][]        = $row['mes'];
+            $datos['cotizaciones'][] = (int)$row['cotizaciones'];
+            $datos['ordenes'][]      = (int)$row['ordenes'];
         }
         return $datos;
     }

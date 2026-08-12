@@ -1,6 +1,6 @@
 <?php
 /**
- * ClienteModel — acceso a datos de la tabla clientes.
+ * ClienteModel — acceso a datos de la tabla clientes (migrado a PDO).
  *
  * - SRP: toda la lógica SQL de clientes vive aquí.
  * - ISP: implementa RepositoryInterface (contrato estricto).
@@ -8,9 +8,9 @@
  */
 class ClienteModel implements RepositoryInterface
 {
-    private \mysqli $db;
+    private \PDO $db;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->db = $conexion;
     }
@@ -19,64 +19,54 @@ class ClienteModel implements RepositoryInterface
     {
         if ($busqueda !== '') {
             $param = "%$busqueda%";
-            $stmt  = mysqli_prepare($this->db,
-                "SELECT * FROM clientes WHERE (nombre LIKE ? OR nit LIKE ? OR municipio LIKE ?)
-                 ORDER BY nombre LIMIT ? OFFSET ?");
-            mysqli_stmt_bind_param($stmt, 'sssii', $param, $param, $param, $limite, $offset);
+            $stmt  = $this->db->prepare(
+                "SELECT * FROM clientes WHERE (nombre LIKE :b1 OR nit LIKE :b2 OR municipio LIKE :b3)
+                 ORDER BY nombre LIMIT :limit OFFSET :offset"
+            );
+            $stmt->bindValue(':b1', $param);
+            $stmt->bindValue(':b2', $param);
+            $stmt->bindValue(':b3', $param);
         } else {
-            $stmt = mysqli_prepare($this->db,
-                "SELECT * FROM clientes ORDER BY nombre LIMIT ? OFFSET ?");
-            mysqli_stmt_bind_param($stmt, 'ii', $limite, $offset);
+            $stmt = $this->db->prepare(
+                "SELECT * FROM clientes ORDER BY nombre LIMIT :limit OFFSET :offset"
+            );
         }
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $rows   = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row;
-        }
-        mysqli_stmt_close($stmt);
-        return $rows;
+        $stmt->bindValue(':limit',  $limite, \PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
     public function contar(string $busqueda = ''): int
     {
         if ($busqueda !== '') {
             $param = "%$busqueda%";
-            $stmt  = mysqli_prepare($this->db,
-                "SELECT COUNT(*) AS total FROM clientes WHERE 
-                 (nombre LIKE ? OR nit LIKE ? OR municipio LIKE ?)");
-            mysqli_stmt_bind_param($stmt, 'sss', $param, $param, $param);
+            $stmt  = $this->db->prepare(
+                "SELECT COUNT(*) AS total FROM clientes WHERE
+                 (nombre LIKE :b1 OR nit LIKE :b2 OR municipio LIKE :b3)"
+            );
+            $stmt->execute([':b1' => $param, ':b2' => $param, ':b3' => $param]);
         } else {
-            $stmt = mysqli_prepare($this->db,
-                "SELECT COUNT(*) AS total FROM clientes");
+            $stmt = $this->db->prepare("SELECT COUNT(*) AS total FROM clientes");
+            $stmt->execute();
         }
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
-        return (int)($row['total'] ?? 0);
+        return (int)$stmt->fetchColumn();
     }
 
     public function buscarPorId(int $id): ?array
     {
-        $stmt = mysqli_prepare($this->db, 'SELECT * FROM clientes WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'i', $id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+        $stmt = $this->db->prepare('SELECT * FROM clientes WHERE id = :id');
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch();
         return $row ?: null;
     }
 
     /** Buscar cliente por NIT */
     public function buscarPorNit(string $nit): ?array
     {
-        $stmt = mysqli_prepare($this->db, 'SELECT * FROM clientes WHERE nit = ? LIMIT 1');
-        mysqli_stmt_bind_param($stmt, 's', $nit);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+        $stmt = $this->db->prepare('SELECT * FROM clientes WHERE nit = :nit LIMIT 1');
+        $stmt->execute([':nit' => $nit]);
+        $row = $stmt->fetch();
         return $row ?: null;
     }
 
@@ -84,69 +74,74 @@ class ClienteModel implements RepositoryInterface
     public function buscarParaSelect(string $busqueda, int $limite = 10): array
     {
         $param = "%$busqueda%";
-        $stmt  = mysqli_prepare($this->db,
+        $stmt  = $this->db->prepare(
             "SELECT id, nombre, nit, municipio, departamento, direccion, telefono, correo, nombre_contacto
-             FROM clientes WHERE estado='activo' AND (nombre LIKE ? OR nit LIKE ?)
-             ORDER BY nombre LIMIT ?");
-        mysqli_stmt_bind_param($stmt, 'ssi', $param, $param, $limite);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $rows   = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row;
-        }
-        mysqli_stmt_close($stmt);
-        return $rows;
+             FROM clientes WHERE estado='activo' AND (nombre LIKE :b1 OR nit LIKE :b2)
+             ORDER BY nombre LIMIT :limit"
+        );
+        $stmt->bindValue(':b1', $param);
+        $stmt->bindValue(':b2', $param);
+        $stmt->bindValue(':limit', $limite, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
     public function existeNit(string $nit, int $excluirId = 0): bool
     {
-        $stmt = mysqli_prepare($this->db,
-            'SELECT id FROM clientes WHERE nit = ? AND id != ? LIMIT 1');
-        mysqli_stmt_bind_param($stmt, 'si', $nit, $excluirId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $existe = mysqli_num_rows($result) > 0;
-        mysqli_stmt_close($stmt);
-        return $existe;
+        $stmt = $this->db->prepare(
+            'SELECT id FROM clientes WHERE nit = :nit AND id != :excluir LIMIT 1'
+        );
+        $stmt->execute([':nit' => $nit, ':excluir' => $excluirId]);
+        return (bool)$stmt->fetch();
     }
 
     public function crear(string $nombre, string $nit, string $departamento, string $municipio,
                           string $direccion, string $nombre_contacto, string $telefono,
                           ?string $correo): int
     {
-        $stmt = mysqli_prepare($this->db,
+        $stmt = $this->db->prepare(
             'INSERT INTO clientes (nombre, nit, departamento, municipio, direccion, nombre_contacto, telefono, correo)
-             VALUES (?,?,?,?,?,?,?,?)');
-        mysqli_stmt_bind_param($stmt, 'ssssssss',
-            $nombre, $nit, $departamento, $municipio, $direccion, $nombre_contacto, $telefono, $correo);
-        mysqli_stmt_execute($stmt);
-        $id = (int)mysqli_stmt_insert_id($stmt);
-        mysqli_stmt_close($stmt);
-        return $id;
+             VALUES (:nom, :nit, :dep, :mun, :dir, :contacto, :tel, :correo)'
+        );
+        $stmt->execute([
+            ':nom'      => $nombre,
+            ':nit'      => $nit,
+            ':dep'      => $departamento,
+            ':mun'      => $municipio,
+            ':dir'      => $direccion,
+            ':contacto' => $nombre_contacto,
+            ':tel'      => $telefono,
+            ':correo'   => $correo,
+        ]);
+        return (int)$this->db->lastInsertId();
     }
 
     public function actualizar(int $id, string $nombre, string $nit, string $departamento,
                                string $municipio, string $direccion, string $nombre_contacto,
                                string $telefono, ?string $correo, string $estado = 'activo'): bool
     {
-        $stmt = mysqli_prepare($this->db,
-            'UPDATE clientes SET nombre=?,nit=?,departamento=?,municipio=?,direccion=?,
-             nombre_contacto=?,telefono=?,correo=?,estado=? WHERE id=?');
-        mysqli_stmt_bind_param($stmt, 'sssssssssi',
-            $nombre, $nit, $departamento, $municipio, $direccion,
-            $nombre_contacto, $telefono, $correo, $estado, $id);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
+        $stmt = $this->db->prepare(
+            'UPDATE clientes SET nombre=:nom, nit=:nit, departamento=:dep, municipio=:mun,
+             direccion=:dir, nombre_contacto=:contacto, telefono=:tel, correo=:correo,
+             estado=:estado WHERE id=:id'
+        );
+        return $stmt->execute([
+            ':nom'      => $nombre,
+            ':nit'      => $nit,
+            ':dep'      => $departamento,
+            ':mun'      => $municipio,
+            ':dir'      => $direccion,
+            ':contacto' => $nombre_contacto,
+            ':tel'      => $telefono,
+            ':correo'   => $correo,
+            ':estado'   => $estado,
+            ':id'       => $id,
+        ]);
     }
 
     public function eliminar(int $id): bool
     {
-        $stmt = mysqli_prepare($this->db, "DELETE FROM clientes WHERE id=?");
-        mysqli_stmt_bind_param($stmt, 'i', $id);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
+        $stmt = $this->db->prepare("DELETE FROM clientes WHERE id=:id");
+        return $stmt->execute([':id' => $id]);
     }
 }

@@ -9,7 +9,7 @@ class EstadisticaController
 {
     private EstadisticaModel $model;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->model = new EstadisticaModel($conexion);
     }
@@ -44,3 +44,4 @@ class EstadisticaController
         exit();
     }
 }
+

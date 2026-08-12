@@ -1,6 +1,6 @@
 <?php
 /**
- * ProductoModel — acceso a datos del catálogo de productos.
+ * ProductoModel — acceso a datos del catálogo de productos (migrado a PDO).
  *
  * - SRP: toda la lógica SQL de productos vive aquí.
  * - ISP: implementa RepositoryInterface (contrato estricto).
@@ -8,230 +8,184 @@
  */
 class ProductoModel implements RepositoryInterface
 {
-    private \mysqli $db;
+    private \PDO $db;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->db = $conexion;
     }
 
     public function listar(int $offset, int $limite, string $busqueda = '', string $categoria = ''): array
     {
-        $where = [];
+        $where  = [];
         $params = [];
-        $types = '';
 
         if ($busqueda !== '') {
-            $where[] = "titulo LIKE ?";
-            $params[] = "%$busqueda%";
-            $types .= 's';
+            $where[]       = "titulo LIKE :busqueda";
+            $params[':busqueda'] = "%$busqueda%";
         }
-
         if ($categoria !== '') {
-            $where[] = "categoria = ?";
-            $params[] = $categoria;
-            $types .= 's';
+            $where[]         = "categoria = :categoria";
+            $params[':categoria'] = $categoria;
         }
 
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-        $sql = "SELECT * FROM productos $whereClause ORDER BY titulo LIMIT ? OFFSET ?";
-        
-        $params[] = $limite;
-        $params[] = $offset;
-        $types .= 'ii';
+        $sql = "SELECT * FROM productos $whereClause ORDER BY titulo LIMIT :limit OFFSET :offset";
 
-        $stmt = mysqli_prepare($this->db, $sql);
-        if (!empty($params)) {
-            mysqli_stmt_bind_param($stmt, $types, ...$params);
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
         }
-        
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $rows   = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row;
-        }
-        mysqli_stmt_close($stmt);
-        return $rows;
+        $stmt->bindValue(':limit',  $limite, \PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
     public function listarParaExportar(string $busqueda = '', string $categoria = ''): array
     {
-        $where = [];
+        $where  = [];
         $params = [];
-        $types = '';
 
         if ($busqueda !== '') {
-            $where[] = "titulo LIKE ?";
-            $params[] = "%$busqueda%";
-            $types .= 's';
+            $where[]             = "titulo LIKE :busqueda";
+            $params[':busqueda'] = "%$busqueda%";
         }
-
         if ($categoria !== '') {
-            $where[] = "categoria = ?";
-            $params[] = $categoria;
-            $types .= 's';
+            $where[]              = "categoria = :categoria";
+            $params[':categoria'] = $categoria;
         }
 
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
         $sql = "SELECT * FROM productos $whereClause ORDER BY titulo";
 
-        $stmt = mysqli_prepare($this->db, $sql);
-        if (!empty($params)) {
-            mysqli_stmt_bind_param($stmt, $types, ...$params);
-        }
-        
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $rows   = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row;
-        }
-        mysqli_stmt_close($stmt);
-        return $rows;
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     public function contar(string $busqueda = '', string $categoria = ''): int
     {
-        $where = [];
+        $where  = [];
         $params = [];
-        $types = '';
 
         if ($busqueda !== '') {
-            $where[] = "titulo LIKE ?";
-            $params[] = "%$busqueda%";
-            $types .= 's';
+            $where[]             = "titulo LIKE :busqueda";
+            $params[':busqueda'] = "%$busqueda%";
         }
-
         if ($categoria !== '') {
-            $where[] = "categoria = ?";
-            $params[] = $categoria;
-            $types .= 's';
+            $where[]              = "categoria = :categoria";
+            $params[':categoria'] = $categoria;
         }
 
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
         $sql = "SELECT COUNT(*) AS total FROM productos $whereClause";
 
-        $stmt = mysqli_prepare($this->db, $sql);
-        if (!empty($params)) {
-            mysqli_stmt_bind_param($stmt, $types, ...$params);
-        }
-        
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
-        return (int)($row['total'] ?? 0);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
     }
 
     public function obtenerConteosPorCategoria(): array
     {
-        $stmt = mysqli_prepare($this->db, "SELECT categoria, COUNT(*) as cantidad FROM productos WHERE categoria IS NOT NULL AND categoria != '' GROUP BY categoria ORDER BY cantidad DESC");
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $rows = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row;
-        }
-        mysqli_stmt_close($stmt);
-        return $rows;
+        $stmt = $this->db->prepare(
+            "SELECT categoria, COUNT(*) as cantidad FROM productos
+             WHERE categoria IS NOT NULL AND categoria != ''
+             GROUP BY categoria ORDER BY cantidad DESC"
+        );
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
     public function buscarPorId(int $id): ?array
     {
-        $stmt = mysqli_prepare($this->db,
-            "SELECT * FROM productos WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, 'i', $id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+        $stmt = $this->db->prepare("SELECT * FROM productos WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch();
         return $row ?: null;
     }
 
     public function listarTodos(string $busqueda = ''): array
     {
         if ($busqueda !== '') {
-            $param = "%$busqueda%";
-            $stmt  = mysqli_prepare($this->db,
+            $stmt = $this->db->prepare(
                 "SELECT id, titulo, foto, descripcion, iva, porcentaje_iva, categoria, codigo_producto, codigo_proveedor
-                 FROM productos WHERE estado='activo' AND titulo LIKE ?
-                 ORDER BY titulo LIMIT 50");
-            mysqli_stmt_bind_param($stmt, 's', $param);
+                 FROM productos WHERE estado='activo' AND titulo LIKE :busqueda
+                 ORDER BY titulo LIMIT 50"
+            );
+            $stmt->execute([':busqueda' => "%$busqueda%"]);
         } else {
-            $stmt = mysqli_prepare($this->db,
+            $stmt = $this->db->prepare(
                 "SELECT id, titulo, foto, descripcion, iva, porcentaje_iva, categoria, codigo_producto, codigo_proveedor
-                 FROM productos WHERE estado='activo' ORDER BY titulo LIMIT 50");
+                 FROM productos WHERE estado='activo' ORDER BY titulo LIMIT 50"
+            );
+            $stmt->execute();
         }
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $rows   = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row;
-        }
-        mysqli_stmt_close($stmt);
-        return $rows;
+        return $stmt->fetchAll();
     }
 
     public function existePorTitulo(string $titulo): bool
     {
-        $stmt = mysqli_prepare($this->db,
-            "SELECT id FROM productos WHERE titulo = ? AND estado='activo' LIMIT 1");
-        mysqli_stmt_bind_param($stmt, 's', $titulo);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $existe = mysqli_num_rows($result) > 0;
-        mysqli_stmt_close($stmt);
-        return $existe;
+        $stmt = $this->db->prepare(
+            "SELECT id FROM productos WHERE titulo = :titulo AND estado='activo' LIMIT 1"
+        );
+        $stmt->execute([':titulo' => $titulo]);
+        return (bool)$stmt->fetch();
     }
 
     /** Buscar producto por título (sin restricción de estado, para poder actualizarlo) */
     public function buscarPorTitulo(string $titulo): ?array
     {
-        $stmt = mysqli_prepare($this->db,
-            "SELECT * FROM productos WHERE titulo = ? LIMIT 1");
-        mysqli_stmt_bind_param($stmt, 's', $titulo);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+        $stmt = $this->db->prepare("SELECT * FROM productos WHERE titulo = :titulo LIMIT 1");
+        $stmt->execute([':titulo' => $titulo]);
+        $row = $stmt->fetch();
         return $row ?: null;
     }
 
     public function crear(string $titulo, string $foto, string $descripcion,
                           string $iva, float $porcentaje_iva,
-                          string $categoria = null, string $codigo_producto = null): bool
+                          ?string $categoria = null, ?string $codigo_producto = null): bool
     {
-        $stmt = mysqli_prepare($this->db,
+        $stmt = $this->db->prepare(
             'INSERT INTO productos (titulo, foto, descripcion, iva, porcentaje_iva, categoria, codigo_producto)
-             VALUES (?,?,?,?,?,?,?)');
-        mysqli_stmt_bind_param($stmt, 'ssssdss',
-            $titulo, $foto, $descripcion, $iva, $porcentaje_iva, $categoria, $codigo_producto);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
+             VALUES (:titulo, :foto, :desc, :iva, :porciva, :cat, :codprod)'
+        );
+        return $stmt->execute([
+            ':titulo'   => $titulo,
+            ':foto'     => $foto,
+            ':desc'     => $descripcion,
+            ':iva'      => $iva,
+            ':porciva'  => $porcentaje_iva,
+            ':cat'      => $categoria,
+            ':codprod'  => $codigo_producto,
+        ]);
     }
 
     public function actualizar(int $id, string $titulo, string $foto, string $descripcion,
                                string $iva, float $porcentaje_iva,
-                               string $estado, string $categoria = null, string $codigo_producto = null): bool
+                               string $estado, ?string $categoria = null, ?string $codigo_producto = null): bool
     {
-        $stmt = mysqli_prepare($this->db,
-            'UPDATE productos SET titulo=?,foto=?,descripcion=?,iva=?,porcentaje_iva=?,estado=?,categoria=?,codigo_producto=?
-             WHERE id=?');
-        mysqli_stmt_bind_param($stmt, 'ssssdsssi',
-            $titulo, $foto, $descripcion, $iva, $porcentaje_iva, $estado, $categoria, $codigo_producto, $id);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
+        $stmt = $this->db->prepare(
+            'UPDATE productos SET titulo=:titulo, foto=:foto, descripcion=:desc, iva=:iva,
+             porcentaje_iva=:porciva, estado=:estado, categoria=:cat, codigo_producto=:codprod
+             WHERE id=:id'
+        );
+        return $stmt->execute([
+            ':titulo'   => $titulo,
+            ':foto'     => $foto,
+            ':desc'     => $descripcion,
+            ':iva'      => $iva,
+            ':porciva'  => $porcentaje_iva,
+            ':estado'   => $estado,
+            ':cat'      => $categoria,
+            ':codprod'  => $codigo_producto,
+            ':id'       => $id,
+        ]);
     }
 
     public function eliminar(int $id): bool
     {
-        $stmt = mysqli_prepare($this->db, "DELETE FROM productos WHERE id=?");
-        mysqli_stmt_bind_param($stmt, 'i', $id);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
+        $stmt = $this->db->prepare("DELETE FROM productos WHERE id=:id");
+        return $stmt->execute([':id' => $id]);
     }
 }

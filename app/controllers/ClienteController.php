@@ -11,7 +11,7 @@ class ClienteController
     private ClienteModel $model;
     private int $porPagina = 10;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->model = new ClienteModel($conexion);
     }
@@ -208,3 +208,4 @@ class ClienteController
         return '';
     }
 }
+

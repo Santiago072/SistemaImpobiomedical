@@ -1,18 +1,17 @@
 <?php
 /**
- * CotizacionModel — acceso a datos de cotizaciones y sus ítems.
+ * CotizacionModel — acceso a datos de cotizaciones y sus ítems (migrado a PDO).
  *
  * Principios aplicados:
  *   - SRP: toda la lógica de acceso a datos vive aquí.
  *   - Número de cotización: codigo_usuario + consecutivo mensual (Ej: EB01, EB02).
- *     Cada mes el consecutivo se reinicia. Se usa transacción + SELECT FOR UPDATE
- *     para evitar colisiones concurrentes.
+ *     Cada mes el consecutivo se reinicia. Se usa transacción para evitar colisiones concurrentes.
  */
 class CotizacionModel
 {
-    private \mysqli $db;
+    private \PDO $db;
 
-    public function __construct(\mysqli $conexion)
+    public function __construct(\PDO $conexion)
     {
         $this->db = $conexion;
     }
@@ -21,217 +20,194 @@ class CotizacionModel
 
     public function contarDelUsuario(int $usuarioId): int
     {
-        $stmt = mysqli_prepare($this->db,
-            "SELECT COUNT(*) AS total FROM cotizaciones WHERE usuario_id = ? AND estado != 'borrador'");
-        mysqli_stmt_bind_param($stmt, 'i', $usuarioId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
-        return (int)($row['total'] ?? 0);
+        $stmt = $this->db->prepare(
+            "SELECT COUNT(*) AS total FROM cotizaciones WHERE usuario_id = :uid AND estado != 'borrador'"
+        );
+        $stmt->execute([':uid' => $usuarioId]);
+        return (int)$stmt->fetchColumn();
     }
 
     public function contarMesDelUsuario(int $usuarioId): int
     {
-        $stmt = mysqli_prepare($this->db,
-            "SELECT COUNT(*) AS total FROM cotizaciones 
-             WHERE usuario_id = ? AND estado != 'borrador' AND MONTH(fecha_creacion)=MONTH(CURDATE()) 
-             AND YEAR(fecha_creacion)=YEAR(CURDATE())");
-        mysqli_stmt_bind_param($stmt, 'i', $usuarioId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
-        return (int)($row['total'] ?? 0);
+        $stmt = $this->db->prepare(
+            "SELECT COUNT(*) AS total FROM cotizaciones
+             WHERE usuario_id = :uid AND estado != 'borrador'
+             AND MONTH(fecha_creacion)=MONTH(CURDATE())
+             AND YEAR(fecha_creacion)=YEAR(CURDATE())"
+        );
+        $stmt->execute([':uid' => $usuarioId]);
+        return (int)$stmt->fetchColumn();
     }
 
     public function getMetricasDashboard(int $usuarioId, string $rol): array
     {
         // Cotizaciones creadas en los últimos 6 meses (agrupadas por mes)
-        $where = "estado != 'borrador' AND fecha_creacion >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
-        if ($rol !== 'admin') {
-            $where .= " AND usuario_id = " . (int)$usuarioId;
-        }
+        // Nota: Filtramos por usuario_id como parámetro (seguro), el rol decide el filtro
+        $query = "SELECT DATE_FORMAT(fecha_creacion, '%Y-%m') AS mes, COUNT(*) AS total
+                  FROM cotizaciones
+                  WHERE estado != 'borrador'
+                  AND fecha_creacion >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
+               . ($rol !== 'admin' ? " AND usuario_id = :uid" : "")
+               . " GROUP BY mes ORDER BY mes ASC";
 
-        $query = "SELECT DATE_FORMAT(fecha_creacion, '%Y-%m') AS mes, COUNT(*) AS total 
-                  FROM cotizaciones 
-                  WHERE $where 
-                  GROUP BY mes 
-                  ORDER BY mes ASC";
-                  
-        $result = mysqli_query($this->db, $query);
+        $stmt = $this->db->prepare($query);
+        if ($rol !== 'admin') {
+            $stmt->bindValue(':uid', $usuarioId, \PDO::PARAM_INT);
+        }
+        $stmt->execute();
+
         $meses = [];
         $totales = [];
-        
-        while ($row = mysqli_fetch_assoc($result)) {
-            $meses[] = $row['mes'];
+        foreach ($stmt->fetchAll() as $row) {
+            $meses[]   = $row['mes'];
             $totales[] = (int)$row['total'];
         }
-        
-        return [
-            'meses' => $meses,
-            'totales' => $totales
-        ];
+
+        return ['meses' => $meses, 'totales' => $totales];
     }
 
     public function contarTotal(): int
     {
-        $result = mysqli_query($this->db,
-            "SELECT COUNT(*) AS total FROM cotizaciones WHERE estado = 'finalizada'");
-        $row = mysqli_fetch_assoc($result);
-        return (int)($row['total'] ?? 0);
+        $stmt = $this->db->prepare("SELECT COUNT(*) AS total FROM cotizaciones WHERE estado = 'finalizada'");
+        $stmt->execute();
+        return (int)$stmt->fetchColumn();
     }
 
     public function contarDelMes(): int
     {
-        $result = mysqli_query($this->db,
+        $stmt = $this->db->prepare(
             "SELECT COUNT(*) AS total FROM cotizaciones
              WHERE estado='finalizada' AND MONTH(fecha_creacion)=MONTH(CURDATE())
-             AND YEAR(fecha_creacion)=YEAR(CURDATE())");
-        $row = mysqli_fetch_assoc($result);
-        return (int)($row['total'] ?? 0);
+             AND YEAR(fecha_creacion)=YEAR(CURDATE())"
+        );
+        $stmt->execute();
+        return (int)$stmt->fetchColumn();
     }
+
     public function contarTotalClientes(): int
     {
-        $result = mysqli_query($this->db, "SELECT COUNT(*) AS total FROM clientes WHERE estado='activo'");
-        $row = mysqli_fetch_assoc($result);
-        return (int)($row['total'] ?? 0);
+        $stmt = $this->db->prepare("SELECT COUNT(*) AS total FROM clientes WHERE estado='activo'");
+        $stmt->execute();
+        return (int)$stmt->fetchColumn();
     }
 
     public function contarTotalProductos(): int
     {
-        $result = mysqli_query($this->db, "SELECT COUNT(*) AS total FROM productos WHERE estado='activo'");
-        $row = mysqli_fetch_assoc($result);
-        return (int)($row['total'] ?? 0);
+        $stmt = $this->db->prepare("SELECT COUNT(*) AS total FROM productos WHERE estado='activo'");
+        $stmt->execute();
+        return (int)$stmt->fetchColumn();
     }
+
     // ── Cabecera ──────────────────────────────────────────────────────────────
 
     public function buscarPorId(int $id): ?array
     {
-        $stmt = mysqli_prepare($this->db, 'SELECT * FROM cotizaciones WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'i', $id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+        $stmt = $this->db->prepare('SELECT * FROM cotizaciones WHERE id = :id');
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch();
         return $row ?: null;
     }
 
     public function buscarPorNumero(string $numero): ?array
     {
-        $stmt = mysqli_prepare($this->db,
-            'SELECT * FROM cotizaciones WHERE numero_cotizacion = ? LIMIT 1');
-        mysqli_stmt_bind_param($stmt, 's', $numero);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+        $stmt = $this->db->prepare(
+            'SELECT * FROM cotizaciones WHERE numero_cotizacion = :num LIMIT 1'
+        );
+        $stmt->execute([':num' => $numero]);
+        $row = $stmt->fetch();
         return $row ?: null;
     }
 
     /** Borrador con ítems, sin número, del usuario */
     public function buscarBorradorConItems(int $usuarioId): ?int
     {
-        $stmt = mysqli_prepare($this->db,
+        $stmt = $this->db->prepare(
             "SELECT c.id FROM cotizaciones c
              INNER JOIN cotizacion_items i ON c.id = i.cotizacion_id
-             WHERE c.usuario_id = ?
+             WHERE c.usuario_id = :uid
                AND (c.numero_cotizacion IS NULL OR c.numero_cotizacion = '')
                AND c.estado = 'borrador'
-             ORDER BY c.id DESC LIMIT 1");
-        mysqli_stmt_bind_param($stmt, 'i', $usuarioId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+             ORDER BY c.id DESC LIMIT 1"
+        );
+        $stmt->execute([':uid' => $usuarioId]);
+        $row = $stmt->fetch();
         return $row ? (int)$row['id'] : null;
     }
 
     public function buscarCabeceraVacia(int $usuarioId): ?int
     {
-        $stmt = mysqli_prepare($this->db,
+        $stmt = $this->db->prepare(
             "SELECT id FROM cotizaciones
-             WHERE usuario_id = ?
+             WHERE usuario_id = :uid
                AND (numero_cotizacion IS NULL OR numero_cotizacion = '')
                AND estado = 'borrador'
-             ORDER BY id DESC LIMIT 1");
-        mysqli_stmt_bind_param($stmt, 'i', $usuarioId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+             ORDER BY id DESC LIMIT 1"
+        );
+        $stmt->execute([':uid' => $usuarioId]);
+        $row = $stmt->fetch();
         return $row ? (int)$row['id'] : null;
     }
 
     public function crearCabecera(int $usuarioId, string $usuarioCodigo, string $asesorNombre, string $asesorCargo): int
     {
-        $stmt = mysqli_prepare($this->db,
-            'INSERT INTO cotizaciones (usuario_id, usuario_codigo, asesor_nombre, asesor_cargo) VALUES (?,?,?,?)');
-        mysqli_stmt_bind_param($stmt, 'isss', $usuarioId, $usuarioCodigo, $asesorNombre, $asesorCargo);
-        mysqli_stmt_execute($stmt);
-        $id = (int)mysqli_stmt_insert_id($stmt);
-        mysqli_stmt_close($stmt);
-        return $id;
+        $stmt = $this->db->prepare(
+            'INSERT INTO cotizaciones (usuario_id, usuario_codigo, asesor_nombre, asesor_cargo) VALUES (:uid, :cod, :nom, :cargo)'
+        );
+        $stmt->execute([
+            ':uid'   => $usuarioId,
+            ':cod'   => $usuarioCodigo,
+            ':nom'   => $asesorNombre,
+            ':cargo' => $asesorCargo,
+        ]);
+        return (int)$this->db->lastInsertId();
     }
 
     public function clonarDatosCabecera(int $oldId, int $newId): void
     {
-        $stmt = mysqli_prepare($this->db,
+        $stmt = $this->db->prepare(
             "UPDATE cotizaciones c_new
-             JOIN cotizaciones c_old ON c_old.id = ?
-             SET c_new.cliente_id = c_old.cliente_id,
-                 c_new.cliente_nombre = c_old.cliente_nombre,
-                 c_new.cliente_nit = c_old.cliente_nit,
-                 c_new.cliente_direccion = c_old.cliente_direccion,
+             JOIN cotizaciones c_old ON c_old.id = :old_id
+             SET c_new.cliente_id       = c_old.cliente_id,
+                 c_new.cliente_nombre   = c_old.cliente_nombre,
+                 c_new.cliente_nit      = c_old.cliente_nit,
+                 c_new.cliente_direccion= c_old.cliente_direccion,
                  c_new.cliente_telefono = c_old.cliente_telefono,
-                 c_new.cliente_correo = c_old.cliente_correo,
+                 c_new.cliente_correo   = c_old.cliente_correo,
                  c_new.cliente_contacto = c_old.cliente_contacto,
-                 c_new.cliente_ciudad = c_old.cliente_ciudad,
-                 c_new.dias_validez = c_old.dias_validez,
+                 c_new.cliente_ciudad   = c_old.cliente_ciudad,
+                 c_new.dias_validez     = c_old.dias_validez,
                  c_new.condiciones_pago = c_old.condiciones_pago,
-                 c_new.observaciones = c_old.observaciones
-             WHERE c_new.id = ?");
-        if (!$stmt) {
-            error_log('Error prepare clonarDatosCabecera: ' . mysqli_error($this->db));
-            return;
+                 c_new.observaciones    = c_old.observaciones
+             WHERE c_new.id = :new_id"
+        );
+        if (!$stmt->execute([':old_id' => $oldId, ':new_id' => $newId])) {
+            error_log('Error execute clonarDatosCabecera');
         }
-        mysqli_stmt_bind_param($stmt, 'ii', $oldId, $newId);
-        if (!mysqli_stmt_execute($stmt)) {
-            error_log('Error execute clonarDatosCabecera: ' . mysqli_stmt_error($stmt));
-        }
-        mysqli_stmt_close($stmt);
     }
 
     public function clonarItems(int $oldId, int $newId): void
     {
-        $stmt = mysqli_prepare($this->db,
-            "INSERT INTO cotizacion_items 
-             (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio, 
+        $stmt = $this->db->prepare(
+            "INSERT INTO cotizacion_items
+             (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio,
               iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto,
-              precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, 
+              precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas,
               proveedor, codigo_proveedor, calc_ops)
-             SELECT ?, producto_id, titulo, foto, descripcion, cantidad, precio, 
+             SELECT :new_id, producto_id, titulo, foto, descripcion, cantidad, precio,
                     iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto,
-                    precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, 
+                    precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas,
                     proveedor, codigo_proveedor, calc_ops
-             FROM cotizacion_items WHERE cotizacion_id = ?");
-        if (!$stmt) {
-            error_log('Error prepare clonarItems: ' . mysqli_error($this->db));
-            return;
+             FROM cotizacion_items WHERE cotizacion_id = :old_id"
+        );
+        if (!$stmt->execute([':new_id' => $newId, ':old_id' => $oldId])) {
+            error_log('Error execute clonarItems');
         }
-        mysqli_stmt_bind_param($stmt, 'ii', $newId, $oldId);
-        if (!mysqli_stmt_execute($stmt)) {
-            error_log('Error execute clonarItems: ' . mysqli_stmt_error($stmt));
-        }
-        mysqli_stmt_close($stmt);
     }
-
 
     /**
      * Genera el número de cotización: CODIGO_USUARIO + consecutivo mensual de 2 dígitos.
      * Ejemplo: EB01, EB02, ..., EB99
-     * El consecutivo se reinicia cada mes.
-     * Usa transacción + SELECT FOR UPDATE para evitar colisiones concurrentes.
+     * Usa transacción PDO para evitar colisiones concurrentes.
      */
     public function finalizarCotizacion(
         int    $id,
@@ -252,57 +228,49 @@ class CotizacionModel
         string $usuarioCodigo = '',
         ?string $revisionDe = null
     ): string {
-        mysqli_begin_transaction($this->db);
+        $this->db->beginTransaction();
         try {
             // Utilizar el código del usuario actual si se proporcionó, si no, buscar en la bd
             if (!empty($usuarioCodigo)) {
                 $codigo = $usuarioCodigo;
             } else {
-                $stmtCodigo = mysqli_prepare($this->db,
-                    'SELECT usuario_codigo FROM cotizaciones WHERE id = ? FOR UPDATE');
-                mysqli_stmt_bind_param($stmtCodigo, 'i', $id);
-                mysqli_stmt_execute($stmtCodigo);
-                $resCodigo   = mysqli_stmt_get_result($stmtCodigo);
-                $rowCodigo   = mysqli_fetch_assoc($resCodigo);
-                $codigo      = $rowCodigo['usuario_codigo'] ?? 'COT';
-                mysqli_stmt_close($stmtCodigo);
+                $stmtCodigo = $this->db->prepare(
+                    'SELECT usuario_codigo FROM cotizaciones WHERE id = :id FOR UPDATE'
+                );
+                $stmtCodigo->execute([':id' => $id]);
+                $rowCodigo = $stmtCodigo->fetch();
+                $codigo    = $rowCodigo['usuario_codigo'] ?? 'COT';
             }
 
             if (!empty($revisionDe)) {
-                // Es una revisión, buscar el último sufijo de esta base
                 $likeBase = $revisionDe . '_%';
-                $stmtRev = mysqli_prepare($this->db,
+                $stmtRev  = $this->db->prepare(
                     "SELECT numero_cotizacion FROM cotizaciones
-                     WHERE numero_cotizacion LIKE ?
+                     WHERE numero_cotizacion LIKE :base
                      ORDER BY CHAR_LENGTH(numero_cotizacion) DESC, numero_cotizacion DESC
-                     LIMIT 1 FOR UPDATE");
-                mysqli_stmt_bind_param($stmtRev, 's', $likeBase);
-                mysqli_stmt_execute($stmtRev);
-                $resRev = mysqli_stmt_get_result($stmtRev);
-                $rowRev = mysqli_fetch_assoc($resRev);
-                mysqli_stmt_close($stmtRev);
+                     LIMIT 1 FOR UPDATE"
+                );
+                $stmtRev->execute([':base' => $likeBase]);
+                $rowRev = $stmtRev->fetch();
 
-                if ($rowRev && preg_match('/_(\d+)$/', $rowRev['numero_cotizacion'], $matches)) {
+                if ($rowRev && preg_match('/\_(\d+)$/', $rowRev['numero_cotizacion'], $matches)) {
                     $nextSuffix = (int)$matches[1] + 1;
                 } else {
                     $nextSuffix = 1;
                 }
                 $numeroCotizacion = $revisionDe . '_' . str_pad($nextSuffix, 2, '0', STR_PAD_LEFT);
             } else {
-                // Contar cotizaciones finalizadas de este usuario en el mes actual
-                $mes  = date('Y-m');
-                $stmtCnt = mysqli_prepare($this->db,
+                $mes     = date('Y-m');
+                $stmtCnt = $this->db->prepare(
                     "SELECT COUNT(*) AS total FROM cotizaciones
-                     WHERE usuario_codigo = ?
+                     WHERE usuario_codigo = :cod
                        AND estado = 'finalizada'
-                       AND DATE_FORMAT(fecha_creacion, '%Y-%m') = ?
+                       AND DATE_FORMAT(fecha_creacion, '%Y-%m') = :mes
                        AND numero_cotizacion NOT LIKE '%\_%'
-                     FOR UPDATE");
-                mysqli_stmt_bind_param($stmtCnt, 'ss', $codigo, $mes);
-                mysqli_stmt_execute($stmtCnt);
-                $resCnt = mysqli_stmt_get_result($stmtCnt);
-                $cnt    = (int)mysqli_fetch_assoc($resCnt)['total'];
-                mysqli_stmt_close($stmtCnt);
+                     FOR UPDATE"
+                );
+                $stmtCnt->execute([':cod' => $codigo, ':mes' => $mes]);
+                $cnt = (int)$stmtCnt->fetchColumn();
 
                 $numeroCotizacion = trim($codigo) . ' ' . str_pad($cnt + 1, 2, '0', STR_PAD_LEFT);
             }
@@ -310,31 +278,42 @@ class CotizacionModel
             // Calcular fecha de validez
             $fechaValidez = date('Y-m-d', strtotime($fechaCreacion . " + $diasValidez days"));
 
-            $stmtUpd = mysqli_prepare($this->db,
+            $stmtUpd = $this->db->prepare(
                 "UPDATE cotizaciones
-                 SET numero_cotizacion=?, estado='finalizada',
-                     fecha_creacion=?, dias_validez=?, fecha_validez=?,
-                     condiciones_pago=?, observaciones=?,
-                     cliente_nombre=?, cliente_nit=?, cliente_direccion=?,
-                     cliente_telefono=?, cliente_correo=?, cliente_contacto=?,
-                     cliente_ciudad=?, cliente_id=?,
-                     asesor_nombre=?, asesor_cargo=?, usuario_codigo=?
-                 WHERE id=?");
-            mysqli_stmt_bind_param($stmtUpd, 'ssissssssssssisssi',
-                $numeroCotizacion, $fechaCreacion, $diasValidez, $fechaValidez,
-                $condicionesPago, $observaciones,
-                $clienteNombre, $clienteNit, $clienteDireccion,
-                $clienteTelefono, $clienteCorreo, $clienteContacto,
-                $clienteCiudad, $clienteId,
-                $asesorNombre, $asesorCargo, $codigo,
-                $id);
-            mysqli_stmt_execute($stmtUpd);
-            mysqli_stmt_close($stmtUpd);
+                 SET numero_cotizacion=:num, estado='finalizada',
+                     fecha_creacion=:fech, dias_validez=:dval, fecha_validez=:fval,
+                     condiciones_pago=:condpago, observaciones=:obs,
+                     cliente_nombre=:cnombre, cliente_nit=:cnit, cliente_direccion=:cdir,
+                     cliente_telefono=:ctel, cliente_correo=:ccorreo, cliente_contacto=:ccont,
+                     cliente_ciudad=:ccity, cliente_id=:cid,
+                     asesor_nombre=:anom, asesor_cargo=:acargo, usuario_codigo=:ucod
+                 WHERE id=:id"
+            );
+            $stmtUpd->execute([
+                ':num'     => $numeroCotizacion,
+                ':fech'    => $fechaCreacion,
+                ':dval'    => $diasValidez,
+                ':fval'    => $fechaValidez,
+                ':condpago'=> $condicionesPago,
+                ':obs'     => $observaciones,
+                ':cnombre' => $clienteNombre,
+                ':cnit'    => $clienteNit,
+                ':cdir'    => $clienteDireccion,
+                ':ctel'    => $clienteTelefono,
+                ':ccorreo' => $clienteCorreo,
+                ':ccont'   => $clienteContacto,
+                ':ccity'   => $clienteCiudad,
+                ':cid'     => $clienteId,
+                ':anom'    => $asesorNombre,
+                ':acargo'  => $asesorCargo,
+                ':ucod'    => $codigo,
+                ':id'      => $id,
+            ]);
 
-            mysqli_commit($this->db);
+            $this->db->commit();
             return $numeroCotizacion;
         } catch (\Exception $e) {
-            mysqli_rollback($this->db);
+            $this->db->rollBack();
             throw $e;
         }
     }
@@ -343,106 +322,74 @@ class CotizacionModel
 
     public function buscarConFiltros(array $filtros, int $offset, int $limite, int $usuarioId = 0, string $rol = 'usuario'): array
     {
-        [$where, $params, $types] = $this->construirWhere($filtros, $usuarioId, $rol);
-        $sql    = 'SELECT c.*, u.nombre AS nombre_usuario FROM cotizaciones c
-                   LEFT JOIN usuarios u ON c.usuario_id = u.id'
-                . ($where ? " WHERE $where" : '')
-                . ' ORDER BY c.id DESC LIMIT ? OFFSET ?';
-        $types .= 'ii';
-        $params[] = $limite;
-        $params[] = $offset;
+        [$where, $params] = $this->construirWhere($filtros, $usuarioId, $rol);
+        $sql = 'SELECT c.*, u.nombre AS nombre_usuario FROM cotizaciones c
+                LEFT JOIN usuarios u ON c.usuario_id = u.id'
+             . ($where ? " WHERE $where" : '')
+             . ' ORDER BY c.id DESC LIMIT :limit OFFSET :offset';
 
-        $stmt = mysqli_prepare($this->db, $sql);
-        if ($params) {
-            mysqli_stmt_bind_param($stmt, $types, ...$params);
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
         }
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $rows   = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row;
-        }
-        mysqli_stmt_close($stmt);
-        return $rows;
+        $stmt->bindValue(':limit',  $limite, \PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
     public function contarConFiltros(array $filtros, int $usuarioId = 0, string $rol = 'usuario'): int
     {
-        [$where, $params, $types] = $this->construirWhere($filtros, $usuarioId, $rol);
+        [$where, $params] = $this->construirWhere($filtros, $usuarioId, $rol);
         $sql  = 'SELECT COUNT(*) AS total FROM cotizaciones c' . ($where ? " WHERE $where" : '');
-        $stmt = mysqli_prepare($this->db, $sql);
-        if ($params) {
-            mysqli_stmt_bind_param($stmt, $types, ...$params);
-        }
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
-        return (int)($row['total'] ?? 0);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
     }
 
     private function construirWhere(array $filtros, int $usuarioId = 0, string $rol = 'usuario'): array
     {
         $condiciones = ["c.estado = 'finalizada'"];
         $params      = [];
-        $types       = '';
 
-        // Los usuarios solo ven sus propias cotizaciones
         if ($rol !== 'admin' && $usuarioId > 0) {
-            $condiciones[] = 'c.usuario_id = ?';
-            $params[]      = $usuarioId;
-            $types        .= 'i';
+            $condiciones[] = 'c.usuario_id = :uid';
+            $params[':uid'] = $usuarioId;
         }
-
         if (!empty($filtros['fecha'])) {
-            $condiciones[] = 'DATE(c.fecha_creacion) = ?';
-            $params[]      = $filtros['fecha'];
-            $types        .= 's';
+            $condiciones[] = 'DATE(c.fecha_creacion) = :fecha';
+            $params[':fecha'] = $filtros['fecha'];
         }
         if (!empty($filtros['nombre_cliente'])) {
-            $condiciones[] = 'c.cliente_nombre LIKE ?';
-            $params[]      = '%' . $filtros['nombre_cliente'] . '%';
-            $types        .= 's';
+            $condiciones[] = 'c.cliente_nombre LIKE :nombre';
+            $params[':nombre'] = '%' . $filtros['nombre_cliente'] . '%';
         }
         if (!empty($filtros['numero_cotizacion'])) {
-            $condiciones[] = 'c.numero_cotizacion LIKE ?';
-            $params[]      = '%' . $filtros['numero_cotizacion'] . '%';
-            $types        .= 's';
+            $condiciones[] = 'c.numero_cotizacion LIKE :ncot';
+            $params[':ncot'] = '%' . $filtros['numero_cotizacion'] . '%';
         }
 
-        return [
-            implode(' AND ', $condiciones),
-            $params,
-            $types,
-        ];
+        return [implode(' AND ', $condiciones), $params];
     }
 
     // ── Ítems ─────────────────────────────────────────────────────────────────
 
     public function obtenerItems(int $cotizacionId): array
     {
-        $stmt = mysqli_prepare($this->db,
-            'SELECT * FROM cotizacion_items WHERE cotizacion_id = ? ORDER BY id ASC');
-        mysqli_stmt_bind_param($stmt, 'i', $cotizacionId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $rows   = [];
-        while ($row = mysqli_fetch_assoc($result)) {
-            $rows[] = $row;
-        }
-        mysqli_stmt_close($stmt);
-        return $rows;
+        $stmt = $this->db->prepare(
+            'SELECT * FROM cotizacion_items WHERE cotizacion_id = :cid ORDER BY id ASC'
+        );
+        $stmt->execute([':cid' => $cotizacionId]);
+        return $stmt->fetchAll();
     }
 
     public function buscarItemPorId(int $itemId, int $cotizacionId): ?array
     {
-        $stmt = mysqli_prepare($this->db,
-            'SELECT * FROM cotizacion_items WHERE id = ? AND cotizacion_id = ?');
-        mysqli_stmt_bind_param($stmt, 'ii', $itemId, $cotizacionId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $row    = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+        $stmt = $this->db->prepare(
+            'SELECT * FROM cotizacion_items WHERE id = :iid AND cotizacion_id = :cid'
+        );
+        $stmt->execute([':iid' => $itemId, ':cid' => $cotizacionId]);
+        $row = $stmt->fetch();
         return $row ?: null;
     }
 
@@ -455,41 +402,38 @@ class CotizacionModel
                                  float $estampillas = 0, string $proveedor = '',
                                  string $codigoProveedor = '', string $calcOps = '{}'): bool
     {
-        // productoId puede ser NULL → se usa una variable intermedia para bind_param
-        $prodIdBind = $productoId; // mysqli acepta null en tipo 'i' desde PHP 8.1+,
-                                   // pero usamos variable explícita para compatibilidad
-
-        $stmt = mysqli_prepare($this->db,
+        $stmt = $this->db->prepare(
             'INSERT INTO cotizacion_items
              (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio, iva, porcentaje_iva, tiempo_entrega,
               categoria, codigo_producto, precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, proveedor, codigo_proveedor, calc_ops)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-
-        // Tipos MySQLi — mapa 1:1 con los 20 parámetros del INSERT:
-        //   i  i  s  s  s  i  d  s  d  s  s  s  d  d  d  d  d  s  s  s
-        //   1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
-        $types = 'ii'   // cotizacion_id, producto_id
-               . 'sss'  // titulo, foto, descripcion
-               . 'i'    // cantidad
-               . 'd'    // precio
-               . 's'    // iva
-               . 'd'    // porcentaje_iva
-               . 'sss'  // tiempo_entrega, categoria, codigo_producto
-               . 'ddddd'// precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas
-               . 'sss'; // proveedor, codigo_proveedor, calc_ops
-        // strlen($types) === 20 ✓
-        mysqli_stmt_bind_param($stmt, $types,
-            $cotizacionId, $prodIdBind, $titulo, $foto, $descripcion,
-            $cantidad, $precio, $iva, $porcentajeIva,
-            $tiempoEntrega, $categoria, $codigoProducto,
-            $precioProveedor, $porcentajeUtilidad, $flete, $calibracion, $estampillas,
-            $proveedor, $codigoProveedor, $calcOps);
-
-        $ok = mysqli_stmt_execute($stmt);
+             VALUES (:cid, :pid, :tit, :foto, :desc, :cant, :prec, :iva, :porciva, :tient,
+                     :cat, :codprod, :precprov, :porcutil, :flet, :calib, :estamp, :prov, :codprov, :calc)'
+        );
+        $ok = $stmt->execute([
+            ':cid'      => $cotizacionId,
+            ':pid'      => $productoId,
+            ':tit'      => $titulo,
+            ':foto'     => $foto,
+            ':desc'     => $descripcion,
+            ':cant'     => $cantidad,
+            ':prec'     => $precio,
+            ':iva'      => $iva,
+            ':porciva'  => $porcentajeIva,
+            ':tient'    => $tiempoEntrega,
+            ':cat'      => $categoria,
+            ':codprod'  => $codigoProducto,
+            ':precprov' => $precioProveedor,
+            ':porcutil' => $porcentajeUtilidad,
+            ':flet'     => $flete,
+            ':calib'    => $calibracion,
+            ':estamp'   => $estampillas,
+            ':prov'     => $proveedor,
+            ':codprov'  => $codigoProveedor,
+            ':calc'     => $calcOps,
+        ]);
         if (!$ok) {
-            error_log('insertarItem mysqli error: ' . mysqli_stmt_error($stmt));
+            error_log('insertarItem PDO error: ' . implode(' | ', $stmt->errorInfo()));
         }
-        mysqli_stmt_close($stmt);
         return $ok;
     }
 
@@ -502,46 +446,54 @@ class CotizacionModel
                                    float $estampillas = 0, string $proveedor = '',
                                    string $codigoProveedor = '', string $calcOps = '{}'): bool
     {
-        $stmt = mysqli_prepare($this->db,
+        $stmt = $this->db->prepare(
             'UPDATE cotizacion_items
-             SET titulo=?,foto=?,descripcion=?,cantidad=?,precio=?,iva=?,porcentaje_iva=?,tiempo_entrega=?,
-                 categoria=?,codigo_producto=?,precio_proveedor=?,porcentaje_utilidad=?,flete=?,calibracion=?,estampillas=?,proveedor=?,codigo_proveedor=?,calc_ops=?
-             WHERE id=? AND cotizacion_id=?');
-        mysqli_stmt_bind_param($stmt, 'sssidsdsssdddddsssii',
-            $titulo, $foto, $descripcion, $cantidad, $precio, $iva, $porcentajeIva, $tiempoEntrega,
-            $categoria, $codigoProducto, $precioProveedor, $porcentajeUtilidad,
-            $flete, $calibracion, $estampillas, $proveedor, $codigoProveedor, $calcOps,
-            $itemId, $cotizacionId);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
+             SET titulo=:tit, foto=:foto, descripcion=:desc, cantidad=:cant, precio=:prec,
+                 iva=:iva, porcentaje_iva=:porciva, tiempo_entrega=:tient,
+                 categoria=:cat, codigo_producto=:codprod,
+                 precio_proveedor=:precprov, porcentaje_utilidad=:porcutil,
+                 flete=:flet, calibracion=:calib, estampillas=:estamp,
+                 proveedor=:prov, codigo_proveedor=:codprov, calc_ops=:calc
+             WHERE id=:iid AND cotizacion_id=:cid'
+        );
+        return $stmt->execute([
+            ':tit'      => $titulo,
+            ':foto'     => $foto,
+            ':desc'     => $descripcion,
+            ':cant'     => $cantidad,
+            ':prec'     => $precio,
+            ':iva'      => $iva,
+            ':porciva'  => $porcentajeIva,
+            ':tient'    => $tiempoEntrega,
+            ':cat'      => $categoria,
+            ':codprod'  => $codigoProducto,
+            ':precprov' => $precioProveedor,
+            ':porcutil' => $porcentajeUtilidad,
+            ':flet'     => $flete,
+            ':calib'    => $calibracion,
+            ':estamp'   => $estampillas,
+            ':prov'     => $proveedor,
+            ':codprov'  => $codigoProveedor,
+            ':calc'     => $calcOps,
+            ':iid'      => $itemId,
+            ':cid'      => $cotizacionId,
+        ]);
     }
 
     public function eliminarItem(int $itemId): bool
     {
-        $stmt = mysqli_prepare($this->db, 'DELETE FROM cotizacion_items WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'i', $itemId);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
+        $stmt = $this->db->prepare('DELETE FROM cotizacion_items WHERE id = :id');
+        return $stmt->execute([':id' => $itemId]);
     }
 
     // ── ELIMINAR ───────────────────────────────────────────────────────────────
 
     public function eliminar(int $id): bool
     {
-        // Primero eliminar todos los ítems asociados
-        $stmtItems = mysqli_prepare($this->db, 'DELETE FROM cotizacion_items WHERE cotizacion_id = ?');
-        mysqli_stmt_bind_param($stmtItems, 'i', $id);
-        mysqli_stmt_execute($stmtItems);
-        mysqli_stmt_close($stmtItems);
+        $stmtItems = $this->db->prepare('DELETE FROM cotizacion_items WHERE cotizacion_id = :cid');
+        $stmtItems->execute([':cid' => $id]);
 
-        // Luego eliminar la cotización
-        $stmt = mysqli_prepare($this->db, 'DELETE FROM cotizaciones WHERE id = ?');
-        mysqli_stmt_bind_param($stmt, 'i', $id);
-        $ok = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $ok;
+        $stmt = $this->db->prepare('DELETE FROM cotizaciones WHERE id = :id');
+        return $stmt->execute([':id' => $id]);
     }
 }
-
