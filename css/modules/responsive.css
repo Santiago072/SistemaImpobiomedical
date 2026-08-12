@@ -1,0 +1,284 @@
+/* ── MEDIA QUERIES Y DISEÑO RESPONSIVE ── */
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+    .grupo-fila {
+        grid-template-columns: 1fr;
+    }
+
+    .panel-right {
+        padding: 30px 20px;
+    }
+
+    .formulario-contenedor {
+        padding: 25px;
+    }
+
+    .tabla-datos th,
+    .tabla-datos td {
+        padding: 12px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-lateral {
+        margin-left: -120px;
+    }
+
+    .menu-lateral.visible {
+        margin-left: 0;
+    }
+
+    .contenido-principal {
+        margin-left: 0 !important;
+        padding: 20px;
+    }
+
+    .panel-flotante {
+        left: 120px;
+        width: 260px;
+    }
+
+    .card-wrapper {
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    .panel-left {
+        display: none;
+    }
+
+    .panel-right {
+        padding: 40px 30px;
+    }
+
+    .numero-principal {
+        font-size: 40px;
+    }
+
+    .contenedor-tarjetas {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .panel-dos-columnas {
+        grid-template-columns: 1fr;
+    }
+
+    .contenedor-tarjetas {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+
+/* Tablet / pantallas medianas */
+@media (max-width: 860px) {
+    .login-page-body .card {
+        flex-direction: column;
+        height: auto;
+        border-radius: 22px;
+        max-width: 500px;
+    }
+    .login-page-body .left-panel,
+    .login-page-body .right-panel {
+        width: 100%;
+    }
+    .login-page-body .left-panel {
+        padding: 36px 32px 28px;
+    }
+    .login-page-body .ecg-wrap {
+        display: none; /* Ocultar ECG en móvil para ahorrar espacio */
+    }
+    .login-page-body .right-panel {
+        padding: 36px 32px 40px;
+    }
+}
+
+/* Móvil pequeño */
+@media (max-width: 480px) {
+    .login-page-body {
+        padding: 12px;
+        align-items: flex-start;
+        padding-top: 24px;
+    }
+    .login-page-body .card {
+        border-radius: 18px;
+    }
+    .login-page-body .left-panel {
+        padding: 28px 22px 24px;
+    }
+    .login-page-body .hero-title {
+        font-size: 28px;
+    }
+    .login-page-body .right-panel {
+        padding: 28px 20px 36px;
+    }
+    .login-page-body .form-box {
+        max-width: 100%;
+    }
+    .login-page-body .cert-chips {
+        flex-wrap: wrap;
+    }
+}
+
+
+/* Fix: btn-login no debe heredar text-transform del sistema */
+.login-page-body .btn-login { text-transform: none; letter-spacing: normal; }
+
+/* ═══════════════════════════════════════════════════════════
+   OVERRIDES CRÍTICOS: Login anula estilos globales del sistema
+   (deben ir al final para mayor especificidad)
+═══════════════════════════════════════════════════════════ */
+
+/* Neutralizar la regla global .card con !important */
+.login-page-body .card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08) !important;
+    color: inherit !important;
+    border-radius: 28px !important;
+    display: flex !important;
+    width: 100% !important;
+    max-width: 980px !important;
+    height: 580px !important;
+    overflow: hidden !important;
+}
+
+/* Neutralizar regla body:not(.login-premium) div color */
+.login-page-body div,
+.login-page-body span,
+.login-page-body p,
+.login-page-body h1,
+.login-page-body h2,
+.login-page-body h3 {
+    color: inherit !important;
+}
+
+/* Restaurar colores específicos */
+.login-page-body .left-panel,
+.login-page-body .left-panel * { color: inherit !important; }
+
+.login-page-body .hero-title { color: #ffffff !important; }
+.login-page-body .hero-sub { color: rgba(255,255,255,0.55) !important; }
+.login-page-body .badge-pill span { color: #2bebfb !important; }
+.login-page-body .hero-title .accent { color: transparent !important; -webkit-text-fill-color: transparent !important; }
+.login-page-body .partner-label { color: rgba(255,255,255,0.35) !important; }
+.login-page-body .cert-chip { color: rgba(255,255,255,0.8) !important; }
+.login-page-body .cert-chip i { color: #2bebfb !important; }
+.login-page-body .form-title h2 { color: #0d1b2a !important; }
+.login-page-body .form-title p { color: #6b7280 !important; }
+.login-page-body .field label { color: #374151 !important; }
+.login-page-body .form-footer { color: #9ca3af !important; }
+.login-page-body .form-footer i { color: #10757e !important; }
+.login-page-body .form-sep span { color: #9ca3af !important; }
+.login-page-body .error-msg { color: #b91c1c !important; }
+.login-page-body .field-wrap input { color: #0d1b2a !important; padding: 13px 14px 13px 42px !important; }
+
+/* Fondo paneles */
+.login-page-body .left-panel {
+    background: linear-gradient(145deg, #0f6870 0%, #0c5c65 40%, #06363c 100%) !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #fff !important;
+}
+.login-page-body .right-panel {
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+.login-page-body .partner-card {
+    background: rgba(255,255,255,0.97) !important;
+    border: none !important;
+    color: inherit !important;
+}
+
+/* Responsive con !important para vencer conflictos globales */
+@media (max-width: 860px) { .login-page-body .card { flex-direction: column !important; height: auto !important; max-width: 440px !important; border-radius: 22px !important; } .login-page-body .left-panel { display: none !important; } .login-page-body .right-panel { width: 100% !important; padding: 40px 32px !important; } .login-page-body .ecg-wrap { display: none !important; } .login-page-body { align-items: center; } }
+
+@media (max-width: 480px) {
+    .login-page-body {
+        padding: 12px !important;
+        align-items: flex-start !important;
+        padding-top: 20px !important;
+        min-height: 100svh;
+    }
+    .login-page-body .card {
+        border-radius: 16px !important;
+        max-width: 100% !important;
+    }
+    .login-page-body .left-panel {
+        padding: 24px 20px 20px !important;
+    }
+    .login-page-body .hero-title {
+        font-size: 26px !important;
+    }
+    .login-page-body .right-panel {
+        padding: 24px 18px 32px !important;
+    }
+    .login-page-body .form-box { max-width: 100% !important; }
+    .login-page-body .cert-chips { flex-wrap: wrap !important; }
+}
+
+/* Fix responsive móvil: permitir scroll cuando la tarjeta supera la pantalla */
+@media (max-width: 860px) {
+    .login-page-body {
+        overflow-y: auto !important;
+        align-items: flex-start !important;
+        padding: 16px !important;
+    }
+    .login-page-body .card {
+        overflow: visible !important;
+        margin: 0 auto;
+    }
+    .login-page-body .left-panel,
+    .login-page-body .right-panel {
+        overflow: visible !important;
+    }
+}
+
+/* ── Category Filter Buttons ── */
+.mod-btn-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: #f0fdfa;
+    border: 1.5px solid #99f6e4;
+    border-radius: 20px;
+    color: #0f766e;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+}
+.mod-btn-category:hover {
+    background: #ccfbf1;
+    border-color: #2dd4bf;
+    color: #0d5c55;
+}
+.mod-btn-category.active {
+    background: #0f766e;
+    border-color: #0f766e;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(15,118,110,0.3);
+}
+.mod-btn-category .cat-count {
+    background: rgba(0,0,0,0.08);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.mod-btn-category.active .cat-count {
+    background: rgba(255,255,255,0.25);
+}

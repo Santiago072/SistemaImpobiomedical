@@ -1,0 +1,272 @@
+/* ── ESTRUCTURA GENERAL, SIDEBAR Y TOPBAR ── */
+/* ════════════════════════════════════════════════════════════
+   SIDEBAR / MENÚ LATERAL
+════════════════════════════════════════════════════════════ */
+.menu-lateral {
+    width: 140px;
+    background: rgba(255, 255, 255, .05);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--glass-border-medium);
+    position: fixed; left: 0;
+    height: 100vh;
+    z-index: 1000;
+    text-align: center;
+    padding-top: 30px;
+    transition: margin-left .4s cubic-bezier(.4, 0, .2, 1);
+}
+
+.menu-lateral.oculto {
+    margin-left: -140px;
+}
+
+.logo-empresa img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 30px;
+    border: 2px solid rgba(45, 190, 203, .3);
+    box-shadow: 0 0 30px rgba(45, 190, 203, .2);
+}
+
+.lista-menu-lateral {
+    list-style: none;
+}
+
+.lista-menu-lateral li {
+    margin: 30px 0;
+}
+
+.lista-menu-lateral a {
+    color: var(--white);
+    font-size: 22px;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(45, 190, 203, .1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    text-decoration: none;
+    transition: all .3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.lista-menu-lateral a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(45, 190, 203, .2), transparent);
+    transition: left .5s;
+}
+
+.lista-menu-lateral a:hover::before {
+    left: 100%;
+}
+
+.lista-menu-lateral a:hover {
+    background: rgba(45, 190, 203, .15);
+    border-color: rgba(45, 190, 203, .3);
+    transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(45, 190, 203, .2);
+}
+
+.lista-menu-lateral a i {
+    color: var(--gold);
+    transition: all .3s;
+}
+
+.lista-menu-lateral a:hover i {
+    color: var(--gold-light);
+}
+
+.panel-flotante {
+    position: fixed; left: 0;
+    left: 130px;
+    top: 0;
+    width: 320px;
+    height: 100vh;
+    background: rgba(255, 255, 255, .08);
+    backdrop-filter: blur(30px);
+    border-right: 1px solid var(--glass-border);
+    box-shadow: 12px 0 40px rgba(0, 0, 0, .3);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-30px);
+    transition: all .4s ease;
+    padding: 40px 30px;
+    overflow-y: auto;
+}
+
+.panel-flotante.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.submenu {
+    list-style: none;
+}
+
+.submenu h3 {
+    color: var(--gold);
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 12px;
+}
+
+.submenu li {
+    margin-bottom: 8px;
+}
+
+.submenu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    color: rgba(255, 255, 255, .8);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all .3s ease;
+    border-radius: 10px;
+    border: 1px solid transparent;
+}
+
+.submenu a:hover {
+    background: rgba(45, 190, 203, .1);
+    border-color: rgba(45, 190, 203, .2);
+    color: var(--gold-light);
+    padding-left: 25px;
+}
+
+.submenu a i {
+    color: var(--gold);
+    font-size: 16px;
+    width: 24px;
+    text-align: center;
+}
+
+/* ════════════════════════════════════════════════════════════
+   CONTENIDO PRINCIPAL / DASHBOARD
+════════════════════════════════════════════════════════════ */
+.contenido-principal {
+    margin-left: 120px;
+    padding: 40px;
+    min-height: 100vh;
+    position: relative;
+    z-index: 10;
+    transition: margin-left .4s cubic-bezier(.4, 0, .2, 1);
+}
+
+.contenido-principal.completo {
+    margin-left: 0;
+}
+
+.cabecera-superior {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--glass-border-medium);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.cabecera-bienvenida {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cabecera-bienvenida h3 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, var(--white), var(--gold-light));
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.cabecera-bienvenida .rol-admin,
+.cabecera-bienvenida .rol-usuario {
+    font-size: 10px;
+    padding: 5px 12px;
+}
+
+.boton-menu-ocultar {
+    background: rgba(255, 255, 255, .08);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border-medium);
+    color: var(--white);
+    padding: 14px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all .3s ease;
+    text-transform: uppercase;
+}
+
+.boton-menu-ocultar:hover {
+    background: rgba(45, 190, 203, .15);
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(45, 190, 203, .15);
+}
+
+.boton-menu-ocultar i {
+    font-size: 20px;
+    color: var(--gold);
+    transition: transform .3s;
+}
+
+.boton-menu-ocultar:hover i {
+    transform: rotate(180deg);
+}
+
+.rol-admin,
+.rol-usuario {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border-radius: 50px;
+    width: fit-content;
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.rol-admin {
+    background: linear-gradient(135deg, rgba(45, 190, 203, .2), rgba(16, 117, 126, .1));
+    border: 1px solid rgba(45, 190, 203, .3);
+    color: var(--gold-light);
+    box-shadow: 0 0 20px rgba(45, 190, 203, .1);
+}
+
+.rol-usuario {
+    background: linear-gradient(135deg, rgba(45, 190, 203, .2), rgba(16, 117, 126, .1));
+    border: 1px solid rgba(45, 190, 203, .3);
+    color: var(--gold-light);
+    box-shadow: 0 0 20px rgba(45, 190, 203, .1);
+}
+

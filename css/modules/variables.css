@@ -1,0 +1,298 @@
+/* ── VARIABLES GLOBALES, TOKENS Y KEYFRAMES ── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    /* ── Impobiomedical Palette ─────────────────────────────── */
+    --ink: #f8fafc;           /* Fondo ultra oscuro (Noche) */
+    --bark: #f1f5f9;          /* Fondo oscuro navy teal */
+    --ember: #e2e8f0;         /* Fondo medio teal */
+    --copper: #10757e;        /* Teal principal (color logo oscuro) */
+    --honey: #159ba7;         /* Teal claro brillante */
+    --amber: #2dbecb;         /* Highlight cyan */
+    --gilt: #9fa5a9;          /* Gris corporativo (del texto BIO) */
+    --parchment: #ffffff;     /* Fondo claro (Día) */
+    --white: #1e293b;
+    --danger: #e03c3c;
+    --info: #3a9fd5;
+    --success: #22c55e;
+
+    /* ── Aliases actualizados (Biomédicos) ─────────── */
+    --brown-deep: var(--ink);
+    --brown-rich: var(--bark);
+    --brown-mid: var(--copper);
+    --brown-warm: var(--honey);
+    --brown-light: #6acacc;
+    --gold: var(--copper);          /* Reemplazo de dorado por teal */
+    --gold-light: var(--amber);     /* Reemplazo de dorado claro por cyan */
+    --cream: var(--parchment);
+    --text-dark: #1e293b;
+    --text-mid: #334155;
+    --text-soft: #64748b;
+
+    /* ── Glass ─────────────────────────────────────────────── */
+    --glass-bg: rgba(16, 117, 126, 0.04);
+    --glass-bg-light: rgba(16, 117, 126, 0.07);
+    --glass-bg-medium: rgba(16, 117, 126, 0.11);
+    --glass-border: rgba(45, 190, 203, 0.14);
+    --glass-border-medium: rgba(45, 190, 203, 0.22);
+    --glass-border-strong: rgba(45, 190, 203, 0.32);
+
+    /* ── Shadows ───────────────────────────────────────────── */
+    --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 10px 32px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 28px 56px rgba(0, 0, 0, 0.6);
+    --shadow-gold: 0 0 28px rgba(45, 212, 212, 0.2);
+
+    /* ── Typography ────────────────────────────────────────── */
+    --font-main: 'Inter', sans-serif;
+    --font-display: 'Inter', sans-serif;
+
+    /* ── Transitions ───────────────────────────────────────── */
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-fast: 0.18s ease;
+    --transition-normal: 0.28s ease;
+    --transition-slow: 0.5s ease;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: var(--ink);
+    color: var(--white);
+    line-height: 1.65;
+}
+
+body.login-page {
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* ════════════════════════════════════════════════════════════
+   KEYFRAMES
+════════════════════════════════════════════════════════════ */
+@keyframes floatBlob {
+    0% {
+        transform: translate(0, 0) scale(1)
+    }
+
+    100% {
+        transform: translate(40px, 30px) scale(1.08)
+    }
+}
+
+@keyframes ringSpin {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes spinRing {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes haloPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: .45
+    }
+
+    50% {
+        transform: scale(1.06);
+        opacity: .9
+    }
+}
+
+@keyframes dashSpin {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes logoPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 24px rgba(45, 190, 203, .5), 0 0 50px rgba(16, 117, 126, .3)
+    }
+
+    50% {
+        box-shadow: 0 0 44px rgba(45, 190, 203, .75), 0 0 90px rgba(16, 117, 126, .55)
+    }
+}
+
+@keyframes textShine {
+    to {
+        background-position: 200% center
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px)
+    }
+
+    to {
+        opacity: 1;
+        transform: none
+    }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(14px)
+    }
+
+    to {
+        opacity: 1;
+        transform: none
+    }
+}
+
+@keyframes logoReveal {
+    from {
+        opacity: 0;
+        transform: scale(.78) translateY(-10px)
+    }
+
+    to {
+        opacity: 1;
+        transform: none
+    }
+}
+
+@keyframes cardReveal {
+    from {
+        opacity: 0;
+        transform: translateY(44px) scale(.96)
+    }
+
+    to {
+        opacity: 1;
+        transform: none
+    }
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-100%) rotate(45deg)
+    }
+
+    100% {
+        transform: translateX(100%) rotate(45deg)
+    }
+}
+
+@keyframes shimmer {
+    from {
+        transform: translateX(-100%)
+    }
+
+    to {
+        transform: translateX(100%)
+    }
+}
+
+@keyframes spinLoad {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes pulseText {
+
+    0%,
+    100% {
+        opacity: .4
+    }
+
+    50% {
+        opacity: 1
+    }
+}
+
+@keyframes errorShine {
+    0% {
+        left: -100%
+    }
+
+    100% {
+        left: 100%
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0)
+    }
+
+    25% {
+        transform: translateX(-7px)
+    }
+
+    75% {
+        transform: translateX(7px)
+    }
+}
+
+@keyframes countUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(28px)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(18px)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+@keyframes rippleEffect {
+    to {
+        transform: scale(4);
+        opacity: 0
+    }
+}
+
