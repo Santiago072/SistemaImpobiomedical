@@ -5,7 +5,7 @@
 [![PHPUnit](https://img.shields.io/badge/Tests-PHPUnit%2010-37b24d?style=flat-square&logo=php)](phpunit.xml)
 [![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?style=flat-square&logo=githubactions)](.github/workflows/ci.yml)
 [![Licencia](https://img.shields.io/badge/Licencia-Comercial%20Propietaria-e03c3c?style=flat-square)](LICENSE)
-[![Versión](https://img.shields.io/badge/Versión-v2.0.0-10757e?style=flat-square)](CHANGELOG.md)
+[![Versión](https://img.shields.io/badge/Versión-v2.0.0-10757e?style=flat-square)](docs/CHANGELOG.md)
 
 Bienvenido al **Sistema Impobiomedical**. Es una solución web integral de gestión comercial y médica desarrollada para **Impobiomedical — Soluciones y Servicios de Tecnología Biomédica**. Administra el ciclo comercial completo: creación de cotizaciones dinámicas con calculadora de márgenes de ganancia, generación de PDFs oficiales para clientes, hojas internas de respaldo de proveedores, órdenes de compra por proveedor (P.O.), catálogo de productos con fotos sanitizadas y reportes estadísticos avanzados.
 
@@ -13,18 +13,17 @@ Bienvenido al **Sistema Impobiomedical**. Es una solución web integral de gesti
 
 | Documento | Descripción |
 |-----------|-------------|
-| 👤 [Manual de Usuario](MANUAL_USUARIO.md) | Guía de uso de la aplicación para usuarios finales y asesores comerciales |
-| 📜 [Registro de Cambios](CHANGELOG.md) | Historial de versiones y modificaciones del sistema (v2.0.0) |
+| 👤 [Manual de Usuario](docs/MANUAL_USUARIO.md) | Guía de uso de la aplicación para usuarios finales y asesores comerciales |
+| 📜 [Registro de Cambios](docs/CHANGELOG.md) | Historial de versiones y modificaciones del sistema (v2.0.0) |
 | 📋 [Plan de Implementación](docs/PLAN_DE_IMPLEMENTACION.md) | Fases del proyecto, stack tecnológico y arquitectura empresarial |
 | 📋 [Especificación de Requisitos](docs/ESPECIFICACION_REQUISITOS.md) | Requisitos funcionales (RF), RNF, calculadora comercial y modelo de datos |
-| 🚀 [Manual de Despliegue VPS](docs/DESPLIEGUE_Y_MANTENIMIENTO.md) | Guía paso a paso para instalar y actualizar en el VPS con Docker y Nginx |
 | 🏗️ [Arquitectura y Componentes](docs/ARQUITECTURA_Y_COMPONENTES.md) | Diagramas Mermaid: componentes MVC, flujo comercial y capas de seguridad |
 | 🤝 [Guía para Colaboradores](docs/CONTRIBUTING.md) | Configuración local, uso de PHPUnit, convenciones de commits y checklist de PR |
 | ⚖️ [Licencia Comercial](LICENSE) | Términos legales de propiedad intelectual, uso comercial y mantenimiento |
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## 🛠️ Tecnologías e Infraestructura Utilizadas
 
 * **Backend:** PHP 8.1+ / 8.2 (Arquitectura MVC sin framework pesado).
 * **Persistencia:** `PDO` (PHP Data Objects) con sentencias preparadas y parámetros nombrados.
@@ -33,7 +32,10 @@ Bienvenido al **Sistema Impobiomedical**. Es una solución web integral de gesti
 * **Integración Continua:** GitHub Actions (`.github/workflows/ci.yml`).
 * **Generación de PDFs:** [DomPDF](https://github.com/dompdf/dompdf) integrado vía Composer.
 * **Frontend:** HTML5 semántico, CSS3 Vanilla modularizado (SMACSS/ITCSS en 7 submódulos), Bootstrap Icons y Google Fonts (Inter / Outfit).
-* **Contenedores:** Docker y Docker Compose con persistencia de volúmenes.
+* **Contenedores & Despliegue:** 
+  * `Dockerfile` multi-stage optimizado para PHP 8.2 + extensiones (`pdo_mysql`, `mbstring`, `fileinfo`).
+  * `docker-compose.yml` con persistencia de volúmenes para imágenes (`uploads/`), sesiones y base de datos.
+  * Script de despliegue automatizado `deploy.sh` para actualización sin caída en VPS.
 
 ---
 
@@ -57,36 +59,45 @@ index.php (Front Controller & Router con Security Headers)
 
 ## ⚡ Instalación y Puesta en Marcha
 
-### 1. Clonar el repositorio
-```bash
-git clone https://github.com/Santiago072/SistemaImpobiomedical.git
-cd SistemaImpobiomedical
-```
+### Opción A: Entorno Local (XAMPP / PHP + MySQL)
 
-### 2. Instalar dependencias
-```bash
-composer install
-```
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/Santiago072/SistemaImpobiomedical.git
+   cd SistemaImpobiomedical
+   ```
 
-### 3. Configurar variables de entorno
-Copia `.env.example` a `config/.env` y ajusta tus credenciales locales:
-```ini
-DB_HOST=localhost
-DB_NAME=sistema_impobiomedical
-DB_USER=root
-DB_PASS=
-APP_BASE=/SistemaImpobiomedical/
-SESSION_LIFETIME=3600
-COOKIE_SECURE=0
-```
+2. **Instalar dependencias de Composer:**
+   ```bash
+   composer install
+   ```
 
-### 4. Importar base de datos
-Importa el esquema y datos iniciales desde `BD.txt` en MySQL / phpMyAdmin.
+3. **Configurar variables de entorno (`config/.env`):**
+   ```bash
+   cp .env.example config/.env
+   ```
+   Ajusta credenciales locales (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`, `APP_BASE=/SistemaImpobiomedical/`).
 
-### 5. Ejecutar la suite de pruebas unitarias
-```bash
-composer test
-```
+4. **Importar base de datos:** Importa `BD.txt` en MySQL / phpMyAdmin.
+
+5. **Ejecutar pruebas unitarias:**
+   ```bash
+   composer test
+   ```
+
+---
+
+### Opción B: Producción con Docker o VPS
+
+1. **Despliegue con Docker Compose:**
+   ```bash
+   docker compose up -d --build
+   ```
+
+2. **Actualización automática en VPS:**
+   ```bash
+   bash deploy.sh
+   ```
 
 ---
 
