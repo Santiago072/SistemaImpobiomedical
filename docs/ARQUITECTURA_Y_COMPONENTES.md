@@ -57,7 +57,8 @@ graph TB
         MODEL_EST["EstadisticaModel"]
     end
 
-    subgraph DATABASE[("🛢️ Base de Datos Relacional\nMySQL 8.0+ / MariaDB")]
+    subgraph DATABASE ["🛢️ Base de Datos Relacional (MySQL 8.0+ / MariaDB)"]
+        direction TB
         TBL_USUARIOS["usuarios"]
         TBL_CLIENTES["clientes"]
         TBL_PRODUCTOS["productos"]

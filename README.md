@@ -16,9 +16,8 @@ Bienvenido al **Sistema Impobiomedical**. Es una solución web integral de gesti
 | 👤 [Manual de Usuario](MANUAL_USUARIO.md) | Guía de uso de la aplicación para usuarios finales y asesores comerciales |
 | 📜 [Registro de Cambios](CHANGELOG.md) | Historial de versiones y modificaciones del sistema (v2.0.0) |
 | 📋 [Plan de Implementación](docs/PLAN_DE_IMPLEMENTACION.md) | Fases del proyecto, stack tecnológico y arquitectura empresarial |
-| 📖 [Documentación Técnica](docs/documentacion-tecnica.md) | Arquitectura de carpetas, endpoints, persistencia PDO y seguridad |
 | 📋 [Especificación de Requisitos](docs/ESPECIFICACION_REQUISITOS.md) | Requisitos funcionales (RF), RNF, calculadora comercial y modelo de datos |
-| 🚀 [Manual de Despliegue VPS](docs/DESPLIEGUE_VPS.md) | Guía paso a paso para instalar y actualizar en el VPS con Docker y Nginx |
+| 🚀 [Manual de Despliegue VPS](docs/DESPLIEGUE_Y_MANTENIMIENTO.md) | Guía paso a paso para instalar y actualizar en el VPS con Docker y Nginx |
 | 🏗️ [Arquitectura y Componentes](docs/ARQUITECTURA_Y_COMPONENTES.md) | Diagramas Mermaid: componentes MVC, flujo comercial y capas de seguridad |
 | 🤝 [Guía para Colaboradores](docs/CONTRIBUTING.md) | Configuración local, uso de PHPUnit, convenciones de commits y checklist de PR |
 | ⚖️ [Licencia Comercial](LICENSE) | Términos legales de propiedad intelectual, uso comercial y mantenimiento |
