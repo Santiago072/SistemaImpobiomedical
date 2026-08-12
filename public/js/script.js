@@ -41,3 +41,30 @@ if(btnMenu) {
         }
     });
 }
+
+/* ── PROTECCIÓN ANTI-DOBLE ENVÍO GLOBAL EN FORMULARIOS POST ── */
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('form[method="POST"], form[method="post"]').forEach(function (form) {
+        // Ignorar si el formulario maneja su propio loader explícito
+        if (form.id === 'loginForm') return;
+
+        form.addEventListener('submit', function (e) {
+            // Verificar si el formulario es válido según HTML5
+            if (!form.checkValidity()) return;
+
+            const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+            if (submitBtn && !submitBtn.disabled) {
+                // Pequeño retardo para permitir que los campos hidden se serialicen
+                setTimeout(function () {
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.7';
+                    submitBtn.style.cursor = 'not-allowed';
+                    if (submitBtn.tagName === 'BUTTON') {
+                        submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+                    }
+                }, 20);
+            }
+        });
+    });
+});

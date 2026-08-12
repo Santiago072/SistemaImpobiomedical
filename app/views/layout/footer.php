@@ -7,6 +7,5 @@
 $basePath = $basePath ?? '/SistemaImpobiomedical/';
 ?>
 <script src="<?= $basePath ?>public/js/script.js?v=<?= time() ?>"></script>
-<script src="<?= $basePath ?>public/js/ajax_tables.js?v=<?= time() ?>"></script>
 </body>
 </html>
