@@ -200,10 +200,17 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no se ha podido cargar.');
+        return;
+    }
     
     const formatMes = mesStr => {
-        const [year, month] = mesStr.split('-');
-        return new Date(year, month - 1).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+        if (!mesStr || typeof mesStr !== 'string') return '';
+        const parts = mesStr.split('-');
+        if (parts.length < 2) return mesStr;
+        const [year, month] = parts;
+        return new Date(parseInt(year, 10), parseInt(month, 10) - 1).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
     };
 
     // ── 1. Gráfico de Evolución (Barra + Línea combinada) ──

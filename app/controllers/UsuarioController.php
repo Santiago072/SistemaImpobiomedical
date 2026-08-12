@@ -89,11 +89,14 @@ class UsuarioController
 
         $mensajeError = $this->validarCampos($codigo, $doc, $nombre, $correo, $telefono, $rol, $password, true);
 
-        if ($mensajeError === '' && $this->model->existeCodigoOCorreo($codigo, $correo)) {
-            $mensajeError = 'El código o correo ya está registrado';
+        if ($mensajeError === '' && $this->model->existeCodigo($codigo)) {
+            $mensajeError = 'El código de asesor ya está registrado';
         }
-        if ($mensajeError === '' && $this->model->existeDocumentoOCorreo($doc, $correo)) {
-            $mensajeError = 'El documento o correo ya está registrado';
+        if ($mensajeError === '' && $this->model->existeDocumento($doc)) {
+            $mensajeError = 'El documento ya está registrado';
+        }
+        if ($mensajeError === '' && !empty(trim($correo)) && $this->model->existeCorreo(trim($correo))) {
+            $mensajeError = 'El correo electrónico ya está registrado';
         }
 
         if ($mensajeError !== '') {
@@ -156,8 +159,14 @@ class UsuarioController
         if ($mensajeError === '' && !in_array($estado, ['activo', 'inactivo'], true)) {
             $mensajeError = 'Estado no válido';
         }
-        if ($mensajeError === '' && $this->model->existeCodigoOCorreo($codigo, $correo, $id)) {
-            $mensajeError = 'El código o correo ya está registrado en otro usuario';
+        if ($mensajeError === '' && $this->model->existeCodigo($codigo, $id)) {
+            $mensajeError = 'El código de asesor ya está registrado en otro usuario';
+        }
+        if ($mensajeError === '' && $this->model->existeDocumento($doc, $id)) {
+            $mensajeError = 'El documento ya está registrado en otro usuario';
+        }
+        if ($mensajeError === '' && !empty(trim($correo)) && $this->model->existeCorreo(trim($correo), $id)) {
+            $mensajeError = 'El correo electrónico ya está registrado en otro usuario';
         }
 
         if ($mensajeError !== '') {

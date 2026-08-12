@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS usuarios (
     codigo        VARCHAR(10) UNIQUE NOT NULL,        -- Ej: EB, JD, etc.
     documento     VARCHAR(20) UNIQUE NOT NULL,
     nombre        VARCHAR(100) NOT NULL,
-    correo        VARCHAR(100) UNIQUE NOT NULL,
+    correo        VARCHAR(100) NULL,
     password      VARCHAR(255) NULL,
-    telefono      VARCHAR(20),
+    telefono      VARCHAR(20) NULL,
     cargo         VARCHAR(50) NULL,
     rol           ENUM('admin', 'usuario') DEFAULT 'usuario',
     estado        ENUM('activo', 'inactivo') DEFAULT 'activo',

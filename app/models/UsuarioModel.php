@@ -71,22 +71,51 @@ class UsuarioModel
         return $row ?: null;
     }
 
+    public function existeCodigo(string $codigo, int $excluirId = 0): bool
+    {
+        if (trim($codigo) === '') {
+            return false;
+        }
+        $stmt = $this->db->prepare(
+            'SELECT id FROM usuarios WHERE codigo = :cod AND id != :excluir LIMIT 1'
+        );
+        $stmt->execute([':cod' => $codigo, ':excluir' => $excluirId]);
+        return (bool)$stmt->fetch();
+    }
+
+    public function existeDocumento(string $documento, int $excluirId = 0): bool
+    {
+        if (trim($documento) === '') {
+            return false;
+        }
+        $stmt = $this->db->prepare(
+            'SELECT id FROM usuarios WHERE documento = :doc AND id != :excluir LIMIT 1'
+        );
+        $stmt->execute([':doc' => $documento, ':excluir' => $excluirId]);
+        return (bool)$stmt->fetch();
+    }
+
+    public function existeCorreo(string $correo, int $excluirId = 0): bool
+    {
+        $correo = trim($correo);
+        if ($correo === '') {
+            return false; // Correo opcional no puede colisionar
+        }
+        $stmt = $this->db->prepare(
+            'SELECT id FROM usuarios WHERE correo = :correo AND id != :excluir LIMIT 1'
+        );
+        $stmt->execute([':correo' => $correo, ':excluir' => $excluirId]);
+        return (bool)$stmt->fetch();
+    }
+
     public function existeCodigoOCorreo(string $codigo, string $correo, int $excluirId = 0): bool
     {
-        $stmt = $this->db->prepare(
-            'SELECT id FROM usuarios WHERE (codigo = :cod OR correo = :correo) AND id != :excluir LIMIT 1'
-        );
-        $stmt->execute([':cod' => $codigo, ':correo' => $correo, ':excluir' => $excluirId]);
-        return (bool)$stmt->fetch();
+        return $this->existeCodigo($codigo, $excluirId) || $this->existeCorreo($correo, $excluirId);
     }
 
     public function existeDocumentoOCorreo(string $documento, string $correo, int $excluirId = 0): bool
     {
-        $stmt = $this->db->prepare(
-            'SELECT id FROM usuarios WHERE (documento = :doc OR correo = :correo) AND id != :excluir LIMIT 1'
-        );
-        $stmt->execute([':doc' => $documento, ':correo' => $correo, ':excluir' => $excluirId]);
-        return (bool)$stmt->fetch();
+        return $this->existeDocumento($documento, $excluirId) || $this->existeCorreo($correo, $excluirId);
     }
 
     /**
@@ -103,10 +132,10 @@ class UsuarioModel
             ':cod'    => $codigo,
             ':doc'    => $documento,
             ':nom'    => $nombre,
-            ':correo' => $correo,
+            ':correo' => !empty(trim($correo)) ? trim($correo) : null,
             ':pass'   => $passwordHash,
-            ':tel'    => $telefono,
-            ':cargo'  => $cargo,
+            ':tel'    => !empty(trim($telefono)) ? trim($telefono) : null,
+            ':cargo'  => !empty(trim($cargo)) ? trim($cargo) : null,
             ':rol'    => $rol,
         ]);
     }
@@ -115,6 +144,10 @@ class UsuarioModel
                                string $correo, string $telefono, string $cargo,
                                string $rol, string $estado, ?string $passwordHash = null): bool
     {
+        $valCorreo = !empty(trim($correo)) ? trim($correo) : null;
+        $valTel    = !empty(trim($telefono)) ? trim($telefono) : null;
+        $valCargo  = !empty(trim($cargo)) ? trim($cargo) : null;
+
         if ($passwordHash !== null) {
             $stmt = $this->db->prepare(
                 'UPDATE usuarios SET codigo=:cod, documento=:doc, nombre=:nom, correo=:correo,
@@ -125,10 +158,10 @@ class UsuarioModel
                 ':cod'    => $codigo,
                 ':doc'    => $documento,
                 ':nom'    => $nombre,
-                ':correo' => $correo,
+                ':correo' => $valCorreo,
                 ':pass'   => $passwordHash,
-                ':tel'    => $telefono,
-                ':cargo'  => $cargo,
+                ':tel'    => $valTel,
+                ':cargo'  => $valCargo,
                 ':rol'    => $rol,
                 ':estado' => $estado,
                 ':id'     => $id,
@@ -143,9 +176,9 @@ class UsuarioModel
                 ':cod'    => $codigo,
                 ':doc'    => $documento,
                 ':nom'    => $nombre,
-                ':correo' => $correo,
-                ':tel'    => $telefono,
-                ':cargo'  => $cargo,
+                ':correo' => $valCorreo,
+                ':tel'    => $valTel,
+                ':cargo'  => $valCargo,
                 ':rol'    => $rol,
                 ':estado' => $estado,
                 ':id'     => $id,
