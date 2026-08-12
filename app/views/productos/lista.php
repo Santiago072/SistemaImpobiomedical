@@ -319,7 +319,8 @@ include dirname(__DIR__) . '/layout/menu.php';
 </style>
 
 <script>
-const BASE = '<?= $basePath ?>';
+const BASE  = '<?= $basePath ?>';
+const CSRF  = '<?= htmlspecialchars($csrf_token ?? '') ?>';
 
 function abrirModalCrear() {
     document.getElementById('modal-crear').classList.add('open');
@@ -371,7 +372,7 @@ document.getElementById('e_foto')?.addEventListener('change', function() {
 let urlEliminar = '';
 function confirmarEliminar(id, nombre) {
     document.getElementById('nombre-eliminar').textContent = nombre;
-    urlEliminar = BASE + '?module=productos&action=eliminar&id=' + id;
+    urlEliminar = BASE + '?module=productos&action=eliminar&id=' + id + '&csrf_token=' + CSRF;
     document.getElementById('modal-eliminar').classList.add('open');
     document.body.style.overflow = 'hidden';
 }

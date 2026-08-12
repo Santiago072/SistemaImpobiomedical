@@ -99,7 +99,7 @@ $rol = $_SESSION['rol'] ?? 'usuario';
                                         <i class="bi bi-download"></i> PDF
                                     </a>
                                     <?php if ($rol === 'admin'): ?>
-                                    <a href="<?= $basePath ?>?module=ordenes&action=eliminar&id=<?= (int)$ord['id'] ?>"
+                                    <a href="<?= $basePath ?>?module=ordenes&action=eliminar&id=<?= (int)$ord['id'] ?>&csrf_token=<?= htmlspecialchars($csrf_token ?? '') ?>"
                                        class="mod-btn-del"
                                        onclick="return confirm('¿Eliminar la P.O. <?= (int)$ord['numero_po'] ?>?')">
                                         <i class="bi bi-trash3-fill"></i>

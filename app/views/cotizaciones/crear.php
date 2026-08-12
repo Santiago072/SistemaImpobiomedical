@@ -621,8 +621,11 @@ function limpiarFormulario() {
 // ── Eliminar ítem ─────────────────────────────────────────────────────────────
 function eliminarItem(id) {
     if (!confirm('¿Eliminar este ítem?')) return;
-    fetch(BASE + '?module=cotizaciones&action=eliminar_item&id=' + id, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    fetch(BASE + '?module=cotizaciones&action=eliminar_item&id=' + id + '&csrf_token=' + encodeURIComponent(CSRF), {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-Token': CSRF
+        }
     }).then(r => r.json()).then(j => { if (j.status === 'success') location.reload(); });
 }
 

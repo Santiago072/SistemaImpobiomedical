@@ -157,7 +157,12 @@ class ClienteController
     public function eliminar(): void
     {
         verificar_admin();
+        verificar_rate_limit(10, 60, 'cliente_eliminar');
 
+        if (!verificar_token_csrf($_GET['csrf_token'] ?? '')) {
+            header('Location: ' . BASE_URL . '?module=clientes&error=csrf');
+            exit();
+        }
         if (!validar_numero($_GET['id'] ?? '')) {
             header('Location: ' . BASE_URL . '?module=clientes');
             exit();

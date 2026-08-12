@@ -256,6 +256,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
 <script>
 const BASE = '<?= $basePath ?>';
+const CSRF = '<?= htmlspecialchars($csrf_token ?? '') ?>';
 
 function abrirModalCrear() {
     document.getElementById('modal-crear').classList.add('open');
@@ -279,7 +280,7 @@ function abrirModalEditar(data) {
 
 function confirmarEliminar(id, nombre) {
     document.getElementById('nombre-eliminar').textContent = nombre;
-    document.getElementById('link-eliminar').href = BASE + '?module=clientes&action=eliminar&id=' + id;
+    document.getElementById('link-eliminar').href = BASE + '?module=clientes&action=eliminar&id=' + id + '&csrf_token=' + CSRF;
     document.getElementById('modal-eliminar').classList.add('open');
     document.body.style.overflow = 'hidden';
 }

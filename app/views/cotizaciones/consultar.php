@@ -87,7 +87,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <i class="bi bi-cart-plus-fill"></i> Orden
                                     </button>
                                     <?php if ($_SESSION['rol'] === 'admin'): ?>
-                                    <a href="<?= $basePath ?>?module=cotizaciones&action=eliminar&id=<?= (int)$cot['id'] ?>"
+                                    <a href="<?= $basePath ?>?module=cotizaciones&action=eliminar&id=<?= (int)$cot['id'] ?>&csrf_token=<?= htmlspecialchars($csrf_token ?? '') ?>"
                                        class="mod-btn-del"
                                        onclick="return confirm('¿Eliminar la cotización <?= htmlspecialchars($cot['numero_cotizacion']) ?>?')">
                                         <i class="bi bi-trash3-fill"></i>

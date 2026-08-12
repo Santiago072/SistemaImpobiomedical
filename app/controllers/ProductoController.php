@@ -151,6 +151,12 @@ class ProductoController
     public function eliminar(): void
     {
         verificar_admin();
+        verificar_rate_limit(10, 60, 'producto_eliminar');
+
+        if (!verificar_token_csrf($_GET['csrf_token'] ?? '')) {
+            header('Location: ' . BASE_URL . '?module=productos&error=csrf');
+            exit();
+        }
         if (!validar_numero($_GET['id'] ?? '')) {
             header('Location: ' . BASE_URL . '?module=productos');
             exit();

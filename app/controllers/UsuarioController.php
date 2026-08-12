@@ -186,6 +186,12 @@ class UsuarioController
     public function resetPassword(): void
     {
         verificar_admin();
+        verificar_rate_limit(5, 60, 'usuario_reset_pass');
+
+        if (!verificar_token_csrf($_GET['csrf_token'] ?? '')) {
+            header('Location: ' . BASE_URL . '?module=usuarios&error=csrf');
+            exit();
+        }
 
         if (!validar_numero($_GET['id'] ?? '')) {
             header('Location: ' . BASE_URL . '?module=usuarios&error=invalid_id');
@@ -211,6 +217,7 @@ class UsuarioController
     public function eliminar(): void
     {
         verificar_admin();
+        verificar_rate_limit(10, 60, 'usuario_eliminar');
 
         $esAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
                   strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
@@ -224,6 +231,11 @@ class UsuarioController
             header('Location: ' . BASE_URL . '?module=usuarios&error=' . $queryParam);
             exit();
         };
+
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_GET['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
+            $responderError('Token de seguridad inválido', 'csrf');
+        }
 
         if (!validar_numero($_GET['id'] ?? '')) {
             $responderError('ID inválido', 'invalid_id');

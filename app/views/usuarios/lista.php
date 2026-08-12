@@ -262,6 +262,7 @@ include dirname(__DIR__) . '/layout/menu.php';
 
 <script>
 const BASE = '<?= $basePath ?>';
+const CSRF = '<?= htmlspecialchars($csrf_token ?? '') ?>';
 
 function abrirModalCrear(e) {
     if(e) { e.preventDefault(); e.stopPropagation(); }
@@ -287,7 +288,7 @@ function abrirModalEditar(u, e) {
 function confirmarEliminar(id, nombre, e) {
     if(e) { e.preventDefault(); e.stopPropagation(); }
     document.getElementById('nombre-eliminar').textContent = nombre;
-    document.getElementById('link-eliminar').href = BASE + '?module=usuarios&action=eliminar&id=' + id;
+    document.getElementById('link-eliminar').href = BASE + '?module=usuarios&action=eliminar&id=' + id + '&csrf_token=' + CSRF;
     document.getElementById('modal-eliminar').classList.add('open');
     document.body.style.overflow = 'hidden';
 }

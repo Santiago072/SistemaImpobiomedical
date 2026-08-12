@@ -212,9 +212,22 @@ class CotizacionController
     public function eliminarItem(): void
     {
         verificar_autenticacion();
+        verificar_rate_limit(20, 60, 'cotizacion_eliminar_item');
 
         $esAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
                   strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+        // Token puede venir por header AJAX o por GET
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_GET['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'Token de seguridad inválido']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
+            exit();
+        }
 
         if (!validar_numero($_GET['id'] ?? '')) {
             if ($esAjax) {
@@ -237,18 +250,23 @@ class CotizacionController
         exit();
     }
 
-    // ── ELIMINAR COTIZACIÓN (Solo Admin) ──────────────────────────────────────
+    // ── ELIMINAR COTIZACIÓN (Solo Admin) ─────────────────────────────────────────
     public function eliminar(): void
     {
         verificar_admin();
+        verificar_rate_limit(10, 60, 'cotizacion_eliminar');
 
+        if (!verificar_token_csrf($_GET['csrf_token'] ?? '')) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=csrf');
+            exit();
+        }
         if (!validar_numero($_GET['id'] ?? '')) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
             exit();
         }
 
         $this->model->eliminar((int)$_GET['id']);
-        header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+        header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&deleted=1');
         exit();
     }
 

@@ -283,9 +283,15 @@ class OrdenCompraController
     public function eliminar(): void
     {
         verificar_admin();
+        verificar_rate_limit(10, 60, 'orden_eliminar');
+
+        if (!verificar_token_csrf($_GET['csrf_token'] ?? '')) {
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar&error=csrf');
+            exit();
+        }
 
         $id = (int)($_GET['id'] ?? 0);
-        if ($id) {
+        if ($id > 0) {
             $this->model->eliminar($id);
         }
         header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
