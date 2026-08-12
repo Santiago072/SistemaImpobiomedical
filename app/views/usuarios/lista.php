@@ -146,8 +146,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                 </div>
             </div>
             <div class="imo-form-group">
-                <label>Contraseña (opcional)</label>
-                <input type="password" name="password" minlength="6" maxlength="30" placeholder="Dejar vacío = usa el documento">
+                <label>Contraseña <span style="font-size:11px;color:#64748b;font-weight:400">(opcional - por defecto usa el documento)</span></label>
+                <div style="position:relative; display:flex; align-items:center;">
+                    <input type="password" id="c_password" name="password" minlength="6" maxlength="30" placeholder="••••••••" style="padding-right:40px;">
+                    <button type="button" onclick="togglePassVisibility('c_password', 'c_eyeIcon')" style="position:absolute; right:10px; background:none; border:none; color:#64748b; cursor:pointer; font-size:16px; padding:4px;" aria-label="Mostrar/Ocultar contraseña">
+                        <i class="bi bi-eye-slash" id="c_eyeIcon"></i>
+                    </button>
+                </div>
             </div>
             <div class="imo-modal-footer">
                 <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-crear')">Cancelar</button>
@@ -212,8 +217,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </select>
                 </div>
                 <div class="imo-form-group">
-                    <label>Nueva Contraseña (opcional)</label>
-                    <input type="password" name="password" minlength="6" maxlength="30" placeholder="••••••••">
+                    <label>Nueva Contraseña <span style="font-size:11px;color:#64748b;font-weight:400">(opcional)</span></label>
+                    <div style="position:relative; display:flex; align-items:center;">
+                        <input type="password" id="e_password" name="password" minlength="6" maxlength="30" placeholder="••••••••" style="padding-right:40px;">
+                        <button type="button" onclick="togglePassVisibility('e_password', 'e_eyeIcon')" style="position:absolute; right:10px; background:none; border:none; color:#64748b; cursor:pointer; font-size:16px; padding:4px;" aria-label="Mostrar/Ocultar contraseña">
+                            <i class="bi bi-eye-slash" id="e_eyeIcon"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="imo-modal-footer">
@@ -264,8 +274,25 @@ include dirname(__DIR__) . '/layout/menu.php';
 const BASE = '<?= $basePath ?>';
 const CSRF = '<?= htmlspecialchars($csrf_token ?? '') ?>';
 
+function togglePassVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye';
+    } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye-slash';
+    }
+}
+
 function abrirModalCrear(e) {
     if(e) { e.preventDefault(); e.stopPropagation(); }
+    const pIn = document.getElementById('c_password');
+    if (pIn) { pIn.value = ''; pIn.type = 'password'; }
+    const pIcon = document.getElementById('c_eyeIcon');
+    if (pIcon) { pIcon.className = 'bi bi-eye-slash'; }
     document.getElementById('modal-crear').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
@@ -280,6 +307,10 @@ function abrirModalEditar(u, e) {
     document.getElementById('e_cargo').value     = u.cargo || '';
     document.getElementById('e_rol').value       = u.rol || 'usuario';
     document.getElementById('e_estado').value    = u.estado || 'activo';
+    const pIn = document.getElementById('e_password');
+    if (pIn) { pIn.value = ''; pIn.type = 'password'; }
+    const pIcon = document.getElementById('e_eyeIcon');
+    if (pIcon) { pIcon.className = 'bi bi-eye-slash'; }
     document.getElementById('form-editar-usuario').action = BASE + '?module=usuarios&action=editar&id=' + u.id;
     document.getElementById('modal-editar').classList.add('open');
     document.body.style.overflow = 'hidden';
