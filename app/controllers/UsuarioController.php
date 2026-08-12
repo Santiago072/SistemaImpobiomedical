@@ -263,8 +263,9 @@ class UsuarioController
                                    string $telefono, string $rol, string $password,
                                    bool $passwordOpcional = false): string
     {
-        if (!$codigo || !$doc || !$nombre || !$correo || !$telefono || !$rol) {
-            return 'Todos los campos son obligatorios';
+        // correo y telefono son opcionales
+        if (!$codigo || !$doc || !$nombre || !$rol) {
+            return 'Los campos Código, Documento, Nombre y Rol son obligatorios';
         }
         if (!preg_match('/^[A-Z0-9\-]{1,10}$/', $codigo)) {
             return 'El código solo puede contener letras mayúsculas, números y guiones (máx. 10)';
@@ -272,7 +273,7 @@ class UsuarioController
         if (mb_strlen($nombre) < 3 || mb_strlen($nombre) > 100) {
             return 'El nombre debe tener entre 3 y 100 caracteres';
         }
-        if (!validar_email($correo)) {
+        if (!empty($correo) && !validar_email($correo)) {
             return 'El correo electrónico no es válido';
         }
         if (!in_array($rol, ['admin', 'usuario'], true)) {

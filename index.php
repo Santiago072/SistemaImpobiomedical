@@ -76,8 +76,36 @@ if (!defined('BASE_URL')) {
     }
 }
 
+
 require_once __DIR__ . '/config/conexion.php';
 require_once __DIR__ . '/config/seguridad.php';
+
+// ── Cabeceras de Seguridad HTTP ───────────────────────────────────────────────
+// Solo se emiten en peticiones HTML normales; las respuestas PDF/binario
+// omiten estas cabeceras porque van dentro de ob_start() aparte.
+if (!headers_sent()) {
+    // Evita que el sitio sea cargado dentro de un <iframe> (Clickjacking)
+    header('X-Frame-Options: SAMEORIGIN');
+    // Impide que el navegador detecte el tipo de contenido por su cuenta (MIME-Sniffing)
+    header('X-Content-Type-Options: nosniff');
+    // Controla qué información de referencia se envía en los encabezados
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    // Deshabilita funcionalidades del navegador que no se usan en este sistema
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+    // Fuerza HTTPS (se activa en producción; ignorado en HTTP local/XAMPP)
+    header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    // Política de seguridad de contenido básica: solo recursos del mismo origen
+    // Se permite 'unsafe-inline' y CDNs de estilos/iconos que ya usa el sistema
+    header(
+        "Content-Security-Policy: " .
+        "default-src 'self'; " .
+        "script-src 'self' 'unsafe-inline'; " .
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " .
+        "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " .
+        "img-src 'self' data:; " .
+        "connect-src 'self';"
+    );
+}
 
 iniciar_sesion_segura();
 

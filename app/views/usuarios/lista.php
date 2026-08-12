@@ -123,12 +123,12 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
             <div class="imo-form-row">
                 <div class="imo-form-group">
-                    <label>Correo Electrónico *</label>
-                    <input type="email" name="correo" required maxlength="60" placeholder="juan@empresa.com">
+                    <label>Correo Electrónico <span style="font-size:11px;color:#64748b;font-weight:400">(opcional)</span></label>
+                    <input type="email" name="correo" maxlength="60" placeholder="juan@empresa.com">
                 </div>
                 <div class="imo-form-group">
-                    <label>Teléfono *</label>
-                    <input type="text" name="telefono" required maxlength="15" placeholder="3001234567">
+                    <label>Teléfono <span style="font-size:11px;color:#64748b;font-weight:400">(opcional)</span></label>
+                    <input type="text" name="telefono" maxlength="15" placeholder="3001234567">
                 </div>
             </div>
             <div class="imo-form-row">
@@ -182,12 +182,12 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
             <div class="imo-form-row">
                 <div class="imo-form-group">
-                    <label>Correo *</label>
-                    <input type="email" id="e_correo" name="correo" required maxlength="60">
+                    <label>Correo <span style="font-size:11px;color:#64748b;font-weight:400">(opcional)</span></label>
+                    <input type="email" id="e_correo" name="correo" maxlength="60">
                 </div>
                 <div class="imo-form-group">
-                    <label>Teléfono *</label>
-                    <input type="text" id="e_telefono" name="telefono" required maxlength="15">
+                    <label>Teléfono <span style="font-size:11px;color:#64748b;font-weight:400">(opcional)</span></label>
+                    <input type="text" id="e_telefono" name="telefono" maxlength="15">
                 </div>
             </div>
             <div class="imo-form-row">
