@@ -37,11 +37,21 @@ error_reporting(E_ALL);
 ini_set('display_errors', '0');          // Nunca mostrar errores al usuario
 ini_set('display_startup_errors', '0');
 ini_set('log_errors', '1');
-ini_set('error_log', __DIR__ . '/logs/php_errors.log');
+
+$logDir = __DIR__ . '/logs';
+if (!is_dir($logDir)) {
+    @mkdir($logDir, 0777, true);
+}
+$logFile = $logDir . '/php_errors.log';
+ini_set('error_log', $logFile);
 
 // ── Manejador Global de Excepciones ──────────────────────────────────────────
-set_exception_handler(function (Throwable $e) {
+set_exception_handler(function (Throwable $e) use ($logFile) {
+    $timestamp = date('Y-m-d H:i:s');
+    $logMsg = "[{$timestamp}] Uncaught Exception: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine() . "\nStack trace:\n" . $e->getTraceAsString() . "\n";
+    @file_put_contents($logFile, $logMsg, FILE_APPEND);
     error_log((string)$e);
+
     http_response_code(500);
     $esAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
               strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';

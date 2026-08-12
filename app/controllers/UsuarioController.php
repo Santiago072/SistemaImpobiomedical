@@ -109,7 +109,9 @@ class UsuarioController
             exit();
         }
 
-        $mensajeError = 'Error al crear el usuario';
+        $err = $_SESSION['db_error'] ?? '';
+        unset($_SESSION['db_error']);
+        $mensajeError = !empty($err) ? 'Error al crear el usuario: ' . $err : 'Error al crear el usuario';
         return compact('mensajeError', 'mensajeExito', 'csrf_token');
     }
 

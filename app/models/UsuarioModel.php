@@ -124,20 +124,52 @@ class UsuarioModel
     public function crear(string $codigo, string $documento, string $nombre, string $correo,
                           ?string $passwordHash, string $telefono, string $cargo, string $rol): bool
     {
-        $stmt = $this->db->prepare(
-            'INSERT INTO usuarios (codigo, documento, nombre, correo, password, telefono, cargo, rol)
-             VALUES (:cod, :doc, :nom, :correo, :pass, :tel, :cargo, :rol)'
-        );
-        return $stmt->execute([
-            ':cod'    => $codigo,
-            ':doc'    => $documento,
-            ':nom'    => $nombre,
-            ':correo' => !empty(trim($correo)) ? trim($correo) : null,
-            ':pass'   => $passwordHash,
-            ':tel'    => !empty(trim($telefono)) ? trim($telefono) : null,
-            ':cargo'  => !empty(trim($cargo)) ? trim($cargo) : null,
-            ':rol'    => $rol,
-        ]);
+        $valCorreo = !empty(trim($correo)) ? trim($correo) : null;
+        $valTel    = !empty(trim($telefono)) ? trim($telefono) : null;
+        $valCargo  = !empty(trim($cargo)) ? trim($cargo) : null;
+
+        try {
+            $stmt = $this->db->prepare(
+                'INSERT INTO usuarios (codigo, documento, nombre, correo, password, telefono, cargo, rol)
+                 VALUES (:cod, :doc, :nom, :correo, :pass, :tel, :cargo, :rol)'
+            );
+            return $stmt->execute([
+                ':cod'    => $codigo,
+                ':doc'    => $documento,
+                ':nom'    => $nombre,
+                ':correo' => $valCorreo,
+                ':pass'   => $passwordHash,
+                ':tel'    => $valTel,
+                ':cargo'  => $valCargo,
+                ':rol'    => $rol,
+            ]);
+        } catch (\PDOException $e) {
+            // Auto-migración en caso de que la tabla en MySQL tenga la columna correo o telefono como NOT NULL
+            if ($e->getCode() === '23000' && str_contains($e->getMessage(), 'cannot be null')) {
+                try {
+                    $this->db->exec("ALTER TABLE usuarios MODIFY COLUMN correo VARCHAR(100) NULL DEFAULT NULL, MODIFY COLUMN telefono VARCHAR(20) NULL DEFAULT NULL");
+                    $stmt = $this->db->prepare(
+                        'INSERT INTO usuarios (codigo, documento, nombre, correo, password, telefono, cargo, rol)
+                         VALUES (:cod, :doc, :nom, :correo, :pass, :tel, :cargo, :rol)'
+                    );
+                    return $stmt->execute([
+                        ':cod'    => $codigo,
+                        ':doc'    => $documento,
+                        ':nom'    => $nombre,
+                        ':correo' => $valCorreo,
+                        ':pass'   => $passwordHash,
+                        ':tel'    => $valTel,
+                        ':cargo'  => $valCargo,
+                        ':rol'    => $rol,
+                    ]);
+                } catch (\Throwable $e2) {
+                    error_log('Error tras auto-migración de usuarios: ' . $e2->getMessage());
+                }
+            }
+            error_log('Error en UsuarioModel::crear: ' . $e->getMessage());
+            $_SESSION['db_error'] = $e->getMessage();
+            return false;
+        }
     }
 
     public function actualizar(int $id, string $codigo, string $documento, string $nombre,
@@ -148,43 +180,57 @@ class UsuarioModel
         $valTel    = !empty(trim($telefono)) ? trim($telefono) : null;
         $valCargo  = !empty(trim($cargo)) ? trim($cargo) : null;
 
-        if ($passwordHash !== null) {
-            $stmt = $this->db->prepare(
-                'UPDATE usuarios SET codigo=:cod, documento=:doc, nombre=:nom, correo=:correo,
-                 password=:pass, telefono=:tel, cargo=:cargo, rol=:rol, estado=:estado
-                 WHERE id=:id'
-            );
-            $params = [
-                ':cod'    => $codigo,
-                ':doc'    => $documento,
-                ':nom'    => $nombre,
-                ':correo' => $valCorreo,
-                ':pass'   => $passwordHash,
-                ':tel'    => $valTel,
-                ':cargo'  => $valCargo,
-                ':rol'    => $rol,
-                ':estado' => $estado,
-                ':id'     => $id,
-            ];
-        } else {
-            $stmt = $this->db->prepare(
-                'UPDATE usuarios SET codigo=:cod, documento=:doc, nombre=:nom, correo=:correo,
-                 telefono=:tel, cargo=:cargo, rol=:rol, estado=:estado
-                 WHERE id=:id'
-            );
-            $params = [
-                ':cod'    => $codigo,
-                ':doc'    => $documento,
-                ':nom'    => $nombre,
-                ':correo' => $valCorreo,
-                ':tel'    => $valTel,
-                ':cargo'  => $valCargo,
-                ':rol'    => $rol,
-                ':estado' => $estado,
-                ':id'     => $id,
-            ];
+        try {
+            if ($passwordHash !== null) {
+                $stmt = $this->db->prepare(
+                    'UPDATE usuarios SET codigo=:cod, documento=:doc, nombre=:nom, correo=:correo,
+                     password=:pass, telefono=:tel, cargo=:cargo, rol=:rol, estado=:estado
+                     WHERE id=:id'
+                );
+                $params = [
+                    ':cod'    => $codigo,
+                    ':doc'    => $documento,
+                    ':nom'    => $nombre,
+                    ':correo' => $valCorreo,
+                    ':pass'   => $passwordHash,
+                    ':tel'    => $valTel,
+                    ':cargo'  => $valCargo,
+                    ':rol'    => $rol,
+                    ':estado' => $estado,
+                    ':id'     => $id,
+                ];
+            } else {
+                $stmt = $this->db->prepare(
+                    'UPDATE usuarios SET codigo=:cod, documento=:doc, nombre=:nom, correo=:correo,
+                     telefono=:tel, cargo=:cargo, rol=:rol, estado=:estado
+                     WHERE id=:id'
+                );
+                $params = [
+                    ':cod'    => $codigo,
+                    ':doc'    => $documento,
+                    ':nom'    => $nombre,
+                    ':correo' => $valCorreo,
+                    ':tel'    => $valTel,
+                    ':cargo'  => $valCargo,
+                    ':rol'    => $rol,
+                    ':estado' => $estado,
+                    ':id'     => $id,
+                ];
+            }
+            return $stmt->execute($params);
+        } catch (\PDOException $e) {
+            if ($e->getCode() === '23000' && str_contains($e->getMessage(), 'cannot be null')) {
+                try {
+                    $this->db->exec("ALTER TABLE usuarios MODIFY COLUMN correo VARCHAR(100) NULL DEFAULT NULL, MODIFY COLUMN telefono VARCHAR(20) NULL DEFAULT NULL");
+                    return $this->actualizar($id, $codigo, $doc, $nombre, $correo, $telefono, $cargo, $rol, $estado, $passwordHash);
+                } catch (\Throwable $e2) {
+                    error_log('Error tras auto-migración de usuarios: ' . $e2->getMessage());
+                }
+            }
+            error_log('Error en UsuarioModel::actualizar: ' . $e->getMessage());
+            $_SESSION['db_error'] = $e->getMessage();
+            return false;
         }
-        return $stmt->execute($params);
     }
 
     public function resetPassword(int $id, string $passwordHash): bool
