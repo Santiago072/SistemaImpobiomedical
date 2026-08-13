@@ -40,7 +40,13 @@ ini_set('log_errors', '1');
 
 $logDir = __DIR__ . '/logs';
 if (!is_dir($logDir)) {
-    @mkdir($logDir, 0777, true);
+    @mkdir($logDir, 0755, true);
+}
+if (!file_exists($logDir . '/.htaccess')) {
+    @file_put_contents($logDir . '/.htaccess', "<IfModule mod_authz_core.c>\n    Require all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\n");
+}
+if (!file_exists($logDir . '/index.php')) {
+    @file_put_contents($logDir . '/index.php', "<?php http_response_code(403); exit('403 Forbidden');");
 }
 $logFile = $logDir . '/php_errors.log';
 ini_set('error_log', $logFile);
