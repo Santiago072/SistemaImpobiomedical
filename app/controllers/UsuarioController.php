@@ -178,6 +178,11 @@ class UsuarioController
 
         $passwordHash = !empty($password) ? password_hash($password, PASSWORD_BCRYPT) : null;
 
+        // Si el documento cambió pero no se proporcionó contraseña nueva, regenerar con el nuevo documento
+        if ($passwordHash === null && $doc !== $usuario['documento']) {
+            $passwordHash = password_hash($doc, PASSWORD_BCRYPT);
+        }
+
         if ($this->model->actualizar($id, $codigo, $doc, $nombre, $correo, $telefono, $cargo, $rol, $estado, $passwordHash)) {
             if ($id === (int)$_SESSION['usuario_id']) {
                 $_SESSION['usuario_nombre'] = $nombre;
