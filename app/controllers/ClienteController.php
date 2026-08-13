@@ -159,16 +159,18 @@ class ClienteController
         verificar_admin();
         verificar_rate_limit(10, 60, 'cliente_eliminar');
 
-        if (!verificar_token_csrf($_GET['csrf_token'] ?? '')) {
+        $token = $_POST['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
             header('Location: ' . BASE_URL . '?module=clientes&error=csrf');
             exit();
         }
-        if (!validar_numero($_GET['id'] ?? '')) {
+        $id = $_POST['id'] ?? $_GET['id'] ?? '';
+        if (!validar_numero($id)) {
             header('Location: ' . BASE_URL . '?module=clientes');
             exit();
         }
 
-        $this->model->eliminar((int)$_GET['id']);
+        $this->model->eliminar((int)$id);
         header('Location: ' . BASE_URL . '?module=clientes&deleted=1');
         exit();
     }

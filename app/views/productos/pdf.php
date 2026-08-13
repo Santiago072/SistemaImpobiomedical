@@ -217,6 +217,6 @@ $dompdf->render();
 
 while (ob_get_level()) ob_end_clean();
 
-$nombreArchivo = 'Catalogo_Productos_' . date('Ymd_Hi') . '.pdf';
+$nombreArchivo = 'Catalogo_Productos.pdf';
 $dompdf->stream($nombreArchivo, ['Attachment' => true]);
 exit();

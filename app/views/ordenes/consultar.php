@@ -99,11 +99,11 @@ $rol = $_SESSION['rol'] ?? 'usuario';
                                         <i class="bi bi-download"></i> PDF
                                     </a>
                                     <?php if ($rol === 'admin'): ?>
-                                    <a href="<?= $basePath ?>?module=ordenes&action=eliminar&id=<?= (int)$ord['id'] ?>&csrf_token=<?= htmlspecialchars($csrf_token ?? '') ?>"
-                                       class="mod-btn-del"
-                                       onclick="return confirm('¿Eliminar la P.O. <?= (int)$ord['numero_po'] ?>?')">
-                                        <i class="bi bi-trash3-fill"></i>
-                                    </a>
+                                    <form method="POST" action="<?= $basePath ?>?module=ordenes&action=eliminar" style="display:inline;" onsubmit="return confirm('¿Eliminar la P.O. <?= (int)$ord['numero_po'] ?>?')">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                                        <input type="hidden" name="id" value="<?= (int)$ord['id'] ?>">
+                                        <button type="submit" class="mod-btn-del" title="Eliminar"><i class="bi bi-trash3-fill"></i></button>
+                                    </form>
                                     <?php endif; ?>
                                 </div>
                             </td>

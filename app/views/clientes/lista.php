@@ -247,7 +247,10 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         </div>
         <div class="imo-modal-footer">
             <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
-            <a id="link-eliminar" href="#" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</a>
+            <form id="form-eliminar-cliente" method="POST" action="" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
+            </form>
         </div>
     </div>
 </div>
@@ -280,7 +283,7 @@ function abrirModalEditar(data) {
 
 function confirmarEliminar(id, nombre) {
     document.getElementById('nombre-eliminar').textContent = nombre;
-    document.getElementById('link-eliminar').href = BASE + '?module=clientes&action=eliminar&id=' + id + '&csrf_token=' + CSRF;
+    document.getElementById('form-eliminar-cliente').action = BASE + '?module=clientes&action=eliminar&id=' + id;
     document.getElementById('modal-eliminar').classList.add('open');
     document.body.style.overflow = 'hidden';
 }

@@ -205,8 +205,8 @@ class CotizacionController
         $esAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
                   strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
-        // Token puede venir por header AJAX o por GET
-        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_GET['csrf_token'] ?? '';
+        // Token puede venir por header AJAX o por POST
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
         if (!verificar_token_csrf($token)) {
             if ($esAjax) {
                 header('Content-Type: application/json');
@@ -244,16 +244,18 @@ class CotizacionController
         verificar_admin();
         verificar_rate_limit(10, 60, 'cotizacion_eliminar');
 
-        if (!verificar_token_csrf($_GET['csrf_token'] ?? '')) {
+        $token = $_POST['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=csrf');
             exit();
         }
-        if (!validar_numero($_GET['id'] ?? '')) {
+        $id = $_POST['id'] ?? $_GET['id'] ?? '';
+        if (!validar_numero($id)) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
             exit();
         }
 
-        $this->model->eliminar((int)$_GET['id']);
+        $this->model->eliminar((int)$id);
         header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&deleted=1');
         exit();
     }

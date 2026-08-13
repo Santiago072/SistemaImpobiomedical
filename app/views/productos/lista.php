@@ -291,7 +291,10 @@ include dirname(__DIR__) . '/layout/menu.php';
         </div>
         <div class="imo-modal-footer" style="display:flex; justify-content:flex-end; gap:12px; padding:20px;">
             <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
-            <button id="btn-eliminar" class="imo-btn-danger" onclick="ejecutarEliminar()" style="display:inline-flex; align-items:center; justify-content:center; gap:6px; height:38px; padding:0 16px; border:none; border-radius:6px; cursor:pointer;"><i class="bi bi-trash-fill"></i> Eliminar</button>
+            <form id="form-eliminar-producto" method="POST" action="" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                <button type="submit" class="imo-btn-danger" style="display:inline-flex; align-items:center; justify-content:center; gap:6px; height:38px; padding:0 16px; border:none; border-radius:6px; cursor:pointer;"><i class="bi bi-trash-fill"></i> Eliminar</button>
+            </form>
         </div>
     </div>
 </div>
@@ -369,15 +372,11 @@ document.getElementById('e_foto')?.addEventListener('change', function() {
     reader.readAsDataURL(file);
 });
 
-let urlEliminar = '';
 function confirmarEliminar(id, nombre) {
     document.getElementById('nombre-eliminar').textContent = nombre;
-    urlEliminar = BASE + '?module=productos&action=eliminar&id=' + id + '&csrf_token=' + CSRF;
+    document.getElementById('form-eliminar-producto').action = BASE + '?module=productos&action=eliminar&id=' + id;
     document.getElementById('modal-eliminar').classList.add('open');
     document.body.style.overflow = 'hidden';
-}
-function ejecutarEliminar() {
-    if (urlEliminar) window.location.href = urlEliminar;
 }
 
 function cerrarModal(id, evento) {

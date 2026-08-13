@@ -199,17 +199,18 @@ class UsuarioController
         verificar_admin();
         verificar_rate_limit(5, 60, 'usuario_reset_pass');
 
-        if (!verificar_token_csrf($_GET['csrf_token'] ?? '')) {
+        $token = $_POST['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
             header('Location: ' . BASE_URL . '?module=usuarios&error=csrf');
             exit();
         }
 
-        if (!validar_numero($_GET['id'] ?? '')) {
+        $id = (int)($_POST['id'] ?? $_GET['id'] ?? 0);
+        if ($id <= 0) {
             header('Location: ' . BASE_URL . '?module=usuarios&error=invalid_id');
             exit();
         }
 
-        $id      = (int)$_GET['id'];
         $usuario = $this->model->buscarPorId($id);
         if (!$usuario) {
             header('Location: ' . BASE_URL . '?module=usuarios&error=invalid_id');
@@ -243,16 +244,17 @@ class UsuarioController
             exit();
         };
 
-        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_GET['csrf_token'] ?? '';
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
         if (!verificar_token_csrf($token)) {
             $responderError('Token de seguridad inválido', 'csrf');
         }
 
-        if (!validar_numero($_GET['id'] ?? '')) {
+        $rawId = $_POST['id'] ?? $_GET['id'] ?? '';
+        if (!validar_numero($rawId)) {
             $responderError('ID inválido', 'invalid_id');
         }
 
-        $id = (int)$_GET['id'];
+        $id = (int)$rawId;
 
         if ($id === (int)$_SESSION['usuario_id']) {
             $responderError('No puedes eliminar tu propia cuenta', 'self_delete');

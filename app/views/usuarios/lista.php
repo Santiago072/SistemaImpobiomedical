@@ -246,7 +246,10 @@ include dirname(__DIR__) . '/layout/menu.php';
         </div>
         <div class="imo-modal-footer">
             <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
-            <a id="link-eliminar" href="#" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Sí, eliminar</a>
+            <form id="form-eliminar-usuario" method="POST" action="" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Sí, eliminar</button>
+            </form>
         </div>
     </div>
 </div>
@@ -319,7 +322,7 @@ function abrirModalEditar(u, e) {
 function confirmarEliminar(id, nombre, e) {
     if(e) { e.preventDefault(); e.stopPropagation(); }
     document.getElementById('nombre-eliminar').textContent = nombre;
-    document.getElementById('link-eliminar').href = BASE + '?module=usuarios&action=eliminar&id=' + id + '&csrf_token=' + CSRF;
+    document.getElementById('form-eliminar-usuario').action = BASE + '?module=usuarios&action=eliminar&id=' + id;
     document.getElementById('modal-eliminar').classList.add('open');
     document.body.style.overflow = 'hidden';
 }

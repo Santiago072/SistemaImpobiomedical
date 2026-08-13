@@ -118,7 +118,8 @@ table { width:100%; border-collapse:collapse; }
 .evo-table th { background: #1f3864; color: #ffffff; padding: 5px 8px; font-size: 8px; text-align: center; font-weight: bold; }
 .evo-table td { padding: 4.5px 8px; border-bottom: 1px solid #e2e8f0; font-size: 8px; text-align: center; vertical-align: middle; }
 .evo-table tr:nth-child(even) td { background: #f8fafc; }
-.evo-table .mes-col { text-align: left; font-weight: bold; color: #1e293b; }
+.evo-table td.mes-col { text-align: left; font-weight: bold; color: #1e293b; }
+.evo-table th.mes-col { text-align: left; color: #ffffff !important; }
 
 /* ── Layout 2 columnas ── */
 .two-col { width: 100%; margin-bottom: 10px; }
@@ -335,7 +336,7 @@ table { width:100%; border-collapse:collapse; }
 <table class="evo-table">
   <thead>
     <tr>
-      <th class="mes-col" style="text-align:left;">Mes</th>
+      <th class="mes-col" style="text-align:left; color:#ffffff;">Mes</th>
       <th>Cotizaciones Finalizadas</th>
       <th>Órdenes de Compra</th>
     </tr>
@@ -388,6 +389,6 @@ $dompdf->render();
 
 while (ob_get_level()) ob_end_clean();
 
-$nombreArchivo = 'reporte_estadisticas_' . date('Ymd_Hi') . '.pdf';
+$nombreArchivo = 'Reporte_Estadisticas.pdf';
 $dompdf->stream($nombreArchivo, ['Attachment' => true]);
 exit();

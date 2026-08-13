@@ -87,11 +87,11 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <i class="bi bi-cart-plus-fill"></i> Orden
                                     </button>
                                     <?php if ($_SESSION['rol'] === 'admin'): ?>
-                                    <a href="<?= $basePath ?>?module=cotizaciones&action=eliminar&id=<?= (int)$cot['id'] ?>&csrf_token=<?= htmlspecialchars($csrf_token ?? '') ?>"
-                                       class="mod-btn-del"
-                                       onclick="return confirm('¿Eliminar la cotización <?= htmlspecialchars($cot['numero_cotizacion']) ?>?')">
-                                        <i class="bi bi-trash3-fill"></i>
-                                    </a>
+                                    <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=eliminar" style="display:inline;" onsubmit="return confirm('¿Eliminar la cotización <?= htmlspecialchars($cot['numero_cotizacion']) ?>?')">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                                        <input type="hidden" name="id" value="<?= (int)$cot['id'] ?>">
+                                        <button type="submit" class="mod-btn-del" title="Eliminar"><i class="bi bi-trash3-fill"></i></button>
+                                    </form>
                                     <?php endif; ?>
                                     <?php else: ?>
                                     <span class="mod-badge badge-red">No generado</span>

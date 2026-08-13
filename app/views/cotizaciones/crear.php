@@ -621,7 +621,8 @@ function limpiarFormulario() {
 // ── Eliminar ítem ─────────────────────────────────────────────────────────────
 function eliminarItem(id) {
     if (!confirm('¿Eliminar este ítem?')) return;
-    fetch(BASE + '?module=cotizaciones&action=eliminar_item&id=' + id + '&csrf_token=' + encodeURIComponent(CSRF), {
+    fetch(BASE + '?module=cotizaciones&action=eliminar_item&id=' + id, {
+        method: 'POST',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-Token': CSRF

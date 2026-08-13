@@ -285,12 +285,13 @@ class OrdenCompraController
         verificar_admin();
         verificar_rate_limit(10, 60, 'orden_eliminar');
 
-        if (!verificar_token_csrf($_GET['csrf_token'] ?? '')) {
+        $token = $_POST['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
             header('Location: ' . BASE_URL . '?module=ordenes&action=consultar&error=csrf');
             exit();
         }
 
-        $id = (int)($_GET['id'] ?? 0);
+        $id = (int)($_POST['id'] ?? $_GET['id'] ?? 0);
         if ($id > 0) {
             $this->model->eliminar($id);
         }
