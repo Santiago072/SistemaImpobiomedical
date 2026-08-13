@@ -119,7 +119,8 @@ function verificar_rate_limit(int $limite = 15, int $ventanaSegundos = 60, strin
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['status' => 'error', 'message' => 'Demasiadas peticiones desde su dirección IP. Espere un momento.']);
         } else {
-            echo "<h1>429 - Demasiadas peticiones</h1><p>Ha superado el límite de intentos permitidos desde su dirección IP. Por favor, espere un momento.</p>";
+            // Mostrar vista de error 429 profesional en lugar de HTML crudo
+            include dirname(__DIR__) . '/app/views/errores/429.php';
         }
         exit;
     }
