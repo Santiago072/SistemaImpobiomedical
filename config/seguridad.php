@@ -66,39 +66,69 @@ function rotar_token_csrf(): string
     return $_SESSION['csrf_token'];
 }
 
-// ── Rate Limiting ─────────────────────────────────────────────────────────────
+// ── Rate Limiting (Basado en IP + Archivos locales para evitar bypass por cookies) ───
+
+function obtener_ip_cliente(): string
+{
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        $ip = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        $ip  = trim($ips[0]);
+    } else {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+    }
+    return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '127.0.0.1';
+}
 
 function verificar_rate_limit(int $limite = 15, int $ventanaSegundos = 60, string $accion = 'global'): void
 {
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    $clave        = "rate_limit_" . $accion;
+    $ip           = obtener_ip_cliente();
     $tiempoActual = time();
+    $dirStorage   = sys_get_temp_dir() . '/impobiomedical_rate_limit';
 
-    if (!isset($_SESSION[$clave])) {
-        $_SESSION[$clave] = [];
+    if (!is_dir($dirStorage)) {
+        @mkdir($dirStorage, 0755, true);
     }
 
-    $_SESSION[$clave] = array_filter($_SESSION[$clave], function ($timestamp) use ($tiempoActual, $ventanaSegundos) {
-        return ($tiempoActual - $timestamp) < $ventanaSegundos;
-    });
+    $hashFile   = md5($ip . '_' . $accion);
+    $filePath   = $dirStorage . '/rl_' . $hashFile . '.json';
+    $timestamps = [];
 
-    if (count($_SESSION[$clave]) >= $limite) {
+    if (file_exists($filePath)) {
+        $content    = @file_get_contents($filePath);
+        $decoded    = json_decode((string)$content, true);
+        $timestamps = is_array($decoded) ? $decoded : [];
+    }
+
+    // Filtrar marcas de tiempo dentro de la ventana de tiempo especificada
+    $timestamps = array_values(array_filter($timestamps, function ($timestamp) use ($tiempoActual, $ventanaSegundos) {
+        return ($tiempoActual - (int)$timestamp) < $ventanaSegundos;
+    }));
+
+    if (session_status() !== PHP_SESSION_NONE) {
+        $_SESSION["rate_limit_" . $accion] = $timestamps;
+    }
+
+    if (count($timestamps) >= $limite) {
         http_response_code(429);
         $esAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-                  strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+                  strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
         if ($esAjax) {
             header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(['status' => 'error', 'message' => 'Demasiadas peticiones. Espere un momento.']);
+            echo json_encode(['status' => 'error', 'message' => 'Demasiadas peticiones desde su dirección IP. Espere un momento.']);
         } else {
-            echo "<h1>429 - Demasiadas peticiones</h1><p>Por favor, espere un momento.</p>";
+            echo "<h1>429 - Demasiadas peticiones</h1><p>Ha superado el límite de intentos permitidos desde su dirección IP. Por favor, espere un momento.</p>";
         }
         exit;
     }
 
-    $_SESSION[$clave][] = $tiempoActual;
+    $timestamps[] = $tiempoActual;
+    @file_put_contents($filePath, json_encode($timestamps), LOCK_EX);
+
+    if (session_status() !== PHP_SESSION_NONE) {
+        $_SESSION["rate_limit_" . $accion] = $timestamps;
+    }
 }
 
 // ── Sanitización y escape ─────────────────────────────────────────────────────
