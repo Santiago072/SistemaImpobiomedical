@@ -217,7 +217,8 @@ class CotizacionController
             exit();
         }
 
-        if (!validar_numero($_GET['id'] ?? '')) {
+        $rawId = $_POST['id'] ?? $_GET['id'] ?? '';
+        if (!validar_numero($rawId)) {
             if ($esAjax) {
                 header('Content-Type: application/json');
                 echo json_encode(['status' => 'error', 'message' => 'ID inválido']);
@@ -227,11 +228,26 @@ class CotizacionController
             exit();
         }
 
-        $this->model->eliminarItem((int)$_GET['id']);
+        $cotizacionId = $_SESSION['cotizacion_id'] ?? 0;
+        if ((int)$cotizacionId <= 0) {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'No hay cotización activa en la sesión']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
+            exit();
+        }
+
+        $exito = $this->model->eliminarItem((int)$rawId, (int)$cotizacionId);
 
         if ($esAjax) {
             header('Content-Type: application/json');
-            echo json_encode(['status' => 'success']);
+            if ($exito) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'No se pudo eliminar el ítem o no pertenece a la cotización activa']);
+            }
             exit();
         }
         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');

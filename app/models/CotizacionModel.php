@@ -480,10 +480,11 @@ class CotizacionModel
         ]);
     }
 
-    public function eliminarItem(int $itemId): bool
+    public function eliminarItem(int $itemId, int $cotizacionId): bool
     {
-        $stmt = $this->db->prepare('DELETE FROM cotizacion_items WHERE id = :id');
-        return $stmt->execute([':id' => $itemId]);
+        $stmt = $this->db->prepare('DELETE FROM cotizacion_items WHERE id = :id AND cotizacion_id = :cid');
+        $stmt->execute([':id' => $itemId, ':cid' => $cotizacionId]);
+        return $stmt->rowCount() > 0;
     }
 
     // ── ELIMINAR ───────────────────────────────────────────────────────────────
