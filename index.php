@@ -209,6 +209,9 @@ if ($module === 'usuarios') {
         case 'reset_password':
             $ctrl->resetPassword();
             break;
+        case 'cambiar_password_obligatorio':
+            $ctrl->cambiarPasswordObligatorio();
+            break;
         case 'crear':
         case 'editar':
             $dataForm = $action === 'crear' ? $ctrl->crear() : $ctrl->editar();

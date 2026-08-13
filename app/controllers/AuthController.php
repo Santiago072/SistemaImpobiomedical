@@ -55,6 +55,15 @@ class AuthController
             $_SESSION['usuario_cargo']  = $usuario['cargo'] ?? '';
             $_SESSION['rol']            = $usuario['rol'];
             $_SESSION['LAST_ACTIVITY']  = time();
+
+            $debeCambiar = false;
+            if (isset($usuario['debe_cambiar_password']) && (int)$usuario['debe_cambiar_password'] === 1) {
+                $debeCambiar = true;
+            } elseif (password_verify($usuario['documento'], $usuario['password'])) {
+                $debeCambiar = true;
+            }
+            $_SESSION['debe_cambiar_password'] = $debeCambiar;
+
             rotar_token_csrf();
 
             header('Location: ' . BASE_URL . '?module=panel');

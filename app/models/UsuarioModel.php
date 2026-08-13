@@ -14,6 +14,19 @@ class UsuarioModel
     public function __construct(\PDO $conexion)
     {
         $this->db = $conexion;
+        $this->asegurarColumnaDebeCambiarPassword();
+    }
+
+    public function asegurarColumnaDebeCambiarPassword(): void
+    {
+        try {
+            $stmt = $this->db->query("SHOW COLUMNS FROM usuarios LIKE 'debe_cambiar_password'");
+            if (!$stmt->fetch()) {
+                $this->db->exec("ALTER TABLE usuarios ADD COLUMN debe_cambiar_password TINYINT(1) NOT NULL DEFAULT 1");
+            }
+        } catch (\Throwable $e) {
+            // Ignorar silenciosamente
+        }
     }
 
     public function listar(int $offset, int $limite, string $busqueda = ''): array
@@ -235,7 +248,13 @@ class UsuarioModel
 
     public function resetPassword(int $id, string $passwordHash): bool
     {
-        $stmt = $this->db->prepare('UPDATE usuarios SET password=:pass WHERE id=:id');
+        $stmt = $this->db->prepare('UPDATE usuarios SET password=:pass, debe_cambiar_password=1 WHERE id=:id');
+        return $stmt->execute([':pass' => $passwordHash, ':id' => $id]);
+    }
+
+    public function cambiarPassword(int $id, string $passwordHash): bool
+    {
+        $stmt = $this->db->prepare('UPDATE usuarios SET password=:pass, debe_cambiar_password=0 WHERE id=:id');
         return $stmt->execute([':pass' => $passwordHash, ':id' => $id]);
     }
 

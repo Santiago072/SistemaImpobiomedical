@@ -312,5 +312,100 @@ class UsuarioController
         }
         return '';
     }
+
+    // ── CAMBIAR CONTRASEÑA OBLIGATORIO (Primer login / Reset) ─────────────────
+    public function cambiarPasswordObligatorio(): void
+    {
+        verificar_autenticacion();
+        verificar_rate_limit(5, 60, 'usuario_cambiar_pass_ob');
+
+        $esAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+                  strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'Token de seguridad inválido']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=panel');
+            exit();
+        }
+
+        $nuevaPass     = $_POST['nueva_password'] ?? '';
+        $confirmarPass = $_POST['confirmar_password'] ?? '';
+        $usuarioId     = (int)$_SESSION['usuario_id'];
+        $usuario       = $this->model->buscarPorId($usuarioId);
+
+        if (!$usuario) {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'Usuario no encontrado']);
+                exit();
+            }
+            header('Location: ' . BASE_URL);
+            exit();
+        }
+
+        if (mb_strlen($nuevaPass) < 6) {
+            $msg = 'La nueva contraseña debe tener al menos 6 caracteres';
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => $msg]);
+                exit();
+            }
+            $_SESSION['mensajeError'] = $msg;
+            header('Location: ' . BASE_URL . '?module=panel');
+            exit();
+        }
+
+        if ($nuevaPass !== $confirmarPass) {
+            $msg = 'Las contraseñas no coinciden';
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => $msg]);
+                exit();
+            }
+            $_SESSION['mensajeError'] = $msg;
+            header('Location: ' . BASE_URL . '?module=panel');
+            exit();
+        }
+
+        if ($nuevaPass === $usuario['documento']) {
+            $msg = 'La nueva contraseña debe ser diferente a su número de documento';
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => $msg]);
+                exit();
+            }
+            $_SESSION['mensajeError'] = $msg;
+            header('Location: ' . BASE_URL . '?module=panel');
+            exit();
+        }
+
+        $hash = password_hash($nuevaPass, PASSWORD_BCRYPT);
+        if ($this->model->cambiarPassword($usuarioId, $hash)) {
+            $_SESSION['debe_cambiar_password'] = false;
+            rotar_token_csrf();
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'success', 'message' => 'Contraseña actualizada exitosamente']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=panel&password_changed=1');
+            exit();
+        }
+
+        $msg = 'Error al actualizar la contraseña en la base de datos';
+        if ($esAjax) {
+            header('Content-Type: application/json');
+            echo json_encode(['status' => 'error', 'message' => $msg]);
+            exit();
+        }
+        $_SESSION['mensajeError'] = $msg;
+        header('Location: ' . BASE_URL . '?module=panel');
+        exit();
+    }
 }
 
