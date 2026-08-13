@@ -28,9 +28,6 @@ class AuthController
             return compact('mensajeError', 'csrf_token');
         }
 
-        // Límite estricto de seguridad: 5 intentos de login cada 5 minutos (300 segundos) para evitar fuerza bruta
-        verificar_rate_limit(5, 300, 'login');
-
         $tokenPost = $_POST['csrf_token'] ?? '';
         if (!verificar_token_csrf($tokenPost)) {
             $mensajeError = 'Token de seguridad inválido. Por favor intente nuevamente.';
@@ -68,6 +65,10 @@ class AuthController
             header('Location: ' . BASE_URL . '?module=panel');
             exit();
         }
+
+        // 🔒 Rate Limiting: solo contar intentos FALLIDOS (credenciales incorrectas)
+        // Límite estricto de seguridad: 5 intentos fallidos de login cada 5 minutos (300 segundos) para evitar fuerza bruta
+        verificar_rate_limit(5, 300, 'login');
 
         $mensajeError = 'Documento o contraseña incorrectos';
         return compact('mensajeError', 'csrf_token');
