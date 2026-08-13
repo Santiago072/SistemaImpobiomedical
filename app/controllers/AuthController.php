@@ -56,13 +56,12 @@ class AuthController
             $_SESSION['rol']            = $usuario['rol'];
             $_SESSION['LAST_ACTIVITY']  = time();
 
-            $debeCambiar = false;
-            if (isset($usuario['debe_cambiar_password']) && (int)$usuario['debe_cambiar_password'] === 1) {
-                $debeCambiar = true;
-            } elseif (password_verify($usuario['documento'], $usuario['password'])) {
-                $debeCambiar = true;
+            // Si la contraseña coincide con el número de documento (login con documento en ambos campos), sugerir modal
+            if (password_verify($usuario['documento'], $usuario['password'])) {
+                $_SESSION['mostrar_modal_cambio_pass'] = true;
+            } else {
+                unset($_SESSION['mostrar_modal_cambio_pass']);
             }
-            $_SESSION['debe_cambiar_password'] = $debeCambiar;
 
             rotar_token_csrf();
 

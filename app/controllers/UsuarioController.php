@@ -313,11 +313,27 @@ class UsuarioController
         return '';
     }
 
-    // ── CAMBIAR CONTRASEÑA OBLIGATORIO (Primer login / Reset) ─────────────────
-    public function cambiarPasswordObligatorio(): void
+    public function omitirCambioPassword(): void
     {
         verificar_autenticacion();
-        verificar_rate_limit(5, 60, 'usuario_cambiar_pass_ob');
+        unset($_SESSION['mostrar_modal_cambio_pass']);
+
+        $esAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+                  strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+        if ($esAjax) {
+            header('Content-Type: application/json');
+            echo json_encode(['status' => 'success']);
+            exit();
+        }
+        header('Location: ' . BASE_URL . '?module=panel');
+        exit();
+    }
+
+    // ── CAMBIAR CONTRASEÑA MODAL (Sugerencia al ingresar con documento) ───────────
+    public function cambiarPasswordModal(): void
+    {
+        verificar_autenticacion();
+        verificar_rate_limit(5, 60, 'usuario_cambiar_pass_modal');
 
         $esAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
                   strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
@@ -386,7 +402,7 @@ class UsuarioController
 
         $hash = password_hash($nuevaPass, PASSWORD_BCRYPT);
         if ($this->model->cambiarPassword($usuarioId, $hash)) {
-            $_SESSION['debe_cambiar_password'] = false;
+            unset($_SESSION['mostrar_modal_cambio_pass']);
             rotar_token_csrf();
             if ($esAjax) {
                 header('Content-Type: application/json');

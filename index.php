@@ -209,8 +209,11 @@ if ($module === 'usuarios') {
         case 'reset_password':
             $ctrl->resetPassword();
             break;
-        case 'cambiar_password_obligatorio':
-            $ctrl->cambiarPasswordObligatorio();
+        case 'omitir_cambio_password':
+            $ctrl->omitirCambioPassword();
+            break;
+        case 'cambiar_password_modal':
+            $ctrl->cambiarPasswordModal();
             break;
         case 'crear':
         case 'editar':
