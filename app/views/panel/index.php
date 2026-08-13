@@ -71,10 +71,12 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
                     <i class="bi bi-search"></i>
                     <span>Consultar Cotizaciones</span>
                 </a>
+                <?php if ($rol === 'admin'): ?>
                 <a href="<?= $basePath ?>?module=clientes" class="action-card">
                     <i class="bi bi-building"></i>
                     <span>Clientes</span>
                 </a>
+                <?php endif; ?>
                 <?php if ($rol === 'admin'): ?>
                 <a href="<?= $basePath ?>?module=productos" class="action-card">
                     <i class="bi bi-box-seam-fill"></i>
