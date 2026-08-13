@@ -125,9 +125,9 @@ $base = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 <div class="timer-display" id="timer">60</div>
                 <div id="timerLabel">segundos</div>
             </div>
-            <a href="javascript:history.back()" class="btn-back" id="btnBack" style="display:none;">
+            <a href="<?= $base ?>" class="btn-back" id="btnBack" style="display:none;">
                 <i class="bi bi-arrow-left-circle-fill"></i>
-                Volver atrás
+                Volver al Login
             </a>
         </div>
     </div>
