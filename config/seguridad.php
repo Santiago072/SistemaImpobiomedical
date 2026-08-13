@@ -83,6 +83,7 @@ function obtener_ip_cliente(): string
 
 function verificar_rate_limit(int $limite = 15, int $ventanaSegundos = 60, string $accion = 'global'): void
 {
+    iniciar_sesion_segura();
     $ip           = obtener_ip_cliente();
     $tiempoActual = time();
     $dirStorage   = sys_get_temp_dir() . '/impobiomedical_rate_limit';
