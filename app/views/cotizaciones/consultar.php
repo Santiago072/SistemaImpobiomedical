@@ -29,15 +29,21 @@ include dirname(__DIR__) . '/layout/menu.php';
 
         <!-- Filtros de búsqueda estilo Panel -->
         <div class="mod-search-bar">
-            <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=consultar" class="mod-search-form" style="display:flex; gap:10px; align-items:center; flex:1;">
+            <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=consultar" class="mod-search-form" style="display:flex; gap:10px; align-items:center; flex:1; flex-wrap:wrap;">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                 <span class="mod-search-icon"><i class="bi bi-funnel"></i></span>
-                <input type="date" name="fecha" value="<?= htmlspecialchars($busquedaFecha) ?>" class="mod-search-input" style="flex:0.5; border: 1.5px solid #e2e8f0; border-radius: 9px; padding: 10px;" onchange="this.form.submit()">
-                <input type="text" name="nombre_cliente" value="<?= htmlspecialchars($busquedaCliente) ?>" placeholder="Buscar por cliente..." maxlength="60" class="mod-search-input" style="flex:1;">
-                <input type="text" name="numero_cotizacion" value="<?= htmlspecialchars($busquedaNumero) ?>" placeholder="Número cotización..." maxlength="20" class="mod-search-input" style="flex:1;">
+                <input type="date" name="fecha" value="<?= htmlspecialchars($busquedaFecha) ?>" class="mod-search-input" style="flex:0.5; min-width:140px; border: 1.5px solid #e2e8f0; border-radius: 9px; padding: 10px;" onchange="this.form.submit()">
+                <input type="text" name="nombre_cliente" value="<?= htmlspecialchars($busquedaCliente) ?>" placeholder="Buscar por cliente..." maxlength="60" class="mod-search-input" style="flex:1; min-width:180px;">
+                <input type="text" name="numero_cotizacion" value="<?= htmlspecialchars($busquedaNumero) ?>" placeholder="Número cotización..." maxlength="20" class="mod-search-input" style="flex:1; min-width:150px;">
+                <select name="estado_comercial" class="mod-search-input" style="flex:0.8; min-width:150px; border: 1.5px solid #e2e8f0; border-radius: 9px; padding: 10px;" onchange="this.form.submit()">
+                    <option value="">Todos los estados</option>
+                    <option value="pendiente" <?= ($busquedaEstado ?? '') === 'pendiente' ? 'selected' : '' ?>>🟡 Pendientes</option>
+                    <option value="concluida" <?= ($busquedaEstado ?? '') === 'concluida' ? 'selected' : '' ?>>🟢 Concluidas</option>
+                    <option value="descartada" <?= ($busquedaEstado ?? '') === 'descartada' ? 'selected' : '' ?>>🔴 Descartadas</option>
+                </select>
                 
                 <button type="submit" class="imo-btn-save" style="padding: 10px 15px; border-radius: 9px;"><i class="bi bi-search"></i> Buscar</button>
-                <?php if (!empty($cotizaciones) || $busquedaFecha || $busquedaCliente || $busquedaNumero): ?>
+                <?php if (!empty($cotizaciones) || $busquedaFecha || $busquedaCliente || $busquedaNumero || !empty($busquedaEstado)): ?>
                 <a href="<?= $basePath ?>?module=cotizaciones&action=consultar&limpiar=1" class="mod-btn-clear" title="Limpiar filtros">
                     <i class="bi bi-x-lg"></i>
                 </a>
@@ -54,22 +60,56 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <th>Fecha</th>
                         <th>Cliente / Entidad</th>
                         <th>Ciudad</th>
+                        <th style="text-align:center;">Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (!empty($cotizaciones)): ?>
-                        <?php foreach ($cotizaciones as $cot): ?>
+                        <?php foreach ($cotizaciones as $cot): 
+                            $estCom = $cot['estado_comercial'] ?? 'pendiente';
+                            $badgeClass = 'badge-yellow';
+                            $badgeLabel = 'Pendiente';
+                            $badgeColor = '#ca8a04';
+                            $badgeBg    = 'rgba(234,179,8,.15)';
+                            if ($estCom === 'concluida') {
+                                $badgeClass = 'badge-green';
+                                $badgeLabel = 'Concluida';
+                                $badgeColor = '#16a34a';
+                                $badgeBg    = 'rgba(34,197,94,.15)';
+                            } elseif ($estCom === 'descartada') {
+                                $badgeClass = 'badge-red';
+                                $badgeLabel = 'Descartada';
+                                $badgeColor = '#dc2626';
+                                $badgeBg    = 'rgba(239,68,68,.15)';
+                            }
+                        ?>
                         <tr>
                             <td><strong><?= htmlspecialchars($cot['numero_cotizacion'] ?: 'Sin número') ?></strong></td>
                             <td><?= htmlspecialchars($cot['fecha_creacion']) ?></td>
                             <td><?= htmlspecialchars($cot['cliente_nombre'] ?? '') ?></td>
                             <td><?= htmlspecialchars($cot['cliente_ciudad'] ?? '') ?></td>
+                            <td style="text-align:center;">
+                                <?php if (($_SESSION['rol'] ?? 'usuario') === 'admin'): ?>
+                                    <select class="estado-comercial-select" 
+                                            data-id="<?= (int)$cot['id'] ?>"
+                                            style="padding:4px 8px; border-radius:6px; font-weight:700; font-size:11.5px; border:1.5px solid <?= $badgeColor ?>; background:<?= $badgeBg ?>; color:<?= $badgeColor ?>; cursor:pointer;"
+                                            onchange="cambiarEstadoComercial(this)">
+                                        <option value="pendiente" <?= $estCom === 'pendiente' ? 'selected' : '' ?>>🟡 Pendiente</option>
+                                        <option value="concluida" <?= $estCom === 'concluida' ? 'selected' : '' ?>>🟢 Concluida</option>
+                                        <option value="descartada" <?= $estCom === 'descartada' ? 'selected' : '' ?>>🔴 Descartada</option>
+                                    </select>
+                                <?php else: ?>
+                                    <span style="display:inline-block; padding:4px 10px; border-radius:6px; font-weight:700; font-size:11px; border:1px solid <?= $badgeColor ?>; background:<?= $badgeBg ?>; color:<?= $badgeColor ?>;">
+                                        <?= htmlspecialchars($badgeLabel) ?>
+                                    </span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <div class="mod-actions">
                                     <?php if (!empty($cot['numero_cotizacion'])): ?>
                                     <button type="button" class="mod-btn-edit" style="width:auto; padding:0 12px; font-weight:600;"
-                                        onclick="verPDF('<?= htmlspecialchars($cot['numero_cotizacion']) ?>', '<?= htmlspecialchars($cot['nombre_cliente']) ?>')">
+                                        onclick="verPDF('<?= htmlspecialchars($cot['numero_cotizacion']) ?>', '<?= htmlspecialchars($cot['nombre_cliente'] ?? $cot['cliente_nombre'] ?? '') ?>')">
                                         <i class="bi bi-eye"></i> Ver PDF
                                     </button>
                                     <button type="button" class="mod-btn-del" style="width:auto; padding:0 12px; font-weight:600; background:#3b82f6; color:white; border-color:#3b82f6;"
@@ -102,14 +142,14 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <?php endforeach; ?>
                     <?php elseif (isset($_GET['buscando'])): ?>
                     <tr>
-                        <td colspan="6" class="mod-empty">
+                        <td colspan="7" class="mod-empty">
                             <i class="bi bi-search"></i>
                             <p>No se encontraron cotizaciones.</p>
                         </td>
                     </tr>
                     <?php else: ?>
                     <tr>
-                        <td colspan="6" class="mod-empty">
+                        <td colspan="7" class="mod-empty">
                             <i class="bi bi-funnel"></i>
                             <p>Use los filtros de arriba para buscar cotizaciones.</p>
                         </td>
@@ -178,6 +218,55 @@ function cerrarPDF() {
     document.getElementById('modal-pdf-viewer').style.display = 'none';
     document.getElementById('pdf-frame').src                  = '';
     document.body.style.overflow                               = 'auto';
+}
+
+function cambiarEstadoComercial(select) {
+    const id = select.getAttribute('data-id');
+    const nuevoEstado = select.value;
+    const csrfToken = '<?= htmlspecialchars($csrf_token ?? '') ?>';
+
+    // Colores dinámicos
+    const estilos = {
+        'pendiente': { color: '#ca8a04', bg: 'rgba(234,179,8,.15)' },
+        'concluida': { color: '#16a34a', bg: 'rgba(34,197,94,.15)' },
+        'descartada': { color: '#dc2626', bg: 'rgba(239,68,68,.15)' }
+    };
+
+    select.disabled = true;
+    select.style.opacity = '0.5';
+
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('estado_comercial', nuevoEstado);
+    formData.append('csrf_token', csrfToken);
+
+    fetch('<?= $basePath ?>?module=cotizaciones&action=cambiar_estado', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(d => {
+        select.disabled = false;
+        select.style.opacity = '1';
+        if (d.status === 'success') {
+            const conf = estilos[nuevoEstado] || estilos['pendiente'];
+            select.style.borderColor = conf.color;
+            select.style.color = conf.color;
+            select.style.background = conf.bg;
+        } else {
+            alert('Error: ' + (d.message || 'No se pudo actualizar'));
+            window.location.reload();
+        }
+    })
+    .catch(err => {
+        select.disabled = false;
+        select.style.opacity = '1';
+        alert('Error de conexión al actualizar estado.');
+    });
 }
 
 window.onclick = e => { if (e.target === document.getElementById('modal-pdf-viewer')) cerrarPDF(); };

@@ -1,7 +1,7 @@
 <?php
 /**
  * Vista: PDF de Catálogo de Productos — IMPOMIN S.A.S / Impobiomedical
- * Generado con DomPDF.
+ * Generado con DomPDF optimizado para catálogo con imágenes.
  */
 
 // Limpiar cualquier buffer previo
@@ -23,6 +23,8 @@ if (!function_exists('imgBase64')) {
 }
 
 $logoDir    = dirname(__DIR__, 3) . '/logo/';
+$uploadsDir = dirname(__DIR__, 3) . '/uploads/';
+
 $imgLogoPdf = imgBase64($logoDir . 'logopdf.png');
 $imgLogoImp = imgBase64($logoDir . 'logoimp.png');
 
@@ -66,12 +68,18 @@ body { font-family: Arial, Helvetica, sans-serif; font-size: 8.5px; color: #1f29
     margin: 0 4px;
 }
 
-/* ── Tabla Principal con mayor grosor y bordes definidos ── */
+/* ── Tabla Principal ── */
 table.prod-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 5px;
-    border: 2px solid #10757e;
+    border: 1.5px solid #10757e;
+}
+table.prod-table thead {
+    display: table-header-group;
+}
+table.prod-table tr {
+    page-break-inside: avoid;
 }
 table.prod-table th {
     background-color: #10757e;
@@ -93,20 +101,28 @@ table.prod-table td {
 /* Filas alternas */
 table.prod-table tbody tr:nth-child(even) { background-color: #f8fafc; }
 
-/* Alineaciones:
-   - Primeras 3 columnas (Código, Categoría, Nombre) -> Centradas
-   - Descripción -> Izquierda
-   - Últimas 2 columnas (IVA, Estado) -> Centradas
-*/
-td.col-codigo { font-weight: bold; color: #0f766e; text-align: center; }
+td.col-codigo { font-weight: bold; color: #0f766e; text-align: center; font-size: 8.5px; }
 td.col-categoria { color: #475569; font-style: italic; font-weight: bold; text-align: center; }
-td.col-nombre { font-weight: bold; color: #1e293b; text-align: center; }
-td.col-desc { text-align: left; font-size: 8px; color: #475569; line-height: 1.35; word-wrap: break-word; }
-td.col-iva { text-align: center; }
-td.col-estado { text-align: center; }
+td.col-img { text-align: center; vertical-align: middle; padding: 4px; }
+td.col-nombre { font-weight: bold; color: #1e293b; text-align: left; vertical-align: top; }
+td.col-desc { text-align: left; font-size: 8px; color: #475569; line-height: 1.35; word-wrap: break-word; vertical-align: top; }
 
-.tag-activo { color: #166534; font-weight: bold; background-color: #dcfce7; border: 1px solid #86efac; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 8px; }
-.tag-inactivo { color: #991b1b; font-weight: bold; background-color: #fee2e2; border: 1px solid #fca5a5; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 8px; }
+.img-thumb {
+    max-width: 65px;
+    max-height: 65px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 3px;
+    border: 1px solid #e2e8f0;
+}
+.no-img {
+    font-size: 7px;
+    color: #94a3b8;
+    font-style: italic;
+    display: inline-block;
+    padding: 4px;
+}
 
 .footer-table { margin-top: 14px; border-top: 1px solid #cbd5e1; padding-top: 5px; width:100%; }
 .footer-table td { font-size: 7.5px; color: #64748b; border:none; text-align: left; }
@@ -168,27 +184,31 @@ td.col-estado { text-align: center; }
         <tr>
             <th style="width: 12%;">Código</th>
             <th style="width: 15%;">Categoría</th>
-            <th style="width: 23%;">Nombre</th>
-            <th style="width: 32%;">Descripción</th>
-            <th style="width: 8%;">IVA</th>
-            <th style="width: 10%;">Estado</th>
+            <th style="width: 13%;">Imagen</th>
+            <th style="width: 25%;">Nombre</th>
+            <th style="width: 35%;">Descripción</th>
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($productos as $p): ?>
+        <?php foreach ($productos as $p): 
+            $fotoNombre = $p['foto'] ?? '';
+            $imgProd = '';
+            if (!empty($fotoNombre) && file_exists($uploadsDir . $fotoNombre)) {
+                $imgProd = imgBase64($uploadsDir . $fotoNombre);
+            }
+        ?>
         <tr>
             <td class="col-codigo"><?= htmlspecialchars($p['codigo_producto'] ?? '') ?></td>
             <td class="col-categoria"><?= htmlspecialchars($p['categoria'] ?? '') ?></td>
-            <td class="col-nombre"><?= htmlspecialchars($p['titulo'] ?? '') ?></td>
-            <td class="col-desc"><?= nl2br(htmlspecialchars($p['descripcion'] ?? '')) ?></td>
-            <td class="col-iva"><?= (strtolower($p['iva'] ?? '') === 'si') ? 'Sí' : 'No' ?></td>
-            <td class="col-estado">
-                <?php if (strtolower($p['estado'] ?? '') === 'activo'): ?>
-                    <span class="tag-activo">Activo</span>
+            <td class="col-img">
+                <?php if ($imgProd): ?>
+                    <img src="<?= $imgProd ?>" class="img-thumb">
                 <?php else: ?>
-                    <span class="tag-inactivo">Inactivo</span>
+                    <span class="no-img">Sin imagen</span>
                 <?php endif; ?>
             </td>
+            <td class="col-nombre"><?= htmlspecialchars($p['titulo'] ?? '') ?></td>
+            <td class="col-desc"><?= nl2br(htmlspecialchars($p['descripcion'] ?? '')) ?></td>
         </tr>
         <?php endforeach; ?>
     </tbody>

@@ -83,6 +83,7 @@ CREATE TABLE IF NOT EXISTS cotizaciones (
     condiciones_pago     VARCHAR(100) DEFAULT 'CONTADO',
     observaciones        TEXT NULL,
     estado               ENUM('borrador', 'finalizada') DEFAULT 'borrador',
+    estado_comercial     ENUM('pendiente', 'concluida', 'descartada') DEFAULT 'pendiente',
     created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),

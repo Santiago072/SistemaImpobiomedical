@@ -368,8 +368,31 @@ class CotizacionModel
             $condiciones[] = 'c.numero_cotizacion LIKE :ncot';
             $params[':ncot'] = '%' . $filtros['numero_cotizacion'] . '%';
         }
+        if (!empty($filtros['estado_comercial'])) {
+            $condiciones[] = 'c.estado_comercial = :est_com';
+            $params[':est_com'] = $filtros['estado_comercial'];
+        }
 
         return [implode(' AND ', $condiciones), $params];
+    }
+
+    /**
+     * Actualiza el estado comercial de una cotización (pendiente, concluida, descartada).
+     */
+    public function actualizarEstadoComercial(int $id, string $nuevoEstado): bool
+    {
+        $estadosPermitidos = ['pendiente', 'concluida', 'descartada'];
+        if (!in_array($nuevoEstado, $estadosPermitidos, true)) {
+            return false;
+        }
+
+        $stmt = $this->db->prepare(
+            "UPDATE cotizaciones SET estado_comercial = :estado WHERE id = :id AND estado = 'finalizada'"
+        );
+        return $stmt->execute([
+            ':estado' => $nuevoEstado,
+            ':id'     => $id
+        ]);
     }
 
     // ── Ítems ─────────────────────────────────────────────────────────────────

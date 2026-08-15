@@ -172,6 +172,11 @@ class ProductoController
     public function exportarPdf(): void
     {
         verificar_autenticacion();
+        verificar_rate_limit(15, 60, 'exportar_pdf_catalogo');
+
+        @ini_set('memory_limit', '256M');
+        @set_time_limit(120);
+
         $busqueda = sanitizar_entrada($_GET['busqueda'] ?? '');
         $categoriaSel = sanitizar_entrada($_GET['categoria'] ?? '');
         

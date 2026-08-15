@@ -416,6 +416,7 @@ class CotizacionController
             if (!empty($_POST['fecha']))             $filtros['fecha']             = sanitizar_entrada($_POST['fecha']);
             if (!empty($_POST['nombre_cliente']))    $filtros['nombre_cliente']    = sanitizar_entrada($_POST['nombre_cliente']);
             if (!empty($_POST['numero_cotizacion'])) $filtros['numero_cotizacion'] = sanitizar_entrada($_POST['numero_cotizacion']);
+            if (!empty($_POST['estado_comercial']))  $filtros['estado_comercial']  = sanitizar_entrada($_POST['estado_comercial']);
 
             $_SESSION['cotizacion_filtros'] = $filtros;
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
@@ -432,13 +433,63 @@ class CotizacionController
         $busquedaFecha   = $filtros['fecha'] ?? '';
         $busquedaCliente = $filtros['nombre_cliente'] ?? '';
         $busquedaNumero  = $filtros['numero_cotizacion'] ?? '';
+        $busquedaEstado  = $filtros['estado_comercial'] ?? '';
 
         $total        = $this->model->contarConFiltros($filtros, $usuarioId, $rol);
         $totalPaginas = (int)ceil($total / $this->porPagina);
         $cotizaciones = $this->model->buscarConFiltros($filtros, $offset, $this->porPagina, $usuarioId, $rol);
 
         return compact('cotizaciones', 'csrf_token', 'mensajeError', 'busquedaFecha', 'busquedaCliente',
-                       'busquedaNumero', 'paginaActual', 'totalPaginas');
+                       'busquedaNumero', 'busquedaEstado', 'paginaActual', 'totalPaginas', 'rol');
+    }
+
+    // ── CAMBIAR ESTADO COMERCIAL (Solo Admin con CSRF y Rate Limit) ───────────
+    public function cambiarEstadoComercial(): void
+    {
+        verificar_admin();
+        verificar_rate_limit(30, 60, 'cot_cambiar_estado');
+
+        $esAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+                  strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'Token de seguridad inválido']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=csrf');
+            exit();
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        $nuevoEstado = sanitizar_entrada($_POST['estado_comercial'] ?? '');
+
+        if ($id <= 0 || !in_array($nuevoEstado, ['pendiente', 'concluida', 'descartada'], true)) {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'Datos de estado no válidos']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=invalido');
+            exit();
+        }
+
+        $exito = $this->model->actualizarEstadoComercial($id, $nuevoEstado);
+
+        if ($esAjax) {
+            header('Content-Type: application/json');
+            if ($exito) {
+                echo json_encode(['status' => 'success', 'message' => 'Estado actualizado exitosamente', 'nuevo_estado' => $nuevoEstado]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'No se pudo actualizar el estado de la cotización']);
+            }
+            exit();
+        }
+
+        header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&updated=1');
+        exit();
     }
 
     // ── GENERAR PDF ───────────────────────────────────────────────────────────
