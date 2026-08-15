@@ -202,6 +202,9 @@ body.menu-oculto .cabecera-superior {
 .cabecera-bienvenida {
     display: flex;
     flex-direction: column;
+    gap: 6px;
+}
+
 .cabecera-bienvenida h3 {
     font-family: var(--font-display, 'Outfit', 'Inter', sans-serif);
     font-size: 20px;
