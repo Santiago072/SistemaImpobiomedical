@@ -5,16 +5,16 @@
 [![PHPUnit](https://img.shields.io/badge/Tests-PHPUnit%2010-37b24d?style=flat-square&logo=php)](phpunit.xml)
 [![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?style=flat-square&logo=githubactions)](.github/workflows/ci.yml)
 [![Licencia](https://img.shields.io/badge/Licencia-Comercial%20Propietaria-e03c3c?style=flat-square)](LICENSE)
-[![Versión](https://img.shields.io/badge/Versión-v2.0.0-10757e?style=flat-square)](docs/CHANGELOG.md)
+[![Versión](https://img.shields.io/badge/Versión-v2.1.0-10757e?style=flat-square)](docs/CHANGELOG.md)
 
-Bienvenido al **Sistema Impobiomedical**. Es una solución web integral de gestión comercial y médica desarrollada para **Impobiomedical — Soluciones y Servicios de Tecnología Biomédica**. Administra el ciclo comercial completo: creación de cotizaciones dinámicas con calculadora de márgenes de ganancia, generación de PDFs oficiales para clientes, hojas internas de respaldo de proveedores, órdenes de compra por proveedor (P.O.), catálogo de productos con fotos sanitizadas y reportes estadísticos avanzados.
+Bienvenido al **Sistema Impobiomedical**. Es una solución web integral de gestión comercial y médica desarrollada para **Impobiomedical — Soluciones y Servicios de Tecnología Biomédica**. Administra el ciclo comercial completo: creación de cotizaciones dinámicas con calculadora de márgenes de ganancia, gestión de estados comerciales (`pendiente`, `concluida`, `descartada`), generación de PDFs oficiales para clientes, catálogo con fotos, hojas internas de respaldo de proveedores, órdenes de compra por proveedor (P.O.) y reportes estadísticos avanzados.
 
 ---
 
 | Documento | Descripción |
 |-----------|-------------|
 | 👤 [Manual de Usuario](docs/MANUAL_USUARIO.md) | Guía de uso de la aplicación para usuarios finales y asesores comerciales |
-| 📜 [Registro de Cambios](docs/CHANGELOG.md) | Historial de versiones y modificaciones del sistema (v2.0.0) |
+| 📜 [Registro de Cambios](docs/CHANGELOG.md) | Historial de versiones y modificaciones del sistema (v2.1.0) |
 | 📋 [Plan de Implementación](docs/PLAN_DE_IMPLEMENTACION.md) | Fases del proyecto, stack tecnológico y arquitectura empresarial |
 | 📋 [Especificación de Requisitos](docs/ESPECIFICACION_REQUISITOS.md) | Requisitos funcionales (RF), RNF, calculadora comercial y modelo de datos |
 | 🏗️ [Arquitectura y Componentes](docs/ARQUITECTURA_Y_COMPONENTES.md) | Diagramas Mermaid: componentes MVC, flujo comercial y capas de seguridad |

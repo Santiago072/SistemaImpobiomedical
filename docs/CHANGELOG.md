@@ -4,6 +4,36 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v2.1.0] - 2026-08-15
+### Añadido
+- **Estados Comerciales de Cotizaciones (`estado_comercial`)**:
+  - Clasificación de cotizaciones en `pendiente` (🟡), `concluida` (🟢) y `descartada` (🔴).
+  - Selector interactivo en tiempo real vía AJAX para administradores en `consultar.php` con respuesta visual instantánea.
+  - Filtro por estado comercial en el formulario de búsqueda de cotizaciones.
+  - Indicador de estado comercial mediante badges visuales para asesores comerciales.
+- **Catálogo de Productos PDF con Imágenes**:
+  - Inclusión de miniaturas de imagen de alta calidad optimizadas (`max-width: 65px`) en `app/views/productos/pdf.php`.
+  - Eliminación de columnas no prioritarias (IVA y Estado) para un diseño de catálogo limpio y compacto.
+  - Reglas de salto de página `page-break-inside: avoid` y control de memoria/timeout (`memory_limit: 256M`, `set_time_limit: 120`).
+- **Campo Departamento en Cotizaciones**:
+  - Incorporación del campo `cliente_departamento` en el paso de finalización de cotización (`finalizar.php`).
+  - Autocompletado dinámico de departamento desde el catálogo de clientes e inserción/actualización automática en `FinalizarCotizacionService.php`.
+- **Accesos Rápidos Ampliados en Dashboard**:
+  - Incorporación de accesos directos a **Órdenes de Compra** (global) y **Estadísticas y Reportes** (administradores).
+- **Badge de Código de Asesor Visible en Topbar**:
+  - Insignia estilizada en turquesa institucional (`#10757e`) al lado del nombre de bienvenida en la cabecera superior con texto blanco nítido forzado.
+
+### Corregido
+- **Comportamiento del Menú Lateral y Cabecera Superior**:
+  - Corrección del salto y espacio vacío a la izquierda al ocultar el menú lateral mediante transición fluida del 100% de ancho en `.cabecera-superior`.
+  - Sincronización de clases `.completo` y `.menu-oculto` en `public/js/script.js`, `layout.css` y `components.css`.
+- **Restricción de Enlace de Estadísticas**:
+  - Ocultamiento de la opción de estadísticas en el menú desplegable lateral para usuarios con rol asesor, previniendo pantallas de acceso denegado.
+- **Eliminación de Texto Duplicado**:
+  - Limpieza de la doble bienvenida en el dashboard principal.
+
+---
+
 ## [v2.0.0] - 2026-08-11
 ### Añadido
 - **Suite de Pruebas Automatizadas (PHPUnit 10)**: 11 tests unitarios con 36 aserciones que validan cálculos comerciales, IVA, consecutivos, hashing y seguridad.

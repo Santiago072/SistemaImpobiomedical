@@ -102,7 +102,7 @@ Para cada etapa puede agregar:
 ### Paso 2: Datos del Cliente y Finalización
 
 1. Clic en **"Completar Datos del Cliente"**.
-2. **Buscar o Crear Cliente:** Ingrese el NIT o Nombre para autocompletar, o digite los datos si es una nueva entidad.
+2. **Buscar o Crear Cliente:** Ingrese el NIT o Nombre para autocompletar. El sistema rellenará automáticamente **Departamento**, **Ciudad/Municipio**, teléfono, contacto y correo.
 3. **Condiciones Comerciales:** Seleccione forma de pago (Contado, 30 días, etc.) y validez de la oferta (30 días).
 4. **Generar PDF:** Clic en **"Generar Cotización"**. Se asigna automáticamente el número consecutivo (`EB 01`, `EB 02`, etc.) y se abre el visor PDF.
 
@@ -114,6 +114,11 @@ Para cada etapa puede agregar:
 - **Fecha:** Rango o fecha exacta.
 - **Cliente:** Nombre o NIT de la entidad.
 - **N° Cotización:** Búsqueda exacta (Ej: `EB 01`).
+- **Estado Comercial:** Filtrar por 🟡 *Pendientes*, 🟢 *Concluidas* o 🔴 *Descartadas*.
+
+### Gestión de Estados Comerciales
+- **Para Administradores:** Cada fila dispone de un selector desplegable interactivo que permite alternar entre **Pendiente**, **Concluida** y **Descartada**. El cambio se guarda instantáneamente mediante AJAX sin recargar la página.
+- **Para Asesores:** Se visualiza una insignia informativa con el color y estado actual de la negociación.
 
 ### Acciones disponibles
 - 👁️ **Ver PDF:** Abre el PDF oficial del cliente en un modal interactivo.
