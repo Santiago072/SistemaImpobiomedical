@@ -13,6 +13,7 @@ Bienvenido al **Sistema Impobiomedical**. Es una solución web integral de gesti
 
 | Documento | Descripción |
 |-----------|-------------|
+| 📘 [Documentación Técnica](docs/documentacion-tecnica.md) | Arquitectura profunda, esquemas de BD, diagramas de flujo y seguridad |
 | 👤 [Manual de Usuario](docs/MANUAL_USUARIO.md) | Guía de uso de la aplicación para usuarios finales y asesores comerciales |
 | 📜 [Registro de Cambios](docs/CHANGELOG.md) | Historial de versiones y modificaciones del sistema (v2.1.0) |
 | 📋 [Plan de Implementación](docs/PLAN_DE_IMPLEMENTACION.md) | Fases del proyecto, stack tecnológico y arquitectura empresarial |
