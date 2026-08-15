@@ -55,29 +55,35 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
                         <div class="imo-form-row">
                             <div class="imo-form-group">
-                                <label>Nombre Contacto</label>
-                                <input type="text" name="cliente_contacto" id="inpClienteContacto" maxlength="100" value="<?= htmlspecialchars($cotizacion['cliente_contacto'] ?? '') ?>">
+                                <label>Departamento</label>
+                                <input type="text" name="cliente_departamento" id="inpClienteDepto" maxlength="60" value="<?= htmlspecialchars($cotizacion['cliente_departamento'] ?? '') ?>">
                             </div>
                             <div class="imo-form-group">
-                                <label>Ciudad</label>
+                                <label>Ciudad / Municipio</label>
                                 <input type="text" name="cliente_ciudad" id="inpClienteCiudad" maxlength="100" value="<?= htmlspecialchars($cotizacion['cliente_ciudad'] ?? '') ?>">
                             </div>
                         </div>
 
                         <div class="imo-form-row">
                             <div class="imo-form-group">
+                                <label>Nombre Contacto</label>
+                                <input type="text" name="cliente_contacto" id="inpClienteContacto" maxlength="100" value="<?= htmlspecialchars($cotizacion['cliente_contacto'] ?? '') ?>">
+                            </div>
+                            <div class="imo-form-group">
                                 <label>Teléfono</label>
                                 <input type="text" name="cliente_telefono" id="inpClienteTel" maxlength="30" value="<?= htmlspecialchars($cotizacion['cliente_telefono'] ?? '') ?>">
                             </div>
-                            <div class="imo-form-group">
-                                <label>Correo</label>
-                                <input type="email" name="cliente_correo" id="inpClienteEmail" maxlength="100" value="<?= htmlspecialchars($cotizacion['cliente_correo'] ?? '') ?>">
-                            </div>
                         </div>
 
-                        <div class="imo-form-group">
-                            <label>Dirección</label>
-                            <input type="text" name="cliente_direccion" id="inpClienteDir" maxlength="200" value="<?= htmlspecialchars($cotizacion['cliente_direccion'] ?? '') ?>">
+                        <div class="imo-form-row">
+                            <div class="imo-form-group">
+                                <label>Dirección</label>
+                                <input type="text" name="cliente_direccion" id="inpClienteDir" maxlength="200" value="<?= htmlspecialchars($cotizacion['cliente_direccion'] ?? '') ?>">
+                            </div>
+                            <div class="imo-form-group">
+                                <label>Correo Electrónico</label>
+                                <input type="email" name="cliente_correo" id="inpClienteEmail" maxlength="100" value="<?= htmlspecialchars($cotizacion['cliente_correo'] ?? '') ?>">
+                            </div>
                         </div>
 
                         <hr style="border:none; border-top:1px solid #e5e7eb; margin:24px 0;">
@@ -207,6 +213,7 @@ function autocompletar(c) {
     document.getElementById('hdnClienteId').value        = c.id;
     document.getElementById('inpClienteNombre').value    = c.nombre;
     document.getElementById('inpClienteNit').value       = c.nit || '';
+    document.getElementById('inpClienteDepto').value     = c.departamento || '';
     document.getElementById('inpClienteDir').value       = c.direccion || '';
     document.getElementById('inpClienteTel').value       = c.telefono || '';
     document.getElementById('inpClienteEmail').value     = c.correo || '';

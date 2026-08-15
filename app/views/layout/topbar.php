@@ -16,8 +16,11 @@ $esDashboard = $esDashboard ?? false;
     </button>
     <div class="cabecera-bienvenida flex-1 pl-16">
         <?php if ($esDashboard && $usuario): ?>
-        <h3>
+        <h3 style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             ¡Bienvenido, <?= htmlspecialchars($usuario['nombre']) ?>!
+            <?php if (!empty($usuario['codigo'])): ?>
+            <span class="badge-codigo"><?= htmlspecialchars($usuario['codigo']) ?></span>
+            <?php endif; ?>
         </h3>
         <?php endif; ?>
         <?php if ($pageHeading): ?>

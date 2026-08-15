@@ -39,6 +39,7 @@ class FinalizarCotizacionService
         $clienteCorreo    = mb_substr(sanitizar_entrada($postData['cliente_correo'] ?? ''), 0, 100);
         $clienteContacto  = mb_substr(sanitizar_entrada($postData['cliente_contacto'] ?? ''), 0, 100);
         $clienteCiudad    = mb_substr(sanitizar_entrada($postData['cliente_ciudad'] ?? ''), 0, 100);
+        $clienteDepto     = mb_substr(sanitizar_entrada($postData['cliente_departamento'] ?? ''), 0, 60);
 
         $clienteExistente = null;
         if (!empty($clienteNit)) {
@@ -68,7 +69,7 @@ class FinalizarCotizacionService
                     $clienteId,
                     !empty($clienteNombre) ? $clienteNombre : (string)($clienteExistente['nombre'] ?? ''),
                     $clienteNit,
-                    (string)($clienteExistente['departamento'] ?? ''),
+                    !empty($clienteDepto) ? $clienteDepto : (string)($clienteExistente['departamento'] ?? ''),
                     !empty($clienteCiudad) ? $clienteCiudad : (string)($clienteExistente['municipio'] ?? ''),
                     !empty($clienteDireccion) ? $clienteDireccion : (string)($clienteExistente['direccion'] ?? ''),
                     !empty($clienteContacto) ? $clienteContacto : (string)($clienteExistente['nombre_contacto'] ?? ''),
@@ -80,7 +81,7 @@ class FinalizarCotizacionService
             // Crear nuevo cliente
             if (!empty($clienteNombre)) {
                 $clienteId = $this->clienteModel->crear(
-                    $clienteNombre, $clienteNit, '', $clienteCiudad, 
+                    $clienteNombre, $clienteNit, $clienteDepto, $clienteCiudad, 
                     $clienteDireccion, $clienteContacto, $clienteTelefono, $clienteCorreo
                 );
             }

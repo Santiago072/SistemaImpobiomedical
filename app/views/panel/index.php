@@ -15,14 +15,16 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
     <main class="contenido-principal">
         <?php 
         $esDashboard = true;
-        $usuario = ['nombre' => $_SESSION['usuario_nombre'] ?? '', 'rol' => $_SESSION['rol'] ?? ''];
+        $usuario = [
+            'nombre' => $_SESSION['usuario_nombre'] ?? '', 
+            'rol'    => $_SESSION['rol'] ?? '',
+            'codigo' => $_SESSION['usuario_codigo'] ?? ''
+        ];
         include __DIR__ . '/../layout/topbar.php'; 
         ?>
-        <div class="page-header">
+        <div class="page-header" style="margin-bottom: 24px;">
             <h1 class="page-title"><i class="bi bi-speedometer2"></i> Panel Principal</h1>
-            <p class="page-sub">Bienvenido, <?= htmlspecialchars($_SESSION['usuario_nombre']) ?>
-                <span class="badge-codigo"><?= htmlspecialchars($_SESSION['usuario_codigo'] ?? '') ?></span>
-            </p>
+            <p class="page-sub">Resumen general de operaciones y gestión comercial</p>
         </div>
 
         <!-- KPIs -->
@@ -71,22 +73,26 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
                     <i class="bi bi-search"></i>
                     <span>Consultar Cotizaciones</span>
                 </a>
+                <a href="<?= $basePath ?>?module=ordenes&action=consultar" class="action-card">
+                    <i class="bi bi-cart-check-fill"></i>
+                    <span>Órdenes de Compra</span>
+                </a>
                 <?php if ($rol === 'admin'): ?>
                 <a href="<?= $basePath ?>?module=clientes" class="action-card">
                     <i class="bi bi-building"></i>
                     <span>Clientes</span>
                 </a>
-                <?php endif; ?>
-                <?php if ($rol === 'admin'): ?>
                 <a href="<?= $basePath ?>?module=productos" class="action-card">
                     <i class="bi bi-box-seam-fill"></i>
                     <span>Catálogo</span>
                 </a>
-                <?php endif; ?>
-                <?php if ($rol === 'admin'): ?>
                 <a href="<?= $basePath ?>?module=usuarios" class="action-card">
                     <i class="bi bi-people-fill"></i>
                     <span>Usuarios</span>
+                </a>
+                <a href="<?= $basePath ?>?module=estadisticas" class="action-card">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                    <span>Estadísticas</span>
                 </a>
                 <?php endif; ?>
             </div>
