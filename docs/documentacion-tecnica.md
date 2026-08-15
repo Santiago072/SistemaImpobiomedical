@@ -176,25 +176,25 @@ SistemaImpobiomedical/
 
 ```mermaid
 erDiagram
-    usuarios ||--o{ cotizaciones : "crea"
-    usuarios ||--o{ ordenes_compra : "emite"
-    clientes ||--o{ cotizaciones : "recibe"
-    cotizaciones ||--|{ cotizacion_items : "contiene"
-    cotizaciones ||--o{ ordenes_compra : "origina"
-    ordenes_compra ||--|{ orden_compra_items : "contiene"
-    productos ||--o{ cotizacion_items : "provee catalogo"
+    usuarios ||--o{ cotizaciones : crea
+    usuarios ||--o{ ordenes_compra : emite
+    clientes ||--o{ cotizaciones : recibe
+    cotizaciones ||--|{ cotizacion_items : contiene
+    cotizaciones ||--o{ ordenes_compra : origina
+    ordenes_compra ||--|{ orden_compra_items : contiene
+    productos ||--o{ cotizacion_items : provee
 
     usuarios {
         int id PK
-        string codigo UK "EB, HM, etc."
+        string codigo UK
         string documento UK
         string nombre
         string correo
         string telefono
         string cargo
-        string password "bcrypt"
-        enum rol "admin, usuario"
-        enum estado "activo, inactivo"
+        string password
+        string rol
+        string estado
     }
 
     clientes {
@@ -207,7 +207,7 @@ erDiagram
         string nombre_contacto
         string telefono
         string correo
-        enum estado "Activo, Inactivo"
+        string estado
     }
 
     productos {
@@ -219,16 +219,16 @@ erDiagram
         decimal precio
         string categoria
         string iva
-        enum estado "Activo, Inactivo"
+        string estado
     }
 
     cotizaciones {
         int id PK
-        string numero_cotizacion INDEX "EB 01, EB 01_01"
+        string numero_cotizacion
         int usuario_id FK
         string usuario_codigo
         int cliente_id FK
-        string cliente_nombre INDEX
+        string cliente_nombre
         string cliente_nit
         string cliente_departamento
         string cliente_ciudad
@@ -236,13 +236,13 @@ erDiagram
         string cliente_telefono
         string cliente_correo
         string cliente_contacto
-        date fecha_creacion INDEX
+        date fecha_creacion
         int dias_validez
         date fecha_validez
         string condiciones_pago
         text observaciones
-        enum estado "borrador, finalizada"
-        enum estado_comercial "pendiente, concluida, descartada"
+        string estado
+        string estado_comercial
     }
 
     cotizacion_items {
@@ -266,23 +266,17 @@ erDiagram
         string codigo_producto
         string proveedor
         string codigo_proveedor
-        json calc_ops "Operaciones dinámicas de la calculadora"
+        string calc_ops
     }
 
     ordenes_compra {
         int id PK
-        string numero_orden UK "OC-0001"
+        string numero_orden UK
         int cotizacion_id FK
         string numero_cotizacion
         int usuario_id FK
         string proveedor_nombre
         string proveedor_nit
-        string proveedor_contacto
-        string proveedor_telefono
-        string proveedor_correo
-        string proveedor_banco
-        string proveedor_tipo_cuenta
-        string proveedor_numero_cuenta
         string condiciones_pago
         string tiempo_entrega
         date fecha_emision
@@ -290,7 +284,6 @@ erDiagram
         decimal iva_total
         decimal retencion_fuente
         decimal total
-        text observaciones
     }
 
     orden_compra_items {
@@ -302,7 +295,6 @@ erDiagram
         int cantidad
         decimal precio_unitario
         decimal subtotal
-        decimal porcentaje_iva
         decimal valor_iva
         decimal total
     }
@@ -347,35 +339,37 @@ erDiagram
 
 ## 6. Flujo Comercial Completo
 
+El siguiente diagrama resume el ciclo de vida de una negociación desde la creación de la oferta hasta la compra a proveedores y su seguimiento:
+
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Asesor as Asesor Comercial / Admin
-    participant Web as Interfaz Web (Frontend)
-    participant Ctrl as CotizacionController
-    participant SrvCalc as CotizacionItemService
-    participant SrvFin as FinalizarCotizacionService
-    participant BD as Base de Datos (PDO)
-    participant PDF as DomPDF Engine
+flowchart TD
+    Inicio(["🏁 Inicio: Asesor Comercial"]) --> Paso1["1️⃣ Seleccionar o Crear Ítem\n(Catálogo médico o ingreso manual)"]
+    Paso1 --> Paso2["2️⃣ Calculadora de Ganancias\n(Costo proveedor + Utilidad + Flete + Calibración)"]
+    Paso2 --> Paso3{"¿Agregar más productos?"}
+    Paso3 -- Sí --> Paso1
+    Paso3 -- No --> Paso4["3️⃣ Completar Datos del Cliente\n(Autocompletar NIT, Departamento y Ciudad)"]
+    Paso4 --> Paso5["4️⃣ Finalizar Cotización\n(Asigna consecutivo automático: EB 01)"]
+    Paso5 --> Paso6["📄 Generar PDF Oficial\n(Documento para el cliente con DomPDF)"]
+    Paso5 --> Paso7["📋 Hoja de Respaldo\n(Costos reales confidenciales y desglose)"]
+    
+    Paso5 --> Estado{"5️⃣ Seguimiento Comercial\n(Administrador)"}
+    Estado -- 🟡 En negociación --> Pendiente["🟡 Estado: Pendiente"]
+    Estado -- 🔴 Cliente desiste --> Descartada["🔴 Estado: Descartada"]
+    Estado -- 🟢 Oferta Aprobada --> Concluida["🟢 Estado: Concluida"]
 
-    Asesor->>Web: 1. Selecciona producto o ingresa datos manuales
-    Asesor->>Web: 2. Ingresa costo proveedor y márgenes (Utilidad, Flete, Calibración)
-    Web->>Ctrl: POST guardar_item (con CSRF Token)
-    Ctrl->>SrvCalc: Calcula precio unitario e IVA
-    SrvCalc->>BD: Inserta en `cotizacion_items`
-    BD-->>Web: Renderiza ítem en la tabla temporal
+    Concluida --> Orden["6️⃣ Generar Orden de Compra (P.O.)\n(Seleccionar ítems por proveedor y retenciones)"]
+    Orden --> Fin(["📦 Emisión de Orden PDF al Proveedor"])
 
-    Asesor->>Web: 3. Clic en "Completar Datos del Cliente"
-    Web->>Ctrl: GET /?module=cotizaciones&action=finalizar
-    Asesor->>Web: 4. Autocompleta cliente (Nombre, NIT, Departamento, Ciudad)
-    Asesor->>Web: 5. Selecciona condiciones de pago y validez
-    Web->>Ctrl: POST finalizar
-    Ctrl->>SrvFin: Procesar datos de cliente y cotización
-    SrvFin->>BD: Asigna consecutivo (Ej: EB 01) con bloqueo transaccional FOR UPDATE
-    SrvFin->>BD: Actualiza / crea cliente con su Departamento
-    SrvFin->>BD: Marca cotización como 'finalizada' y estado_comercial 'pendiente'
-    Ctrl->>PDF: Renderiza vista de PDF oficial
-    PDF-->>Web: Abre modal con visor interactivo de la cotización
+    style Inicio fill:#10757e,stroke:#0d5c63,color:#fff
+    style Fin fill:#10757e,stroke:#0d5c63,color:#fff
+    style Concluida fill:#16a34a,stroke:#15803d,color:#fff
+    style Pendiente fill:#ca8a04,stroke:#a16207,color:#fff
+    style Descartada fill:#dc2626,stroke:#b91c1c,color:#fff
+    style Paso2 fill:#f8fafc,stroke:#cbd5e1,color:#1e293b
+    style Paso4 fill:#f8fafc,stroke:#cbd5e1,color:#1e293b
+    style Paso6 fill:#e0f2fe,stroke:#38bdf8,color:#0369a1
+    style Paso7 fill:#fef3c7,stroke:#f59e0b,color:#92400e
+    style Orden fill:#dcfce7,stroke:#22c55e,color:#166534
 ```
 
 ---
