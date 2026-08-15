@@ -10,11 +10,11 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 ?>
 
 <div class="layout-main">
+    <?php 
+    $usuario = ['nombre' => $_SESSION['usuario_nombre'] ?? '', 'rol' => $_SESSION['rol'] ?? ''];
+    include __DIR__ . '/../layout/topbar.php'; 
+    ?>
     <main class="contenido-principal">
-        <?php 
-        $usuario = ['nombre' => $_SESSION['usuario_nombre'] ?? '', 'rol' => $_SESSION['rol'] ?? ''];
-        include __DIR__ . '/../layout/topbar.php'; 
-        ?>
         
         <div class="estadisticas-container">
             <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">

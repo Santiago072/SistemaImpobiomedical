@@ -2266,7 +2266,7 @@ body:not(.login-premium) div {
     color: #10757e !important; /* Iconos en Teal */
 }
 
-/* Accesos R�pidos */
+/* Accesos Rpidos */
 .acceso-rapido {
     background: #ffffff !important;
     border: 1px solid #e5e7eb !important;
@@ -2278,6 +2278,53 @@ body:not(.login-premium) div {
 .acceso-rapido:hover {
     border-color: #10757e !important;
     background: #f4f7f8 !important;
+}
+.cabecera-superior {
+    margin-left: 140px;
+    padding: 15px 40px;
+    background: #ffffff !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05) !important;
+    width: calc(100% - 140px);
+    position: fixed; left: 0;
+    top: 0;
+    transition: margin-left .4s cubic-bezier(.4, 0, .2, 1), width .4s cubic-bezier(.4, 0, .2, 1);
+    z-index: 100;
+}
+
+.badge-codigo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #10757e, #0a4f55);
+    color: #ffffff !important;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    line-height: 1.4;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(16, 117, 126, 0.3);
+}
+
+body.menu-oculto .cabecera-superior,
+.menu-lateral.oculto ~ .layout-main .cabecera-superior,
+.cabecera-superior.completo {
+    margin-left: 0 !important;
+    width: 100% !important;
+}
+
+.contenido-principal {
+    margin-top: 80px;
+    margin-left: 140px;
+    padding: 30px 40px;
+    transition: margin-left .4s cubic-bezier(.4, 0, .2, 1);
+}
+
+body.menu-oculto .contenido-principal,
+.menu-lateral.oculto ~ .layout-main .contenido-principal,
+.contenido-principal.completo {
+    margin-left: 0 !important;
 }
 
 /* -- FORMULARIOS (Corregir Inputs Rotos) -- */

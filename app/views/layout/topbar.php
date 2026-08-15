@@ -15,11 +15,13 @@ $esDashboard = $esDashboard ?? false;
         <i class="fas fa-bars"></i> Ocultar Menú
     </button>
     <div class="cabecera-bienvenida flex-1 pl-16">
-        <?php if ($esDashboard && $usuario): ?>
+        <?php if ($esDashboard && $usuario): 
+            $codigoMostrar = !empty($usuario['codigo']) ? $usuario['codigo'] : ($_SESSION['usuario_codigo'] ?? '');
+        ?>
         <h3 style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             ¡Bienvenido, <?= htmlspecialchars($usuario['nombre']) ?>!
-            <?php if (!empty($usuario['codigo'])): ?>
-            <span class="badge-codigo"><?= htmlspecialchars($usuario['codigo']) ?></span>
+            <?php if (!empty($codigoMostrar)): ?>
+            <span class="badge-codigo"><?= htmlspecialchars($codigoMostrar) ?></span>
             <?php endif; ?>
         </h3>
         <?php endif; ?>

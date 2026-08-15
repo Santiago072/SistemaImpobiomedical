@@ -32,9 +32,18 @@ if (loginForm) {
 const btnMenu = document.getElementById('btnMenu');
 if(btnMenu) {
     btnMenu.addEventListener('click', function () {
-        document.querySelector('.menu-lateral').classList.toggle('oculto');
-        document.querySelector('.contenido-principal').classList.toggle('completo');
-        if (document.querySelector('.menu-lateral').classList.contains('oculto')) {
+        const menuLateral = document.querySelector('.menu-lateral');
+        const contenidoPrincipal = document.querySelector('.contenido-principal');
+        const cabeceraSuperior = document.querySelector('.cabecera-superior');
+        const layoutMain = document.querySelector('.layout-main');
+
+        if (menuLateral) menuLateral.classList.toggle('oculto');
+        if (contenidoPrincipal) contenidoPrincipal.classList.toggle('completo');
+        if (cabeceraSuperior) cabeceraSuperior.classList.toggle('completo');
+        if (layoutMain) layoutMain.classList.toggle('menu-oculto');
+        document.body.classList.toggle('menu-oculto');
+
+        if (menuLateral && menuLateral.classList.contains('oculto')) {
             this.innerHTML = '<i class="fa-solid fa-bars"></i> Mostrar Menú';
         } else {
             this.innerHTML = '<i class="fa-solid fa-bars"></i> Ocultar Menú';

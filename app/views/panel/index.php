@@ -12,16 +12,17 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
 ?>
 
 <div class="layout-main">
+    <?php 
+    $esDashboard = true;
+    $usuario = [
+        'nombre' => $_SESSION['usuario_nombre'] ?? '', 
+        'rol'    => $_SESSION['rol'] ?? '',
+        'codigo' => $_SESSION['usuario_codigo'] ?? ''
+    ];
+    include __DIR__ . '/../layout/topbar.php'; 
+    ?>
+
     <main class="contenido-principal">
-        <?php 
-        $esDashboard = true;
-        $usuario = [
-            'nombre' => $_SESSION['usuario_nombre'] ?? '', 
-            'rol'    => $_SESSION['rol'] ?? '',
-            'codigo' => $_SESSION['usuario_codigo'] ?? ''
-        ];
-        include __DIR__ . '/../layout/topbar.php'; 
-        ?>
         <div class="page-header" style="margin-bottom: 24px;">
             <h1 class="page-title"><i class="bi bi-speedometer2"></i> Panel Principal</h1>
             <p class="page-sub">Resumen general de operaciones y gestión comercial</p>
