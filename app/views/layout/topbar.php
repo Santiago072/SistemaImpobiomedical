@@ -18,10 +18,12 @@ $esDashboard = $esDashboard ?? false;
         <?php if ($esDashboard && $usuario): 
             $codigoMostrar = !empty($usuario['codigo']) ? $usuario['codigo'] : ($_SESSION['usuario_codigo'] ?? '');
         ?>
-        <h3 style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            ¡Bienvenido, <?= htmlspecialchars($usuario['nombre']) ?>!
+        <h3 style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; color:#1f2937 !important;">
+            <span>¡Bienvenido, <?= htmlspecialchars($usuario['nombre']) ?>!</span>
             <?php if (!empty($codigoMostrar)): ?>
-            <span class="badge-codigo"><?= htmlspecialchars($codigoMostrar) ?></span>
+            <span class="badge-codigo" style="display:inline-block; background:#10757e; color:#ffffff !important; font-size:11px; font-weight:700; padding:2px 10px; border-radius:20px; vertical-align:middle; line-height:18px; letter-spacing:0.5px; -webkit-text-fill-color:#ffffff !important;">
+                <?= htmlspecialchars($codigoMostrar) ?>
+            </span>
             <?php endif; ?>
         </h3>
         <?php endif; ?>

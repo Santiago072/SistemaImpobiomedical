@@ -202,17 +202,17 @@ body.menu-oculto .cabecera-superior {
 .cabecera-bienvenida {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-}
-
 .cabecera-bienvenida h3 {
-    font-family: var(--font-display);
-    font-size: 22px;
+    font-family: var(--font-display, 'Outfit', 'Inter', sans-serif);
+    font-size: 20px;
     font-weight: 700;
     margin: 0;
-    background: linear-gradient(135deg, var(--white), var(--gold-light));
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #1f2937 !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    -webkit-text-fill-color: initial !important;
 }
 
 .cabecera-bienvenida .rol-admin,
