@@ -6,7 +6,7 @@
 
 while (ob_get_level() > 0) { ob_end_clean(); }
 
-$nombreArchivo = 'Reporte_Ordenes_Compra_' . date('Y-m-d_His') . '.xls';
+$nombreArchivo = 'Reporte_Ordenes_Compra_' . '.xls';
 
 header('Content-Type: application/vnd.ms-excel; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');

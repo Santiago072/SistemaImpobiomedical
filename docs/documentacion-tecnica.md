@@ -42,27 +42,37 @@ Centraliza el ciclo comercial completo:
 El sistema está estructurado bajo el patrón **Modelo-Vista-Controlador (MVC)** con aplicación estricta de **Principios SOLID**:
 
 ```text
-Cliente (Navegador) ──► index.php?module=...&action=... (Front Controller)
-                               │
-            ┌──────────────────┼──────────────────┐
-            ▼                  ▼                  ▼
-     [Seguridad HTTP]   [Control de Sesión]  [Validación CSRF & Rate Limit]
-     (Security Headers)  (verificar_auth)     (Tokens & Prevención Fuerza Bruta)
-                               │
-                               ▼
-                    [Controladores / Controllers]
-         (Coordina peticiones, valida entradas y delega lógica)
-                               │
-            ┌──────────────────┴──────────────────┐
-            ▼                                     ▼
-   [Servicios de Negocio]                 [Modelos PDO / Datos]
-   - FinalizarCotizacionService          - CotizacionModel (Locks & Transacciones)
-   - CotizacionItemService               - OrdenCompraModel
-   - FileUploadService (MIME safe)       - ProductoModel, ClienteModel
-   - DomPDF Engine                       - UsuarioModel, EstadisticaModel
-            │                                     │
-            ▼                                     ▼
-    [Vistas HTML / UI]                    [Base de Datos MySQL / MariaDB]
+Navegador ──► index.php?module=...&action=... (Front Controller)
+                    │
+                    ├── config/EnvLoader.php                  (Variables de Entorno)
+                    ├── config/seguridad.php                  (Sesiones, CSRF & Rate Limit)
+                    ├── config/conexion.php                   (PDO Singleton)
+                    │
+                    ├── app/controllers/                      (Capa de Controladores)
+                    │        ├── AuthController.php           (Login y sesiones)
+                    │        ├── PanelController.php          (Dashboard y KPIs)
+                    │        ├── CotizacionController.php     (Flujo comercial)
+                    │        ├── OrdenCompraController.php    (Órdenes de compra)
+                    │        ├── ProductoController.php       (Catálogo médico)
+                    │        ├── ClienteController.php        (Entidades de salud)
+                    │        ├── UsuarioController.php        (Gestión de asesores)
+                    │        └── EstadisticaController.php    (Reportes y métricas)
+                    │
+                    ├── app/models/                           (Capa de Persistencia PDO)
+                    │        ├── CotizacionModel.php          (Locks y Concurrencia)
+                    │        ├── OrdenCompraModel.php         (P.O. Consecutivos)
+                    │        ├── ProductoModel.php
+                    │        ├── ClienteModel.php
+                    │        ├── UsuarioModel.php
+                    │        └── EstadisticaModel.php
+                    │
+                    ├── app/services/                         (Capa de Servicios)
+                    │        ├── FinalizarCotizacionService.php
+                    │        ├── CotizacionItemService.php
+                    │        ├── FileUploadService.php        (Subida segura de fotos)
+                    │        └── DomPDF Engine                (Generación de PDFs)
+                    │
+                    └── app/views/                            (UI / HTML + CSS Modular)
 ```
 
 ### Patrón de Enrutamiento Frontal:
@@ -343,22 +353,23 @@ El siguiente diagrama resume el ciclo de vida de una negociación desde la creac
 
 ```mermaid
 flowchart TD
-    Inicio(["🏁 Inicio: Asesor Comercial"]) --> Paso1["1️⃣ Seleccionar o Crear Ítem\n(Catálogo médico o ingreso manual)"]
-    Paso1 --> Paso2["2️⃣ Calculadora de Ganancias\n(Costo proveedor + Utilidad + Flete + Calibración)"]
-    Paso2 --> Paso3{"¿Agregar más productos?"}
+    Inicio(["🏁 Inicio"]) --> Paso1["1️⃣ Seleccionar Ítems<br/>(Catálogo o Manual)"]
+    Paso1 --> Paso2["2️⃣ Calculadora<br/>(Utilidad, Flete, Calibración)"]
+    Paso2 --> Paso3{"¿Más ítems?"}
     Paso3 -- Sí --> Paso1
-    Paso3 -- No --> Paso4["3️⃣ Completar Datos del Cliente\n(Autocompletar NIT, Departamento y Ciudad)"]
-    Paso4 --> Paso5["4️⃣ Finalizar Cotización\n(Asigna consecutivo automático: EB 01)"]
-    Paso5 --> Paso6["📄 Generar PDF Oficial\n(Documento para el cliente con DomPDF)"]
-    Paso5 --> Paso7["📋 Hoja de Respaldo\n(Costos reales confidenciales y desglose)"]
+    Paso3 -- No --> Paso4["3️⃣ Datos del Cliente<br/>(NIT, Depto, Ciudad)"]
+    Paso4 --> Paso5["4️⃣ Finalizar<br/>(Consecutivo: EB 01)"]
     
-    Paso5 --> Estado{"5️⃣ Seguimiento Comercial\n(Administrador)"}
-    Estado -- 🟡 En negociación --> Pendiente["🟡 Estado: Pendiente"]
-    Estado -- 🔴 Cliente desiste --> Descartada["🔴 Estado: Descartada"]
-    Estado -- 🟢 Oferta Aprobada --> Concluida["🟢 Estado: Concluida"]
+    Paso5 --> Paso6["📄 PDF Cliente<br/>(Oferta oficial)"]
+    Paso5 --> Paso7["📋 Respaldo<br/>(Costos internos)"]
+    Paso5 --> Estado{"5️⃣ Seguimiento"}
+    
+    Estado -- 🟡 Negociando --> Pendiente["🟡 Pendiente"]
+    Estado -- 🔴 Desiste --> Descartada["🔴 Descartada"]
+    Estado -- 🟢 Aprobada --> Concluida["🟢 Concluida"]
 
-    Concluida --> Orden["6️⃣ Generar Orden de Compra (P.O.)\n(Seleccionar ítems por proveedor y retenciones)"]
-    Orden --> Fin(["📦 Emisión de Orden PDF al Proveedor"])
+    Concluida --> Orden["6️⃣ Orden de Compra<br/>(Selección por proveedor)"]
+    Orden --> Fin(["📦 Emisión P.O. PDF"])
 
     style Inicio fill:#10757e,stroke:#0d5c63,color:#fff
     style Fin fill:#10757e,stroke:#0d5c63,color:#fff
@@ -372,32 +383,7 @@ flowchart TD
     style Orden fill:#dcfce7,stroke:#22c55e,color:#166534
 ```
 
----
-
-## 7. Algoritmo de la Calculadora Dinámica de Ganancias
-
-La calculadora comercial (`CotizacionItemService.php`) evalúa en orden estricto las 4 etapas de sobrecosto y margen:
-
-$$\text{Costo Base} = \text{Precio Proveedor}$$
-
-1. **Etapa 1: Utilidad ($\%$, $\$$, $\div$)**
-   - Si porcentaje: $\text{Sub}_1 = \text{Costo Base} \times (1 + \frac{\text{utilidad}}{100})$
-   - Si factor divisor: $\text{Sub}_1 = \frac{\text{Costo Base}}{1 - \frac{\text{utilidad}}{100}}$
-2. **Etapa 2: Flete Logístico**
-   - $\text{Sub}_2 = \text{Sub}_1 + \text{Flete}$
-3. **Etapa 3: Calibración Metrológica**
-   - $\text{Sub}_3 = \text{Sub}_2 + \text{Calibración}$
-4. **Etapa 4: Estampillas e Impuestos Territoriales**
-   - $\text{Precio Unitario} = \text{Sub}_3 + \text{Estampillas}$
-5. **Cálculo Tributario de IVA**
-   - Si aplica IVA (19%): $\text{Total Unitario} = \text{Precio Unitario} \times 1.19$
-   - Si es exento (0%): $\text{Total Unitario} = \text{Precio Unitario}$
-
-Todas las operaciones adicionales intermedias quedan serializadas en la columna JSON `calc_ops` para trazabilidad exacta en la hoja de respaldo.
-
----
-
-## 8. Seguridad y Protección de Capas
+## 7. Seguridad y Protección de Capas
 
 | Vector de Ataque | Mecanismo de Defensa Implementado | Ubicación en Código |
 |---|---|---|
@@ -413,7 +399,7 @@ Todas las operaciones adicionales intermedias quedan serializadas en la columna 
 
 ---
 
-## 9. Generación de Documentos PDF
+## 8. Generación de Documentos PDF
 
 El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de producción:
 
@@ -430,7 +416,7 @@ El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de produc
 
 ---
 
-## 10. Variables de Sesión y Control de Estado
+## 9. Variables de Sesión y Control de Estado
 
 | Variable | Tipo | Propósito |
 |---|---|---|
@@ -446,7 +432,7 @@ El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de produc
 
 ---
 
-## 11. Suite de Pruebas Automatizadas (PHPUnit)
+## 10. Suite de Pruebas Automatizadas (PHPUnit)
 
 El proyecto cuenta con una suite de pruebas unitarias configurada en `phpunit.xml`:
 
