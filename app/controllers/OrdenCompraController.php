@@ -237,7 +237,7 @@ class OrdenCompraController
         verificar_rate_limit('cambiar_estado_orden', 30, 60);
 
         $token = $_POST['csrf_token'] ?? '';
-        if (!validar_token_csrf($token)) {
+        if (!verificar_token_csrf($token)) {
             http_response_code(403);
             echo json_encode(['success' => false, 'message' => 'Token CSRF inválido o expirado']);
             exit();
