@@ -299,42 +299,46 @@ function cambiarEstadoOrden(select) {
     const estadoAnterior = select.getAttribute('data-prev') || (nuevoEstado === 'completada' ? 'pendiente' : 'completada');
 
     select.disabled = true;
+    select.style.opacity = '0.5';
+
+    const formData = new FormData();
+    formData.append('id', ordenId);
+    formData.append('estado', nuevoEstado);
+    formData.append('csrf_token', csrfToken);
 
     fetch('<?= $basePath ?>?module=ordenes&action=cambiar_estado', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken
         },
-        body: new URLSearchParams({
-            id: ordenId,
-            estado: nuevoEstado,
-            csrf_token: csrfToken
-        })
+        body: formData
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) {
+            return r.text().then(t => {
+                let errJson;
+                try { errJson = JSON.parse(t); } catch(e) {}
+                throw new Error((errJson && errJson.message) ? errJson.message : 'HTTP ' + r.status);
+            });
+        }
+        return r.json();
+    })
     .then(data => {
         select.disabled = false;
+        select.style.opacity = '1';
         if (data.success) {
             select.setAttribute('data-prev', nuevoEstado);
-            if (nuevoEstado === 'completada') {
-                select.style.borderColor = '#16a34a';
-                select.style.backgroundColor = 'rgba(34,197,94,.15)';
-                select.style.color = '#16a34a';
-            } else {
-                select.style.borderColor = '#ca8a04';
-                select.style.backgroundColor = 'rgba(234,179,8,.15)';
-                select.style.color = '#ca8a04';
-            }
-            // Recargar para mover la fila de pestaña y actualizar contadores
             window.location.reload();
         } else {
-            alert(data.message || 'No se pudo actualizar el estado de la orden.');
+            alert('Error: ' + (data.message || 'No se pudo actualizar el estado de la orden.'));
             select.value = estadoAnterior;
         }
     })
     .catch(err => {
         select.disabled = false;
-        alert('Error de conexión al actualizar el estado.');
+        select.style.opacity = '1';
+        alert('Error al actualizar el estado: ' + err.message);
         select.value = estadoAnterior;
     });
 }

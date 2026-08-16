@@ -13,7 +13,7 @@ header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-$fechaSoloFecha = date('d/m/Y H:i');
+$fechaSoloFecha = date('d/m/Y');
 $totalRegistros = count($datosExcel ?? []);
 ?>
 <!DOCTYPE html>

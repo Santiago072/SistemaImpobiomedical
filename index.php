@@ -33,6 +33,7 @@ if (($_modEarly === 'ordenes'      && ($_actEarly === 'generar_pdf' || $_actEarl
  */
 
 // ── Errores: solo al log, NUNCA al navegador (producción) ───────────────
+date_default_timezone_set('America/Bogota');
 error_reporting(E_ALL);
 ini_set('display_errors', '0');          // Nunca mostrar errores al usuario
 ini_set('display_startup_errors', '0');
