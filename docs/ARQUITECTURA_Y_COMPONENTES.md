@@ -106,31 +106,35 @@ graph TB
 ## 3. Flujo de Datos del Cotizador y Órdenes de Compra
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Asesor as Asesor Comercial / Admin
-    participant UI as Vista Cotizador
-    participant Controller as CotizacionController
-    participant ItemService as CotizacionItemService
-    participant FinalService as FinalizarCotizacionService
-    participant Model as CotizacionModel
-    participant DB as MySQL (PDO)
+flowchart TD
+    Inicio(["🏁 Inicio: Asesor Comercial"]) --> Paso1["1️⃣ Seleccionar o Crear Ítems<br/>(Catálogo médico o ingreso manual)"]
+    Paso1 --> Paso2["2️⃣ Calculadora de Ganancias<br/>(Costo proveedor + Margen + Flete + Calibración)"]
+    Paso2 --> Paso3{"¿Agregar más productos?"}
+    Paso3 -- Sí --> Paso1
+    Paso3 -- No --> Paso4["3️⃣ Completar Datos del Cliente<br/>(Autocompletar NIT, Departamento y Ciudad)"]
+    Paso4 --> Paso5["4️⃣ Finalizar Cotización<br/>(Generación de consecutivo automático: EB 01)"]
+    
+    Paso5 --> Paso6["📄 Generar PDF Oficial<br/>(Documento formal para el cliente)"]
+    Paso5 --> Paso7["📋 Hoja de Respaldo<br/>(Costos reales confidenciales y desglose)"]
+    Paso5 --> Estado{"5️⃣ Seguimiento Comercial<br/>(Administrador)"}
+    
+    Estado -- 🟡 En negociación --> Pendiente["🟡 Estado: Pendiente"]
+    Estado -- 🔴 Cliente desiste --> Descartada["🔴 Estado: Descartada"]
+    Estado -- 🟢 Oferta Aprobada --> Concluida["🟢 Estado: Concluida"]
 
-    Asesor->>UI: Ingresa producto, costo base y porcentajes (Calculadora)
-    UI->>Controller: POST ?action=crear (action=guardar_item + CSRF)
-    Controller->>ItemService: guardarItem(cotizacion_id, data, files)
-    ItemService->>Model: insertarItem(...)
-    Model->>DB: INSERT INTO cotizacion_items (Prepared Statement)
-    DB-->>UI: Retorna ítem agregado y actualiza acumulados
+    Concluida --> Orden["6️⃣ Generar Orden de Compra (P.O.)<br/>(Agrupación por proveedor + retenciones)"]
+    Orden --> Fin(["📦 Emisión de P.O. PDF / Excel al Proveedor"])
 
-    Asesor->>UI: Clic en "Finalizar Cotización" (Datos del cliente)
-    UI->>Controller: POST ?action=finalizar (cliente_nombre, forma_pago, etc.)
-    Controller->>FinalService: procesarFinalizacion(cotizacion_id, data, session)
-    FinalService->>Model: obtenerSiguienteNumero(codigo_asesor)
-    FinalService->>Model: actualizarCabecera(cotizacion_id, 'finalizada', numero)
-    Model->>DB: UPDATE cotizaciones SET estado='finalizada', numero_cotizacion=...
-    FinalService-->>Controller: Redirigir a Generación de PDF
-    Controller->>UI: Muestra PDF final listo para descargar o compartir
+    style Inicio fill:#10757e,stroke:#0d5c63,color:#fff
+    style Fin fill:#10757e,stroke:#0d5c63,color:#fff
+    style Concluida fill:#16a34a,stroke:#15803d,color:#fff
+    style Pendiente fill:#ca8a04,stroke:#a16207,color:#fff
+    style Descartada fill:#dc2626,stroke:#b91c1c,color:#fff
+    style Paso2 fill:#f8fafc,stroke:#cbd5e1,color:#1e293b
+    style Paso4 fill:#f8fafc,stroke:#cbd5e1,color:#1e293b
+    style Paso6 fill:#e0f2fe,stroke:#38bdf8,color:#0369a1
+    style Paso7 fill:#fef3c7,stroke:#f59e0b,color:#92400e
+    style Orden fill:#dcfce7,stroke:#22c55e,color:#166534
 ```
 
 ---
