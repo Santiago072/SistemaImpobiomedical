@@ -332,13 +332,13 @@ table { width:100%; border-collapse:collapse; }
 <div class="section-spacer"></div>
 
 <!-- ══ Evolución Mensual ══ -->
-<h2>Evolución Mensual — Cotizaciones vs Órdenes</h2>
+<h2>Evolución Mensual — Cotizaciones Totales vs Concluidas</h2>
 <table class="evo-table">
   <thead>
     <tr>
       <th class="mes-col" style="text-align:left; color:#ffffff;">Mes</th>
-      <th>Cotizaciones Finalizadas</th>
-      <th>Órdenes de Compra</th>
+      <th>Cotizaciones Totales</th>
+      <th>Cotizaciones Concluidas 🟢</th>
     </tr>
   </thead>
   <tbody>
@@ -355,7 +355,7 @@ table { width:100%; border-collapse:collapse; }
       </td>
       <td>
         <div style="display:inline-block; background:#10b981; color:#ffffff; border-radius:4px; padding:2px 8px; font-weight:bold;">
-          <?= (int)($evolucion['ordenes'][$i] ?? 0) ?>
+          <?= (int)($evolucion['concluidas'][$i] ?? 0) ?>
         </div>
       </td>
     </tr>
