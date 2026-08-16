@@ -335,6 +335,9 @@ erDiagram
 
 ### 5.5 Órdenes de Compra (`OrdenCompraController.php`)
 - **Aislamiento por Proveedor:** Agrupa los ítems cotizados y permite generar la Orden de Compra (P.O.) únicamente con los productos del proveedor seleccionado.
+- **Bloqueo Inteligente:** Deshabilita la generación de órdenes sobre cotizaciones que hayan sido marcadas como `concluida` o `descartada`.
+- **Pestañas de Estado y AJAX:** Pestañas visuales para 🟡 *Pendientes* y 🟢 *Completadas* con endpoint reactivo `cambiar_estado` protegido con CSRF y Rate Limit.
+- **Selección Granular y Reportes:** Selección por casillas de verificación individuales y globales para exportación selectiva a **PDF** y **Excel tabular (.xls)** con sumatorias automáticas.
 - **Cálculo de Retenciones:** Aplica retención en la fuente y discriminación de IVA para contabilidad.
 
 ### 5.6 Directorio de Clientes (`ClienteController.php`)

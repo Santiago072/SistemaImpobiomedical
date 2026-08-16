@@ -32,10 +32,12 @@ Este documento formaliza los requisitos funcionales (RF), requisitos no funciona
 * **RF03.7:** Generación de PDF profesional con diseño corporativo listo para impresión y envío por correo.
 
 ### 📦 RF04 — Gestión de Órdenes de Compra (P.O. - Purchase Orders)
-* **RF04.1:** Conversión de cotizaciones aprobadas en Órdenes de Compra a proveedores.
+* **RF04.1:** Conversión de cotizaciones en estado `pendiente` en Órdenes de Compra a proveedores (bloqueo automático para cotizaciones concluidas o descartadas).
 * **RF04.2:** Selección granular de ítems asociados a un mismo proveedor.
-* **RF04.3:** Formulario de datos de despacho, condiciones de pago, datos bancarios y retenciones.
-* **RF04.4:** Generación de reporte PDF formal de la Orden de Compra para el proveedor.
+* **RF04.3:** Formulario de datos de despacho, condiciones de pago, datos bancarios de consignación, IVA y retenciones en la fuente.
+* **RF04.4 (Gestión de Estados y Pestañas):** Clasificación de órdenes en pestañas 🟡 **Pendientes** y 🟢 **Completadas** con selector reactivo vía AJAX para administradores.
+* **RF04.5 (Selección y Exportación Granular):** Checkboxes individuales y casilla maestra para exportación selectiva a PDF y archivo Excel (`.xls`).
+* **RF04.6:** Alerta preventiva y bloqueo de exportación si no se selecciona al menos una orden.
 
 ### 🩺 RF05 — Catálogo de Productos Médicos
 * **RF05.1:** Registro y edición de productos con título, código, descripción, categoría médica, IVA aplicable y foto.
@@ -55,7 +57,8 @@ Este documento formaliza los requisitos funcionales (RF), requisitos no funciona
 
 ### 📈 RF08 — Reportes y Estadísticas
 * **RF08.1:** Filtros avanzados por rango de fechas, asesor y cliente.
-* **RF08.2:** Exportación consolidada de reportes en PDF con diseño formal.
+* **RF08.2 (Gráfico Evolutivo Comparativo):** Visualización interactiva en Chart.js de la relación mensual entre **Cotizaciones Totales** vs. **Cotizaciones Concluidas**.
+* **RF08.3:** Exportación consolidada de reportes en PDF con diseño formal, KPIs, tops y evolución mensual sincronizada.
 
 ---
 

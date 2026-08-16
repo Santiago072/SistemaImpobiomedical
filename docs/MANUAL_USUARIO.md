@@ -131,10 +131,26 @@ Para cada etapa puede agregar:
 
 ## 5. Órdenes de Compra (P.O.)
 
-1. En **Consultar Cotizaciones**, haga clic en 🛒 **Orden**.
+El módulo de Órdenes de Compra permite emitir y controlar las compras directas a los proveedores con control contable de estados:
+
+### Emisión de una nueva Orden de Compra:
+1. En **Consultar Cotizaciones**, haga clic en 🛒 **Orden** *(disponible únicamente en cotizaciones con estado 🟡 Pendiente)*.
 2. **Seleccionar Ítems:** Marque únicamente los productos correspondientes al proveedor a solicitar.
-3. **Datos del Proveedor:** Ingrese NIT, condiciones de pago, datos bancarios de consignación, IVA y retenciones.
-4. **Generar Orden:** El sistema emite la Orden de Compra y genera el documento PDF formal.
+3. **Datos del Proveedor:** Ingrese NIT, condiciones de pago, datos bancarios de consignación, IVA y retenciones en la fuente.
+4. **Generar Orden:** El sistema emite la Orden de Compra con consecutivo único y genera el documento PDF formal.
+
+### Consulta y Gestión de Órdenes:
+- **Pestañas de Estado:** 
+  - 🟡 **Órdenes Pendientes**: Muestra las órdenes en proceso de despacho o pago con contador en tiempo real.
+  - 🟢 **Órdenes Completadas**: Muestra las órdenes liquidadas y entregadas.
+- **Selector de Estado (Solo Admin):** Permite alternar una orden entre *Pendiente* y *Completada* mediante AJAX instantáneo.
+- **Selección por Checkboxes:**
+  - Casilla individual por fila y casilla superior para *Seleccionar Todas*.
+  - Contador en vivo de órdenes seleccionadas.
+- **Exportación Segura a PDF y Excel:**
+  - Botón 🔴 **Exportar PDF Seleccionadas**: Genera el consolidado formal para impresión.
+  - Botón 🟢 **Exportar Excel Seleccionadas**: Descarga el archivo `.xls` con tabla estructurada, datos bancarios de proveedores y sumatoria total de pagos.
+  - *Validación:* Si no se marca ninguna casilla, el sistema alerta amigablemente y bloquea la exportación vacía.
 
 ---
 
