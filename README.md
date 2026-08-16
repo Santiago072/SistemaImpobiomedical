@@ -5,7 +5,7 @@
 [![PHPUnit](https://img.shields.io/badge/Tests-PHPUnit%2010-37b24d?style=flat-square&logo=php)](phpunit.xml)
 [![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?style=flat-square&logo=githubactions)](.github/workflows/ci.yml)
 [![Licencia](https://img.shields.io/badge/Licencia-Comercial%20Propietaria-e03c3c?style=flat-square)](LICENSE)
-[![Versión](https://img.shields.io/badge/Versión-v2.1.0-10757e?style=flat-square)](docs/CHANGELOG.md)
+[![Versión](https://img.shields.io/badge/Versión-v2.2.0-10757e?style=flat-square)](docs/CHANGELOG.md)
 
 Bienvenido al **Sistema Impobiomedical**. Es una solución web integral de gestión comercial y médica desarrollada para **Impobiomedical — Soluciones y Servicios de Tecnología Biomédica**. Administra el ciclo comercial completo: creación de cotizaciones dinámicas con calculadora de márgenes de ganancia, gestión de estados comerciales (`pendiente`, `concluida`, `descartada`), generación de PDFs oficiales para clientes, catálogo con fotos, hojas internas de respaldo de proveedores, órdenes de compra por proveedor (P.O.) y reportes estadísticos avanzados.
 

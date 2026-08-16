@@ -87,7 +87,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             
             <!-- Rendimiento Mensual (Barras y Líneas) -->
             <div class="chart-container">
-                <h2 class="section-title">Evolución: Cotizaciones vs Órdenes (Últimos 6 meses)</h2>
+                <h2 class="section-title"><i class="bi bi-graph-up"></i> Evolución Mensual: Cotizaciones Totales vs Concluidas</h2>
                 <div class="chart-wrapper" style="height: 350px;">
                     <canvas id="evolucionChart"></canvas>
                 </div>
@@ -213,10 +213,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return new Date(parseInt(year, 10), parseInt(month, 10) - 1).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
     };
 
-    // ── 1. Gráfico de Evolución (Barra + Línea combinada) ──
+    // ── 1. Gráfico de Evolución (Cotizaciones Totales vs Concluidas) ──
     const ctxEvolucion = document.getElementById('evolucionChart').getContext('2d');
     const evolucionData = <?= json_encode($evolucion) ?>;
-    const labelsEvolucion = evolucionData.meses.map(formatMes);
+    const labelsEvolucion = (evolucionData.meses || []).map(formatMes);
 
     new Chart(ctxEvolucion, {
         type: 'bar',
@@ -225,19 +225,23 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [
                 {
                     type: 'bar',
-                    label: 'Cotizaciones Generadas',
-                    data: evolucionData.cotizaciones.length ? evolucionData.cotizaciones : [0],
-                    backgroundColor: 'rgba(59, 130, 246, 0.8)', // Azul
-                    borderRadius: 4,
-                    maxBarThickness: 45
+                    label: 'Cotizaciones Totales',
+                    data: (evolucionData.cotizaciones && evolucionData.cotizaciones.length) ? evolucionData.cotizaciones : [0],
+                    backgroundColor: 'rgba(59, 130, 246, 0.85)', // Azul vibrante
+                    borderColor: '#2563eb',
+                    borderWidth: 1.5,
+                    borderRadius: 5,
+                    maxBarThickness: 40
                 },
                 {
                     type: 'bar',
-                    label: 'Órdenes de Compra',
-                    data: evolucionData.ordenes.length ? evolucionData.ordenes : [0],
-                    backgroundColor: '#10b981', // Verde
-                    borderRadius: 4,
-                    maxBarThickness: 45
+                    label: 'Cotizaciones Concluidas 🟢',
+                    data: (evolucionData.concluidas && evolucionData.concluidas.length) ? evolucionData.concluidas : [0],
+                    backgroundColor: 'rgba(16, 185, 129, 0.9)', // Verde esmeralda
+                    borderColor: '#059669',
+                    borderWidth: 1.5,
+                    borderRadius: 5,
+                    maxBarThickness: 40
                 }
             ]
         },
@@ -245,6 +249,9 @@ document.addEventListener('DOMContentLoaded', function() {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top', labels: { font: { weight: 'bold' } } }
+            },
             scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
         }
     });

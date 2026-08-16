@@ -171,6 +171,13 @@ class OrdenCompraController
         $usuarioId = (int)$_SESSION['usuario_id'];
         $rol       = $_SESSION['rol'] ?? 'usuario';
 
+        // Manejo de pestaña activa (pendientes o completadas)
+        $tabActual = sanitizar_entrada($_GET['tab'] ?? ($_SESSION['orden_tab'] ?? 'pendientes'));
+        if (!in_array($tabActual, ['pendientes', 'completadas'], true)) {
+            $tabActual = 'pendientes';
+        }
+        $_SESSION['orden_tab'] = $tabActual;
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $filtros = [];
             if (!empty($_POST['proveedor']))          $filtros['proveedor']          = sanitizar_entrada($_POST['proveedor']);
@@ -178,42 +185,132 @@ class OrdenCompraController
             if (!empty($_POST['fecha_inicio']))        $filtros['fecha_inicio']        = sanitizar_entrada($_POST['fecha_inicio']);
             if (!empty($_POST['fecha_fin']))           $filtros['fecha_fin']           = sanitizar_entrada($_POST['fecha_fin']);
             $_SESSION['orden_filtros'] = $filtros;
-            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar&tab=' . $tabActual);
             exit();
         }
 
         if (isset($_GET['limpiar'])) {
             unset($_SESSION['orden_filtros']);
-            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar&tab=' . $tabActual);
             exit();
         }
 
-        $filtros      = $_SESSION['orden_filtros'] ?? [];
+        $filtros = $_SESSION['orden_filtros'] ?? [];
+        $filtros['estado'] = ($tabActual === 'completadas') ? 'completada' : 'pendiente';
+
         $total        = $this->model->contarConFiltros($filtros, $usuarioId, $rol);
         $totalPaginas = (int)ceil($total / $this->porPagina);
         $ordenes      = $this->model->listarConFiltros($filtros, $offset, $this->porPagina, $usuarioId, $rol);
 
-        $busquedaProveedor  = $filtros['proveedor'] ?? '';
-        $busquedaCotizacion = $filtros['cotizacion_numero'] ?? '';
+        // Conteos para los badges de las pestañas
+        $filtrosP = $filtros;
+        $filtrosP['estado'] = 'pendiente';
+        $conteoPendientes = $this->model->contarConFiltros($filtrosP, $usuarioId, $rol);
+
+        $filtrosC = $filtros;
+        $filtrosC['estado'] = 'completada';
+        $conteoCompletadas = $this->model->contarConFiltros($filtrosC, $usuarioId, $rol);
+
+        $busquedaProveedor   = $filtros['proveedor'] ?? '';
+        $busquedaCotizacion  = $filtros['cotizacion_numero'] ?? '';
         $busquedaFechaInicio = $filtros['fecha_inicio'] ?? '';
         $busquedaFechaFin    = $filtros['fecha_fin'] ?? '';
 
-        return compact('ordenes', 'csrf_token', 'paginaActual', 'totalPaginas',
+        return compact('ordenes', 'csrf_token', 'paginaActual', 'totalPaginas', 'tabActual',
+                       'conteoPendientes', 'conteoCompletadas',
                        'busquedaProveedor', 'busquedaCotizacion', 'busquedaFechaInicio', 'busquedaFechaFin');
     }
 
-    // ── EXPORTAR REPORTE PDF DE ÓRDENES DE COMPRA ───────────────────────────
+    // ── CAMBIAR ESTADO ORDEN (AJAX) ───────────────────────────────────────────
+
+    public function cambiarEstado(): void
+    {
+        verificar_autenticacion();
+        verificar_admin();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit();
+        }
+
+        verificar_rate_limit('cambiar_estado_orden', 30, 60);
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (!validar_token_csrf($token)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Token CSRF inválido o expirado']);
+            exit();
+        }
+
+        $id          = (int)($_POST['id'] ?? 0);
+        $nuevoEstado = sanitizar_entrada($_POST['estado'] ?? '');
+
+        if ($id <= 0 || !in_array($nuevoEstado, ['pendiente', 'completada'], true)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Parámetros inválidos']);
+            exit();
+        }
+
+        $ok = $this->model->actualizarEstado($id, $nuevoEstado);
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => $ok,
+            'message' => $ok ? 'Estado actualizado correctamente' : 'Error al actualizar el estado'
+        ]);
+        exit();
+    }
+
+    // ── EXPORTAR REPORTE PDF DE ÓRDENES SELECCIONADAS ─────────────────────────
 
     public function exportarPdf(): void
     {
         verificar_autenticacion();
         $usuarioId = (int)$_SESSION['usuario_id'];
         $rol       = $_SESSION['rol'] ?? 'usuario';
-        $filtros   = $_SESSION['orden_filtros'] ?? [];
 
-        $ordenes = $this->model->listarParaExcel($filtros, $usuarioId, $rol);
+        $ids = $_POST['ids'] ?? [];
+        if (empty($ids) || !is_array($ids)) {
+            $_SESSION['flash_error'] = 'Debe seleccionar al menos una orden para generar el reporte en PDF.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            exit();
+        }
 
-        $datosPdf = [];
+        $ordenes = $this->model->listarPorIds($ids, $usuarioId, $rol);
+        $datosPdf = $this->prepararDatosReporte($ordenes);
+
+        while (ob_get_level() > 0) { ob_end_clean(); }
+        include dirname(__DIR__, 2) . '/app/views/ordenes/reporte_pdf.php';
+        exit();
+    }
+
+    // ── EXPORTAR EXCEL DE ÓRDENES SELECCIONADAS ───────────────────────────────
+
+    public function exportarExcel(): void
+    {
+        verificar_autenticacion();
+        $usuarioId = (int)$_SESSION['usuario_id'];
+        $rol       = $_SESSION['rol'] ?? 'usuario';
+
+        $ids = $_POST['ids'] ?? [];
+        if (empty($ids) || !is_array($ids)) {
+            $_SESSION['flash_error'] = 'Debe seleccionar al menos una orden para exportar a Excel.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            exit();
+        }
+
+        $ordenes = $this->model->listarPorIds($ids, $usuarioId, $rol);
+        $datosExcel = $this->prepararDatosReporte($ordenes);
+
+        while (ob_get_level() > 0) { ob_end_clean(); }
+        include dirname(__DIR__, 2) . '/app/views/ordenes/reporte_excel.php';
+        exit();
+    }
+
+    private function prepararDatosReporte(array $ordenes): array
+    {
+        $datos = [];
         foreach ($ordenes as $ord) {
             $items = $this->model->obtenerItems((int)$ord['id']);
             $subtotal = 0;
@@ -230,26 +327,20 @@ class OrdenCompraController
             $retencion = $subtotal * ((float)$ord['retencion'] / 100);
             $valorPagar = $subtotal + $totalIva - $retencion;
 
-            $datosPdf[] = [
-                'proveedor' => $ord['proveedor'],
-                'numero_po' => $ord['numero_po'],
-                'banco_nombre' => $ord['banco_nombre'] ?? '',
-                'banco_cuenta' => $ord['banco_cuenta'] ?? '',
+            $datos[] = [
+                'proveedor'         => $ord['proveedor'],
+                'numero_po'         => $ord['numero_po'],
+                'banco_nombre'      => $ord['banco_nombre'] ?? '',
+                'banco_cuenta'      => $ord['banco_cuenta'] ?? '',
                 'banco_tipo_cuenta' => $ord['banco_tipo_cuenta'] ?? '',
-                'nit' => $ord['proveedor_nit'],
-                'valor_pagar' => $valorPagar,
-                'cliente' => $ord['cliente_nombre'] ?? ''
+                'nit'               => $ord['proveedor_nit'],
+                'valor_pagar'       => $valorPagar,
+                'cliente'           => $ord['cliente_nombre'] ?? '',
+                'estado'            => $ord['estado'] ?? 'pendiente',
+                'fecha'             => $ord['fecha'] ?? ''
             ];
         }
-
-        while (ob_get_level() > 0) { ob_end_clean(); }
-        include dirname(__DIR__, 2) . '/app/views/ordenes/reporte_pdf.php';
-        exit();
-    }
-
-    public function exportarExcel(): void
-    {
-        $this->exportarPdf();
+        return $datos;
     }
 
 

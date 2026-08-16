@@ -126,6 +126,53 @@ CREATE TABLE IF NOT EXISTS cotizacion_items (
 
 
 
+-- ── Órdenes de compra (cabecera) ────────────────────────────
+CREATE TABLE IF NOT EXISTS ordenes_compra (
+    id                   INT AUTO_INCREMENT PRIMARY KEY,
+    numero_po            INT NOT NULL UNIQUE,
+    cotizacion_id        INT NOT NULL,
+    cotizacion_numero    VARCHAR(30) NOT NULL,
+    usuario_id           INT NOT NULL,
+    proveedor            VARCHAR(100) NOT NULL,
+    proveedor_nit        VARCHAR(30) NOT NULL,
+    tipo_contribuyente   VARCHAR(50) DEFAULT '',
+    condiciones_pago     VARCHAR(100) DEFAULT '',
+    iva                  VARCHAR(10) DEFAULT 'no',
+    departamento_compras VARCHAR(100) DEFAULT '',
+    nota                 TEXT NULL,
+    retencion            DECIMAL(5,2) DEFAULT 0.00,
+    fecha                DATE NOT NULL,
+    estado               ENUM('pendiente', 'completada') NOT NULL DEFAULT 'pendiente',
+    banco_nombre         VARCHAR(100) DEFAULT NULL,
+    banco_cuenta         VARCHAR(50) DEFAULT NULL,
+    banco_tipo_cuenta    VARCHAR(50) DEFAULT NULL,
+    created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id) ON DELETE CASCADE,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    INDEX idx_orden_po (numero_po),
+    INDEX idx_orden_proveedor (proveedor),
+    INDEX idx_orden_fecha (fecha),
+    INDEX idx_orden_estado (estado)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── Ítems de cada orden de compra ───────────────────────────
+CREATE TABLE IF NOT EXISTS orden_compra_items (
+    id                   INT AUTO_INCREMENT PRIMARY KEY,
+    orden_id             INT NOT NULL,
+    cotizacion_item_id   INT NULL,
+    codigo_proveedor     VARCHAR(60) DEFAULT NULL,
+    titulo               VARCHAR(255) NOT NULL,
+    descripcion          TEXT NOT NULL,
+    cantidad             INT NOT NULL DEFAULT 1,
+    precio_unit          DECIMAL(20,2) NOT NULL DEFAULT 0.00,
+    iva                  VARCHAR(10) DEFAULT 'no',
+    porcentaje_iva       DECIMAL(5,2) NOT NULL DEFAULT 19.00,
+    total                DECIMAL(20,2) NOT NULL DEFAULT 0.00,
+    FOREIGN KEY (orden_id) REFERENCES ordenes_compra(id) ON DELETE CASCADE,
+    FOREIGN KEY (cotizacion_item_id) REFERENCES cotizacion_items(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ── Usuario administrador inicial ───────────────────────────
 -- Contraseña inicial: Admin2026* (cambiar tras primer acceso)
 INSERT INTO `usuarios` (`codigo`, `documento`, `nombre`, `correo`, `password`, `telefono`, `cargo`, `rol`, `estado`) VALUES

@@ -401,9 +401,14 @@ if ($module === 'ordenes') {
             extract($data);
             include __DIR__ . '/app/views/ordenes/consultar.php';
             break;
-        case 'exportarExcel':
         case 'exportarPdf':
             $ctrl->exportarPdf();
+            break;
+        case 'exportarExcel':
+            $ctrl->exportarExcel();
+            break;
+        case 'cambiar_estado':
+            $ctrl->cambiarEstado();
             break;
         case 'generar_pdf':
             include __DIR__ . '/app/views/ordenes/generar_pdf.php';
@@ -413,7 +418,7 @@ if ($module === 'ordenes') {
             break;
         default:
             $data    = $ctrl->consultar();
-            $pagBaseUrl = BASE_URL . '?module=ordenes&action=consultar';
+            $pagBaseUrl = BASE_URL . '?module=ordenes&action=consultar' . (!empty($data['tabActual']) ? '&tab=' . urlencode($data['tabActual']) : '');
             extract($data);
             include __DIR__ . '/app/views/ordenes/consultar.php';
     }

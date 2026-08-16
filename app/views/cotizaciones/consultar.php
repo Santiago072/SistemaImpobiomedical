@@ -120,12 +120,20 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=modificar&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Crear nueva versión / Modificar Cotización">
                                         <i class="bi bi-pencil-square"></i> Modificar
                                     </button>
-                                    <button type="button"
-                                        style="width:auto; padding:0 12px; font-weight:600; background:rgba(34,197,94,.15); color:#22c55e; border:1.5px solid #22c55e; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; height:34px; font-size:12px; transition:all .2s;"
-                                        onclick="window.location.href='<?= $basePath ?>?module=ordenes&action=seleccionar_items&cotizacion=<?= urlencode($cot['numero_cotizacion']) ?>'"
-                                        title="Generar Orden de Compra">
-                                        <i class="bi bi-cart-plus-fill"></i> Orden
-                                    </button>
+                                     <?php if ($estCom === 'pendiente'): ?>
+                                     <button type="button"
+                                         style="width:auto; padding:0 12px; font-weight:600; background:rgba(34,197,94,.15); color:#22c55e; border:1.5px solid #22c55e; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; height:34px; font-size:12px; transition:all .2s;"
+                                         onclick="window.location.href='<?= $basePath ?>?module=ordenes&action=seleccionar_items&cotizacion=<?= urlencode($cot['numero_cotizacion']) ?>'"
+                                         title="Generar Orden de Compra">
+                                         <i class="bi bi-cart-plus-fill"></i> Orden
+                                     </button>
+                                     <?php else: ?>
+                                     <button type="button" disabled
+                                         style="width:auto; padding:0 12px; font-weight:600; background:#f1f5f9; color:#94a3b8; border:1.5px solid #cbd5e1; border-radius:8px; cursor:not-allowed; display:inline-flex; align-items:center; gap:5px; height:34px; font-size:12px; opacity:0.7;"
+                                         title="No disponible: la cotización está <?= htmlspecialchars($estCom) ?>">
+                                         <i class="bi bi-cart-x"></i> Orden
+                                     </button>
+                                     <?php endif; ?>
                                     <?php if ($_SESSION['rol'] === 'admin'): ?>
                                     <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=eliminar" style="display:inline;" onsubmit="return confirm('¿Eliminar la cotización <?= htmlspecialchars($cot['numero_cotizacion']) ?>?')">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">

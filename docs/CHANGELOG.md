@@ -4,6 +4,22 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v2.2.0] - 2026-08-15
+### Añadido
+- **Pestañas y Gestión de Estados en Órdenes de Compra**:
+  - Navegación por pestañas: 🟡 **Órdenes Pendientes** y 🟢 **Órdenes Completadas** con contadores numéricos en vivo.
+  - Selector reactivo vía AJAX para cambiar de estado una orden (`pendiente` ⟷ `completada`) exclusivo para administradores con CSRF y rate limiting.
+- **Selección Granular por Checkboxes y Exportación Segura**:
+  - Casillas de verificación individuales y casilla maestra *"Seleccionar todas"* en la tabla de órdenes de compra.
+  - Bloqueo y validación de seguridad si se intenta exportar sin seleccionar al menos una orden.
+  - Exportación a **PDF** y nuevo generador a **Excel (.xls)** con formato estructurado y sumatoria total de pagos a proveedores.
+- **Bloqueo Inteligente de Emisión de Órdenes**:
+  - Deshabilitación funcional y visual del botón *Orden* en la tabla de cotizaciones cuando la cotización está en estado `concluida` o `descartada`.
+- **Gráfico Evolutivo Comparativo en Estadísticas**:
+  - Comparativa mensual en Chart.js de **Cotizaciones Totales vs. Cotizaciones Concluidas** para análisis directo de efectividad comercial.
+
+---
+
 ## [v2.1.0] - 2026-08-15
 ### Añadido
 - **Estados Comerciales de Cotizaciones (`estado_comercial`)**:

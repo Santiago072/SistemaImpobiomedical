@@ -207,7 +207,7 @@ class EstadisticaModel
         return $datos;
     }
 
-    // ── 5. Evolución mensual Cotizaciones vs Órdenes ─────────────────────────
+    // ── 5. Evolución mensual: Cotizaciones Totales vs Concluidas ─────────────
     public function getMetricasEvolucion(?string $fi = null, ?string $ff = null): array
     {
         $params = [];
@@ -221,9 +221,7 @@ class EstadisticaModel
         $q = "SELECT
                 DATE_FORMAT(c.fecha_creacion, '%Y-%m') as mes,
                 COUNT(c.id) as cotizaciones,
-                (SELECT COUNT(o.id) FROM ordenes_compra o
-                 JOIN cotizaciones c2 ON o.cotizacion_id = c2.id
-                 WHERE DATE_FORMAT(c2.fecha_creacion, '%Y-%m') = DATE_FORMAT(c.fecha_creacion, '%Y-%m')) as ordenes
+                SUM(CASE WHEN c.estado_comercial = 'concluida' THEN 1 ELSE 0 END) as concluidas
               FROM cotizaciones c
               WHERE c.estado = 'finalizada' $whereEvo
               GROUP BY mes ORDER BY mes ASC";
@@ -231,11 +229,11 @@ class EstadisticaModel
         $stmt = $this->db->prepare($q);
         $stmt->execute($params);
 
-        $datos = ['meses' => [], 'cotizaciones' => [], 'ordenes' => []];
+        $datos = ['meses' => [], 'cotizaciones' => [], 'concluidas' => []];
         foreach ($stmt->fetchAll() as $row) {
             $datos['meses'][]        = $row['mes'];
             $datos['cotizaciones'][] = (int)$row['cotizaciones'];
-            $datos['ordenes'][]      = (int)$row['ordenes'];
+            $datos['concluidas'][]   = (int)$row['concluidas'];
         }
         return $datos;
     }

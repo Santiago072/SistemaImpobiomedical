@@ -197,6 +197,58 @@ class OrdenCompraModel
         return (int)$stmt->fetchColumn();
     }
 
+    public function listarPorIds(array $ids, int $usuarioId, string $rol): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        // Sanitizar array de IDs a enteros
+        $cleanIds = array_map('intval', array_filter($ids, 'is_numeric'));
+        if (empty($cleanIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($cleanIds), '?'));
+        $sql = "SELECT o.*, u.nombre AS nombre_usuario, c.cliente_nombre
+                FROM ordenes_compra o
+                LEFT JOIN usuarios u ON o.usuario_id = u.id
+                LEFT JOIN cotizaciones c ON o.cotizacion_id = c.id
+                WHERE o.id IN ($placeholders)";
+
+        $params = $cleanIds;
+        if ($rol !== 'admin' && $usuarioId > 0) {
+            $sql .= " AND o.usuario_id = ?";
+            $params[] = $usuarioId;
+        }
+
+        $sql .= " ORDER BY o.numero_po DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    public function actualizarEstado(int $id, string $nuevoEstado): bool
+    {
+        $estadosValidos = ['pendiente', 'completada'];
+        if (!in_array($nuevoEstado, $estadosValidos, true)) {
+            return false;
+        }
+
+        $stmt = $this->db->prepare("UPDATE ordenes_compra SET estado = :est WHERE id = :id");
+        return $stmt->execute([
+            ':est' => $nuevoEstado,
+            ':id'  => $id
+        ]);
+    }
+
+    public function eliminar(int $id): bool
+    {
+        $stmt = $this->db->prepare("DELETE FROM ordenes_compra WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
+    }
+
     private function construirWhere(array $filtros, int $usuarioId, string $rol): array
     {
         $condiciones = [];
@@ -205,6 +257,10 @@ class OrdenCompraModel
         if ($rol !== 'admin' && $usuarioId > 0) {
             $condiciones[]   = 'o.usuario_id = :uid';
             $params[':uid']  = $usuarioId;
+        }
+        if (!empty($filtros['estado'])) {
+            $condiciones[]   = 'o.estado = :estado';
+            $params[':estado'] = $filtros['estado'];
         }
         if (!empty($filtros['proveedor'])) {
             $condiciones[]       = 'o.proveedor LIKE :prov';
@@ -227,11 +283,5 @@ class OrdenCompraModel
             $condiciones ? implode(' AND ', $condiciones) : '',
             $params,
         ];
-    }
-
-    public function eliminar(int $id): bool
-    {
-        $stmt = $this->db->prepare("DELETE FROM ordenes_compra WHERE id = :id");
-        return $stmt->execute([':id' => $id]);
     }
 }
