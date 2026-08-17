@@ -1,10 +1,44 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-Este documento describe formalmente la arquitectura de software, los patrones de diseño, las capas del sistema, el flujo de datos y los controles de seguridad implementados en el **Sistema Impobiomedical** (Gestión de Catálogo Médico, Cotizaciones Dinámicas y Órdenes de Compra).
+**Versión:** 2.2.0  
+**Fecha:** Agosto 2026  
+**Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS (SMACSS/ITCSS) · DomPDF · PHPUnit 10
 
 ---
 
-## 1. Diagrama de Componentes y Capas
+## 📑 Tabla de Contenidos
+
+1. [Resumen del Sistema](#1-resumen-del-sistema)
+2. [Diagrama de Componentes y Capas (Arquitectura General)](#2-diagrama-de-componentes-y-capas-arquitectura-general)
+3. [Matriz de Responsabilidades (Principios SOLID)](#3-matriz-de-responsabilidades-principios-solid)
+4. [Estructura Completa de Directorios](#4-estructura-completa-de-directorios)
+5. [Esquema de Base de Datos y Modelo de Datos](#5-esquema-de-base-de-datos-y-modelo-de-datos)
+6. [Módulos del Sistema y Controladores](#6-módulos-del-sistema-y-controladores)
+7. [Flujo Comercial Completo](#7-flujo-comercial-completo)
+8. [Arquitectura de Estilos Modularizada (`css/`)](#8-arquitectura-de-estilos-modularizada-css)
+9. [Seguridad y Protección de Capas](#9-seguridad-y-protección-de-capas)
+10. [Generación de Documentos PDF y Exportaciones](#10-generación-de-documentos-pdf-y-exportaciones)
+11. [Variables de Sesión y Control de Estado](#11-variables-de-sesión-y-control-de-estado)
+12. [Suite de Pruebas Automatizadas (PHPUnit)](#12-suite-de-pruebas-automatizadas-phpunit)
+
+---
+
+## 1. Resumen del Sistema
+
+El **Sistema Impobiomedical** es una plataforma web especializada para la gestión comercial y técnica de equipos, insumos y servicios biomédicos para **Impobiomedical — Soluciones y Servicios de Tecnología Biomédica**. 
+
+Centraliza el ciclo comercial completo:
+- Creación de cotizaciones dinámicas con cálculo automatizado de márgenes de utilidad, fletes, calibración metrológica e impuestos.
+- Emisión de documentos PDF oficiales para entidades de salud (hospitales, clínicas, laboratorios y médicos independientes).
+- Control de estados comerciales (`pendiente`, `concluida`, `descartada`) con actualización reactiva en tiempo real vía AJAX.
+- Generación de órdenes de compra (P.O. - Purchase Orders) por proveedor seleccionado con navegación por pestañas (*Pendientes* y *Completadas*) y exportación selectiva a PDF y Excel.
+- Hojas internas de respaldo confidencial de costos de proveedores.
+- Directorio de entidades de salud y catálogo médico con almacenamiento sanitizado de fotografías.
+- Panel analítico con indicadores clave de rendimiento (KPIs), gráfico mensual comparativo y reportes ejecutivos.
+
+---
+
+## 2. Diagrama de Componentes y Capas (Arquitectura General)
 
 ```mermaid
 graph TB
@@ -32,7 +66,7 @@ graph TB
         CTRL_AUTH["AuthController\nInicio y Cierre de Sesión"]
         CTRL_PANEL["PanelController\nKPIs y Accesos Rápidos"]
         CTRL_COT["CotizacionController\nFlujo de Cotizaciones y Versiones"]
-        CTRL_ORD["OrdenCompraController\nGeneración de P.O. y Selección de Ítems"]
+        CTRL_ORD["OrdenCompraController\nGeneración de P.O., Tabs y Exportaciones"]
         CTRL_PROD["ProductoController\nCatálogo y Paginación"]
         CTRL_CLI["ClienteController\nDirectorio y Búsqueda AJAX"]
         CTRL_USR["UsuarioController\nGestión de Usuarios y Roles"]
@@ -86,9 +120,26 @@ graph TB
     DB_CONN --> DATABASE
 ```
 
+### Patrón de Enrutamiento Frontal:
+| Módulo | Acción | Ruta | Propósito |
+|---|---|---|---|
+| Autenticación | Login | `/?module=` | Pantalla de inicio de sesión segura |
+| Panel | Dashboard | `/?module=panel` | KPIs y accesos directos rápidos |
+| Cotizaciones | Crear | `/?module=cotizaciones&action=crear&nueva=1` | Cotizador dinámico y calculadora |
+| Cotizaciones | Finalizar | `/?module=cotizaciones&action=finalizar` | Cierre de cotización y datos de cliente |
+| Cotizaciones | Consultar | `/?module=cotizaciones&action=consultar` | Tabla de cotizaciones y cambio de estado AJAX |
+| Cotizaciones | PDF | `/?module=cotizaciones&action=generar_pdf&ver=EB01` | Visor / descarga de PDF oficial |
+| Cotizaciones | Respaldo | `/?module=cotizaciones&action=ver_respaldo&numero=EB01` | Hoja confidencial de costos de proveedores |
+| Órdenes | Consultar | `/?module=ordenes&action=consultar` | Listado de órdenes por pestañas (Pendientes / Completadas) |
+| Órdenes | Crear P.O. | `/?module=ordenes&action=seleccionar_items&cotizacion=EB01` | Generar orden para un proveedor |
+| Productos | Listar | `/?module=productos` | Catálogo médico y subida de imágenes |
+| Clientes | Listar | `/?module=clientes` | Directorio de entidades de salud |
+| Usuarios | Listar | `/?module=usuarios` | Gestión de cuentas de asesores y roles |
+| Estadísticas | Reportes | `/?module=estadisticas` | Métricas y gráficos comparativos consolidados |
+
 ---
 
-## 2. Matriz de Responsabilidades (Principios SOLID)
+## 3. Matriz de Responsabilidades (Principios SOLID)
 
 | Componente | Capa | Principio SOLID | Responsabilidad Principal |
 |---|---|:---:|---|
@@ -98,32 +149,296 @@ graph TB
 | [CotizacionController.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/controllers/CotizacionController.php) | Controlador | **SRP** | Orquesta el flujo de cotizaciones, creación de borradores y versiones. |
 | [FinalizarCotizacionService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/FinalizarCotizacionService.php) | Servicio | **SRP** | Generación de números consecutivos (`EB 01`, `EB 01_01`) y cierre de cotizaciones. |
 | [CotizacionItemService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/CotizacionItemService.php) | Servicio | **SRP** | Algoritmo de cálculo dinámico de utilidades, fletes, calibración, estampillas e IVA. |
+| [OrdenCompraController.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/controllers/OrdenCompraController.php) | Controlador | **SRP** | Emisión y control de órdenes, navegación por pestañas y exportación selectiva a PDF/Excel. |
 | [FileUploadService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/FileUploadService.php) | Servicio | **SRP** | Validación de tipos MIME reales, tamaños máximos y nombres únicos de archivos. |
 | [Modelos PDO](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/models/) | Persistencia | **DIP** | Acceso a datos con parámetros nombrados, eliminando cualquier vector de SQL Injection. |
 
 ---
 
-## 3. Flujo de Datos del Cotizador y Órdenes de Compra
+## 4. Estructura Completa de Directorios
+
+```text
+SistemaImpobiomedical/
+├── app/
+│   ├── controllers/            # Controladores del sistema (MVC)
+│   │   ├── AuthController.php
+│   │   ├── ClienteController.php
+│   │   ├── CotizacionController.php
+│   │   ├── EstadisticaController.php
+│   │   ├── OrdenCompraController.php
+│   │   ├── PanelController.php
+│   │   ├── ProductoController.php
+│   │   └── UsuarioController.php
+│   │
+│   ├── models/                 # Modelos con persistencia PDO y sentencias preparadas
+│   │   ├── ClienteModel.php
+│   │   ├── CotizacionModel.php
+│   │   ├── EstadisticaModel.php
+│   │   ├── OrdenCompraModel.php
+│   │   ├── ProductoModel.php
+│   │   └── UsuarioModel.php
+│   │
+│   ├── services/               # Lógica de negocio y utilidades desacopladas
+│   │   ├── CotizacionItemService.php
+│   │   ├── FileUploadService.php
+│   │   └── FinalizarCotizacionService.php
+│   │
+│   └── views/                  # Vistas modulares (HTML + PHP puro)
+│       ├── auth/               # Login y cambio de credenciales
+│       ├── clientes/           # Gestión y modales de clientes
+│       ├── cotizaciones/       # Cotizador, finalizar, consultar, respaldo y PDF
+│       ├── estadisticas/       # Métricas y reporte consolidado
+│       ├── layout/             # Header, menú lateral, topbar, paginación y footer
+│       ├── ordenes/            # Consultar, pestañas, generar P.O. y exportar Excel
+│       ├── panel/              # Dashboard principal
+│       ├── productos/          # Catálogo médico y exportación PDF con imágenes
+│       └── usuarios/           # Gestión de asesores y restablecimiento de claves
+│
+├── config/
+│   ├── .env.example            # Plantilla de variables de entorno
+│   ├── EnvLoader.php           # Cargador seguro de configuración .env
+│   ├── conexion.php            # Singleton PDO con manejo seguro de excepciones
+│   └── seguridad.php           # Biblioteca central de funciones de seguridad
+│
+├── css/
+│   ├── estilos.css             # Entry point de la arquitectura CSS
+│   └── modules/                # 7 submódulos SMACSS/ITCSS
+│       ├── auth.css            # Estilos de login
+│       ├── base.css            # Reset, tipografías y canvas
+│       ├── components.css      # Botones, tablas, badges y modales
+│       ├── forms.css           # Formularios, inputs y selects
+│       ├── layout.css          # Sidebar, topbar y grillas principales
+│       ├── responsive.css      # Media queries adaptables
+│       └── variables.css       # Tokens, paleta de colores y transiciones
+│
+├── docs/                       # Documentación técnica y funcional exhaustiva
+│   ├── ARQUITECTURA_Y_COMPONENTES.md
+│   ├── CHANGELOG.md
+│   ├── CONTRIBUTING.md
+│   ├── ESPECIFICACION_REQUISITOS.md
+│   ├── MANUAL_USUARIO.md
+│   ├── PLAN_DE_IMPLEMENTACION.md
+│   └── documentacion-tecnica.md
+│
+├── public/
+│   └── js/
+│       └── script.js           # Toggle de menú, confirmaciones y anti-doble envío
+│
+├── tests/
+│   └── Unit/                   # Suite de pruebas unitarias PHPUnit 10
+│       ├── CalculosComercialesTest.php
+│       └── SeguridadTest.php
+│
+├── uploads/                    # Almacenamiento persistente de imágenes sanitizadas
+├── .github/workflows/ci.yml    # Pipeline de Integración Continua (CI)
+├── BD.txt                      # Script SQL DDL de la base de datos
+├── Dockerfile                  # Imagen multi-stage PHP 8.2
+├── docker-compose.yml          # Orquestación de servicios y volúmenes
+└── deploy.sh                   # Script automatizado de actualización sin caída
+```
+
+---
+
+## 5. Esquema de Base de Datos y Modelo de Datos
+
+**Motor:** MySQL 8.0+ / MariaDB 10.4+  
+**Collation:** `utf8mb4_unicode_ci`  
+**Storage Engine:** `InnoDB` (Soporte transaccional y claves foráneas)
+
+```mermaid
+erDiagram
+    usuarios ||--o{ cotizaciones : crea
+    usuarios ||--o{ ordenes_compra : emite
+    clientes ||--o{ cotizaciones : recibe
+    cotizaciones ||--|{ cotizacion_items : contiene
+    cotizaciones ||--o{ ordenes_compra : origina
+    ordenes_compra ||--|{ orden_compra_items : contiene
+    productos ||--o{ cotizacion_items : provee
+
+    usuarios {
+        int id PK
+        string codigo UK
+        string documento UK
+        string nombre
+        string correo
+        string telefono
+        string cargo
+        string password
+        string rol
+        string estado
+    }
+
+    clientes {
+        int id PK
+        string nombre
+        string nit UK
+        string departamento
+        string municipio
+        string direccion
+        string nombre_contacto
+        string telefono
+        string correo
+        string estado
+    }
+
+    productos {
+        int id PK
+        string codigo_producto
+        string titulo
+        string foto
+        text descripcion
+        decimal precio
+        string categoria
+        string iva
+        string estado
+    }
+
+    cotizaciones {
+        int id PK
+        string numero_cotizacion
+        int usuario_id FK
+        string usuario_codigo
+        int cliente_id FK
+        string cliente_nombre
+        string cliente_nit
+        string cliente_departamento
+        string cliente_ciudad
+        string cliente_direccion
+        string cliente_telefono
+        string cliente_correo
+        string cliente_contacto
+        date fecha_creacion
+        int dias_validez
+        date fecha_validez
+        string condiciones_pago
+        text observaciones
+        string estado
+        string estado_comercial
+    }
+
+    cotizacion_items {
+        int id PK
+        int cotizacion_id FK
+        int producto_id FK
+        string titulo
+        string foto
+        text descripcion
+        int cantidad
+        decimal precio
+        decimal precio_proveedor
+        decimal porcentaje_utilidad
+        decimal flete
+        decimal calibracion
+        decimal estampillas
+        string iva
+        decimal porcentaje_iva
+        string tiempo_entrega
+        string categoria
+        string codigo_producto
+        string proveedor
+        string codigo_proveedor
+        string calc_ops
+    }
+
+    ordenes_compra {
+        int id PK
+        int numero_po UK
+        int cotizacion_id FK
+        string cotizacion_numero
+        int usuario_id FK
+        string proveedor
+        string proveedor_nit
+        string tipo_contribuyente
+        string condiciones_pago
+        string iva
+        string departamento_compras
+        string nota
+        decimal retencion
+        date fecha
+        string estado
+        string banco_nombre
+        string banco_cuenta
+        string banco_tipo_cuenta
+    }
+
+    orden_compra_items {
+        int id PK
+        int orden_id FK
+        int cotizacion_item_id FK
+        string codigo_proveedor
+        string titulo
+        text descripcion
+        int cantidad
+        decimal precio_unit
+        string iva
+        decimal porcentaje_iva
+        decimal total
+    }
+```
+
+---
+
+## 6. Módulos del Sistema y Controladores
+
+### 6.1 Autenticación (`AuthController.php`)
+- **Login Seguro:** Valida documento y contraseña contra `password_verify()`.
+- **Regeneración de ID de Sesión:** Ejecuta `regenerar_sesion()` tras login exitoso para prevenir ataques de Session Fixation.
+- **Sugerencia de Cambio de Contraseña:** Detecta si el usuario ingresó con su documento como clave y activa un modal no invasivo para actualizarla.
+- **Protección Fuerza Bruta:** Rate Limiting estricto de máximo 5 intentos fallidos cada 5 minutos.
+
+### 6.2 Dashboard Principal (`PanelController.php`)
+- **Métricas:** Conteo dinámico de cotizaciones totales, cotizaciones del mes (por asesor o global para admin), clientes activos y catálogo de productos.
+- **Accesos Directos:** Botones de acción rápida adaptados por rol.
+
+### 6.3 Cotizador y Negociaciones (`CotizacionController.php`)
+- **Manejo de Borrador Activo:** Sesión `$_SESSION['cotizacion_id']` para construir la cotización paso a paso sin perder datos.
+- **Revisiones Numéricas:** Si se modifica una cotización existente, el sistema genera sufijos automáticos (`_01`, `_02`) conservando el historial.
+- **Actualización de Estado Comercial:** Endpoint `cambiar_estado` protegido con `verificar_admin()`, token CSRF y rate limit con respuesta JSON asíncrona y reactividad inmediata en el botón de órdenes.
+
+### 6.4 Catálogo de Productos (`ProductoController.php`)
+- **Carga de Fotografías:** Integrado con `FileUploadService` para validación de tipo MIME real (`finfo`), generación de nombres únicos (`bin2hex(random_bytes(16))`) y control de tamaño.
+- **Exportación PDF:** Genera catálogo estructurado en dos columnas con miniaturas e imágenes optimizadas.
+
+### 6.5 Órdenes de Compra (`OrdenCompraController.php`)
+- **Aislamiento por Proveedor:** Agrupa los ítems cotizados y permite generar la Orden de Compra (P.O.) únicamente con los productos del proveedor seleccionado.
+- **Bloqueo Inteligente:** Deshabilita tanto en frontend como en backend la generación de órdenes sobre cotizaciones que hayan sido marcadas como `concluida` o `descartada`.
+- **Pestañas de Estado y AJAX:** Pestañas visuales para 🟡 *Pendientes* y 🟢 *Completadas* con endpoint reactivo `cambiar_estado` protegido con CSRF y Rate Limit.
+- **Selección Granular y Reportes:** Selección por casillas de verificación individuales y globales para exportación selectiva a **PDF** y **Excel tabular (.xls)** con sumatorias automáticas y optimización de consultas SQL en bloque.
+- **Cálculo de Retenciones:** Aplica retención en la fuente y discriminación de IVA para contabilidad.
+
+### 6.6 Directorio de Clientes (`ClienteController.php`)
+- **Autocompletado en Vivo:** Endpoint AJAX para búsqueda instantánea por NIT o Razón Social.
+- **Ubicación Geográfica:** Almacena departamento y municipio de cada entidad de salud.
+
+### 6.7 Gestión de Usuarios (`UsuarioController.php`)
+- **Control de Asesores:** Asigna código de cotización de 2 a 3 letras único por asesor (ej. `EB`).
+- **Reseteo Administrativo:** Restablece contraseñas al número de documento con un solo clic.
+
+---
+
+## 7. Flujo Comercial Completo
+
+El siguiente diagrama resume el ciclo de vida de una negociación desde la creación de la oferta hasta la compra a proveedores y su seguimiento:
 
 ```mermaid
 flowchart TD
-    Inicio(["🏁 Inicio: Asesor Comercial"]) --> Paso1["1️⃣ Seleccionar o Crear Ítems<br/>(Catálogo médico o ingreso manual)"]
-    Paso1 --> Paso2["2️⃣ Calculadora de Ganancias<br/>(Costo proveedor + Margen + Flete + Calibración)"]
-    Paso2 --> Paso3{"¿Agregar más productos?"}
+    Inicio(["🏁 Inicio"]) --> Paso1["1️⃣ Seleccionar Ítems<br/>(Catálogo o Manual)"]
+    Paso1 --> Paso2["2️⃣ Calculadora<br/>(Utilidad, Flete, Calibración)"]
+    Paso2 --> Paso3{"¿Más ítems?"}
     Paso3 -- Sí --> Paso1
-    Paso3 -- No --> Paso4["3️⃣ Completar Datos del Cliente<br/>(Autocompletar NIT, Departamento y Ciudad)"]
-    Paso4 --> Paso5["4️⃣ Finalizar Cotización<br/>(Generación de consecutivo automático: EB 01)"]
+    Paso3 -- No --> Paso4["3️⃣ Datos del Cliente<br/>(NIT, Depto, Ciudad)"]
+    Paso4 --> Paso5["4️⃣ Finalizar<br/>(Consecutivo: EB 01)"]
     
-    Paso5 --> Paso6["📄 Generar PDF Oficial<br/>(Documento formal para el cliente)"]
-    Paso5 --> Paso7["📋 Hoja de Respaldo<br/>(Costos reales confidenciales y desglose)"]
-    Paso5 --> Estado{"5️⃣ Seguimiento Comercial<br/>(Administrador)"}
+    Paso5 --> Paso6["📄 PDF Cliente<br/>(Oferta oficial)"]
+    Paso5 --> Paso7["📋 Respaldo<br/>(Costos internos)"]
+    Paso5 --> Estado{"5️⃣ Seguimiento"}
     
-    Estado -- 🟡 En negociación --> Pendiente["🟡 Estado: Pendiente"]
-    Estado -- 🔴 Cliente desiste --> Descartada["🔴 Estado: Descartada"]
-    Estado -- 🟢 Oferta Aprobada --> Concluida["🟢 Estado: Concluida"]
+    Estado -- 🟡 Negociando --> Pendiente["🟡 Pendiente"]
+    Estado -- 🔴 Desiste --> Descartada["🔴 Descartada"]
+    Estado -- 🟢 Aprobada --> Concluida["🟢 Concluida"]
 
-    Concluida --> Orden["6️⃣ Generar Orden de Compra (P.O.)<br/>(Agrupación por proveedor + retenciones)"]
-    Orden --> Fin(["📦 Emisión de P.O. PDF / Excel al Proveedor"])
+    Concluida --> Orden["6️⃣ Orden de Compra<br/>(Selección por proveedor)"]
+    Orden --> Fin(["📦 Emisión P.O. PDF"])
 
     style Inicio fill:#10757e,stroke:#0d5c63,color:#fff
     style Fin fill:#10757e,stroke:#0d5c63,color:#fff
@@ -139,7 +454,7 @@ flowchart TD
 
 ---
 
-## 4. Arquitectura de Estilos Modularizada (`css/`)
+## 8. Arquitectura de Estilos Modularizada (`css/`)
 
 La interfaz gráfica sigue una arquitectura **SMACSS/ITCSS** dividida en 7 submódulos:
 
@@ -158,16 +473,67 @@ css/
 
 ---
 
-## 5. Controles de Seguridad de Nivel Empresarial
+## 9. Seguridad y Protección de Capas
 
-1. **Protección contra Inyecciones SQL:** 100% de las consultas utilizan `PDO::prepare()` con parámetros nombrados `:param`.
-2. **Protección contra CSRF (Cross-Site Request Forgery):** Tokens criptográficos `bin2hex(random_bytes(32))` verificados en cada petición POST y DELETE.
-3. **Protección contra XSS (Cross-Site Scripting):** Escape universal de salidas HTML mediante `htmlspecialchars(..., ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')`.
-4. **Cabeceras HTTP de Seguridad:**
-   * `X-Frame-Options: SAMEORIGIN` (Anti-Clickjacking).
-   * `X-Content-Type-Options: nosniff` (Anti-MIME Sniffing).
-   * `Strict-Transport-Security` (HSTS para HTTPS).
-   * `Content-Security-Policy` restrictivo.
-5. **Protección Anti-Doble Envío:** Bloqueo interactivo de botones submit con feedback visual para evitar duplicados en conexiones lentas.
-6. **Almacenamiento Seguro de Contraseñas:** Algoritmo nativo `PASSWORD_BCRYPT` (`password_hash` y `password_verify`).
-7. **Rate Limiting en Memoria de Sesión:** Limitación de solicitudes en endpoints sensibles (login, creación de cotizaciones, reseteo de claves).
+| Vector de Ataque | Mecanismo de Defensa Implementado | Ubicación en Código |
+|---|---|---|
+| **Inyección SQL** | Sentencias preparadas PDO con parámetros obligatorios `:param`. | Todos los archivos en `app/models/` |
+| **Cross-Site Scripting (XSS)** | Escape estricto con `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')` y sanitización. | `config/seguridad.php` y vistas |
+| **CSRF (Cross-Site Request Forgery)** | Tokens criptográficos aleatorios `random_bytes(32)` validados con `hash_equals()` en todas las peticiones POST/DELETE. | `config/seguridad.php` |
+| **Clickjacking** | Cabecera HTTP `X-Frame-Options: SAMEORIGIN`. | `index.php` |
+| **MIME-Sniffing** | Cabecera HTTP `X-Content-Type-Options: nosniff`. | `index.php` |
+| **Content Security Policy (CSP)** | Directiva estricta restringiendo scripts y estilos únicamente al origen y CDNs autorizados. | `index.php` |
+| **Ataques de Fuerza Bruta** | Rate limiting en memoria con ventana de tiempo fija (`verificar_rate_limit()`). | `config/seguridad.php` |
+| **Falsificación de Archivos** | Verificación de extensión en lista blanca y validación de cabecera binaria MIME (`finfo_open`). | `app/services/FileUploadService.php` |
+| **Session Hijacking** | Cookies con flags `HttpOnly`, `SameSite=Strict`, `Secure` y expiración por inactividad a 3600s. | `config/seguridad.php` |
+
+---
+
+## 10. Generación de Documentos PDF y Exportaciones
+
+El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de producción:
+
+1. **Cotización Oficial para Clientes (`app/views/cotizaciones/generar_pdf.php`)**:
+   - Encabezado institucional con logo corporativo de Impobiomedical.
+   - Datos completos de la entidad y ciudad.
+   - Tabla de productos cotizados con especificaciones técnicas, precios unitarios, subtotales, IVA discriminado y condiciones comerciales.
+2. **Hoja de Respaldo de Proveedores (`app/views/cotizaciones/respaldo.php`)**:
+   - Documento interno confidencial con costos de proveedor, desglose de márgenes por ítem y utilidad bruta proyectada.
+3. **Orden de Compra (`app/views/ordenes/`)**:
+   - Documento P.O. formal con datos bancarios del proveedor y desglose tributario.
+   - Exportación dual: **PDF oficial** y **Excel (.xls)** con sumatoria contable.
+4. **Catálogo Médico con Imágenes (`app/views/productos/pdf.php`)**:
+   - Renderizado optimizado de fotografías médicas con reglas `page-break-inside: avoid`, `@ini_set('memory_limit', '256M')` y timeout extendido a 120s.
+
+---
+
+## 11. Variables de Sesión y Control de Estado
+
+| Variable | Tipo | Propósito |
+|---|---|---|
+| `$_SESSION['usuario_id']` | `int` | ID del usuario autenticado en la base de datos |
+| `$_SESSION['usuario_nombre']` | `string` | Nombre completo del usuario |
+| `$_SESSION['usuario_codigo']` | `string` | Código de asesor (ej. `EB`, `HM`) |
+| `$_SESSION['usuario_cargo']` | `string` | Cargo del usuario |
+| `$_SESSION['rol']` | `string` | Nivel de permisos (`admin` o `usuario`) |
+| `$_SESSION['csrf_token']` | `string` | Token de seguridad activo |
+| `$_SESSION['cotizacion_id']` | `int` | ID de la cotización en borrador en construcción |
+| `$_SESSION['cotizacion_revision_de']` | `string` | Número base de cotización que se está modificando |
+| `$_SESSION['orden_tab']` | `string` | Pestaña activa en órdenes de compra (`pendientes` o `completadas`) |
+| `$_SESSION['LAST_ACTIVITY']` | `int` | Timestamp de última interacción para expiración automática |
+
+---
+
+## 12. Suite de Pruebas Automatizadas (PHPUnit)
+
+El proyecto cuenta con una suite de pruebas unitarias configurada en `phpunit.xml`:
+
+```bash
+# Ejecutar todas las pruebas unitarias
+./vendor/bin/phpunit
+```
+
+### Cobertura de Pruebas:
+- **`CalculosComercialesTest.php`**: Valida cálculos de margen de utilidad, adición de fletes, calibración, estampillas, discriminación de IVA (19% y 0%) y generación de sufijos de revisión (`EB 01_01`).
+- **`SeguridadTest.php`**: Valida generación y rotación de tokens CSRF, sanitización contra inyecciones XSS, cifrado `bcrypt` y validación de extensiones de archivos.
+
