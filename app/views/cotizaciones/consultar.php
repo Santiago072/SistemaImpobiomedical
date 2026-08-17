@@ -23,6 +23,13 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
         </div>
 
+        <?php if (!empty($_SESSION['flash_error'])): ?>
+        <div style="background:#fee2e2; border:1.5px solid #ef4444; color:#991b1b; padding:12px 16px; border-radius:10px; margin-bottom:18px; display:flex; align-items:center; gap:10px; font-weight:600; font-size:13px;">
+            <i class="bi bi-exclamation-triangle-fill" style="font-size:18px;"></i>
+            <span><?= htmlspecialchars($_SESSION['flash_error']) ?></span>
+        </div>
+        <?php unset($_SESSION['flash_error']); endif; ?>
+
         <?php if ($mensajeError): ?>
         <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($mensajeError) ?></div>
         <?php endif; ?>

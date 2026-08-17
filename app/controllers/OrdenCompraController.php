@@ -42,6 +42,14 @@ class OrdenCompraController
             exit();
         }
 
+        // Blindaje backend: solo permitir emitir órdenes de cotizaciones en estado comercial 'pendiente'
+        $estCom = $cotizacion['estado_comercial'] ?? 'pendiente';
+        if ($estCom !== 'pendiente') {
+            $_SESSION['flash_error'] = 'No es posible generar una orden de compra para una cotización que está ' . $estCom . '.';
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
+
         $items = $this->cotizacionModel->obtenerItems((int)$cotizacion['id']);
 
         // Agrupar proveedores únicos para mostrar info
@@ -77,6 +85,25 @@ class OrdenCompraController
         $cotizacionId     = (int)($_POST['cotizacion_id'] ?? 0);
         $cotizacionNumero = sanitizar_entrada($_POST['cotizacion_numero'] ?? '');
         $usuarioId        = (int)$_SESSION['usuario_id'];
+
+        if (!$cotizacionId) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=datos');
+            exit();
+        }
+
+        // Blindaje backend en guardado: validar que la cotización exista y esté pendiente
+        $cotizacion = $this->cotizacionModel->buscarPorId($cotizacionId);
+        if (!$cotizacion) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=no_existe');
+            exit();
+        }
+
+        $estCom = $cotizacion['estado_comercial'] ?? 'pendiente';
+        if ($estCom !== 'pendiente') {
+            $_SESSION['flash_error'] = 'No es posible generar una orden de compra para una cotización ' . $estCom . '.';
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
 
         // Datos del proveedor y orden
         $proveedor          = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 200);
