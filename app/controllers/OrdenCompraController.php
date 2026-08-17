@@ -337,9 +337,17 @@ class OrdenCompraController
 
     private function prepararDatosReporte(array $ordenes): array
     {
+        if (empty($ordenes)) {
+            return [];
+        }
+
+        $ordenIds = array_column($ordenes, 'id');
+        $itemsAgrupados = $this->model->obtenerItemsPorOrdenIds($ordenIds);
+
         $datos = [];
         foreach ($ordenes as $ord) {
-            $items = $this->model->obtenerItems((int)$ord['id']);
+            $ordId = (int)$ord['id'];
+            $items = $itemsAgrupados[$ordId] ?? [];
             $subtotal = 0;
             $totalIva = 0;
             foreach ($items as $it) {

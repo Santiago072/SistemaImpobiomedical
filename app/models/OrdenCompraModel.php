@@ -153,6 +153,29 @@ class OrdenCompraModel
         return $stmt->fetchAll();
     }
 
+    public function obtenerItemsPorOrdenIds(array $ordenIds): array
+    {
+        if (empty($ordenIds)) {
+            return [];
+        }
+        $cleanIds = array_map('intval', array_filter($ordenIds, 'is_numeric'));
+        if (empty($cleanIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($cleanIds), '?'));
+        $stmt = $this->db->prepare(
+            "SELECT * FROM orden_compra_items WHERE orden_id IN ($placeholders) ORDER BY orden_id ASC, id ASC"
+        );
+        $stmt->execute($cleanIds);
+        
+        $agrupados = [];
+        foreach ($stmt->fetchAll() as $item) {
+            $agrupados[(int)$item['orden_id']][] = $item;
+        }
+        return $agrupados;
+    }
+
     public function listarConFiltros(array $filtros, int $offset, int $limite, int $usuarioId, string $rol): array
     {
         [$where, $params] = $this->construirWhere($filtros, $usuarioId, $rol);
