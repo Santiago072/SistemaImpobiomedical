@@ -18,11 +18,16 @@
 /* ── 4. Componentes UI (Botones, Tarjetas, Modales, Tablas) ── */
 @import url('modules/components.css');
 
-/* ── 5. Formularios, Inputs y Controles de Entrada ────────── */
+/* ── 5. Módulos por dominio del sistema ────────────────────── */
+@import url('modules/cotizaciones.css');
+@import url('modules/ordenes.css');
+@import url('modules/estadisticas.css');
+
+/* ── 6. Formularios, Inputs y Controles de Entrada ────────── */
 @import url('modules/forms.css');
 
-/* ── 6. Autenticación y Pantalla de Inicio de Sesión ──────── */
+/* ── 7. Autenticación y Pantalla de Inicio de Sesión ──────── */
 @import url('modules/auth.css');
 
-/* ── 7. Diseño Adaptativo (Responsive Design) ─────────────── */
+/* ── 8. Diseño Adaptativo (Responsive Design) ─────────────── */
 @import url('modules/responsive.css');

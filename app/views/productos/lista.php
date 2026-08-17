@@ -19,13 +19,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <h1 class="mod-title"><i class="bi bi-box-seam-fill"></i> Catálogo de Productos</h1>
                 <p class="mod-sub"><?= $total ?? 0 ?> producto(s) en catálogo</p>
             </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="header-actions-wrap">
                 <?php 
                 $exportUrl = $basePath . '?module=productos'
                            . (!empty($categoriaSel) ? '&categoria=' . urlencode($categoriaSel) : '')
                            . (!empty($busqueda) ? '&busqueda=' . urlencode($busqueda) : '');
                 ?>
-                <a href="<?= $exportUrl ?>&action=exportarPdf" download="Catalogo_Productos.pdf" class="btn-mod-primary" style="background:#ef4444; border:none; text-decoration:none;">
+                <a href="<?= $exportUrl ?>&action=exportarPdf" download="Catalogo_Productos.pdf" class="btn-mod-primary btn-pdf-export">
                     <i class="bi bi-file-earmark-pdf"></i> PDF
                 </a>
                 <?php if ($_SESSION['rol'] === 'admin'): ?>
@@ -46,7 +46,7 @@ include dirname(__DIR__) . '/layout/menu.php';
 
         <!-- Filtros por Categoría -->
         <?php if (!empty($categoriasCount)): ?>
-        <div style="margin-bottom:20px; display:flex; flex-wrap:wrap; gap:8px;">
+        <div class="categories-filter-bar">
             <a href="<?= $basePath ?>?module=productos&action=lista" class="mod-btn-category <?= empty($categoriaSel) ? 'active' : '' ?>">
                 Todos
             </a>
@@ -88,23 +88,23 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <?php if (!empty(trim($p['foto']))): ?>
                 <img src="<?= $basePath ?>uploads/<?= htmlspecialchars(trim($p['foto'])) ?>"
                      class="prod-img" alt="<?= htmlspecialchars($p['titulo']) ?>"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="prod-icon-fallback" style="display:none;"><i class="bi bi-box-seam"></i></div>
+                     onerror="this.style.display='none'; this.nextElementSibling.classList.remove('form-hidden-action');">
+                <div class="prod-icon-fallback form-hidden-action"><i class="bi bi-box-seam"></i></div>
                 <?php else: ?>
                 <div class="prod-icon-fallback"><i class="bi bi-box-seam"></i></div>
                 <?php endif; ?>
 
                 <div class="prod-body">
                     <div class="prod-name"><?= htmlspecialchars($p['titulo']) ?></div>
-                    <div class="prod-meta" style="margin-bottom:8px;">
-                        <?php if(!empty($p['codigo_producto'])): ?><span class="prod-tag" style="background:#e0f2fe;color:#0284c7;"><i class="bi bi-upc-scan"></i> <?= htmlspecialchars($p['codigo_producto']) ?></span><?php endif; ?>
+                    <div class="prod-meta prod-meta-spacing">
+                        <?php if(!empty($p['codigo_producto'])): ?><span class="prod-tag tag-code"><i class="bi bi-upc-scan"></i> <?= htmlspecialchars($p['codigo_producto']) ?></span><?php endif; ?>
                     </div>
                     <div class="prod-meta">
                         <span class="prod-tag <?= $p['iva'] === 'si' ? 'tag-iva' : 'tag-noiva' ?>">
                             IVA: <?= $p['iva'] === 'si' ? 'Sí' : 'No' ?>
                         </span>
                         <?php if ($p['estado'] !== 'activo'): ?>
-                            <span class="prod-tag" style="background:#fee2e2;color:#991b1b;"><i class="bi bi-x-circle-fill"></i> Inactivo</span>
+                            <span class="prod-tag tag-inactive"><i class="bi bi-x-circle-fill"></i> Inactivo</span>
                         <?php endif; ?>
                     </div>
                     <div class="prod-actions">
@@ -172,7 +172,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                     <div class="imo-form-group">
                         <label>Descripción *</label>
-                        <textarea name="descripcion" required maxlength="5000" rows="3" style="padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:14px;resize:vertical;outline:none;"></textarea>
+                        <textarea name="descripcion" required maxlength="5000" rows="3"></textarea>
                     </div>
                     <div class="imo-form-group">
                         <label>¿Aplica IVA? *</label>
@@ -183,13 +183,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                 </div>
                 <div class="prod-edit-right">
-                    <label style="font-size:12px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;">Imagen del Producto</label>
+                    <label class="prod-label-upload">Imagen del Producto</label>
                     <div id="c_prod-img-preview" class="prod-preview-box">
                         <i class="bi bi-card-image"></i>
                         <span>Sin imagen</span>
                     </div>
-                    <input type="file" name="foto" id="c_foto" accept="image/*" style="margin-top:8px;font-size:13px;">
-                    <small style="color:#9ca3af;font-size:12px;">Máx: 5MB · JPG, PNG, WebP</small>
+                    <input type="file" name="foto" id="c_foto" accept="image/*" class="prod-file-input">
+                    <small class="prod-file-hint">Máx: 5MB · JPG, PNG, WebP</small>
                 </div>
             </div>
 
@@ -241,7 +241,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                     <div class="imo-form-group">
                         <label>Descripción *</label>
-                        <textarea id="e_descripcion" name="descripcion" required maxlength="5000" rows="3" style="padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:14px;resize:vertical;outline:none;"></textarea>
+                        <textarea id="e_descripcion" name="descripcion" required maxlength="5000" rows="3"></textarea>
                     </div>
                     <div class="imo-form-row">
                         <div class="imo-form-group">
@@ -261,13 +261,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                 </div>
                 <div class="prod-edit-right">
-                    <label style="font-size:12px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.4px;">Imagen del Producto</label>
+                    <label class="prod-label-upload">Imagen del Producto</label>
                     <div id="prod-img-preview" class="prod-preview-box">
                         <i class="bi bi-card-image"></i>
                         <span>Sin imagen</span>
                     </div>
-                    <input type="file" name="foto" id="e_foto" accept="image/*" style="margin-top:8px;font-size:13px;">
-                    <small style="color:#9ca3af;font-size:12px;">Máx: 5MB · JPG, PNG, WebP</small>
+                    <input type="file" name="foto" id="e_foto" accept="image/*" class="prod-file-input">
+                    <small class="prod-file-hint">Máx: 5MB · JPG, PNG, WebP</small>
                 </div>
             </div>
 
@@ -287,39 +287,17 @@ include dirname(__DIR__) . '/layout/menu.php';
             <button onclick="cerrarModal('modal-eliminar')" class="imo-modal-close">&times;</button>
         </div>
         <div class="imo-modal-body">
-            <p style="color:#4b5563;">¿Seguro que deseas eliminar <strong id="nombre-eliminar"></strong>?</p>
+            <p class="imo-modal-desc">¿Seguro que deseas eliminar <strong id="nombre-eliminar"></strong>?</p>
         </div>
-        <div class="imo-modal-footer" style="display:flex; justify-content:flex-end; gap:12px; padding:20px;">
+        <div class="imo-modal-footer">
             <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
-            <form id="form-eliminar-producto" method="POST" action="" style="display:inline;">
+            <form id="form-eliminar-producto" method="POST" action="" class="form-inline-action">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
-                <button type="submit" class="imo-btn-danger" style="display:inline-flex; align-items:center; justify-content:center; gap:6px; height:38px; padding:0 16px; border:none; border-radius:6px; cursor:pointer;"><i class="bi bi-trash-fill"></i> Eliminar</button>
+                <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
             </form>
         </div>
     </div>
 </div>
-
-<style>
-.mod-alert-warn{background:#fef9c3;color:#854d0e;border:1px solid #fde68a;}
-.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;}
-.prod-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;transition:transform .2s,box-shadow .2s;}
-.prod-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.07);}
-.prod-img{width:100%;height:160px;object-fit:contain;background:#fff;padding:10px;}
-.prod-icon-fallback{width:100%;height:160px;display:flex;align-items:center;justify-content:center;background:#f8fafc;font-size:48px;color:#cbd5e1;}
-.prod-body{padding:16px;}
-.prod-price{font-size:20px;font-weight:800;color:#10757e;margin-bottom:4px;}
-.prod-name{font-size:14px;font-weight:600;color:#0f172a;margin-bottom:8px;line-height:1.4;}
-.prod-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
-.prod-tag{font-size:11px;padding:3px 9px;border-radius:12px;background:#f1f5f9;color:#475569;font-weight:600;}
-.tag-iva{background:#dcfce7;color:#166534;}.tag-noiva{background:#fee2e2;color:#991b1b;}
-.prod-actions{display:flex;gap:6px;}
-.prod-edit-layout{display:grid;grid-template-columns:1fr 200px;gap:20px;}
-.prod-edit-left{display:flex;flex-direction:column;}
-.prod-edit-right{display:flex;flex-direction:column;gap:8px;}
-.prod-preview-box{width:100%;aspect-ratio:1;background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94a3b8;font-size:32px;overflow:hidden;}
-.prod-preview-box img{width:100%;height:100%;object-fit:cover;}
-.prod-preview-box span{font-size:12px;margin-top:6px;}
-</style>
 
 <script>
 const BASE  = '<?= $basePath ?>';
@@ -342,7 +320,7 @@ function abrirModalEditar(p) {
 
     const preview = document.getElementById('prod-img-preview');
     if (p.foto) {
-        preview.innerHTML = `<img src="${BASE}uploads/${p.foto}" style="width:100%;height:100%;object-fit:cover;">`;
+        preview.innerHTML = `<img src="${BASE}uploads/${p.foto}" class="img-full-cover">`;
     } else {
         preview.innerHTML = `<i class="bi bi-card-image"></i><span>Sin imagen</span>`;
     }
@@ -357,7 +335,7 @@ document.getElementById('c_foto')?.addEventListener('change', function() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = e => {
-        document.getElementById('c_prod-img-preview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+        document.getElementById('c_prod-img-preview').innerHTML = `<img src="${e.target.result}" class="img-full-cover">`;
     };
     reader.readAsDataURL(file);
 });
@@ -367,7 +345,7 @@ document.getElementById('e_foto')?.addEventListener('change', function() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = e => {
-        document.getElementById('prod-img-preview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+        document.getElementById('prod-img-preview').innerHTML = `<img src="${e.target.result}" class="img-full-cover">`;
     };
     reader.readAsDataURL(file);
 });

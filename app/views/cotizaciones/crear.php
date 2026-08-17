@@ -16,17 +16,17 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         <div class="page-header">
             <?php if(isset($_SESSION['cotizacion_revision_de'])): ?>
             <h1 class="page-title"><i class="bi bi-pencil-square"></i> Modificando Cotización: <?= htmlspecialchars($_SESSION['cotizacion_revision_de']) ?></h1>
-            <p style="color:#f59e0b; font-size:13px; margin-bottom:10px;"><i class="bi bi-info-circle-fill"></i> Puedes editar, eliminar o agregar productos. El nuevo PDF tendrá un número derivado al finalizar.</p>
+            <p class="text-warning-gold mb-10"><i class="bi bi-info-circle-fill"></i> Puedes editar, eliminar o agregar productos. El nuevo PDF tendrá un número derivado al finalizar.</p>
             <?php else: ?>
             <h1 class="page-title"><i class="bi bi-plus-circle-fill"></i> Nueva Cotización</h1>
             <?php endif; ?>
-            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px;">
-                <p class="page-sub" style="margin:0;">Ítems agregados: <strong><?= $totalItems ?></strong></p>
+            <div class="header-actions-wrap align-center mt-8">
+                <p class="page-sub m-0">Ítems agregados: <strong><?= $totalItems ?></strong></p>
                 <?php if ($totalItems > 0): ?>
-                <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary" style="padding: 6px 12px; font-size: 12px; text-decoration: none;">
+                <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary btn-sm-action">
                     <i class="bi bi-arrow-right-circle-fill"></i> Continuar → Datos Cliente y PDF
                 </a>
-                <a href="<?= $basePath ?>?module=cotizaciones&action=limpiar_borrador" class="btn-mod-del" onclick="return confirm('¿Seguro que deseas descartar esta cotización y empezar de cero?');" style="padding: 6px 12px; font-size: 12px; text-decoration: none; background: #fee2e2; color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; font-weight: 500;">
+                <a href="<?= $basePath ?>?module=cotizaciones&action=limpiar_borrador" class="btn-discard-draft" onclick="return confirm('¿Seguro que deseas descartar esta cotización y empezar de cero?');">
                     <i class="bi bi-trash-fill"></i> Descartar
                 </a>
                 <?php endif; ?>
@@ -40,31 +40,30 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         <?php
         $errorUrl = htmlspecialchars(urldecode($_GET['error'] ?? ''));
         if (!empty($errorUrl)): ?>
-        <div class="mod-alert mod-alert-err" style="background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; border-radius:10px; padding:12px 16px; margin-bottom:16px; display:flex; gap:10px; align-items:center;">
+        <div class="mod-alert mod-alert-err">
             <i class="bi bi-exclamation-triangle-fill"></i>
             <span>Error al guardar el ítem: <?= $errorUrl ?></span>
         </div>
         <?php endif; ?>
 
-
         <div class="cot-grid">
 
             <!-- ── Panel izquierdo: Buscar / Formulario ── -->
             <div class="panel-form">
-                <div class="mod-table-wrap" style="padding:24px; margin-bottom:20px; overflow:visible;">
-                    <h2 class="mod-title" style="font-size:18px; margin-bottom:16px;"><i class="bi bi-search"></i> Buscar Producto del Catálogo</h2>
+                <div class="mod-table-wrap p-24 mb-20 overflow-visible">
+                    <h2 class="mod-title mb-16"><i class="bi bi-search"></i> Buscar Producto del Catálogo</h2>
                     <div class="search-live">
-                        <input type="text" id="busquedaProducto" placeholder="Buscar por nombre..." class="mod-search-input" style="width:100%; border:1.5px solid #e2e8f0; border-radius:9px; padding:11px 14px; background:#f8fafc;"
+                        <input type="text" id="busquedaProducto" placeholder="Buscar por nombre..." class="mod-search-input cot-live-input"
                                value="<?= htmlspecialchars($busqueda) ?>">
                         <div id="listaProductos" class="lista-sugerencias"></div>
                     </div>
                 </div>
 
-                <div class="mod-table-wrap" style="padding:24px;">
-                    <h2 class="mod-title" style="font-size:18px; margin-bottom:16px;">
+                <div class="mod-table-wrap p-24">
+                    <h2 class="mod-title mb-16">
                         <i class="bi bi-pencil-square"></i>
                         <span id="formTitulo">Agregar Ítem</span>
-                        <span class="mod-badge badge-green" id="badgeAuto" style="display:none; margin-left:8px;">Del catálogo</span>
+                        <span class="mod-badge badge-green ml-8 form-hidden-action" id="badgeAuto">Del catálogo</span>
                     </h2>
 
                     <form method="POST" enctype="multipart/form-data" action="<?= $basePath ?>?module=cotizaciones&action=crear" id="formItem">
@@ -79,8 +78,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                 <i class="bi bi-percent"></i> Porcentajes de Ganancias (Calculadora Dinámica)
                                 <i class="bi bi-chevron-down" id="iconGanancias"></i>
                             </button>
-                            <div id="panelGanancias" class="ganancias-panel" style="display:none;">
-                                <div class="ganancias-aviso" style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:12px; color:#92400e;">
+                            <div id="panelGanancias" class="ganancias-panel form-hidden-action">
+                                <div class="ganancias-aviso">
                                     <i class="bi bi-info-circle-fill"></i>
                                     Completa el precio del proveedor y configura los porcentajes. Al finalizar, el <strong>valor de Estampillas</strong> se asignará automáticamente como <strong>Precio Unitario</strong> del producto en la cotización.
                                 </div>
@@ -109,16 +108,15 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                     </div>
                                 </div>
 
-                                <div id="calc-container" style="margin-top: 15px;"></div>
+                                <div id="calc-container" class="mt-16"></div>
 
                                 <!-- Resultado calculado -->
                                 <div class="ganancia-resultado">
-                                    <!-- Se eliminó Valor Estampillas -->
-                                    <div class="ganancia-res-row total-row" style="border-top:1px solid #d1fae5; padding-top:8px; margin-top:4px;">
+                                    <div class="ganancia-res-row total-row pt-8 mt-4 border-top-green">
                                         <span>💵 Valor Final con IVA para el Cliente:</span>
-                                        <strong id="resValorFinal" style="color:#059669; font-size:16px;">$0</strong>
+                                        <strong id="resValorFinal" class="res-final-value">$0</strong>
                                     </div>
-                                    <p style="font-size:10px; color:#6b7280; margin-top:4px;">* El valor de Estampillas se asigna automáticamente como Precio Unitario del ítem.</p>
+                                    <p class="res-hint-text">* El valor de Estampillas se asigna automáticamente como Precio Unitario del ítem.</p>
                                 </div>
                             </div>
                         </div>
@@ -158,7 +156,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             </div>
                             <div class="imo-form-group">
                                 <label>Precio Unitario (sin IVA) *
-                                    <span id="lblPrecioFuente" style="font-size:10px; color:#059669; font-weight:600;"></span>
+                                    <span id="lblPrecioFuente" class="price-source-lbl"></span>
                                 </label>
                                 <input type="number" name="precio" id="inpPrecio" min="0" step="0.01"
                                        value="<?= $producto['precio'] ?? '' ?>" required placeholder="0.00">
@@ -188,14 +186,13 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
                         <div class="imo-form-group">
                             <label>Descripción *</label>
-                            <textarea name="descripcion" id="inpDesc" style="padding:11px 14px; border:1.5px solid #e2e8f0; border-radius:9px; width:100%; height:100px; resize:vertical; outline:none;"
-                                      required maxlength="5000"><?= htmlspecialchars($producto['descripcion'] ?? '') ?></textarea>
+                            <textarea name="descripcion" id="inpDesc" required maxlength="5000"><?= htmlspecialchars($producto['descripcion'] ?? '') ?></textarea>
                         </div>
 
                         <div class="imo-form-group">
                             <label>Imagen del Producto</label>
                             <input type="file" name="foto" id="inpFoto" accept="image/*">
-                            <div id="previewFoto" style="margin-top:8px;"></div>
+                            <div id="previewFoto" class="mt-8"></div>
                         </div>
 
                         <!-- Preview IVA en tiempo real -->
@@ -205,7 +202,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             <div class="prev-row total-row"><span>Total unitario:</span> <strong id="prevTotal">$0</strong></div>
                         </div>
 
-                        <div class="imo-modal-footer" style="border-top:none; padding-top:0;">
+                        <div class="imo-modal-footer footer-plain">
                             <button type="button" class="imo-btn-cancel" onclick="limpiarFormulario()">
                                 <i class="bi bi-arrow-counterclockwise"></i> Limpiar
                             </button>
@@ -219,8 +216,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
             <!-- ── Panel derecho: Lista de ítems agregados ── -->
             <div class="panel-lista">
-                <div class="mod-table-wrap" style="padding:24px;">
-                    <h2 class="mod-title" style="font-size:18px; margin-bottom:16px;"><i class="bi bi-list-check"></i> Ítems de la Cotización</h2>
+                <div class="mod-table-wrap p-24">
+                    <h2 class="mod-title mb-16"><i class="bi bi-list-check"></i> Ítems de la Cotización</h2>
 
                     <?php if (empty($items)): ?>
                     <div class="mod-empty">
@@ -255,7 +252,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                     <td>
                                         <?php if (!empty($it['foto'])): ?>
                                         <img src="<?= $basePath ?>uploads/<?= htmlspecialchars($it['foto']) ?>"
-                                             style="height:32px;width:32px;object-fit:cover;border-radius:6px;margin-right:6px;vertical-align:middle;">
+                                             class="item-thumb-img">
                                         <?php endif; ?>
                                         <?= htmlspecialchars(mb_strimwidth($it['titulo'], 0, 40, '…')) ?>
                                     </td>
@@ -263,7 +260,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                     <td>$<?= number_format($pu, 0, ',', '.') ?></td>
                                     <td><?= $it['iva'] === 'si' ? $pct . '%' : 'No' ?></td>
                                     <td><strong>$<?= number_format($sub, 0, ',', '.') ?></strong></td>
-                                    <td style="font-size:11px;"><?= htmlspecialchars($it['tiempo_entrega'] ?? '') ?></td>
+                                    <td class="font-11"><?= htmlspecialchars($it['tiempo_entrega'] ?? '') ?></td>
                                     <td>
                                         <div class="mod-actions">
                                             <a href="<?= $basePath ?>?module=cotizaciones&action=editar_item&id=<?= $it['id'] ?>"
@@ -277,16 +274,16 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="4" style="text-align:right;"><strong>TOTAL ESTIMADO:</strong></td>
-                                    <td colspan="3"><strong class="total-highlight" style="color:#f59e0b; font-size:16px;">$<?= number_format($totalCot, 0, ',', '.') ?></strong></td>
+                                    <td colspan="4" class="text-right"><strong>TOTAL ESTIMADO:</strong></td>
+                                    <td colspan="3"><strong class="total-highlight">$<?= number_format($totalCot, 0, ',', '.') ?></strong></td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
 
                     <?php if ($totalItems > 0): ?>
-                    <div style="margin-top:24px; text-align:right;">
-                        <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary" style="text-decoration:none;">
+                    <div class="mt-24 text-right">
+                        <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary text-nodecor">
                             <i class="bi bi-arrow-right-circle-fill"></i> Continuar → Completar Datos del Cliente
                         </a>
                     </div>
@@ -299,85 +296,6 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         </div><!-- /.cot-grid -->
     </main>
 </div>
-
-<style>
-.cot-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-@media(max-width:900px){ .cot-grid { grid-template-columns: 1fr; } }
-.lista-sugerencias {
-    position: absolute; z-index: 200; width: 100%;
-    background: #ffffff; border: 1px solid var(--copper);
-    border-radius: 0 0 10px 10px; max-height: 280px; overflow-y: auto;
-    display: none;
-}
-.search-live { position: relative; z-index: 999; }
-.sugerencia-item {
-    padding: 10px 14px; cursor: pointer;
-    display: flex; align-items: center; gap: 10px;
-    border-bottom: 1px solid #e5e7eb;
-    transition: background .15s;
-}
-.sugerencia-item:hover { background: rgba(26,138,138,.2); }
-.sugerencia-item img { width:36px; height:36px; object-fit:cover; border-radius:6px; flex-shrink:0; }
-.sugerencia-nombre { font-size:13px; font-weight:500; }
-.sugerencia-precio { font-size:11px; color: var(--gilt); }
-.badge-auto {
-    font-size:10px; background: var(--copper);
-    color:#10757e; padding:2px 8px; border-radius:20px;
-    margin-left:8px; vertical-align:middle;
-}
-.preview-iva {
-    background: rgba(26,138,138,.1);
-    border: 1px solid #e5e7eb;
-    border-radius: 10px; padding: 12px 16px;
-    margin-bottom: 14px;
-}
-.prev-row { display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; color:#4b5563; }
-.total-row { border-top:1px solid #e5e7eb; padding-top:8px; margin-top:4px; color:#10757e; font-size:13px; }
-.total-highlight { color: var(--amber); font-size:15px; }
-.empty-state { text-align:center; padding:48px 20px; color:#9ca3af; }
-.empty-state i { font-size:48px; display:block; margin-bottom:12px; }
-
-/* Ganancias section */
-.ganancias-section { margin-bottom: 16px; }
-.ganancias-toggle {
-    width: 100%; display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 16px; background: linear-gradient(135deg, #064e3b, #059669);
-    color: #fff; border: none; border-radius: 10px; cursor: pointer;
-    font-size: 13px; font-weight: 600; letter-spacing: 0.3px;
-    transition: opacity .2s;
-}
-.ganancias-toggle:hover { opacity: .88; }
-.ganancias-panel {
-    background: #f0fdf4; border: 1px solid #6ee7b7;
-    border-radius: 0 0 10px 10px; padding: 16px;
-    margin-top: -4px;
-}
-.calc-etapa {
-    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
-    padding: 12px; margin-bottom: 12px;
-}
-.calc-etapa h4 { margin: 0 0 10px 0; font-size: 13px; color: #111827; display: flex; justify-content: space-between; border-bottom: 1px solid #f3f4f6; padding-bottom: 6px; }
-.calc-etapa h4 span { color: #059669; font-weight: bold; }
-.calc-op-row {
-    display: flex; gap: 8px; margin-bottom: 8px; align-items: center;
-}
-.calc-op-row select, .calc-op-row input {
-    border: 1px solid #d1d5db; border-radius: 6px; padding: 6px; font-size: 12px;
-}
-.btn-calc-add {
-    background: #e0f2fe; color: #0284c7; border: none; border-radius: 6px;
-    padding: 4px 8px; font-size: 11px; cursor: pointer; font-weight: 600;
-}
-.btn-calc-del { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px; }
-.ganancia-resultado {
-    background: #fff; border: 1px solid #6ee7b7; border-radius: 8px;
-    padding: 12px 16px; margin-top: 12px;
-}
-.ganancia-res-row {
-    display: flex; justify-content: space-between;
-    font-size: 12px; color: #374151; margin-bottom: 4px;
-}
-</style>
 
 <script>
 const BASE = '<?= $basePath ?>';

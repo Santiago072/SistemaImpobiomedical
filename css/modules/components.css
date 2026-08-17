@@ -1,7 +1,145 @@
 /* ── COMPONENTES UI (BOTONES, TARJETAS, TABLAS, MODALES, PAGINACIÓN, CALCULADORA) ── */
 /* ════════════════════════════════════════════════════════════
-   TARJETAS DASHBOARD
+   TARJETAS DASHBOARD / PANEL PRINCIPAL
 ════════════════════════════════════════════════════════════ */
+.badge-codigo {
+    display: inline-block;
+    background: linear-gradient(135deg, #10757e, #0a4f55);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-left: 10px;
+    vertical-align: middle;
+    box-shadow: 0 2px 4px rgba(16, 117, 126, 0.3);
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.kpi-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all .3s ease;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
+}
+
+.kpi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(16, 117, 126, 0.1);
+    border-color: rgba(16, 117, 126, 0.2);
+}
+
+.kpi-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #10757e, #20b2aa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 6px 15px rgba(16, 117, 126, 0.25);
+}
+
+.kpi-icon-alt {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 6px 15px rgba(245, 158, 11, 0.25);
+}
+
+.kpi-icon-green {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 6px 15px rgba(16, 185, 129, 0.25);
+}
+
+.kpi-icon-blue {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.25);
+}
+
+.kpi-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1f2937;
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.kpi-label {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 6px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.page-header-panel {
+    margin-bottom: 24px;
+}
+
+.quick-actions .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 20px;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+.action-card {
+    background: #ffffff;
+    border: 1px solid #f3f4f6;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.action-card:hover {
+    background: #ffffff;
+    border-color: #10757e;
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 20px rgba(16, 117, 126, 0.08);
+    color: #10757e;
+}
+
+.action-card i {
+    font-size: 32px;
+    color: #9ca3af;
+    transition: all .3s ease;
+}
+
+.action-card:hover i {
+    color: #10757e;
+    transform: scale(1.1);
+}
+
 .contenedor-tarjetas {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -1174,956 +1312,6 @@ td .estado-no-generado::before {
     margin-bottom: 10px;
 }
 
-
-
-
-/* Ticket Card Fixes (Tareas) */
-
-
-
-/* ------------------------------------------------------------
-   NEW LOGIN DESIGN (BIOMEDICAL)
------------------------------------------------------------- */
-.medical-grid-overlay {
-    position: fixed; left: 0;
-    inset: 0;
-    background-image: 
-        linear-gradient(rgba(16, 117, 126, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(16, 117, 126, 0.05) 1px, transparent 1px);
-    background-size: 30px 30px;
-    z-index: 1;
-    pointer-events: none;
-}
-
-.auth-container {
-    position: relative;
-    z-index: 10;
-    width: 100%;
-    max-width: 420px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.auth-card {
-    background: rgba(4, 14, 17, 0.65);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border-medium);
-    border-radius: 24px;
-    padding: 40px 30px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(16, 117, 126, 0.2);
-    position: relative;
-    overflow: hidden;
-    animation: fadeUp 0.8s ease-out;
-}
-
-
-
-.pulse-line-deco {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 60px;
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.heartbeat-path {
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 1000;
-    animation: drawHeartbeat 4s linear infinite;
-}
-
-@keyframes drawHeartbeat {
-    0% { stroke-dashoffset: 1000; }
-    50% { stroke-dashoffset: 0; }
-    100% { stroke-dashoffset: -1000; }
-}
-
-.auth-header {
-    text-align: center;
-    margin-bottom: 30px;
-    position: relative;
-    z-index: 2;
-}
-
-.logo-box {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 15px;
-    border-radius: 50%;
-    background: var(--white);
-    padding: 10px;
-    box-shadow: 0 0 20px rgba(45, 190, 203, 0.4);
-    border: 2px solid var(--copper);
-}
-
-.brand-logo {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.auth-title {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--white);
-    margin-bottom: 5px;
-}
-
-
-
-.auth-subtitle {
-    font-size: 13px;
-    color: var(--gilt);
-}
-
-
-
-.form-group-modern {
-    margin-bottom: 20px;
-}
-
-.form-group-modern label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--amber);
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-
-
-.input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.input-icon {
-    position: absolute;
-    left: 15px;
-    color: var(--gilt);
-    font-size: 16px;
-}
-
-
-
-.input-wrapper input {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 14px 15px 14px 45px;
-    border-radius: 12px;
-    color: var(--white);
-    font-size: 14px;
-    transition: all 0.3s;
-}
-
-
-
-.input-wrapper input:focus {
-    outline: none;
-    border-color: var(--amber);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 15px rgba(45, 190, 203, 0.2);
-}
-
-
-
-.password-toggle {
-    position: absolute;
-    right: 15px;
-    background: none;
-    border: none;
-    color: var(--gilt);
-    cursor: pointer;
-    font-size: 16px;
-}
-
-
-
-.btn-primary-modern {
-    width: 100%;
-    background: linear-gradient(135deg, var(--copper), var(--amber));
-    border: none;
-    padding: 15px;
-    border-radius: 12px;
-    color: var(--white);
-    font-size: 15px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 10px;
-    box-shadow: 0 4px 15px rgba(16, 117, 126, 0.4);
-}
-
-.btn-primary-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(45, 190, 203, 0.5);
-}
-
-.auth-footer {
-    margin-top: 25px;
-    text-align: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 20px;
-}
-
-
-
-.auth-footer p {
-    font-size: 12px;
-    color: var(--gilt);
-    margin: 5px 0;
-}
-
-
-
-.auth-footer .copyright {
-    font-size: 11px;
-    opacity: 0.7;
-}
-
-/* Modificamos los inputs autofill para mantener el estilo */
-input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
-input:-webkit-autofill:active{
-    -webkit-box-shadow: 0 0 0 30px var(--ember) inset !important;
-    -webkit-text-fill-color: var(--white) !important;
-}
-
-
-/* ------------------------------------------------------------
-   DISE�O SIMPLE LOGIN (PQRS / Modulo CRUD style)
------------------------------------------------------------- */
-body.login-simple {
-    background-color: #f4f7f6;
-    background-image: linear-gradient(135deg, #e0ebeb 0%, #f4f7f6 100%);
-    font-family: 'Inter', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    color: #333;
-}
-
-.login-container {
-    width: 100%;
-    max-width: 400px;
-    padding: 20px;
-}
-
-.login-box {
-    background: #ffffff;
-    padding: 40px 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(16, 117, 126, 0.08);
-    text-align: center;
-}
-
-.login-logo {
-    margin-bottom: 20px;
-}
-
-.login-logo img {
-    max-width: 220px;
-    height: auto;
-}
-
-.login-title {
-    font-size: 24px;
-    font-weight: 600;
-    color: #10757e; /* Teal oscuro */
-    margin: 0 0 5px 0;
-}
-
-.login-subtitle {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 25px;
-}
-
-.alert-error {
-    background: #fee2e2;
-    color: #b91c1c;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 14px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
-}
-
-.login-form {
-    text-align: left;
-}
-
-.input-group {
-    margin-bottom: 18px;
-}
-
-.input-group label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: #444;
-    margin-bottom: 6px;
-}
-
-.input-field {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.input-field i:not(#eyeIcon) {
-    position: absolute;
-    left: 14px;
-    color: #9fa5a9;
-}
-
-.input-field input {
-    width: 100%;
-    padding: 12px 14px 12px 40px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.input-field input:focus {
-    border-color: #10757e;
-    box-shadow: 0 0 0 3px rgba(16, 117, 126, 0.1);
-}
-
-.btn-eye {
-    position: absolute;
-    right: 12px;
-    background: none;
-    border: none;
-    color: #9fa5a9;
-    cursor: pointer;
-    padding: 0;
-}
-
-.btn-submit {
-    width: 100%;
-    background-color: #10757e;
-    color: #fff;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: background-color 0.2s;
-}
-
-.btn-submit:hover {
-    background-color: #0d6067;
-}
-
-.login-footer {
-    margin-top: 25px;
-    font-size: 12px;
-    color: #888;
-}
-
-.btn-submit.loading span {
-    display: none;
-}
-.btn-submit.loading::after {
-    content: "Verificando...";
-}
-/* ------------------------------------------------------------
-   DISE�O SPLIT (REFERENCIA VISUAL CON CARDIO)
------------------------------------------------------------- */
-body.login-split {
-    background: #0e646d; /* Fondo principal Teal oscuro */
-    font-family: 'Poppins', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    padding: 20px;
-}
-
-.split-container {
-    width: 100%;
-    max-width: 950px;
-}
-
-.split-card {
-    background: #ffffff;
-    border-radius: 20px;
-    display: flex;
-    overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    min-height: 550px;
-}
-
-/* Panel Izquierdo */
-.split-left {
-    flex: 1;
-    background: #10757e; /* Teal brillante */
-    position: relative;
-    padding: 60px 40px;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    color: #ffffff;
-}
-
-/* C�rculos decorativos */
-.circle {
-    position: absolute;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-}
-
-.circle-1 {
-    width: 350px;
-    height: 350px;
-    top: -100px;
-    left: -100px;
-}
-
-.circle-2 {
-    width: 250px;
-    height: 250px;
-    bottom: -50px;
-    right: -80px;
-    background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.1) 100%);
-}
-
-.circle-3 {
-    width: 150px;
-    height: 150px;
-    bottom: 40%;
-    left: -50px;
-}
-
-/* Animaci�n Cardio */
-.cardio-animation {
-    position: absolute;
-    top: 60%;
-    left: 0;
-    width: 100%;
-    height: 100px;
-    transform: translateY(-50%);
-    opacity: 0.35;
-    pointer-events: none;
-    z-index: 1;
-}
-
-.cardio-path {
-    stroke-dasharray: 800;
-    stroke-dashoffset: 800;
-    animation: pulseCardio 3s linear infinite;
-}
-
-@keyframes pulseCardio {
-    0% { stroke-dashoffset: 800; }
-    40% { stroke-dashoffset: 0; }
-    100% { stroke-dashoffset: -800; }
-}
-
-.split-left-content {
-    position: relative;
-    z-index: 2;
-}
-
-.split-left-content h2 {
-    font-size: 32px;
-    font-weight: 700;
-    margin: 0 0 5px 0;
-    letter-spacing: 2px;
-}
-
-.split-left-content h3 {
-    font-size: 14px;
-    font-weight: 500;
-    margin: 0 0 25px 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.85;
-}
-
-.split-left-content p {
-    font-size: 13px;
-    line-height: 1.8;
-    opacity: 0.75;
-    max-width: 85%;
-}
-
-/* Panel Derecho */
-.split-right {
-    flex: 1;
-    padding: 60px 50px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background: #ffffff;
-}
-
-.login-header {
-    margin-bottom: 30px;
-}
-
-.login-header img {
-    max-width: 200px;
-    margin-bottom: 25px;
-}
-
-.login-header h2 {
-    font-size: 28px;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 5px 0;
-}
-
-.login-header p {
-    font-size: 13px;
-    color: #888;
-    margin: 0;
-}
-
-.split-alert {
-    background: #fee2e2;
-    color: #b91c1c;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.input-modern {
-    position: relative;
-    margin-bottom: 20px;
-    background: #f7f9fa;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-}
-
-.input-modern i {
-    padding-left: 20px;
-    color: #555;
-    font-size: 18px;
-}
-
-.input-modern input {
-    width: 100%;
-    padding: 16px 15px;
-    background: transparent;
-    border: none;
-    outline: none;
-    font-size: 14px;
-    color: #333;
-    font-family: 'Poppins', sans-serif;
-}
-
-.input-modern input::placeholder {
-    color: #999;
-}
-
-.eye-toggle {
-    position: absolute;
-    right: 20px;
-    background: none;
-    border: none;
-    font-size: 12px;
-    font-weight: 600;
-    color: #10757e;
-    cursor: pointer;
-    font-family: 'Poppins', sans-serif;
-}
-
-.form-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    font-size: 12px;
-}
-
-.remember-me {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #666;
-    cursor: pointer;
-}
-
-.forgot-pwd {
-    color: #10757e;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.btn-split {
-    width: 100%;
-    background: #0f626a;
-    color: #fff;
-    border: none;
-    padding: 16px;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
-    font-family: 'Poppins', sans-serif;
-}
-
-.btn-split:hover {
-    background: #0b4c52;
-    transform: translateY(-2px);
-}
-
-.btn-split.loading span {
-    display: none;
-}
-.btn-split.loading::after {
-    content: "Validando...";
-}
-
-@media (max-width: 850px) {
-    .split-card {
-        flex-direction: column;
-    }
-    .split-left {
-        padding: 40px 30px;
-    }
-    .split-right {
-        padding: 40px 30px;
-    }
-    .circle-1 {
-        width: 250px;
-        height: 250px;
-    }
-}
-
-/* ------------------------------------------------------------
-   DISE�O LOGIN PREMIUM (Animaci�n ECG & Glassmorphism)
------------------------------------------------------------- */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
-
-body.login-premium {
-    margin: 0;
-    padding: 0;
-    font-family: 'Outfit', sans-serif;
-    background: radial-gradient(circle at top right, #e2f1f2 0%, #f4f7f8 100%);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.premium-wrapper {
-    width: 100%;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.premium-card {
-    background: #ffffff;
-    width: 100%;
-    max-width: 1000px;
-    min-height: 600px;
-    border-radius: 24px;
-    box-shadow: 0 25px 50px -12px rgba(16, 117, 126, 0.25);
-    display: flex;
-    overflow: hidden;
-    position: relative;
-}
-
-/* -- LADO IZQUIERDO: BRANDING & ECG -- */
-.premium-brand {
-    width: 45%;
-    background: linear-gradient(135deg, #10757e 0%, #0a4f55 100%);
-    position: relative;
-    padding: 50px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-    color: #ffffff;
-}
-
-.brand-content {
-    position: relative;
-    z-index: 10;
-}
-
-.brand-content h2 {
-    font-size: 32px;
-    font-weight: 700;
-    margin: 0 0 15px 0;
-    letter-spacing: 1px;
-}
-
-.brand-content p {
-    font-size: 15px;
-    line-height: 1.6;
-    opacity: 0.85;
-    margin: 0;
-}
-
-/* Animaci�n de Latido (Cardio/ECG) */
-.ecg-container {
-    position: absolute;
-    bottom: 10%;
-    left: 0;
-    width: 100%;
-    height: 150px;
-    z-index: 5;
-    opacity: 0.4;
-}
-
-.ecg-line {
-    width: 100%;
-    height: 100%;
-    stroke: #2bebfb; /* Azul brillante (Teal Light) */
-    stroke-width: 2;
-    fill: none;
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 1000;
-    animation: dash 4s linear infinite;
-    filter: drop-shadow(0 0 8px rgba(43,235,251,0.8));
-}
-
-@keyframes dash {
-    0% { stroke-dashoffset: 1000; }
-    100% { stroke-dashoffset: -1000; }
-}
-
-.brand-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(circle at bottom left, rgba(43,235,251,0.1) 0%, transparent 60%);
-    z-index: 1;
-}
-
-/* -- LADO DERECHO: FORMULARIO -- */
-.premium-form-section {
-    width: 55%;
-    padding: 60px 80px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background: #ffffff;
-}
-
-.form-header {
-    margin-bottom: 40px;
-    text-align: center;
-}
-
-.logo-img {
-    max-height: 70px;
-    margin-bottom: 25px;
-    object-fit: contain;
-}
-
-.form-header h3 {
-    font-size: 24px;
-    color: #1f2937;
-    margin: 0 0 8px 0;
-    font-weight: 600;
-}
-
-.form-header p {
-    color: #6b7280;
-    font-size: 14px;
-    margin: 0;
-}
-
-/* Alertas de error */
-.error-alert {
-    background: #fef2f2;
-    border-left: 4px solid #ef4444;
-    color: #b91c1c;
-    padding: 12px 16px;
-    border-radius: 0 8px 8px 0;
-    font-size: 13px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* Campos de Formulario */
-.premium-form .input-group {
-    margin-bottom: 22px;
-}
-
-.premium-form label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: #4b5563;
-    margin-bottom: 8px;
-}
-
-.input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-}
-
-.input-wrapper:focus-within {
-    border-color: #10757e;
-    background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(16,117,126,0.1);
-}
-
-.input-wrapper i:not(#eyeIcon) {
-    padding-left: 16px;
-    color: #9ca3af;
-    font-size: 18px;
-}
-
-.input-wrapper input {
-    width: 100%;
-    padding: 14px 16px;
-    background: transparent;
-    border: none;
-    outline: none;
-    font-size: 14px;
-    color: #1f2937;
-    font-family: 'Outfit', sans-serif;
-}
-
-.eye-toggle {
-    position: absolute;
-    right: 16px;
-    background: none;
-    border: none;
-    color: #9ca3af;
-    cursor: pointer;
-    font-size: 18px;
-    transition: color 0.3s;
-}
-
-.eye-toggle:hover {
-    color: #10757e;
-}
-
-/* Opciones (Recordarme / Olvid�) */
-.form-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 32px;
-    font-size: 13px;
-}
-
-.remember-me {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #4b5563;
-    cursor: pointer;
-}
-
-.forgot-link {
-    color: #10757e;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s;
-}
-
-.forgot-link:hover {
-    color: #0a4f55;
-}
-
-/* Bot�n Principal */
-.btn-primary {
-    width: 100%;
-    background: #10757e;
-    color: #ffffff;
-    border: none;
-    padding: 16px;
-    border-radius: 12px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-    font-family: 'Outfit', sans-serif;
-}
-
-.btn-primary:hover {
-    background: #0a4f55;
-    transform: translateY(-1px);
-    box-shadow: 0 10px 20px -10px rgba(16,117,126,0.5);
-}
-
-.btn-primary i {
-    font-size: 18px;
-    transition: transform 0.3s ease;
-}
-
-.btn-primary:hover i {
-    transform: translateX(4px);
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-    .premium-card {
-        flex-direction: column;
-        max-width: 500px;
-    }
-    .premium-brand {
-        width: 100%;
-        padding: 40px;
-        min-height: 200px;
-    }
-    .premium-form-section {
-        width: 100%;
-        padding: 40px;
-    }
-    .ecg-container {
-        height: 100px;
-        bottom: 0;
-    }
-}
-/* Sobrescribir autofill para login-premium */
-body.login-premium input:-webkit-autofill,
-body.login-premium input:-webkit-autofill:hover, 
-body.login-premium input:-webkit-autofill:focus, 
-body.login-premium input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
-    -webkit-text-fill-color: #1f2937 !important;
-    border-radius: 12px;
-}
 /* ------------------------------------------------------------
    SOBRESCRITURAS FINALES DASHBOARD (IMPBIOMEDICAL CLEAN)
 ------------------------------------------------------------ */
@@ -2650,8 +1838,9 @@ body:not(.login-premium) .control-label {
 .imo-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 .imo-form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; text-align: left; }
 .imo-form-group label { font-size: 12px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: .4px; }
-.imo-form-group input, .imo-form-group select { padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 14px; color: #1f2937; transition: border-color .2s, box-shadow .2s; outline: none; background: #fff; width: 100%; box-sizing: border-box; }
-.imo-form-group input:focus, .imo-form-group select:focus { border-color: #10757e; box-shadow: 0 0 0 3px rgba(16,117,126,.1); }
+.imo-form-group input, .imo-form-group select, .imo-form-group textarea { padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 14px; color: #1f2937; transition: border-color .2s, box-shadow .2s; outline: none; background: #fff; width: 100%; box-sizing: border-box; font-family: inherit; }
+.imo-form-group textarea { resize: vertical; min-height: 80px; }
+.imo-form-group input:focus, .imo-form-group select:focus, .imo-form-group textarea:focus { border-color: #10757e; box-shadow: 0 0 0 3px rgba(16,117,126,.1); }
 
 .imo-modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 28px 24px 28px; border-top: 1px solid #f1f5f9; margin-top: 8px; }
 .imo-btn-cancel { padding: 10px 20px; border: 1.5px solid #e5e7eb; background: #fff; color: #374151; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; }
@@ -2659,7 +1848,8 @@ body:not(.login-premium) .control-label {
 .imo-btn-save { padding: 10px 22px; background: #10757e; color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
 .imo-btn-save:hover { background: #0a4f55; }
 .imo-btn-danger { padding: 10px 22px; background: #dc2626; color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
-.imo-btn-danger:hover { background: #b91c1c; }
+.imo-modal-desc { color: #4b5563; }
+.form-inline-action { display: inline; }
 
 .mod-pag { display: flex; gap: 6px; justify-content: center; margin-top: 24px; }
 .mod-pag-link { padding: 8px 14px; border-radius: 8px; border: 1px solid #e5e7eb; color: #374151; text-decoration: none; font-size: 13px; transition: all .2s; }
@@ -2690,75 +1880,157 @@ body:not(.login-premium) .control-label {
 .mod-btn-del:hover { background: #dc2626; color: #fff; }
 
 
-/* -- Tarjetas Vac�as (Empty States) ----------------------- */
+/* -- Categorias y Productos (Catálogo) ----------------------- */
+.header-actions-wrap { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-pdf-export { background: #ef4444; border: none; text-decoration: none; }
+.btn-pdf-export:hover { background: #dc2626; color: #fff; }
+.categories-filter-bar { margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+.mod-btn-category { padding: 7px 14px; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 20px; font-size: 13px; font-weight: 600; color: #475569; text-decoration: none; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
+.mod-btn-category:hover { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+.mod-btn-category.active { background: #10757e; border-color: #10757e; color: #fff; box-shadow: 0 2px 4px rgba(16,117,126,.2); }
+.cat-count { font-size: 11px; opacity: 0.8; }
+
+.mod-alert-warn { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
+.prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+.prod-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden; transition: transform .2s, box-shadow .2s; }
+.prod-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,.07); }
+.prod-img { width: 100%; height: 160px; object-fit: contain; background: #fff; padding: 10px; }
+.prod-icon-fallback { width: 100%; height: 160px; display: flex; align-items: center; justify-content: center; background: #f8fafc; font-size: 48px; color: #cbd5e1; }
+.prod-price { font-size: 20px; font-weight: 800; color: #10757e; margin-bottom: 4px; }
+.prod-name { font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 8px; line-height: 1.4; }
+.prod-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.prod-meta-spacing { margin-bottom: 8px; }
+.prod-tag { font-size: 11px; padding: 3px 9px; border-radius: 12px; background: #f1f5f9; color: #475569; font-weight: 600; }
+.tag-code { background: #e0f2fe; color: #0284c7; }
+.tag-inactive { background: #fee2e2; color: #991b1b; }
+.tag-iva { background: #dcfce7; color: #166534; }
+.tag-noiva { background: #fee2e2; color: #991b1b; }
+.prod-actions { display: flex; gap: 6px; }
+.prod-edit-layout { display: grid; grid-template-columns: 1fr 200px; gap: 20px; }
+.prod-edit-left { display: flex; flex-direction: column; }
+.prod-edit-right { display: flex; flex-direction: column; gap: 8px; }
+.prod-label-upload { font-size: 12px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: .4px; }
+.prod-file-input { margin-top: 8px; font-size: 13px; }
+.prod-file-hint { color: #9ca3af; font-size: 12px; }
+.prod-preview-box { width: 100%; aspect-ratio: 1; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-size: 32px; overflow: hidden; }
+.prod-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+.prod-preview-box span { font-size: 12px; margin-top: 6px; }
+
+/* -- Tarjetas Vacías (Empty States) ----------------------- */
 .mod-empty-card { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px; padding: 60px; text-align: center; color: #94a3b8; grid-column: 1 / -1; width: 100%; margin: 20px 0; }
 .mod-empty-card i { font-size: 40px; display: block; margin-bottom: 12px; }
 
+/* -- Usuarios ----------------------- */
+.usr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+.usr-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; text-align: center; position: relative; transition: transform .2s, box-shadow .2s; }
+.usr-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,.07); }
+.usr-status { position: absolute; top: 16px; right: 16px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; display: flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; }
+.status-on { background: #dcfce7; color: #166534; }
+.status-on i { font-size: 7px; color: #16a34a; }
+.status-off { background: #fee2e2; color: #991b1b; }
+.status-off i { font-size: 7px; color: #dc2626; }
+.usr-avatar { font-size: 52px; color: #10757e; margin: 10px 0 12px; }
+.usr-name { font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+.usr-cargo { font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px; }
+.usr-user { font-size: 13px; color: #334155; margin-bottom: 4px; }
+.usr-email { font-size: 12px; color: #64748b; margin-bottom: 16px; word-break: break-all; }
+.usr-actions { display: flex; gap: 8px; justify-content: center; border-top: 1px solid #f1f5f9; padding-top: 14px; margin-top: auto; }
 
-/* ════════════════════════════════════════
-   RESPONSIVE GENERAL — Sistema Impobiomedical
-   Breakpoints: 1200px | 900px | 768px | 480px
-════════════════════════════════════════ */
-
-/* ── 1200px: Sidebar compacto ── */
-@media (max-width: 1200px) {
-    .menu-lateral { width: 200px; }
-    .contenido-principal { margin-left: 200px; }
-    .panel-flotante { left: 200px; }
-    .contenedor-tarjetas { grid-template-columns: repeat(2, 1fr); }
+.btn-secondary-custom {
+    background: #6b7280;
+    border: none;
 }
 
-/* ── 900px: Layout de columna única ── */
-@media (max-width: 900px) {
-    .menu-lateral { width: 220px; margin-left: -220px; transition: margin-left 0.3s ease; }
-    .menu-lateral.visible { margin-left: 0; }
-    .contenido-principal { margin-left: 0 !important; padding: 20px 16px; }
-    .panel-flotante { left: 0; width: 100%; border-radius: 0; }
-    .panel-dos-columnas { grid-template-columns: 1fr; }
-    .contenedor-tarjetas { grid-template-columns: repeat(2, 1fr); }
-    .grupo-fila { grid-template-columns: 1fr 1fr; }
-    .mod-header { flex-wrap: wrap; gap: 12px; }
-    .imo-form-row { grid-template-columns: 1fr; }
-    .mod-table th, .mod-table td { padding: 10px 12px; font-size: 12.5px; }
+.text-center { text-align: center; }
+.col-check { width: 40px; }
+.col-check input[type="checkbox"], .check-orden { transform: scale(1.25); cursor: pointer; }
+.form-hidden-action { display: none; }
+.badge-gold { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+
+/* Utilitarios comunes para vistas */
+.align-center { align-items: center; }
+.mb-16 { margin-bottom: 16px; }
+.mb-14 { margin-bottom: 14px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-10 { margin-bottom: 10px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-3 { margin-bottom: 3px; }
+.mt-24 { margin-top: 24px; }
+.mt-16 { margin-top: 16px; }
+.mt-8 { margin-top: 8px; }
+.pt-10 { padding-top: 10px; }
+.pt-8 { padding-top: 8px; }
+.p-24 { padding: 24px; }
+.m-0 { margin: 0; }
+.ml-8 { margin-left: 8px; }
+.border-top-teal { border-top: 1px solid rgba(45,190,203,.2); }
+.border-top-green { border-top: 1px solid #d1fae5; }
+.text-right { text-align: right; }
+.nowrap { white-space: nowrap; }
+.font-bold { font-weight: 700; }
+.font-600 { font-weight: 600; }
+.font-16 { font-size: 16px; }
+.font-12 { font-size: 12px; }
+.font-11 { font-size: 11px; }
+.item-title { font-size: 13px; }
+.item-desc { font-size: 11px; color: var(--text-soft); }
+.text-muted { font-size: 11px; color: var(--text-soft); }
+.text-muted-gray { color: #9ca3af; }
+.text-warning-gold { color: #f59e0b; }
+.text-total-wrap { font-weight: bold; color: var(--white); }
+.text-gray { color: #4b5563; }
+.text-green-dark { color: #059669; }
+.text-amber-dark { color: #d97706; }
+.text-blue-dark { color: #2563eb; }
+.text-purple-dark { color: #7c3aed; }
+.text-teal { color: #10757e; }
+.text-nodecor { text-decoration: none; }
+.bg-green-light { background: #f0fdf4 !important; }
+.bg-readonly { background: #f3f4f6 !important; color: #059669 !important; font-weight: 700 !important; }
+.required-star { color: #e03c3c; }
+.val-top { vertical-align: top !important; }
+.space-between { justify-content: space-between !important; }
+.max-w-900 { max-width: 900px; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.flex-col-gap20 { display: flex; flex-direction: column; gap: 20px; }
+.overflow-visible { overflow: visible !important; }
+.footer-plain { border-top: none !important; padding-top: 0 !important; }
+
+.section-divider {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 24px 0;
 }
 
-/* ── 768px: Móvil ── */
-@media (max-width: 768px) {
-    .menu-lateral { width: 260px; margin-left: -260px; }
-    .menu-lateral.visible { margin-left: 0; }
-    .contenido-principal { margin-left: 0 !important; padding: 16px; }
-    .contenedor-tarjetas { grid-template-columns: 1fr; }
-    .grupo-fila { grid-template-columns: 1fr; }
-    .card-wrapper { flex-direction: column; min-height: auto; }
-    .panel-left { display: none; }
-    .panel-right { padding: 32px 24px; }
-    .numero-principal { font-size: 36px; }
-    .formulario-contenedor { padding: 20px; }
-    .tabla-datos th, .tabla-datos td { padding: 10px 12px; font-size: 13px; }
-    .mod-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .mod-table { min-width: 520px; }
-    .mod-header h2 { font-size: 18px; }
-    .imo-modal-content { margin: 12px; max-height: calc(100vh - 24px); overflow-y: auto; }
-    .imo-form-row { grid-template-columns: 1fr; }
-    .mod-pag { flex-wrap: wrap; }
-    .mod-actions { flex-wrap: nowrap; }
+.mod-form-panel {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
 }
 
-/* ── 480px: Móvil pequeño ── */
-@media (max-width: 480px) {
-    body { font-size: 14px; }
-    .contenido-principal { padding: 12px; }
-    .panel-right { padding: 24px 16px; }
-    .formulario-contenedor { padding: 16px; }
-    .tabla-datos th, .tabla-datos td { padding: 8px 10px; font-size: 12px; }
-    .contenedor-tarjetas { grid-template-columns: 1fr; gap: 12px; }
-    .grupo-fila { grid-template-columns: 1fr; }
-    .mod-header { flex-direction: column; align-items: flex-start; }
-    .mod-header .mod-header-actions { width: 100%; }
-    .mod-btn-new { width: 100%; justify-content: center; }
-    .mod-search-bar { width: 100%; }
-    .mod-table { min-width: 420px; }
-    .imo-modal-content { border-radius: 12px; }
+.grid-form-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.bank-details-wrap {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.img-full-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mod-pag-dots {
+    padding: 0 8px;
+    color: #555;
+    align-self: center;
 }
 
 

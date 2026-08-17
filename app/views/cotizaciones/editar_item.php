@@ -24,7 +24,7 @@ include dirname(__DIR__) . '/layout/menu.php';
         <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($mensajeError) ?></div>
         <?php endif; ?>
 
-        <div class="mod-form-panel" style="max-width:900px; margin:0 auto; padding:24px;">
+        <div class="mod-form-panel p-24 max-w-900 mx-auto">
             <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=editar_item&id=<?= intval($datos['id']) ?>" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                 <input type="hidden" name="item_id" value="<?= intval($datos['id']) ?>">
@@ -35,7 +35,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <input type="hidden" name="estampillas" id="hdnEstampillas" value="<?= htmlspecialchars($datos['estampillas'] ?? 0) ?>">
                 <input type="hidden" name="calc_ops" id="hdnCalcOps" value="<?= htmlspecialchars($datos['calc_ops'] ?? '{}') ?>">
 
-                <div style="display:flex; flex-direction:column; gap:20px; margin-bottom:20px;">
+                <div class="flex-col-gap20 mb-20">
                     <!-- Columna Única -->
                     <div>
                         <div class="imo-form-group">
@@ -58,112 +58,101 @@ include dirname(__DIR__) . '/layout/menu.php';
                             </div>
                             <div class="imo-form-group">
                                 <label>Código del Producto</label>
-                                <input type="text" name="codigo_producto" value="<?= htmlspecialchars($datos['codigo_producto'] ?? '') ?>" maxlength="60">
+                                <input type="text" name="codigo_producto" value="<?= htmlspecialchars($datos['codigo_producto'] ?? '') ?>" maxlength="60" placeholder="Ej: MQ-001">
                             </div>
                         </div>
+
                         <div class="imo-form-group">
                             <label>Descripción *</label>
-                            <textarea name="descripcion" required maxlength="5000" rows="3" style="padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:14px;resize:vertical;outline:none;width:100%;"><?= htmlspecialchars($datos['descripcion']) ?></textarea>
+                            <textarea name="descripcion" required maxlength="5000"><?= htmlspecialchars($datos['descripcion']) ?></textarea>
                         </div>
+
                         <div class="imo-form-row">
                             <div class="imo-form-group">
                                 <label>Cantidad *</label>
-                                <input type="number" name="cantidad" value="<?= intval($datos['cantidad']) ?>" required min="1">
-                            </div>
-                            <div class="imo-form-group">
-                                <label>Precio Unitario *</label>
-                                <input type="number" name="precio" id="inpPrecio"
-                                       value="<?= floatval($datos['precio']) ?>" required min="0" step="0.01">
+                                <input type="number" name="cantidad" id="inpCantidad" value="<?= intval($datos['cantidad']) ?>" min="1" required>
                             </div>
                             <div class="imo-form-group">
                                 <label>Tiempo de Entrega</label>
-                                <input type="text" name="tiempo_entrega" value="<?= htmlspecialchars($datos['tiempo_entrega'] ?? '') ?>" maxlength="120">
+                                <input type="text" name="tiempo_entrega" value="<?= htmlspecialchars($datos['tiempo_entrega'] ?? '') ?>" placeholder="Ej: 5 A 15 DÍAS HÁBILES" maxlength="120">
                             </div>
                         </div>
+
+                        <!-- Fila de Precios del Proveedor -->
                         <div class="imo-form-row">
                             <div class="imo-form-group">
-                                <label>Aplicar IVA *</label>
-                                <select name="iva" id="inpIva" required onchange="toggleIva(this.value)">
+                                <label>Proveedor</label>
+                                <input type="text" name="proveedor" id="inpProveedor" value="<?= htmlspecialchars($datos['proveedor'] ?? '') ?>" placeholder="Ej: ALENO SAS">
+                            </div>
+                            <div class="imo-form-group">
+                                <label>Código Producto Proveedor</label>
+                                <input type="text" name="codigo_proveedor" id="inpCodigoProveedor" value="<?= htmlspecialchars($datos['codigo_proveedor'] ?? '') ?>" placeholder="Ej: PROV-001">
+                            </div>
+                        </div>
+
+                        <!-- Calculadora Dinámica de Ganancias -->
+                        <div class="imo-form-group">
+                            <label class="font-bold text-teal">
+                                <i class="bi bi-calculator"></i> Calculadora de Ganancias Dinámica
+                            </label>
+                            
+                            <div class="mb-12">
+                                <label class="font-12">Precio Proveedor Base ($) *</label>
+                                <input type="number" step="0.01" name="precio_proveedor" id="inpPrecioProveedor" 
+                                       value="<?= htmlspecialchars($datos['precio_proveedor'] ?? 0) ?>" 
+                                       oninput="calcularTotales()" placeholder="0.00">
+                            </div>
+
+                            <!-- Contenedor donde JS dibuja las etapas y operaciones -->
+                            <div id="calc-container"></div>
+                        </div>
+
+                        <!-- Precios Calculados Finales -->
+                        <div class="imo-form-row">
+                            <div class="imo-form-group">
+                                <label>Precio Unitario Final (Asignado Automáticamente de Estampillas) *</label>
+                                <input type="number" step="0.01" name="precio" id="inpPrecio" value="<?= htmlspecialchars($datos['precio']) ?>" required>
+                            </div>
+                            <div class="imo-form-group">
+                                <label>Valor Final con IVA (Referencia Cliente)</label>
+                                <input type="text" id="resValorFinal" value="$0" readonly class="bg-readonly">
+                            </div>
+                        </div>
+
+                        <div class="imo-form-row">
+                            <div class="imo-form-group">
+                                <label>¿Aplica IVA?</label>
+                                <select name="iva" id="inpIva" onchange="toggleIva(this.value)">
                                     <option value="si" <?= $datos['iva'] === 'si' ? 'selected' : '' ?>>Sí</option>
                                     <option value="no" <?= $datos['iva'] === 'no' ? 'selected' : '' ?>>No</option>
                                 </select>
                             </div>
-                            <div class="imo-form-group" id="groupPctIva">
-                                <label>% IVA *</label>
-                                <input type="number" name="porcentaje_iva" id="inpPctIva" value="<?= floatval($datos['porcentaje_iva'] ?? 19) ?>" min="0" max="100" step="0.01" oninput="calcularTotales()">
+                            <div class="imo-form-group" id="grupoIvaPct">
+                                <label>% IVA</label>
+                                <input type="number" name="porcentaje_iva" id="inpPctIva" min="0" max="100" step="0.01" value="<?= floatval($datos['porcentaje_iva'] ?? 19) ?>">
                             </div>
                         </div>
-                    </div>
 
-                    </div>
-
-                    <!-- Segunda Sección -->
-                    <div>
                         <div class="imo-form-group">
-                            <label>Foto del Producto</label>
+                            <label>Imagen del Producto</label>
                             <?php if (!empty($datos['foto'])): ?>
-                            <div style="margin-bottom:10px;">
-                                <img src="<?= $basePath ?>uploads/<?= htmlspecialchars($datos['foto']) ?>" style="height:60px; border-radius:8px;">
-                            </div>
+                                <div class="mb-8">
+                                    <img src="<?= $basePath ?>uploads/<?= htmlspecialchars($datos['foto']) ?>" class="item-preview-edit">
+                                </div>
                             <?php endif; ?>
                             <input type="file" name="foto" accept="image/*">
                         </div>
-
-                        <!-- Calculadora de Ganancias -->
-                        <div style="background:#ecfdf5; border:1px solid #10b981; border-radius:12px; margin-top:20px; overflow:hidden;">
-                            <div style="background:#10b981; color:#fff; padding:12px 20px; font-weight:600; font-size:14px;">
-                                Porcentajes Ganancias (Calculadora Dinámica)
-                            </div>
-                            <div style="padding:20px;">
-                                <div class="imo-form-row">
-                                    <div class="imo-form-group">
-                                        <label>Precio Proveedor Base ($)</label>
-                                        <input type="number" name="precio_proveedor" id="inpPrecioProveedor" min="0" step="0.01" value="<?= floatval($datos['precio_proveedor'] ?? 0) ?>" oninput="calcularTotales()">
-                                    </div>
-                                    <div class="imo-form-group">
-                                        <label>Proveedor</label>
-                                        <input type="text" name="proveedor" value="<?= htmlspecialchars($datos['proveedor'] ?? '') ?>" maxlength="100">
-                                    </div>
-                                </div>
-                                <div class="imo-form-row">
-                                    <div class="imo-form-group">
-                                        <label>Código Proveedor</label>
-                                        <input type="text" name="codigo_proveedor" value="<?= htmlspecialchars($datos['codigo_proveedor'] ?? '') ?>" maxlength="60">
-                                    </div>
-                                </div>
-
-                                <div id="calc-container" style="margin-top: 15px;"></div>
-
-                                <div class="ganancia-resultado" style="background:#fff; border:1.5px solid #d1fae5; border-radius:8px; padding:12px; margin-top:15px;">
-                                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                                        <span style="font-size:14px; font-weight:600; color:#065f46;">💰 Valor Final con IVA para el Cliente:</span>
-                                        <strong id="resValorFinal" style="color:#059669; font-size:18px;">$0</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
 
-                <div class="imo-modal-footer" style="padding-top:20px;">
-                    <a href="<?= $basePath ?>?module=cotizaciones&action=crear" class="imo-btn-cancel" style="text-decoration:none;"><i class="bi bi-x-lg"></i> Cancelar</a>
+                <div class="imo-modal-footer">
+                    <a href="<?= $basePath ?>?module=cotizaciones&action=crear" class="imo-btn-cancel text-nodecor"><i class="bi bi-x-lg"></i> Cancelar</a>
                     <button type="submit" class="btn-mod-primary"><i class="bi bi-save-fill"></i> Guardar Cambios</button>
                 </div>
             </form>
         </div>
     </main>
 </div>
-
-<style>
-.calc-etapa { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:12px; margin-bottom:12px; }
-.calc-etapa h4 { font-size:12px; font-weight:700; color:#374151; margin-bottom:10px; display:flex; justify-content:space-between; }
-.calc-etapa h4 span { color:#059669; }
-.calc-op-row { display:flex; gap:10px; margin-bottom:8px; }
-.calc-op-row select, .calc-op-row input { flex:1; border:1px solid #d1d5db; border-radius:6px; padding:6px 10px; font-size:12px; outline:none; }
-.btn-calc-del { background:#fee2e2; color:#ef4444; border:none; border-radius:6px; padding:0 10px; cursor:pointer; }
-.btn-calc-add { background:#e0f2fe; color:#0284c7; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:600; cursor:pointer; }
-</style>
 
 <script>
 // Estado inicial de la calculadora cargado desde la BD

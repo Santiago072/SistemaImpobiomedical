@@ -20,19 +20,19 @@ $totalValorFinal      = 0;
     <?php include dirname(__DIR__) . '/layout/topbar.php'; ?>
 
     <main class="contenido-principal">
-        <div class="mod-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="mod-header header-actions-wrap align-center space-between">
             <div>
                 <h1 class="mod-title"><i class="bi bi-file-earmark-spreadsheet-fill"></i> Hoja de Respaldo Interna</h1>
                 <p class="mod-sub">Cotización: <strong><?= htmlspecialchars($cotizacion['numero_cotizacion']) ?></strong> - Cliente: <strong><?= htmlspecialchars($cotizacion['nombre_cliente']) ?></strong></p>
             </div>
             <div>
-                <a href="<?= $basePath ?>?module=cotizaciones&action=consultar" class="btn-mod-primary" style="background:#6b7280; border:none;">
+                <a href="<?= $basePath ?>?module=cotizaciones&action=consultar" class="btn-mod-primary btn-secondary-custom">
                     <i class="bi bi-arrow-left"></i> Volver
                 </a>
             </div>
         </div>
 
-        <div class="mod-table-wrap" style="padding:24px;">
+        <div class="mod-table-wrap p-24">
             <div class="tabla-responsive">
                 <table class="mod-table" id="tablaRespaldo">
                     <thead>
@@ -40,12 +40,12 @@ $totalValorFinal      = 0;
                             <th>Producto</th>
                             <th>Cód. Proveedor</th>
                             <th>Proveedor</th>
-                            <th style="text-align:right;">Precio Proveedor</th>
-                            <th style="text-align:right;">Utilidad</th>
-                            <th style="text-align:right;">Flete</th>
-                            <th style="text-align:right;">Calibración</th>
-                            <th style="text-align:right;">Estampillas</th>
-                            <th style="text-align:right;">V/F con IVA</th>
+                            <th class="text-right">Precio Proveedor</th>
+                            <th class="text-right">Utilidad</th>
+                            <th class="text-right">Flete</th>
+                            <th class="text-right">Calibración</th>
+                            <th class="text-right">Estampillas</th>
+                            <th class="text-right">V/F con IVA</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -95,23 +95,23 @@ $totalValorFinal      = 0;
                             ?>
                             <tr>
                                 <td>
-                                    <strong style="font-size:13px;"><?= htmlspecialchars($it['titulo']) ?></strong>
+                                    <strong class="item-title"><?= htmlspecialchars($it['titulo']) ?></strong>
                                 </td>
                                 <td><?= htmlspecialchars($it['codigo_proveedor'] ?: '-') ?></td>
                                 <td><?= htmlspecialchars($it['proveedor'] ?: 'No especificado') ?></td>
 
                                 <!-- Precio Proveedor -->
-                                <td style="text-align:right; color:#4b5563;">
+                                <td class="text-right text-gray">
                                     <strong>$<?= number_format($ppUnit, 0, ',', '.') ?></strong>
                                 </td>
 
                                 <!-- Utilidad acumulada + operaciones -->
-                                <td style="text-align:right; color:#059669; font-weight:600; font-size:11px; vertical-align:top;">
-                                    <div style="margin-bottom:3px;">
+                                <td class="text-right text-green-dark font-600 font-11 val-top">
+                                    <div class="mb-3">
                                         <strong>$<?= number_format($acumUtil, 0, ',', '.') ?></strong>
                                     </div>
                                     <?php if (!empty($opsUtil)): ?>
-                                    <div style="background:#f0fdf4; border-left:2px solid #059669; padding:2px 4px; margin-top:2px; line-height:1.2;">
+                                    <div class="resp-ops-box resp-ops-green">
                                         <?php foreach ($opsUtil as $op):
                                             $tipo  = $op['tipo']  ?? 'suma';
                                             $valor = (float)($op['valor'] ?? 0);
@@ -130,12 +130,12 @@ $totalValorFinal      = 0;
                                 </td>
 
                                 <!-- Flete acumulado + operaciones -->
-                                <td style="text-align:right; color:#d97706; font-weight:600; font-size:11px; vertical-align:top;">
-                                    <div style="margin-bottom:3px;">
+                                <td class="text-right text-amber-dark font-600 font-11 val-top">
+                                    <div class="mb-3">
                                         <strong>$<?= number_format($acumFlete, 0, ',', '.') ?></strong>
                                     </div>
                                     <?php if (!empty($opsFlete)): ?>
-                                    <div style="background:#fef3c7; border-left:2px solid #d97706; padding:2px 4px; margin-top:2px; line-height:1.2;">
+                                    <div class="resp-ops-box resp-ops-amber">
                                         <?php foreach ($opsFlete as $op):
                                             $tipo  = $op['tipo']  ?? 'suma';
                                             $valor = (float)($op['valor'] ?? 0);
@@ -154,12 +154,12 @@ $totalValorFinal      = 0;
                                 </td>
 
                                 <!-- Calibración acumulada + operaciones -->
-                                <td style="text-align:right; color:#2563eb; font-weight:600; font-size:11px; vertical-align:top;">
-                                    <div style="margin-bottom:3px;">
+                                <td class="text-right text-blue-dark font-600 font-11 val-top">
+                                    <div class="mb-3">
                                         <strong>$<?= number_format($acumCalib, 0, ',', '.') ?></strong>
                                     </div>
                                     <?php if (!empty($opsCalib)): ?>
-                                    <div style="background:#dbeafe; border-left:2px solid #2563eb; padding:2px 4px; margin-top:2px; line-height:1.2;">
+                                    <div class="resp-ops-box resp-ops-blue">
                                         <?php foreach ($opsCalib as $op):
                                             $tipo  = $op['tipo']  ?? 'suma';
                                             $valor = (float)($op['valor'] ?? 0);
@@ -178,13 +178,13 @@ $totalValorFinal      = 0;
                                 </td>
 
                                 <!-- Estampillas acumuladas + operaciones -->
-                                <td style="text-align:right; color:#7c3aed; font-weight:600; font-size:11px; vertical-align:top;">
+                                <td class="text-right text-purple-dark font-600 font-11 val-top">
                                     <?php if ($acumEstamp > $acumCalib): ?>
-                                    <div style="margin-bottom:3px;">
+                                    <div class="mb-3">
                                         <strong>$<?= number_format($acumEstamp, 0, ',', '.') ?></strong>
                                     </div>
                                     <?php if (!empty($opsEstamp)): ?>
-                                    <div style="background:#ede9fe; border-left:2px solid #7c3aed; padding:2px 4px; margin-top:2px; line-height:1.2;">
+                                    <div class="resp-ops-box resp-ops-purple">
                                         <?php foreach ($opsEstamp as $op):
                                             $tipo  = $op['tipo']  ?? 'suma';
                                             $valor = (float)($op['valor'] ?? 0);
@@ -201,15 +201,15 @@ $totalValorFinal      = 0;
                                     </div>
                                     <?php endif; ?>
                                     <?php else: ?>
-                                    <span style="color:#9ca3af;">-</span>
+                                    <span class="text-muted-gray">-</span>
                                     <?php endif; ?>
                                 </td>
 
                                 <!-- V/F con IVA (valor unitario, sin multiplicar por cantidad) -->
-                                <td style="text-align:right; font-weight:bold; background:#f0fdf4; color:#059669; vertical-align:top;">
+                                <td class="text-right font-bold bg-green-light text-green-dark val-top">
                                     <div>$<?= number_format($valorFinalUnitario, 0, ',', '.') ?></div>
                                     <?php if ($ivaUnitario > 0): ?>
-                                    <div style="font-size:10px; font-weight:400; color:#6b7280; margin-top:2px;">
+                                    <div class="resp-iva-sub">
                                         IVA: $<?= number_format($ivaUnitario, 0, ',', '.') ?>
                                     </div>
                                     <?php endif; ?>
@@ -224,16 +224,5 @@ $totalValorFinal      = 0;
         </div>
     </main>
 </div>
-
-<style>
-@media print {
-    .layout-menu, .layout-topbar, .mod-actions, .btn-mod-primary { display: none !important; }
-    .layout-main { margin-left: 0 !important; padding: 0 !important; }
-    body { background: white; }
-    .mod-table-wrap { box-shadow: none; border: none; padding: 0 !important; }
-    .mod-header { margin-bottom: 20px; }
-    #tablaRespaldo th, #tablaRespaldo td { border: 1px solid #000; font-size: 11px; padding: 6px; }
-}
-</style>
 
 <?php include dirname(__DIR__) . '/layout/footer.php'; ?>

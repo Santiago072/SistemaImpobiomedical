@@ -36,20 +36,20 @@ include dirname(__DIR__) . '/layout/menu.php';
 
         <!-- Filtros de búsqueda estilo Panel -->
         <div class="mod-search-bar">
-            <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=consultar" class="mod-search-form" style="display:flex; gap:10px; align-items:center; flex:1; flex-wrap:wrap;">
+            <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=consultar" class="mod-search-form orden-search-form">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                 <span class="mod-search-icon"><i class="bi bi-funnel"></i></span>
-                <input type="date" name="fecha" value="<?= htmlspecialchars($busquedaFecha) ?>" class="mod-search-input" style="flex:0.5; min-width:140px; border: 1.5px solid #e2e8f0; border-radius: 9px; padding: 10px;" onchange="this.form.submit()">
-                <input type="text" name="nombre_cliente" value="<?= htmlspecialchars($busquedaCliente) ?>" placeholder="Buscar por cliente..." maxlength="60" class="mod-search-input" style="flex:1; min-width:180px;">
-                <input type="text" name="numero_cotizacion" value="<?= htmlspecialchars($busquedaNumero) ?>" placeholder="Número cotización..." maxlength="20" class="mod-search-input" style="flex:1; min-width:150px;">
-                <select name="estado_comercial" class="mod-search-input" style="flex:0.8; min-width:150px; border: 1.5px solid #e2e8f0; border-radius: 9px; padding: 10px;" onchange="this.form.submit()">
+                <input type="date" name="fecha" value="<?= htmlspecialchars($busquedaFecha) ?>" class="mod-search-input cot-filter-date" onchange="this.form.submit()">
+                <input type="text" name="nombre_cliente" value="<?= htmlspecialchars($busquedaCliente) ?>" placeholder="Buscar por cliente..." maxlength="60" class="mod-search-input cot-filter-client">
+                <input type="text" name="numero_cotizacion" value="<?= htmlspecialchars($busquedaNumero) ?>" placeholder="Número cotización..." maxlength="20" class="mod-search-input cot-filter-num">
+                <select name="estado_comercial" class="mod-search-input cot-filter-select" onchange="this.form.submit()">
                     <option value="">Todos los estados</option>
                     <option value="pendiente" <?= ($busquedaEstado ?? '') === 'pendiente' ? 'selected' : '' ?>>🟡 Pendientes</option>
                     <option value="concluida" <?= ($busquedaEstado ?? '') === 'concluida' ? 'selected' : '' ?>>🟢 Concluidas</option>
                     <option value="descartada" <?= ($busquedaEstado ?? '') === 'descartada' ? 'selected' : '' ?>>🔴 Descartadas</option>
                 </select>
                 
-                <button type="submit" class="imo-btn-save" style="padding: 10px 15px; border-radius: 9px;"><i class="bi bi-search"></i> Buscar</button>
+                <button type="submit" class="imo-btn-save orden-search-btn"><i class="bi bi-search"></i> Buscar</button>
                 <?php if (!empty($cotizaciones) || $busquedaFecha || $busquedaCliente || $busquedaNumero || !empty($busquedaEstado)): ?>
                 <a href="<?= $basePath ?>?module=cotizaciones&action=consultar&limpiar=1" class="mod-btn-clear" title="Limpiar filtros">
                     <i class="bi bi-x-lg"></i>
@@ -67,7 +67,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <th>Fecha</th>
                         <th>Cliente / Entidad</th>
                         <th>Ciudad</th>
-                        <th style="text-align:center;">Estado</th>
+                        <th class="text-center">Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -75,20 +75,14 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <?php if (!empty($cotizaciones)): ?>
                         <?php foreach ($cotizaciones as $cot): 
                             $estCom = $cot['estado_comercial'] ?? 'pendiente';
-                            $badgeClass = 'badge-yellow';
+                            $badgeClass = 'badge-gold';
                             $badgeLabel = 'Pendiente';
-                            $badgeColor = '#ca8a04';
-                            $badgeBg    = 'rgba(234,179,8,.15)';
                             if ($estCom === 'concluida') {
                                 $badgeClass = 'badge-green';
                                 $badgeLabel = 'Concluida';
-                                $badgeColor = '#16a34a';
-                                $badgeBg    = 'rgba(34,197,94,.15)';
                             } elseif ($estCom === 'descartada') {
                                 $badgeClass = 'badge-red';
                                 $badgeLabel = 'Descartada';
-                                $badgeColor = '#dc2626';
-                                $badgeBg    = 'rgba(239,68,68,.15)';
                             }
                         ?>
                         <tr>
@@ -96,18 +90,17 @@ include dirname(__DIR__) . '/layout/menu.php';
                             <td><?= htmlspecialchars($cot['fecha_creacion']) ?></td>
                             <td><?= htmlspecialchars($cot['cliente_nombre'] ?? '') ?></td>
                             <td><?= htmlspecialchars($cot['cliente_ciudad'] ?? '') ?></td>
-                            <td style="text-align:center;">
+                            <td class="text-center">
                                 <?php if (($_SESSION['rol'] ?? 'usuario') === 'admin'): ?>
-                                    <select class="estado-comercial-select" 
+                                    <select class="estado-comercial-select <?= $badgeClass ?>" 
                                             data-id="<?= (int)$cot['id'] ?>"
-                                            style="padding:4px 8px; border-radius:6px; font-weight:700; font-size:11.5px; border:1.5px solid <?= $badgeColor ?>; background:<?= $badgeBg ?>; color:<?= $badgeColor ?>; cursor:pointer;"
                                             onchange="cambiarEstadoComercial(this)">
                                         <option value="pendiente" <?= $estCom === 'pendiente' ? 'selected' : '' ?>>🟡 Pendiente</option>
                                         <option value="concluida" <?= $estCom === 'concluida' ? 'selected' : '' ?>>🟢 Concluida</option>
                                         <option value="descartada" <?= $estCom === 'descartada' ? 'selected' : '' ?>>🔴 Descartada</option>
                                     </select>
                                 <?php else: ?>
-                                    <span style="display:inline-block; padding:4px 10px; border-radius:6px; font-weight:700; font-size:11px; border:1px solid <?= $badgeColor ?>; background:<?= $badgeBg ?>; color:<?= $badgeColor ?>;">
+                                    <span class="mod-badge <?= $badgeClass ?>">
                                         <?= htmlspecialchars($badgeLabel) ?>
                                     </span>
                                 <?php endif; ?>
@@ -115,34 +108,32 @@ include dirname(__DIR__) . '/layout/menu.php';
                             <td>
                                 <div class="mod-actions">
                                     <?php if (!empty($cot['numero_cotizacion'])): ?>
-                                    <button type="button" class="mod-btn-edit" style="width:auto; padding:0 12px; font-weight:600;"
+                                    <button type="button" class="btn-orden-view"
                                         onclick="verPDF('<?= htmlspecialchars($cot['numero_cotizacion']) ?>', '<?= htmlspecialchars($cot['nombre_cliente'] ?? $cot['cliente_nombre'] ?? '') ?>')">
                                         <i class="bi bi-eye"></i> Ver PDF
                                     </button>
-                                    <button type="button" class="mod-btn-del" style="width:auto; padding:0 12px; font-weight:600; background:#3b82f6; color:white; border-color:#3b82f6;"
+                                    <button type="button" class="btn-respaldo-view"
                                         onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=ver_respaldo&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Hoja de Respaldo Proveedores">
                                         <i class="bi bi-file-earmark-spreadsheet"></i> Respaldo
                                     </button>
-                                    <button type="button" class="mod-btn-edit" style="width:auto; padding:0 12px; font-weight:600; background:rgba(234,179,8,.15); color:#ca8a04; border:1.5px solid #ca8a04; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; height:34px; font-size:12px; transition:all .2s;"
+                                    <button type="button" class="btn-modificar-cot"
                                         onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=modificar&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Crear nueva versión / Modificar Cotización">
                                         <i class="bi bi-pencil-square"></i> Modificar
                                     </button>
                                      <?php if ($estCom === 'pendiente'): ?>
-                                     <button type="button" class="btn-accion-orden" data-cotizacion="<?= htmlspecialchars($cot['numero_cotizacion']) ?>"
-                                         style="width:auto; padding:0 12px; font-weight:600; background:rgba(34,197,94,.15); color:#22c55e; border:1.5px solid #22c55e; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; height:34px; font-size:12px; transition:all .2s;"
+                                     <button type="button" class="btn-accion-orden btn-orden-cot-enabled" data-cotizacion="<?= htmlspecialchars($cot['numero_cotizacion']) ?>"
                                          onclick="window.location.href='<?= $basePath ?>?module=ordenes&action=seleccionar_items&cotizacion=<?= urlencode($cot['numero_cotizacion']) ?>'"
                                          title="Generar Orden de Compra">
                                          <i class="bi bi-cart-plus-fill"></i> Orden
                                      </button>
                                      <?php else: ?>
-                                     <button type="button" class="btn-accion-orden" data-cotizacion="<?= htmlspecialchars($cot['numero_cotizacion']) ?>" disabled
-                                         style="width:auto; padding:0 12px; font-weight:600; background:#f1f5f9; color:#94a3b8; border:1.5px solid #cbd5e1; border-radius:8px; cursor:not-allowed; display:inline-flex; align-items:center; gap:5px; height:34px; font-size:12px; opacity:0.7;"
+                                     <button type="button" class="btn-accion-orden btn-orden-cot-disabled" data-cotizacion="<?= htmlspecialchars($cot['numero_cotizacion']) ?>" disabled
                                          title="No disponible: la cotización está <?= htmlspecialchars($estCom) ?>">
                                          <i class="bi bi-cart-x"></i> Orden
                                      </button>
                                      <?php endif; ?>
                                     <?php if ($_SESSION['rol'] === 'admin'): ?>
-                                    <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=eliminar" style="display:inline;" onsubmit="return confirm('¿Eliminar la cotización <?= htmlspecialchars($cot['numero_cotizacion']) ?>?')">
+                                    <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=eliminar" class="form-inline-action" onsubmit="return confirm('¿Eliminar la cotización <?= htmlspecialchars($cot['numero_cotizacion']) ?>?')">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                                         <input type="hidden" name="id" value="<?= (int)$cot['id'] ?>">
                                         <button type="submit" class="mod-btn-del" title="Eliminar"><i class="bi bi-trash3-fill"></i></button>

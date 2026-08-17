@@ -18,10 +18,10 @@ $esDashboard = $esDashboard ?? false;
         <?php if ($esDashboard && $usuario): 
             $codigoMostrar = !empty($usuario['codigo']) ? $usuario['codigo'] : ($_SESSION['usuario_codigo'] ?? '');
         ?>
-        <h3 style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; color:#1f2937 !important;">
+        <h3 class="topbar-welcome-title">
             <span>¡Bienvenido, <?= htmlspecialchars($usuario['nombre']) ?>!</span>
             <?php if (!empty($codigoMostrar)): ?>
-            <span class="badge-codigo" style="display:inline-block; background:#10757e; color:#ffffff !important; font-size:11px; font-weight:700; padding:2px 10px; border-radius:20px; vertical-align:middle; line-height:18px; letter-spacing:0.5px; -webkit-text-fill-color:#ffffff !important;">
+            <span class="badge-codigo">
                 <?= htmlspecialchars($codigoMostrar) ?>
             </span>
             <?php endif; ?>
@@ -33,7 +33,7 @@ $esDashboard = $esDashboard ?? false;
         </span>
         <?php endif; ?>
     </div>
-    <div style="display:flex; align-items:center; gap:16px;">
+    <div class="header-actions-wrap align-center gap-16">
         <?php if ($esDashboard && $usuario): ?>
             <?php if ($usuario['rol'] === 'admin'): ?>
             <span class="rol-admin">

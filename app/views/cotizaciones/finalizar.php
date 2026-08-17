@@ -26,15 +26,15 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
             <!-- ── Formulario ── -->
             <div class="panel-form">
-                <div class="mod-table-wrap" style="padding:24px; overflow:visible;">
-                    <h2 class="mod-title" style="font-size:18px; margin-bottom:16px;"><i class="bi bi-building"></i> Datos del Cliente</h2>
+                <div class="mod-table-wrap p-24 overflow-visible">
+                    <h2 class="mod-title mb-16"><i class="bi bi-building"></i> Datos del Cliente</h2>
 
                     <!-- Buscar cliente del catálogo -->
-                    <div class="search-live" style="margin-bottom:16px;">
-                        <label style="font-size:12px;color:#4b5563;display:block;margin-bottom:4px;font-weight:600;text-transform:uppercase;">
+                    <div class="search-live mb-16">
+                        <label class="client-search-label">
                             Buscar cliente del catálogo (opcional)
                         </label>
-                        <input type="text" id="busquedaCliente" placeholder="Nombre o NIT..." class="mod-search-input" style="width:100%; border:1.5px solid #e2e8f0; border-radius:9px; padding:11px 14px; background:#f8fafc;">
+                        <input type="text" id="busquedaCliente" placeholder="Nombre o NIT..." class="mod-search-input cot-live-input">
                         <div id="listaClientes" class="lista-sugerencias"></div>
                     </div>
 
@@ -86,8 +86,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             </div>
                         </div>
 
-                        <hr style="border:none; border-top:1px solid #e5e7eb; margin:24px 0;">
-                        <h3 class="mod-title" style="font-size:16px; margin-bottom:16px;"><i class="bi bi-calendar3"></i> Condiciones</h3>
+                        <hr class="section-divider">
+                        <h3 class="mod-title font-16 mb-16"><i class="bi bi-calendar3"></i> Condiciones</h3>
 
                         <div class="imo-form-row">
                             <div class="imo-form-group">
@@ -105,8 +105,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             <input type="text" name="condiciones_pago" maxlength="100" value="<?= htmlspecialchars($cotizacion['condiciones_pago'] ?? 'CONTADO') ?>">
                         </div>
 
-                        <div class="imo-modal-footer" style="border-top:none; padding-top:0;">
-                            <a href="<?= $basePath ?>?module=cotizaciones&action=crear" class="imo-btn-cancel" style="text-decoration:none;">
+                        <div class="imo-modal-footer footer-plain">
+                            <a href="<?= $basePath ?>?module=cotizaciones&action=crear" class="imo-btn-cancel text-nodecor">
                                 <i class="bi bi-arrow-left"></i> Volver a ítems
                             </a>
                             <button type="submit" class="btn-mod-primary">
@@ -119,8 +119,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
             <!-- ── Resumen ── -->
             <div class="panel-lista">
-                <div class="mod-table-wrap" style="padding:24px;">
-                    <h2 class="mod-title" style="font-size:18px; margin-bottom:16px;"><i class="bi bi-receipt"></i> Resumen de Ítems</h2>
+                <div class="mod-table-wrap p-24">
+                    <h2 class="mod-title mb-16"><i class="bi bi-receipt"></i> Resumen de Ítems</h2>
                     <?php
                     $totalBase = 0; $totalIva = 0;
                     foreach ($items as $it) {
@@ -149,9 +149,9 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             <?php endforeach; ?>
                             </tbody>
                             <tfoot>
-                                <tr><td colspan="2" style="text-align:right;">Base</td><td>$<?= number_format($totalBase, 0, ',', '.') ?></td></tr>
-                                <tr><td colspan="2" style="text-align:right;">IVA</td><td>$<?= number_format($totalIva, 0, ',', '.') ?></td></tr>
-                                <tr style="font-weight:700;color:#f59e0b;"><td colspan="2" style="text-align:right;">TOTAL</td><td style="font-size:16px;">$<?= number_format($granTotal, 0, ',', '.') ?></td></tr>
+                                <tr><td colspan="2" class="text-right">Base</td><td>$<?= number_format($totalBase, 0, ',', '.') ?></td></tr>
+                                <tr><td colspan="2" class="text-right">IVA</td><td>$<?= number_format($totalIva, 0, ',', '.') ?></td></tr>
+                                <tr class="total-row-highlight"><td colspan="2" class="text-right">TOTAL</td><td class="font-16">$<?= number_format($granTotal, 0, ',', '.') ?></td></tr>
                             </tfoot>
                         </table>
                     </div>
@@ -161,22 +161,6 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         </div>
     </main>
 </div>
-
-<style>
-.lista-sugerencias {
-    position: absolute; z-index: 999; width: 100%;
-    background: #ffffff; border: 1px solid var(--copper);
-    border-radius: 0 0 10px 10px; max-height: 280px; overflow-y: auto;
-    display: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-}
-.search-live { position: relative; z-index: 999; }
-.sugerencia-item {
-    padding: 10px 14px; cursor: pointer; color: #1f2937;
-    border-bottom: 1px solid #e5e7eb;
-    transition: background .15s; font-size:13px;
-}
-.sugerencia-item:hover { background: rgba(26,138,138,.1); }
-</style>
 
 <script>
 const BASE = '<?= $basePath ?>';

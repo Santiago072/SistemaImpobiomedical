@@ -62,7 +62,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <i class="bi bi-person-circle"></i>
                 </div>
                 <div class="usr-name"><?= htmlspecialchars($u['nombre']) ?></div>
-                <div style="font-size:12px; color:#64748b; margin-bottom:6px; font-weight:600;">
+                <div class="usr-cargo">
                     <?= htmlspecialchars($u['cargo'] ?? 'Sin cargo') ?>
                 </div>
                 <div class="usr-role">
@@ -123,11 +123,11 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
             <div class="imo-form-row">
                 <div class="imo-form-group">
-                    <label>Correo Electrónico <span style="font-size:11px;color:#64748b;font-weight:400">(opcional)</span></label>
+                    <label>Correo Electrónico <span class="label-optional-hint">(opcional)</span></label>
                     <input type="email" name="correo" maxlength="60" placeholder="juan@empresa.com">
                 </div>
                 <div class="imo-form-group">
-                    <label>Teléfono <span style="font-size:11px;color:#64748b;font-weight:400">(opcional)</span></label>
+                    <label>Teléfono <span class="label-optional-hint">(opcional)</span></label>
                     <input type="text" name="telefono" maxlength="15" placeholder="3001234567">
                 </div>
             </div>
@@ -146,10 +146,10 @@ include dirname(__DIR__) . '/layout/menu.php';
                 </div>
             </div>
             <div class="imo-form-group">
-                <label>Contraseña <span style="font-size:11px;color:#64748b;font-weight:400">(opcional - por defecto usa el documento)</span></label>
-                <div style="position:relative; display:flex; align-items:center;">
-                    <input type="password" id="c_password" name="password" minlength="6" maxlength="30" placeholder="••••••••" style="padding-right:40px;">
-                    <button type="button" onclick="togglePassVisibility('c_password', 'c_eyeIcon')" style="position:absolute; right:10px; background:none; border:none; color:#64748b; cursor:pointer; font-size:16px; padding:4px;" aria-label="Mostrar/Ocultar contraseña">
+                <label>Contraseña <span class="label-optional-hint">(opcional - por defecto usa el documento)</span></label>
+                <div class="password-input-wrap">
+                    <input type="password" id="c_password" name="password" minlength="6" maxlength="30" placeholder="••••••••">
+                    <button type="button" onclick="togglePassVisibility('c_password', 'c_eyeIcon')" class="password-toggle-btn" aria-label="Mostrar/Ocultar contraseña">
                         <i class="bi bi-eye-slash" id="c_eyeIcon"></i>
                     </button>
                 </div>
@@ -187,11 +187,11 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
             <div class="imo-form-row">
                 <div class="imo-form-group">
-                    <label>Correo <span style="font-size:11px;color:#64748b;font-weight:400">(opcional)</span></label>
+                    <label>Correo <span class="label-optional-hint">(opcional)</span></label>
                     <input type="email" id="e_correo" name="correo" maxlength="60">
                 </div>
                 <div class="imo-form-group">
-                    <label>Teléfono <span style="font-size:11px;color:#64748b;font-weight:400">(opcional)</span></label>
+                    <label>Teléfono <span class="label-optional-hint">(opcional)</span></label>
                     <input type="text" id="e_telefono" name="telefono" maxlength="15">
                 </div>
             </div>
@@ -217,10 +217,10 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </select>
                 </div>
                 <div class="imo-form-group">
-                    <label>Nueva Contraseña <span style="font-size:11px;color:#64748b;font-weight:400">(opcional)</span></label>
-                    <div style="position:relative; display:flex; align-items:center;">
-                        <input type="password" id="e_password" name="password" minlength="6" maxlength="30" placeholder="••••••••" style="padding-right:40px;">
-                        <button type="button" onclick="togglePassVisibility('e_password', 'e_eyeIcon')" style="position:absolute; right:10px; background:none; border:none; color:#64748b; cursor:pointer; font-size:16px; padding:4px;" aria-label="Mostrar/Ocultar contraseña">
+                    <label>Nueva Contraseña <span class="label-optional-hint">(opcional)</span></label>
+                    <div class="password-input-wrap">
+                        <input type="password" id="e_password" name="password" minlength="6" maxlength="30" placeholder="••••••••">
+                        <button type="button" onclick="togglePassVisibility('e_password', 'e_eyeIcon')" class="password-toggle-btn" aria-label="Mostrar/Ocultar contraseña">
                             <i class="bi bi-eye-slash" id="e_eyeIcon"></i>
                         </button>
                     </div>
@@ -242,36 +242,17 @@ include dirname(__DIR__) . '/layout/menu.php';
             <button onclick="cerrarModal('modal-eliminar')" class="imo-modal-close">&times;</button>
         </div>
         <div class="imo-modal-body">
-            <p style="color:#4b5563;">¿Seguro que deseas eliminar a <strong id="nombre-eliminar"></strong>? Esta acción es irreversible.</p>
+            <p class="imo-modal-desc">¿Seguro que deseas eliminar a <strong id="nombre-eliminar"></strong>? Esta acción es irreversible.</p>
         </div>
         <div class="imo-modal-footer">
             <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
-            <form id="form-eliminar-usuario" method="POST" action="" style="display:inline;">
+            <form id="form-eliminar-usuario" method="POST" action="" class="form-inline-action">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Sí, eliminar</button>
             </form>
         </div>
     </div>
 </div>
-
-<style>
-.usr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
-.usr-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;text-align:center;position:relative;transition:transform .2s,box-shadow .2s;}
-.usr-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.07);}
-.usr-status{position:absolute;top:16px;right:16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;}
-.status-on{background:#dcfce7;color:#166534;}.status-on i{font-size:7px;color:#16a34a;}
-.status-off{background:#fee2e2;color:#991b1b;}.status-off i{font-size:7px;color:#dc2626;}
-.usr-avatar{font-size:52px;color:#10757e;margin:10px 0 12px;}
-.usr-name{font-size:17px;font-weight:700;color:#0f172a;margin-bottom:6px;}
-.usr-role{display:inline-flex;align-items:center;gap:6px;background:#e0f2fe;color:#075985;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:16px;}
-.usr-info{font-size:13px;color:#64748b;display:flex;flex-direction:column;gap:6px;margin-bottom:18px;text-align:left;}
-.usr-info div{display:flex;align-items:center;gap:8px;} 
-.usr-info i{color:#10757e;width:16px;}
-.usr-actions{display:flex;gap:8px;justify-content:center;}
-.mod-empty-card{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:14px;padding:60px;text-align:center;color:#94a3b8;grid-column:1/-1;}
-.mod-empty-card i{font-size:40px;display:block;margin-bottom:12px;}
-.mod-pag-info{text-align:center;color:#64748b;font-size:13px;margin-top:12px;}
-</style>
 
 <script>
 const BASE = '<?= $basePath ?>';

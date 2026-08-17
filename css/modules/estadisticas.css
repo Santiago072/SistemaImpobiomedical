@@ -1,0 +1,57 @@
+/**
+ * estadisticas.css — Módulo de Estadísticas y Gráficos
+ * Sistema Impobiomedical
+ */
+
+.estadisticas-container {
+    padding: 10px 0;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.chart-container {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border: 1px solid #e5e7eb;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 12px;
+}
+
+.chart-wrapper-lg {
+    position: relative;
+    flex-grow: 1;
+    min-height: 320px;
+    width: 100%;
+}
+
+.chart-wrapper-md {
+    position: relative;
+    flex-grow: 1;
+    min-height: 280px;
+    width: 100%;
+}
+
+.kpi-icon-purple {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    box-shadow: 0 6px 15px rgba(139, 92, 246, 0.25);
+}

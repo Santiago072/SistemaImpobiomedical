@@ -30,7 +30,7 @@ $fin = min($totalPaginas, $paginaActual + $rango);
     <?php if ($inicio > 1): ?>
         <a href="<?= $pagBaseUrl ?>&pagina=1" class="mod-pag-link">1</a>
         <?php if ($inicio > 2): ?>
-            <span class="mod-pag-dots" style="padding: 0 8px; color: #555; align-self: center;">...</span>
+            <span class="mod-pag-dots">...</span>
         <?php endif; ?>
     <?php endif; ?>
 
@@ -42,7 +42,7 @@ $fin = min($totalPaginas, $paginaActual + $rango);
     <!-- Última página y puntos suspensivos -->
     <?php if ($fin < $totalPaginas): ?>
         <?php if ($fin < $totalPaginas - 1): ?>
-            <span class="mod-pag-dots" style="padding: 0 8px; color: #555; align-self: center;">...</span>
+            <span class="mod-pag-dots">...</span>
         <?php endif; ?>
         <a href="<?= $pagBaseUrl ?>&pagina=<?= $totalPaginas ?>" class="mod-pag-link"><?= $totalPaginas ?></a>
     <?php endif; ?>

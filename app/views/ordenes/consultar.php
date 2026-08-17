@@ -19,7 +19,7 @@ $tabActual = $tabActual ?? 'pendientes';
 
     <main class="contenido-principal">
 
-        <div class="mod-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+        <div class="mod-header">
             <div>
                 <h1 class="mod-title"><i class="bi bi-cart-check-fill"></i> Órdenes de Compra</h1>
                 <p class="mod-sub">Consulte, clasifique y exporte las órdenes de compra generadas</p>
@@ -27,34 +27,32 @@ $tabActual = $tabActual ?? 'pendientes';
         </div>
 
         <?php if (!empty($_SESSION['flash_success'])): ?>
-        <div style="background:#dcfce7; border:1.5px solid #22c55e; color:#15803d; padding:12px 16px; border-radius:10px; margin-bottom:18px; display:flex; align-items:center; gap:10px; font-weight:600; font-size:13px;">
-            <i class="bi bi-check-circle-fill" style="font-size:18px;"></i>
+        <div class="mod-alert mod-alert-ok">
+            <i class="bi bi-check-circle-fill"></i>
             <span><?= htmlspecialchars($_SESSION['flash_success']) ?></span>
         </div>
         <?php unset($_SESSION['flash_success']); endif; ?>
 
         <?php if (!empty($_SESSION['flash_error'])): ?>
-        <div style="background:#fee2e2; border:1.5px solid #ef4444; color:#991b1b; padding:12px 16px; border-radius:10px; margin-bottom:18px; display:flex; align-items:center; gap:10px; font-weight:600; font-size:13px;">
-            <i class="bi bi-exclamation-triangle-fill" style="font-size:18px;"></i>
+        <div class="mod-alert mod-alert-err">
+            <i class="bi bi-exclamation-triangle-fill"></i>
             <span><?= htmlspecialchars($_SESSION['flash_error']) ?></span>
         </div>
         <?php unset($_SESSION['flash_error']); endif; ?>
 
         <!-- Pestañas (Tabs) de Estado -->
-        <div class="orden-tabs-container" style="display:flex; gap:10px; margin-bottom:20px; border-bottom:2px solid #e2e8f0; padding-bottom:12px;">
+        <div class="orden-tabs-container">
             <a href="<?= $basePath ?>?module=ordenes&action=consultar&tab=pendientes" 
-               class="tab-btn <?= $tabActual === 'pendientes' ? 'tab-active-pend' : 'tab-inactive' ?>"
-               style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:10px; font-weight:700; font-size:13.5px; transition:all .2s;">
+               class="tab-btn <?= $tabActual === 'pendientes' ? 'tab-active-pend' : 'tab-inactive' ?>">
                 <i class="bi bi-clock-history"></i> Órdenes Pendientes
-                <span class="tab-badge" style="background:#fef3c7; color:#b45309; padding:2px 8px; border-radius:12px; font-size:11.5px; font-weight:800; border:1px solid #fde68a;">
+                <span class="tab-badge tab-badge-pend">
                     <?= (int)($conteoPendientes ?? 0) ?>
                 </span>
             </a>
             <a href="<?= $basePath ?>?module=ordenes&action=consultar&tab=completadas" 
-               class="tab-btn <?= $tabActual === 'completadas' ? 'tab-active-comp' : 'tab-inactive' ?>"
-               style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border-radius:10px; font-weight:700; font-size:13.5px; transition:all .2s;">
+               class="tab-btn <?= $tabActual === 'completadas' ? 'tab-active-comp' : 'tab-inactive' ?>">
                 <i class="bi bi-check-circle-fill"></i> Órdenes Completadas
-                <span class="tab-badge" style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:12px; font-size:11.5px; font-weight:800; border:1px solid #bbf7d0;">
+                <span class="tab-badge tab-badge-comp">
                     <?= (int)($conteoCompletadas ?? 0) ?>
                 </span>
             </a>
@@ -63,24 +61,24 @@ $tabActual = $tabActual ?? 'pendientes';
         <!-- Filtros y Barra de Búsqueda -->
         <div class="mod-search-bar">
             <form method="POST" action="<?= $basePath ?>?module=ordenes&action=consultar&tab=<?= urlencode($tabActual) ?>"
-                  class="mod-search-form" style="display:flex; gap:10px; align-items:center; flex:1; flex-wrap:wrap;">
+                  class="mod-search-form orden-search-form">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                 <span class="mod-search-icon"><i class="bi bi-funnel"></i></span>
                 <input type="text" name="proveedor" value="<?= htmlspecialchars($busquedaProveedor) ?>"
-                       placeholder="Proveedor..." maxlength="60" class="mod-search-input" style="flex:1;">
+                       placeholder="Proveedor..." maxlength="60" class="mod-search-input">
                 <input type="text" name="cotizacion_numero" value="<?= htmlspecialchars($busquedaCotizacion) ?>"
-                       placeholder="N° Cot." maxlength="20" class="mod-search-input" style="flex:0.8;">
-                <div style="display:flex; align-items:center; gap:5px; flex:1;">
-                    <label style="font-size:12px; color:var(--text-soft); font-weight:600;">Desde:</label>
+                       placeholder="N° Cot." maxlength="20" class="mod-search-input">
+                <div class="filter-input-field">
+                    <label class="filter-label-text">Desde:</label>
                     <input type="date" name="fecha_inicio" value="<?= htmlspecialchars($busquedaFechaInicio ?? '') ?>"
-                           class="mod-search-input" style="border:1.5px solid #e2e8f0; border-radius:9px; padding:8px; width:100%;">
+                           class="mod-search-input orden-search-input-date">
                 </div>
-                <div style="display:flex; align-items:center; gap:5px; flex:1;">
-                    <label style="font-size:12px; color:var(--text-soft); font-weight:600;">Hasta:</label>
+                <div class="filter-input-field">
+                    <label class="filter-label-text">Hasta:</label>
                     <input type="date" name="fecha_fin" value="<?= htmlspecialchars($busquedaFechaFin ?? '') ?>"
-                           class="mod-search-input" style="border:1.5px solid #e2e8f0; border-radius:9px; padding:8px; width:100%;">
+                           class="mod-search-input orden-search-input-date">
                 </div>
-                <button type="submit" class="imo-btn-save" style="padding:10px 15px; border-radius:9px;">
+                <button type="submit" class="imo-btn-save orden-search-btn">
                     <i class="bi bi-search"></i> Buscar
                 </button>
                 <?php if ($busquedaProveedor || $busquedaCotizacion || !empty($busquedaFechaInicio) || !empty($busquedaFechaFin)): ?>
@@ -92,23 +90,23 @@ $tabActual = $tabActual ?? 'pendientes';
         </div>
 
         <!-- Barra de Acciones de Exportación por Selección -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px; background:#f8fafc; padding:10px 16px; border-radius:10px; border:1px solid #e2e8f0;">
-            <div style="font-size:13px; font-weight:600; color:#475569; display:flex; align-items:center; gap:6px;">
-                <i class="bi bi-check-all" style="font-size:18px; color:#10757e;"></i>
+        <div class="export-selection-bar">
+            <div class="export-count-text">
+                <i class="bi bi-check-all"></i>
                 <span id="seleccionados-conteo">0</span> órdenes seleccionadas
             </div>
-            <div style="display:flex; gap:10px;">
-                <button type="button" onclick="exportarSeleccionadas('pdf')" class="imo-btn-save" style="padding:8px 16px; border-radius:8px; background:#ef4444; color:#fff; border:none; cursor:pointer; font-size:12.5px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+            <div class="header-actions-wrap">
+                <button type="button" onclick="exportarSeleccionadas('pdf')" class="btn-export-pdf">
                     <i class="bi bi-file-earmark-pdf-fill"></i> Exportar PDF Seleccionadas
                 </button>
-                <button type="button" onclick="exportarSeleccionadas('excel')" class="imo-btn-save" style="padding:8px 16px; border-radius:8px; background:#10b981; color:#fff; border:none; cursor:pointer; font-size:12.5px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                <button type="button" onclick="exportarSeleccionadas('excel')" class="btn-export-excel">
                     <i class="bi bi-file-earmark-excel-fill"></i> Exportar Excel Seleccionadas
                 </button>
             </div>
         </div>
 
         <!-- Formulario Oculto para Exportación -->
-        <form id="form-exportar-ordenes" method="POST" action="" style="display:none;">
+        <form id="form-exportar-ordenes" method="POST" action="" class="form-hidden-action">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
             <div id="contenedor-ids-exportar"></div>
         </form>
@@ -118,15 +116,15 @@ $tabActual = $tabActual ?? 'pendientes';
             <table class="mod-table">
                 <thead>
                     <tr>
-                        <th style="width:40px; text-align:center;">
-                            <input type="checkbox" id="check-all" title="Seleccionar todas" style="transform:scale(1.25); cursor:pointer;" onchange="toggleCheckAll(this)">
+                        <th class="text-center col-check">
+                            <input type="checkbox" id="check-all" title="Seleccionar todas" onchange="toggleCheckAll(this)">
                         </th>
                         <th>P.O.</th>
                         <th>Fecha</th>
                         <th>Proveedor</th>
                         <th>Cotización</th>
                         <th>Condiciones Pago</th>
-                        <th style="text-align:center;">Estado</th>
+                        <th class="text-center">Estado</th>
                         <th>Generada por</th>
                         <th>Acciones</th>
                     </tr>
@@ -135,35 +133,32 @@ $tabActual = $tabActual ?? 'pendientes';
                     <?php if (!empty($ordenes)): ?>
                         <?php foreach ($ordenes as $ord): 
                             $estOrd = $ord['estado'] ?? 'pendiente';
-                            $badgeColor = $estOrd === 'completada' ? '#16a34a' : '#ca8a04';
-                            $badgeBg    = $estOrd === 'completada' ? 'rgba(34,197,94,.15)' : 'rgba(234,179,8,.15)';
                         ?>
                         <tr>
-                            <td style="text-align:center;">
-                                <input type="checkbox" class="check-orden" value="<?= (int)$ord['id'] ?>" style="transform:scale(1.25); cursor:pointer;" onchange="actualizarConteoSeleccion()">
+                            <td class="text-center">
+                                <input type="checkbox" class="check-orden" value="<?= (int)$ord['id'] ?>" onchange="actualizarConteoSeleccion()">
                             </td>
-                            <td><strong style="color:var(--amber);"><?= (int)$ord['numero_po'] ?></strong></td>
+                            <td><strong><?= (int)$ord['numero_po'] ?></strong></td>
                             <td><?= htmlspecialchars($ord['fecha'] ?? '') ?></td>
                             <td><?= htmlspecialchars($ord['proveedor']) ?></td>
                             <td>
                                 <?php if (!empty($ord['cotizacion_numero'])): ?>
-                                <span style="font-size:12px; background:rgba(45,190,203,.12); padding:2px 8px; border-radius:12px;">
+                                <span class="tag-code">
                                     <?= htmlspecialchars($ord['cotizacion_numero']) ?>
                                 </span>
                                 <?php endif; ?>
                             </td>
                             <td><?= htmlspecialchars($ord['condiciones_pago'] ?? '') ?></td>
-                            <td style="text-align:center;">
+                            <td class="text-center">
                                 <?php if ($rol === 'admin'): ?>
-                                    <select class="estado-orden-select" 
+                                    <select class="estado-orden-select <?= $estOrd === 'completada' ? 'badge-green' : 'badge-gold' ?>" 
                                             data-id="<?= (int)$ord['id'] ?>"
-                                            style="padding:4px 8px; border-radius:6px; font-weight:700; font-size:11.5px; border:1.5px solid <?= $badgeColor ?>; background:<?= $badgeBg ?>; color:<?= $badgeColor ?>; cursor:pointer;"
                                             onchange="cambiarEstadoOrden(this)">
                                         <option value="pendiente" <?= $estOrd === 'pendiente' ? 'selected' : '' ?>>🟡 Pendiente</option>
                                         <option value="completada" <?= $estOrd === 'completada' ? 'selected' : '' ?>>🟢 Completada</option>
                                     </select>
                                 <?php else: ?>
-                                    <span style="display:inline-block; padding:4px 10px; border-radius:6px; font-weight:700; font-size:11px; border:1px solid <?= $badgeColor ?>; background:<?= $badgeBg ?>; color:<?= $badgeColor ?>;">
+                                    <span class="mod-badge <?= $estOrd === 'completada' ? 'badge-green' : 'badge-gold' ?>">
                                         <?= $estOrd === 'completada' ? '🟢 Completada' : '🟡 Pendiente' ?>
                                     </span>
                                 <?php endif; ?>
@@ -171,16 +166,16 @@ $tabActual = $tabActual ?? 'pendientes';
                             <td><?= htmlspecialchars($ord['nombre_usuario'] ?? '—') ?></td>
                             <td>
                                 <div class="mod-actions">
-                                    <button type="button" class="mod-btn-edit" style="width:auto; padding:0 12px;"
+                                    <button type="button" class="btn-orden-view"
                                         onclick="verOrdenPDF(<?= (int)$ord['id'] ?>, <?= (int)$ord['numero_po'] ?>)">
                                         <i class="bi bi-eye"></i> Ver P.O.
                                     </button>
                                     <a href="<?= $basePath ?>?module=ordenes&action=generar_pdf&id=<?= (int)$ord['id'] ?>&descargar=1"
-                                       class="mod-btn-edit" style="width:auto; padding:0 12px; background:rgba(34,197,94,.15); border-color:#22c55e; color:#22c55e;">
+                                       class="btn-orden-download">
                                         <i class="bi bi-download"></i> PDF
                                     </a>
                                     <?php if ($rol === 'admin'): ?>
-                                    <form method="POST" action="<?= $basePath ?>?module=ordenes&action=eliminar" style="display:inline;" onsubmit="return confirm('¿Eliminar la P.O. <?= (int)$ord['numero_po'] ?>?')">
+                                    <form method="POST" action="<?= $basePath ?>?module=ordenes&action=eliminar" class="form-inline-action" onsubmit="return confirm('¿Eliminar la P.O. <?= (int)$ord['numero_po'] ?>?')">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                                         <input type="hidden" name="id" value="<?= (int)$ord['id'] ?>">
                                         <button type="submit" class="mod-btn-del" title="Eliminar"><i class="bi bi-trash3-fill"></i></button>
@@ -210,28 +205,6 @@ $tabActual = $tabActual ?? 'pendientes';
     </main>
 </div>
 
-<style>
-.tab-active-pend {
-    background: #fef3c7;
-    color: #92400e;
-    border: 1.5px solid #f59e0b;
-}
-.tab-active-comp {
-    background: #dcfce7;
-    color: #166534;
-    border: 1.5px solid #22c55e;
-}
-.tab-inactive {
-    background: #ffffff;
-    color: #64748b;
-    border: 1.5px solid #e2e8f0;
-}
-.tab-inactive:hover {
-    background: #f8fafc;
-    color: #1e293b;
-}
-</style>
-
 <!-- Modal visor PDF Orden -->
 <div id="modal-orden-viewer" class="modal-pdf-viewer">
     <div class="modal-pdf-contenido">
@@ -247,7 +220,7 @@ $tabActual = $tabActual ?? 'pendientes';
             </div>
         </div>
         <div class="pdf-container mt-10">
-            <iframe id="orden-frame" class="iframe-frame" src="" style="width:100%; height:75vh; border:none;"></iframe>
+            <iframe id="orden-frame" class="modal-orden-iframe" src=""></iframe>
         </div>
     </div>
 </div>

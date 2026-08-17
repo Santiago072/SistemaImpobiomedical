@@ -23,7 +23,7 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
     ?>
 
     <main class="contenido-principal">
-        <div class="page-header" style="margin-bottom: 24px;">
+        <div class="page-header page-header-panel">
             <h1 class="page-title"><i class="bi bi-speedometer2"></i> Panel Principal</h1>
             <p class="page-sub">Resumen general de operaciones y gestión comercial</p>
         </div>
@@ -46,7 +46,7 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
             </div>
             
             <div class="kpi-card">
-                <div class="kpi-icon" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="bi bi-building"></i></div>
+                <div class="kpi-icon kpi-icon-green"><i class="bi bi-building"></i></div>
                 <div class="kpi-info">
                     <div class="kpi-num"><?= number_format($totalClientes ?? 0) ?></div>
                     <div class="kpi-label">Total Clientes</div>
@@ -54,7 +54,7 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
             </div>
             
             <div class="kpi-card">
-                <div class="kpi-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><i class="bi bi-box-seam-fill"></i></div>
+                <div class="kpi-icon kpi-icon-blue"><i class="bi bi-box-seam-fill"></i></div>
                 <div class="kpi-info">
                     <div class="kpi-num"><?= number_format($totalProductos ?? 0) ?></div>
                     <div class="kpi-label">Productos Activos</div>
@@ -101,97 +101,6 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
 
     </main>
 </div>
-
-<style>
-.badge-codigo {
-    display: inline-block;
-    background: linear-gradient(135deg, #10757e, #0a4f55);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 12px;
-    border-radius: 20px;
-    margin-left: 10px;
-    vertical-align: middle;
-    box-shadow: 0 2px 4px rgba(16, 117, 126, 0.3);
-}
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-bottom: 40px;
-}
-.kpi-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(229, 231, 235, 0.5);
-    border-radius: 20px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    transition: all .3s ease;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04);
-}
-.kpi-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(16, 117, 126, 0.1);
-    border-color: rgba(16, 117, 126, 0.2);
-}
-.kpi-icon {
-    width: 55px; height: 55px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #10757e, #20b2aa);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; color: #fff;
-    flex-shrink: 0;
-    box-shadow: 0 6px 15px rgba(16, 117, 126, 0.25);
-}
-.kpi-icon-alt {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    box-shadow: 0 6px 15px rgba(245, 158, 11, 0.25);
-}
-.kpi-num { font-size: 28px; font-weight: 800; color: #1f2937; line-height: 1; letter-spacing: -0.5px; }
-.kpi-label { font-size: 13px; color: #6b7280; margin-top: 6px; font-weight: 600; line-height: 1.2; }
-.section-title {
-    font-size: 18px; font-weight: 700;
-    color: #1f2937; margin-bottom: 20px;
-}
-.actions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
-}
-.action-card {
-    background: #ffffff;
-    border: 1px solid #f3f4f6;
-    border-radius: 16px;
-    padding: 24px;
-    display: flex; flex-direction: column;
-    align-items: center; gap: 14px;
-    text-decoration: none; color: #374151;
-    font-size: 14px; font-weight: 600;
-    text-align: center;
-    transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-}
-.action-card:hover {
-    background: #ffffff;
-    border-color: #10757e;
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 12px 20px rgba(16, 117, 126, 0.08);
-    color: #10757e;
-}
-.action-card i { 
-    font-size: 32px; 
-    color: #9ca3af; 
-    transition: all .3s ease; 
-}
-.action-card:hover i { 
-    color: #10757e; 
-    transform: scale(1.1);
-}
-</style>
 
 <script src="<?= $basePath ?>public/js/script.js"></script>
 </body>

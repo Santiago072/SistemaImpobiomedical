@@ -243,11 +243,11 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <button onclick="cerrarModal('modal-eliminar')" class="imo-modal-close">&times;</button>
         </div>
         <div class="imo-modal-body">
-            <p style="color:#4b5563;">¿Estás seguro de eliminar a <strong id="nombre-eliminar"></strong>? Esta acción no se puede deshacer.</p>
+            <p class="imo-modal-desc">¿Estás seguro de eliminar a <strong id="nombre-eliminar"></strong>? Esta acción no se puede deshacer.</p>
         </div>
         <div class="imo-modal-footer">
             <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
-            <form id="form-eliminar-cliente" method="POST" action="" style="display:inline;">
+            <form id="form-eliminar-cliente" method="POST" action="" class="form-inline-action">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
             </form>

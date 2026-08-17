@@ -17,7 +17,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     <main class="contenido-principal">
         
         <div class="estadisticas-container">
-            <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
+            <div class="page-header page-header-filters">
                 <div>
                     <h1 class="page-title"><i class="bi bi-bar-chart-fill"></i> Panel de Estadísticas</h1>
                     <p class="page-sub">Análisis de rendimiento, cotizaciones y productos.</p>
@@ -33,7 +33,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <label>Hasta:</label>
                         <input type="date" name="fecha_fin" value="<?= htmlspecialchars($fechaFin ?? '') ?>">
                     </div>
-                    <div class="filter-actions" style="display: flex; gap: 8px;">
+                    <div class="filter-actions">
                         <button type="submit" class="btn btn-primary"><i class="bi bi-filter"></i> Filtrar</button>
                         <?php if ($fechaInicio || $fechaFin): ?>
                             <a href="<?= $basePath ?>?module=estadisticas" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Limpiar</a>
@@ -49,7 +49,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         <!-- KPIs -->
         <div class="kpi-grid">
             <div class="kpi-card">
-                <div class="kpi-icon" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="bi bi-currency-dollar"></i></div>
+                <div class="kpi-icon kpi-icon-green"><i class="bi bi-currency-dollar"></i></div>
                 <div class="kpi-info">
                     <div class="kpi-num">$<?= number_format($kpis['monto_cotizado_mes'], 0) ?></div>
                     <div class="kpi-label">Monto Cotizado<?= ($fechaInicio && $fechaFin) ? '' : ' (Mes)' ?></div>
@@ -57,7 +57,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             </div>
 
             <div class="kpi-card">
-                <div class="kpi-icon" style="background: linear-gradient(135deg, #10757e, #0a4f55);"><i class="bi bi-bag-check-fill"></i></div>
+                <div class="kpi-icon"><i class="bi bi-bag-check-fill"></i></div>
                 <div class="kpi-info">
                     <div class="kpi-num">$<?= number_format($kpis['monto_vendido'] ?? 0, 0) ?></div>
                     <div class="kpi-label">Monto Vendido (Ventas Reales)</div>
@@ -65,7 +65,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             </div>
 
             <div class="kpi-card">
-                <div class="kpi-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><i class="bi bi-file-earmark-check-fill"></i></div>
+                <div class="kpi-icon kpi-icon-blue"><i class="bi bi-file-earmark-check-fill"></i></div>
                 <div class="kpi-info">
                     <div class="kpi-num"><?= number_format($kpis['total_cotizaciones']) ?></div>
                     <div class="kpi-label">Cotizaciones Totales</div>
@@ -73,7 +73,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             </div>
             
             <div class="kpi-card">
-                <div class="kpi-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);"><i class="bi bi-cart-check-fill"></i></div>
+                <div class="kpi-icon kpi-icon-purple"><i class="bi bi-cart-check-fill"></i></div>
                 <div class="kpi-info">
                     <div class="kpi-num"><?= number_format($kpis['total_ordenes']) ?></div>
                     <div class="kpi-label">Órdenes de Compra</div>
@@ -88,7 +88,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <!-- Rendimiento Mensual (Barras y Líneas) -->
             <div class="chart-container">
                 <h2 class="section-title"><i class="bi bi-graph-up"></i> Evolución Mensual: Cotizaciones Totales vs Concluidas</h2>
-                <div class="chart-wrapper" style="height: 350px;">
+                <div class="chart-wrapper chart-wrapper-lg">
                     <canvas id="evolucionChart"></canvas>
                 </div>
             </div>
@@ -96,7 +96,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <!-- Top Productos (Doughnut) -->
             <div class="chart-container">
                 <h2 class="section-title">Top 5 Productos Cotizados</h2>
-                <div class="chart-wrapper" style="height: 300px;">
+                <div class="chart-wrapper chart-wrapper-md">
                     <canvas id="productosChart"></canvas>
                 </div>
             </div>
@@ -104,7 +104,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <!-- Top Clientes (Barras Horizontales) -->
             <div class="chart-container">
                 <h2 class="section-title">Top 5 Clientes Recurrentes</h2>
-                <div class="chart-wrapper" style="height: 300px;">
+                <div class="chart-wrapper chart-wrapper-md">
                     <canvas id="clientesChart"></canvas>
                 </div>
             </div>
@@ -112,7 +112,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <!-- Top Vendedores (Barras Horizontales) -->
             <div class="chart-container">
                 <h2 class="section-title">Top 5 Vendedores (Órdenes)</h2>
-                <div class="chart-wrapper" style="height: 300px;">
+                <div class="chart-wrapper chart-wrapper-md">
                     <canvas id="vendedoresChart"></canvas>
                 </div>
             </div>
@@ -121,81 +121,6 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
     </main>
 </div>
-
-<style>
-.estadisticas-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding-bottom: 40px;
-}
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-.kpi-card {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(229, 231, 235, 0.5);
-    border-radius: 16px;
-    padding: 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.kpi-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-}
-.kpi-icon {
-    width: 55px; height: 55px;
-    border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; color: #fff;
-    flex-shrink: 0;
-}
-.kpi-num { font-size: 24px; font-weight: 800; color: #1f2937; line-height: 1; margin-bottom: 4px; letter-spacing: -0.5px; }
-.kpi-label { font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; }
-
-.charts-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 25px;
-}
-.chart-container {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-}
-.section-title {
-    font-size: 16px; font-weight: 700; color: #374151; margin-bottom: 20px;
-}
-.chart-wrapper { position: relative; width: 100%; }
-
-.filter-form {
-    display: flex; align-items: flex-end; gap: 15px;
-    background: #fff; padding: 12px 16px; border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-    border: 1px solid #e5e7eb;
-}
-.filter-group { display: flex; flex-direction: column; gap: 4px; }
-.filter-group label { font-size: 11px; font-weight: 700; color: #4b5563; text-transform: uppercase; }
-.filter-group input { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; font-size: 13px; }
-.filter-group input:focus { border-color: #10757e; box-shadow: 0 0 0 2px rgba(16,117,126,0.1); }
-.filter-actions { display: flex; gap: 8px; }
-.filter-form .btn { padding: 8px 12px; font-size: 13px; border-radius: 6px; height: 33px; display: inline-flex; align-items: center; gap: 5px; }
-.btn-pdf { background: #dc2626; color: #fff; text-decoration: none; border: none; cursor: pointer; }
-.btn-pdf:hover { background: #b91c1c; }
-
-@media (max-width: 1024px) {
-    .charts-grid { grid-template-columns: 1fr; }
-    .chart-container[style*="grid-column"] { grid-column: auto !important; }
-}
-</style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
