@@ -128,14 +128,14 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <i class="bi bi-pencil-square"></i> Modificar
                                     </button>
                                      <?php if ($estCom === 'pendiente'): ?>
-                                     <button type="button"
+                                     <button type="button" class="btn-accion-orden" data-cotizacion="<?= htmlspecialchars($cot['numero_cotizacion']) ?>"
                                          style="width:auto; padding:0 12px; font-weight:600; background:rgba(34,197,94,.15); color:#22c55e; border:1.5px solid #22c55e; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; height:34px; font-size:12px; transition:all .2s;"
                                          onclick="window.location.href='<?= $basePath ?>?module=ordenes&action=seleccionar_items&cotizacion=<?= urlencode($cot['numero_cotizacion']) ?>'"
                                          title="Generar Orden de Compra">
                                          <i class="bi bi-cart-plus-fill"></i> Orden
                                      </button>
                                      <?php else: ?>
-                                     <button type="button" disabled
+                                     <button type="button" class="btn-accion-orden" data-cotizacion="<?= htmlspecialchars($cot['numero_cotizacion']) ?>" disabled
                                          style="width:auto; padding:0 12px; font-weight:600; background:#f1f5f9; color:#94a3b8; border:1.5px solid #cbd5e1; border-radius:8px; cursor:not-allowed; display:inline-flex; align-items:center; gap:5px; height:34px; font-size:12px; opacity:0.7;"
                                          title="No disponible: la cotización está <?= htmlspecialchars($estCom) ?>">
                                          <i class="bi bi-cart-x"></i> Orden
@@ -239,6 +239,8 @@ function cambiarEstadoComercial(select) {
     const id = select.getAttribute('data-id');
     const nuevoEstado = select.value;
     const csrfToken = '<?= htmlspecialchars($csrf_token ?? '') ?>';
+    const fila = select.closest('tr');
+    const btnOrden = fila ? fila.querySelector('.btn-accion-orden') : null;
 
     // Colores dinámicos
     const estilos = {
@@ -272,6 +274,34 @@ function cambiarEstadoComercial(select) {
             select.style.borderColor = conf.color;
             select.style.color = conf.color;
             select.style.background = conf.bg;
+
+            // Actualizar reactivamente el botón de Orden en la fila
+            if (btnOrden) {
+                const numCot = btnOrden.getAttribute('data-cotizacion') || '';
+                if (nuevoEstado === 'pendiente') {
+                    btnOrden.disabled = false;
+                    btnOrden.style.background = 'rgba(34,197,94,.15)';
+                    btnOrden.style.color = '#22c55e';
+                    btnOrden.style.borderColor = '#22c55e';
+                    btnOrden.style.cursor = 'pointer';
+                    btnOrden.style.opacity = '1';
+                    btnOrden.title = 'Generar Orden de Compra';
+                    btnOrden.innerHTML = '<i class="bi bi-cart-plus-fill"></i> Orden';
+                    btnOrden.onclick = function() {
+                        window.location.href = '<?= $basePath ?>?module=ordenes&action=seleccionar_items&cotizacion=' + encodeURIComponent(numCot);
+                    };
+                } else {
+                    btnOrden.disabled = true;
+                    btnOrden.style.background = '#f1f5f9';
+                    btnOrden.style.color = '#94a3b8';
+                    btnOrden.style.borderColor = '#cbd5e1';
+                    btnOrden.style.cursor = 'not-allowed';
+                    btnOrden.style.opacity = '0.7';
+                    btnOrden.title = 'No disponible: la cotización está ' + nuevoEstado;
+                    btnOrden.innerHTML = '<i class="bi bi-cart-x"></i> Orden';
+                    btnOrden.onclick = null;
+                }
+            }
         } else {
             alert('Error: ' + (d.message || 'No se pudo actualizar'));
             window.location.reload();
