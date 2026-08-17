@@ -53,8 +53,8 @@
 
 .formulario select option,
 .seleccion-producto .producto-existente option {
-    background: #000000;
-    color: #ffffff;
+    background: #ffffff;
+    color: #1f2937;
     padding: 12px;
     font-size: 14px;
 }
