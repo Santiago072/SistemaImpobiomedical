@@ -80,9 +80,10 @@ class SeguridadTest extends TestCase
 
     public function testRateLimitingPermiteDentroDelLimite(): void
     {
+        $accion = 'test_action_' . uniqid();
         for ($i = 0; $i < 5; $i++) {
-            verificar_rate_limit(10, 60, 'test_action');
+            verificar_rate_limit(10, 60, $accion);
         }
-        $this->assertCount(5, $_SESSION['rate_limit_test_action']);
+        $this->assertCount(5, $_SESSION['rate_limit_' . $accion]);
     }
 }

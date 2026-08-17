@@ -534,6 +534,9 @@ El proyecto cuenta con una suite de pruebas unitarias configurada en `phpunit.xm
 ```
 
 ### Cobertura de Pruebas:
-- **`CalculosComercialesTest.php`**: Valida cálculos de margen de utilidad, adición de fletes, calibración, estampillas, discriminación de IVA (19% y 0%) y generación de sufijos de revisión (`EB 01_01`).
-- **`SeguridadTest.php`**: Valida generación y rotación de tokens CSRF, sanitización contra inyecciones XSS, cifrado `bcrypt` y validación de extensiones de archivos.
+- **`CalculosCotizacionTest.php`**: Valida cálculos de margen de utilidad, adición de fletes, calibración, estampillas, discriminación de IVA (19% y 0%), consecutivos con código de asesor y sufijos de revisión (`EB 01_01`).
+- **`SeguridadTest.php`**: Valida generación y rotación de tokens CSRF, sanitización contra inyecciones XSS, cifrado `bcrypt`, validadores de email y rate limiting.
+- **`OrdenCompraCalculosTest.php`**: Valida la liquidación contable de órdenes de compra con IVA y retenciones en la fuente, el agrupamiento en bloque de ítems (eliminación de N+1) y estados válidos.
+- **`FileUploadServiceTest.php`**: Valida la generación criptográfica de nombres únicos de archivos y la lista blanca de extensiones de imágenes permitidas frente a extensiones peligrosas.
+- **`ValidacionesNegocioTest.php`**: Valida las reglas de bloqueo en backend para emisión de órdenes según el estado de la cotización y la integridad del JSON de operaciones dinámicas (`calc_ops`).
 
