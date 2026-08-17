@@ -4,14 +4,14 @@
 ════════════════════════════════════════════════════════════ */
 .menu-lateral {
     width: 140px;
-    background: rgba(255, 255, 255, .05);
-    backdrop-filter: blur(20px);
-    border-right: 1px solid var(--glass-border-medium);
+    background: #ffffff;
+    border-right: 1px solid #e5e7eb;
     position: fixed; left: 0;
+    top: 0;
     height: 100vh;
     z-index: 1000;
     text-align: center;
-    padding-top: 30px;
+    padding-top: 15px;
     transition: margin-left .4s cubic-bezier(.4, 0, .2, 1);
 }
 
@@ -20,87 +20,74 @@
 }
 
 .logo-empresa img {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
-    margin-bottom: 30px;
-    border: 2px solid rgba(45, 190, 203, .3);
-    box-shadow: 0 0 30px rgba(45, 190, 203, .2);
+    margin-bottom: 20px;
+    border: 2px solid #10757e;
+    box-shadow: 0 4px 12px rgba(16, 117, 126, 0.15);
 }
 
 .lista-menu-lateral {
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .lista-menu-lateral li {
-    margin: 30px 0;
+    margin: 20px 0;
 }
 
 .lista-menu-lateral a {
-    color: var(--white);
+    color: #4b5563;
     font-size: 22px;
-    padding: 16px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(45, 190, 203, .1);
+    padding: 14px;
+    border-radius: 14px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 56px;
-    height: 56px;
+    width: 54px;
+    height: 54px;
     text-decoration: none;
-    transition: all .3s ease;
+    transition: all .25s ease;
     position: relative;
     overflow: hidden;
 }
 
-.lista-menu-lateral a::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(45, 190, 203, .2), transparent);
-    transition: left .5s;
-}
-
-.lista-menu-lateral a:hover::before {
-    left: 100%;
+.lista-menu-lateral a i {
+    color: #10757e;
+    transition: all .25s ease;
 }
 
 .lista-menu-lateral a:hover {
-    background: rgba(45, 190, 203, .15);
-    border-color: rgba(45, 190, 203, .3);
-    transform: scale(1.1);
-    box-shadow: 0 8px 25px rgba(45, 190, 203, .2);
-}
-
-.lista-menu-lateral a i {
-    color: var(--gold);
-    transition: all .3s;
+    background: #e2f1f2;
+    border-color: #10757e;
+    transform: scale(1.08);
+    box-shadow: 0 6px 16px rgba(16, 117, 126, 0.15);
+    color: #10757e;
 }
 
 .lista-menu-lateral a:hover i {
-    color: var(--gold-light);
+    color: #0a4f55;
 }
 
 .panel-flotante {
-    position: fixed; left: 0;
-    left: 130px;
+    position: fixed;
+    left: 140px;
     top: 0;
-    width: 320px;
+    width: 300px;
     height: 100vh;
-    background: rgba(255, 255, 255, .08);
-    backdrop-filter: blur(30px);
-    border-right: 1px solid var(--glass-border);
-    box-shadow: 12px 0 40px rgba(0, 0, 0, .3);
+    background: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    box-shadow: 12px 0 30px rgba(0, 0, 0, .06);
     z-index: 999;
     opacity: 0;
     visibility: hidden;
-    transform: translateX(-30px);
-    transition: all .4s ease;
-    padding: 40px 30px;
+    transform: translateX(-20px);
+    transition: all .3s ease;
+    padding: 30px 24px;
     overflow-y: auto;
 }
 
@@ -112,46 +99,47 @@
 
 .submenu {
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .submenu h3 {
-    color: var(--gold);
-    font-size: 14px;
-    margin-bottom: 20px;
+    color: #10757e;
+    font-size: 13px;
+    margin-bottom: 16px;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: 600;
-    border-bottom: 1px solid var(--glass-border);
-    padding-bottom: 12px;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 10px;
 }
 
 .submenu li {
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .submenu a {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 14px 18px;
-    color: rgba(255, 255, 255, .8);
+    padding: 12px 16px;
+    color: #4b5563;
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    transition: all .3s ease;
+    transition: all .2s ease;
     border-radius: 10px;
     border: 1px solid transparent;
 }
 
 .submenu a:hover {
-    background: rgba(45, 190, 203, .1);
-    border-color: rgba(45, 190, 203, .2);
-    color: var(--gold-light);
-    padding-left: 25px;
+    background: #f4f7f8;
+    color: #10757e;
+    padding-left: 20px;
 }
 
 .submenu a i {
-    color: var(--gold);
+    color: #10757e;
     font-size: 16px;
     width: 24px;
     text-align: center;
@@ -274,34 +262,32 @@ body.menu-oculto .cabecera-superior {
 }
 
 .boton-menu-ocultar {
-    background: rgba(255, 255, 255, .08);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border-medium);
-    color: var(--white);
-    padding: 10px 20px;
-    border-radius: 12px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+    padding: 8px 16px;
+    border-radius: 10px;
     cursor: pointer;
     font-family: var(--font-main);
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 600;
-    letter-spacing: 1px;
-    display: flex;
+    letter-spacing: 0.5px;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    transition: all .3s ease;
+    gap: 8px;
+    transition: all .2s ease;
     text-transform: uppercase;
 }
 
 .boton-menu-ocultar:hover {
-    background: rgba(45, 190, 203, .15);
-    border-color: var(--gold);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(45, 190, 203, .15);
+    background: #e2f1f2;
+    border-color: #10757e;
+    color: #10757e;
 }
 
 .boton-menu-ocultar i {
-    font-size: 20px;
-    color: var(--gold);
+    font-size: 16px;
+    color: #10757e;
     transition: transform .3s;
 }
 
@@ -313,28 +299,26 @@ body.menu-oculto .cabecera-superior {
 .rol-usuario {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 20px;
-    border-radius: 50px;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 20px;
     width: fit-content;
     margin-left: auto;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 }
 
 .rol-admin {
-    background: linear-gradient(135deg, rgba(45, 190, 203, .2), rgba(16, 117, 126, .1));
-    border: 1px solid rgba(45, 190, 203, .3);
-    color: var(--gold-light);
-    box-shadow: 0 0 20px rgba(45, 190, 203, .1);
+    background: #e2f1f2;
+    border: 1px solid #10757e;
+    color: #10757e;
 }
 
 .rol-usuario {
-    background: linear-gradient(135deg, rgba(45, 190, 203, .2), rgba(16, 117, 126, .1));
-    border: 1px solid rgba(45, 190, 203, .3);
-    color: var(--gold-light);
-    box-shadow: 0 0 20px rgba(45, 190, 203, .1);
+    background: #f0fdf4;
+    border: 1px solid #16a34a;
+    color: #166534;
 }
 
