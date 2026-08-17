@@ -26,6 +26,13 @@ $tabActual = $tabActual ?? 'pendientes';
             </div>
         </div>
 
+        <?php if (!empty($_SESSION['flash_success'])): ?>
+        <div style="background:#dcfce7; border:1.5px solid #22c55e; color:#15803d; padding:12px 16px; border-radius:10px; margin-bottom:18px; display:flex; align-items:center; gap:10px; font-weight:600; font-size:13px;">
+            <i class="bi bi-check-circle-fill" style="font-size:18px;"></i>
+            <span><?= htmlspecialchars($_SESSION['flash_success']) ?></span>
+        </div>
+        <?php unset($_SESSION['flash_success']); endif; ?>
+
         <?php if (!empty($_SESSION['flash_error'])): ?>
         <div style="background:#fee2e2; border:1.5px solid #ef4444; color:#991b1b; padding:12px 16px; border-radius:10px; margin-bottom:18px; display:flex; align-items:center; gap:10px; font-weight:600; font-size:13px;">
             <i class="bi bi-exclamation-triangle-fill" style="font-size:18px;"></i>

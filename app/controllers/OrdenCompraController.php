@@ -413,14 +413,32 @@ class OrdenCompraController
 
         $token = $_POST['csrf_token'] ?? '';
         if (!verificar_token_csrf($token)) {
-            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar&error=csrf');
+            $_SESSION['flash_error'] = 'Token de seguridad inválido o sesión expirada.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
             exit();
         }
 
-        $id = (int)($_POST['id'] ?? $_GET['id'] ?? 0);
-        if ($id > 0) {
-            $this->model->eliminar($id);
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id <= 0) {
+            $_SESSION['flash_error'] = 'Identificador de orden inválido.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            exit();
         }
+
+        $orden = $this->model->buscarPorId($id);
+        if (!$orden) {
+            $_SESSION['flash_error'] = 'La orden de compra que intenta eliminar no existe o ya fue removida.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            exit();
+        }
+
+        $ok = $this->model->eliminar($id);
+        if ($ok) {
+            $_SESSION['flash_success'] = 'La orden de compra P.O. ' . (int)$orden['numero_po'] . ' fue eliminada correctamente.';
+        } else {
+            $_SESSION['flash_error'] = 'No se pudo eliminar la orden de compra en la base de datos.';
+        }
+
         header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
         exit();
     }
