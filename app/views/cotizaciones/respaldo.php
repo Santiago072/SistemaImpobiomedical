@@ -23,7 +23,7 @@ $totalValorFinal      = 0;
         <div class="mod-header header-actions-wrap align-center space-between">
             <div>
                 <h1 class="mod-title"><i class="bi bi-file-earmark-spreadsheet-fill"></i> Hoja de Respaldo Interna</h1>
-                <p class="mod-sub">Cotización: <strong><?= htmlspecialchars($cotizacion['numero_cotizacion']) ?></strong> - Cliente: <strong><?= htmlspecialchars($cotizacion['nombre_cliente']) ?></strong></p>
+                <p class="mod-sub">Cotización: <strong><?= htmlspecialchars($cotizacion['numero_cotizacion']) ?></strong> - Cliente: <strong><?= htmlspecialchars($cotizacion['cliente_nombre'] ?? $cotizacion['nombre_cliente'] ?? '') ?></strong></p>
             </div>
             <div>
                 <a href="<?= $basePath ?>?module=cotizaciones&action=consultar" class="btn-mod-primary btn-secondary-custom">

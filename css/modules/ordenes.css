@@ -206,9 +206,52 @@
     color: #fff;
 }
 
-.oc-textarea-note {
-    width: 100%;
-    resize: vertical;
+.oc-filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    transition: all .2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.oc-filter-btn:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+.oc-filter-btn.active {
+    background: #10757e !important;
+    border-color: #10757e !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(16, 117, 126, 0.25);
+}
+
+.oc-cod-input {
+    width: 100px;
+    padding: 6px 10px !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+}
+
+.oc-cod-input:focus {
+    border-color: #10757e !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(16, 117, 126, 0.1) !important;
+}
+
+.item-row.oculta {
+    display: none !important;
 }
 
 .order-submit-actions {

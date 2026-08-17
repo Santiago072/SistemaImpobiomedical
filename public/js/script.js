@@ -54,17 +54,16 @@ if(btnMenu) {
 /* ── PROTECCIÓN ANTI-DOBLE ENVÍO GLOBAL EN FORMULARIOS POST ── */
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('form[method="POST"], form[method="post"]').forEach(function (form) {
-        // Ignorar si el formulario maneja su propio loader explícito
         if (form.id === 'loginForm') return;
 
         form.addEventListener('submit', function (e) {
-            // Verificar si el formulario es válido según HTML5
+            if (e.defaultPrevented) return;
             if (!form.checkValidity()) return;
 
             const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
             if (submitBtn && !submitBtn.disabled) {
-                // Pequeño retardo para permitir que los campos hidden se serialicen
                 setTimeout(function () {
+                    if (e.defaultPrevented) return;
                     submitBtn.disabled = true;
                     submitBtn.style.opacity = '0.7';
                     submitBtn.style.cursor = 'not-allowed';

@@ -1339,8 +1339,8 @@ td .estado-no-generado::before {
 /* -- Tablas (mod-table) ----------------------- */
 .mod-table-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04); margin-bottom: 24px; }
 .mod-table { width: 100%; border-collapse: collapse; text-align: left; }
-.mod-table thead tr { background: #f8fafc; }
-.mod-table th { padding: 14px 18px; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+.mod-table thead tr { background: #e2f1f2; }
+.mod-table th { padding: 14px 18px; font-size: 11px; font-weight: 700; color: #10757e; text-transform: uppercase; letter-spacing: .5px; border-bottom: 2px solid #bce2e4; white-space: nowrap; }
 .mod-table td { padding: 15px 18px; font-size: 14px; color: #374151; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
 .mod-table tbody tr:last-child td { border-bottom: none; }
 .mod-table tbody tr:hover td { background: #f0f9ff; }
