@@ -1289,12 +1289,18 @@ td .estado-no-generado::before {
 .mod-alert-ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
 .mod-alert-err { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
-.mod-search-bar { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 20px; display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
-.mod-search-form { display: flex; align-items: center; gap: 10px; width: 100%; position: relative; }
-.mod-search-icon { color: #9ca3af; font-size: 16px; }
-.mod-search-input { flex: 1; border: none; outline: none; font-size: 14px; color: #374151; background: transparent; }
-.mod-btn-clear { color: #9ca3af; text-decoration: none; font-size: 16px; transition: color .2s; }
+.mod-search-bar { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 24px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+.mod-search-form { display: flex; align-items: center; gap: 12px; width: 100%; position: relative; flex-wrap: wrap; }
+.mod-search-icon { color: #10757e; font-size: 18px; margin-right: 4px; }
+.mod-search-input { border: 1.5px solid #cbd5e1 !important; border-radius: 10px !important; padding: 10px 14px !important; font-size: 13.5px !important; color: #374151 !important; background: #f8fafc !important; outline: none; transition: border-color .2s, box-shadow .2s; }
+.mod-search-input:focus { border-color: #10757e !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(16,117,126,0.1) !important; }
+.mod-btn-clear { color: #9ca3af; text-decoration: none; font-size: 16px; transition: color .2s; padding: 4px; }
 .mod-btn-clear:hover { color: #ef4444; }
+
+/* Botones de búsqueda y acciones de cabecera/filtros */
+.orden-search-btn { height: 40px; padding: 0 18px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.filter-input-field { display: inline-flex; align-items: center; gap: 8px; }
+.filter-label-text { font-size: 12px; font-weight: 600; color: #4b5563; text-transform: uppercase; }
 
 /* -- Modales (imo-modal) ----------------------- */
 .imo-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 9000; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
