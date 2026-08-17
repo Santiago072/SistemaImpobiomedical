@@ -123,15 +123,16 @@
     flex-direction: column;
 }
 
+.chart-container .section-title,
 .chart-title {
     font-size: 16px;
     font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 20px;
+    color: #0f172a;
+    margin: 0 0 20px 0;
     display: flex;
     align-items: center;
     gap: 8px;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f1f5f9;
     padding-bottom: 12px;
 }
 

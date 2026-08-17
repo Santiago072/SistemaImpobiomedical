@@ -127,14 +127,34 @@
 }
 
 .provider-single-box {
-    margin-bottom: 14px;
-    padding: 8px 14px;
-    background: #e8f8f8;
-    border: 1px solid #10757e;
-    border-radius: 8px;
-    font-size: 12px;
+    margin-bottom: 18px;
+    padding: 12px 18px;
+    background: #e6f6f7;
+    border: 1.5px solid #10757e;
+    border-radius: 10px;
+    font-size: 13.5px;
     color: #0a4f55;
-    font-weight: 600;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.provider-single-box i {
+    font-size: 16px;
+    color: #10757e;
+}
+
+.tag-code {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #e0f2fe;
+    color: #0284c7;
+    font-weight: 700;
+    font-size: 12px;
+    border: 1px solid #bae6fd;
+    text-decoration: none;
 }
 
 .resumen-seleccion-box {
