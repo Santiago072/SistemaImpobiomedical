@@ -73,12 +73,16 @@ include dirname(__DIR__) . '/layout/menu.php';
                                 <input type="number" name="cantidad" id="inpCantidad" value="<?= intval($datos['cantidad']) ?>" min="1" required>
                             </div>
                             <div class="imo-form-group">
-                                <label>Tiempo de Entrega</label>
-                                <input type="text" name="tiempo_entrega" value="<?= htmlspecialchars($datos['tiempo_entrega'] ?? '') ?>" placeholder="Ej: 5 A 15 DÍAS HÁBILES" maxlength="120">
+                                <label>Precio Unitario Final (sin IVA) *</label>
+                                <input type="number" step="0.01" name="precio" id="inpPrecio" value="<?= htmlspecialchars($datos['precio']) ?>" required>
                             </div>
                         </div>
 
                         <div class="imo-form-row">
+                            <div class="imo-form-group">
+                                <label>Tiempo de Entrega</label>
+                                <input type="text" name="tiempo_entrega" value="<?= htmlspecialchars($datos['tiempo_entrega'] ?? '') ?>" placeholder="Ej: 5 A 15 DÍAS HÁBILES" maxlength="120">
+                            </div>
                             <div class="imo-form-group">
                                 <label>¿Aplica IVA?</label>
                                 <select name="iva" id="inpIva" onchange="toggleIva(this.value)">
@@ -86,10 +90,11 @@ include dirname(__DIR__) . '/layout/menu.php';
                                     <option value="no" <?= $datos['iva'] === 'no' ? 'selected' : '' ?>>No</option>
                                 </select>
                             </div>
-                            <div class="imo-form-group" id="grupoIvaPct">
-                                <label>% IVA</label>
-                                <input type="number" name="porcentaje_iva" id="inpPctIva" min="0" max="100" step="0.01" value="<?= floatval($datos['porcentaje_iva'] ?? 19) ?>">
-                            </div>
+                        </div>
+
+                        <div class="imo-form-group" id="grupoIvaPct">
+                            <label>% IVA</label>
+                            <input type="number" name="porcentaje_iva" id="inpPctIva" min="0" max="100" step="0.01" value="<?= floatval($datos['porcentaje_iva'] ?? 19) ?>">
                         </div>
 
                         <div class="imo-form-group">
@@ -133,16 +138,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                             <div id="calc-container"></div>
                         </div>
 
-                        <!-- Precios Calculados Finales -->
-                        <div class="imo-form-row">
-                            <div class="imo-form-group">
-                                <label>Precio Unitario Final *</label>
-                                <input type="number" step="0.01" name="precio" id="inpPrecio" value="<?= htmlspecialchars($datos['precio']) ?>" required>
+                        <!-- Resultado calculado final para el cliente -->
+                        <div class="ganancia-resultado">
+                            <div class="ganancia-res-row total-row pt-8 mt-4 border-top-green">
+                                <span>💵 Valor Final con IVA para el Cliente:</span>
+                                <strong id="resValorFinal" class="res-final-value">$0</strong>
                             </div>
-                            <div class="imo-form-group">
-                                <label>Valor Final con IVA</label>
-                                <input type="text" id="resValorFinal" value="$0" readonly class="bg-readonly">
-                            </div>
+                            <p class="res-hint-text">* El valor de Estampillas se asigna automáticamente como Precio Unitario del ítem.</p>
                         </div>
                     </div>
                 </div>
@@ -279,12 +281,17 @@ function calcularTotales() {
         }
     }
 
+    const precioUnitario = (totalEstamp > 0) ? totalEstamp : (parseFloat(document.getElementById('inpPrecio')?.value) || 0);
+
     const ivaVal = document.getElementById('inpIva')?.value || 'si';
     const pctIva = parseFloat(document.getElementById('inpPctIva')?.value) || 0;
-    const ivaFinal = ivaVal === 'si' ? totalEstamp * (pctIva / 100) : 0;
+    const ivaFinal = ivaVal === 'si' ? precioUnitario * (pctIva / 100) : 0;
     const resFinal = document.getElementById('resValorFinal');
-    if (resFinal) resFinal.textContent = '$' + Math.round(totalEstamp + ivaFinal).toLocaleString('es-CO');
+    if (resFinal) resFinal.textContent = '$' + Math.round(precioUnitario + ivaFinal).toLocaleString('es-CO');
 }
+
+document.getElementById('inpPrecio')?.addEventListener('input', calcularTotales);
+document.getElementById('inpPctIva')?.addEventListener('input', calcularTotales);
 
 function toggleIva(val) {
     const group = document.getElementById('grupoIvaPct');
