@@ -170,10 +170,6 @@ $tabActual = $tabActual ?? 'pendientes';
                                         onclick="verOrdenPDF(<?= (int)$ord['id'] ?>, <?= (int)$ord['numero_po'] ?>)">
                                         <i class="bi bi-eye"></i> Ver P.O.
                                     </button>
-                                    <a href="<?= $basePath ?>?module=ordenes&action=generar_pdf&id=<?= (int)$ord['id'] ?>&descargar=1"
-                                       class="btn-orden-download">
-                                        <i class="bi bi-download"></i> PDF
-                                    </a>
                                     <?php if ($rol === 'admin'): ?>
                                     <form method="POST" action="<?= $basePath ?>?module=ordenes&action=eliminar" class="form-inline-action" onsubmit="return confirm('¿Eliminar la P.O. <?= (int)$ord['numero_po'] ?>?')">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">

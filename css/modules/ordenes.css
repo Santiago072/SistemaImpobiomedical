@@ -172,12 +172,34 @@
 }
 
 .estado-orden-select {
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 11.5px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 12px;
     cursor: pointer;
-    border: 1.5px solid currentColor;
+    border: 1.5px solid transparent;
+    outline: none;
+    transition: all .2s ease;
+    font-family: inherit;
+}
+
+.estado-orden-select.badge-gold {
+    background: #fef3c7;
+    color: #b45309;
+    border-color: #fde68a;
+}
+
+.estado-orden-select.badge-green {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.estado-orden-select option {
+    background: #ffffff;
+    color: #1e293b;
+    font-weight: 500;
+    padding: 6px;
 }
 
 .btn-orden-view {
