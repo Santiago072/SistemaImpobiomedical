@@ -141,12 +141,13 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 function toggleForcePass(inputId, iconId) {
     const inp = document.getElementById(inputId);
     const ico = document.getElementById(iconId);
+    if (!inp || !ico) return;
     if (inp.type === 'password') {
         inp.type = 'text';
-        ico.className = 'bi bi-eye';
+        ico.className = 'bi bi-eye force-pass-toggle';
     } else {
         inp.type = 'password';
-        ico.className = 'bi bi-eye-slash';
+        ico.className = 'bi bi-eye-slash force-pass-toggle';
     }
 }
 
