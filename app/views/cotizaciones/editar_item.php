@@ -24,7 +24,7 @@ include dirname(__DIR__) . '/layout/menu.php';
         <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($mensajeError) ?></div>
         <?php endif; ?>
 
-        <div class="mod-form-panel p-24 max-w-900 mx-auto">
+        <div class="mod-form-panel p-24 mx-auto">
             <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=editar_item&id=<?= intval($datos['id']) ?>" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                 <input type="hidden" name="item_id" value="<?= intval($datos['id']) ?>">
@@ -35,9 +35,9 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <input type="hidden" name="estampillas" id="hdnEstampillas" value="<?= htmlspecialchars($datos['estampillas'] ?? 0) ?>">
                 <input type="hidden" name="calc_ops" id="hdnCalcOps" value="<?= htmlspecialchars($datos['calc_ops'] ?? '{}') ?>">
 
-                <div class="flex-col-gap20 mb-20">
-                    <!-- Columna Única -->
-                    <div>
+                <div class="cot-edit-grid">
+                    <!-- Columna Izquierda: Información del Producto -->
+                    <div class="cot-edit-left">
                         <div class="imo-form-group">
                             <label>Nombre del Producto *</label>
                             <input type="text" name="titulo" value="<?= htmlspecialchars($datos['titulo']) ?>" required maxlength="100">
@@ -78,47 +78,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                             </div>
                         </div>
 
-                        <!-- Fila de Precios del Proveedor -->
-                        <div class="imo-form-row">
-                            <div class="imo-form-group">
-                                <label>Proveedor</label>
-                                <input type="text" name="proveedor" id="inpProveedor" value="<?= htmlspecialchars($datos['proveedor'] ?? '') ?>" placeholder="Ej: ALENO SAS">
-                            </div>
-                            <div class="imo-form-group">
-                                <label>Código Producto Proveedor</label>
-                                <input type="text" name="codigo_proveedor" id="inpCodigoProveedor" value="<?= htmlspecialchars($datos['codigo_proveedor'] ?? '') ?>" placeholder="Ej: PROV-001">
-                            </div>
-                        </div>
-
-                        <!-- Calculadora Dinámica de Ganancias -->
-                        <div class="imo-form-group">
-                            <label class="font-bold text-teal">
-                                <i class="bi bi-calculator"></i> Calculadora de Ganancias Dinámica
-                            </label>
-                            
-                            <div class="mb-12">
-                                <label class="font-12">Precio Proveedor Base ($) *</label>
-                                <input type="number" step="0.01" name="precio_proveedor" id="inpPrecioProveedor" 
-                                       value="<?= htmlspecialchars($datos['precio_proveedor'] ?? 0) ?>" 
-                                       oninput="calcularTotales()" placeholder="0.00">
-                            </div>
-
-                            <!-- Contenedor donde JS dibuja las etapas y operaciones -->
-                            <div id="calc-container"></div>
-                        </div>
-
-                        <!-- Precios Calculados Finales -->
-                        <div class="imo-form-row">
-                            <div class="imo-form-group">
-                                <label>Precio Unitario Final (Asignado Automáticamente de Estampillas) *</label>
-                                <input type="number" step="0.01" name="precio" id="inpPrecio" value="<?= htmlspecialchars($datos['precio']) ?>" required>
-                            </div>
-                            <div class="imo-form-group">
-                                <label>Valor Final con IVA (Referencia Cliente)</label>
-                                <input type="text" id="resValorFinal" value="$0" readonly class="bg-readonly">
-                            </div>
-                        </div>
-
                         <div class="imo-form-row">
                             <div class="imo-form-group">
                                 <label>¿Aplica IVA?</label>
@@ -141,6 +100,49 @@ include dirname(__DIR__) . '/layout/menu.php';
                                 </div>
                             <?php endif; ?>
                             <input type="file" name="foto" accept="image/*">
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha: Precios y Calculadora Dinámica de Ganancias -->
+                    <div class="cot-edit-right">
+                        <!-- Fila de Precios del Proveedor -->
+                        <div class="imo-form-row">
+                            <div class="imo-form-group">
+                                <label>Proveedor</label>
+                                <input type="text" name="proveedor" id="inpProveedor" value="<?= htmlspecialchars($datos['proveedor'] ?? '') ?>" placeholder="Ej: ALENO SAS">
+                            </div>
+                            <div class="imo-form-group">
+                                <label>Código Proveedor</label>
+                                <input type="text" name="codigo_proveedor" id="inpCodigoProveedor" value="<?= htmlspecialchars($datos['codigo_proveedor'] ?? '') ?>" placeholder="Ej: PROV-001">
+                            </div>
+                        </div>
+
+                        <div class="imo-form-group">
+                            <label class="font-bold text-teal">
+                                <i class="bi bi-calculator"></i> Calculadora de Ganancias Dinámica
+                            </label>
+                            
+                            <div class="mb-12">
+                                <label class="font-12">Precio Proveedor Base ($) *</label>
+                                <input type="number" step="0.01" name="precio_proveedor" id="inpPrecioProveedor" 
+                                       value="<?= htmlspecialchars($datos['precio_proveedor'] ?? 0) ?>" 
+                                       oninput="calcularTotales()" placeholder="0.00">
+                            </div>
+
+                            <!-- Contenedor donde JS dibuja las etapas y operaciones -->
+                            <div id="calc-container"></div>
+                        </div>
+
+                        <!-- Precios Calculados Finales -->
+                        <div class="imo-form-row">
+                            <div class="imo-form-group">
+                                <label>Precio Unitario Final *</label>
+                                <input type="number" step="0.01" name="precio" id="inpPrecio" value="<?= htmlspecialchars($datos['precio']) ?>" required>
+                            </div>
+                            <div class="imo-form-group">
+                                <label>Valor Final con IVA</label>
+                                <input type="text" id="resValorFinal" value="$0" readonly class="bg-readonly">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -285,12 +287,13 @@ function calcularTotales() {
 }
 
 function toggleIva(val) {
-    const group = document.getElementById('groupPctIva');
-    if (val === 'si') {
-        group.style.display = 'block';
-    } else {
-        group.style.display = 'none';
-        document.getElementById('inpPctIva').value = 0;
+    const group = document.getElementById('grupoIvaPct');
+    if (group) {
+        group.style.display = (val === 'si') ? 'block' : 'none';
+    }
+    if (val !== 'si') {
+        const inp = document.getElementById('inpPctIva');
+        if (inp) inp.value = 0;
     }
     calcularTotales();
 }

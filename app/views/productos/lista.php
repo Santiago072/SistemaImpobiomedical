@@ -363,14 +363,40 @@ function cerrarModal(id, evento) {
     document.body.style.overflow = 'auto';
 }
 
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-        ['modal-crear','modal-editar','modal-eliminar'].forEach(id => {
-            document.getElementById(id)?.classList.remove('open');
-        });
-        document.body.style.overflow = 'auto';
-    }
-});
+let timerFiltro;
+const inputBusq = document.querySelector('.mod-search-input');
+if (inputBusq) {
+    inputBusq.addEventListener('input', function() {
+        clearTimeout(timerFiltro);
+        const q = this.value.toLowerCase().trim();
+        timerFiltro = setTimeout(() => {
+            const cards = document.querySelectorAll('.prod-grid .prod-card');
+            let encontrados = 0;
+            cards.forEach(card => {
+                const texto = card.textContent.toLowerCase();
+                if (texto.includes(q)) {
+                    card.style.display = 'flex';
+                    encontrados++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            let emptyMsg = document.getElementById('prod-no-results');
+            if (encontrados === 0 && cards.length > 0) {
+                if (!emptyMsg) {
+                    emptyMsg = document.createElement('div');
+                    emptyMsg.id = 'prod-no-results';
+                    emptyMsg.className = 'mod-empty-card';
+                    emptyMsg.innerHTML = '<i class="bi bi-search"></i><p>No se encontraron productos coincidentes.</p>';
+                    document.querySelector('.prod-grid').appendChild(emptyMsg);
+                }
+                emptyMsg.style.display = 'block';
+            } else if (emptyMsg) {
+                emptyMsg.style.display = 'none';
+            }
+        }, 150);
+    });
+}
 </script>
 
 <script src="<?= $basePath ?>public/js/script.js"></script>
