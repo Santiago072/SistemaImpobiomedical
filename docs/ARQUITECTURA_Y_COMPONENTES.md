@@ -1,8 +1,8 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** 2.2.0  
+**Versión:** 2.3.0  
 **Fecha:** Agosto 2026  
-**Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS (SMACSS/ITCSS) · DomPDF · PHPUnit 10
+**Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS (SMACSS/ITCSS en `css/modules/`) · DomPDF · PHPUnit 10
 
 ---
 

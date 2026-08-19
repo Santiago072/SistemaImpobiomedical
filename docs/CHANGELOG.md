@@ -4,6 +4,30 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v2.3.0] - 2026-08-18
+### Añadido
+- **Buscador en Tiempo Real en Catálogo de Productos**:
+  - Filtrado interactivo en el cliente con debounce de 150ms sobre la cuadrícula `.prod-grid` sin recargar la página.
+- **Layout en 2 Columnas para Edición de Ítems en Cotizaciones**:
+  - Formulario estructurado con distribución balanceada: datos del producto y precio a la izquierda, calculadora de ganancias y valor con IVA en tiempo real a la derecha.
+- **Diseño Unificado de Selectores de Estado (*Pill Badges*)**:
+  - Estilos modernos para los selectores de estado en *Consultar Cotizaciones* y *Órdenes de Compra* (`.estado-comercial-select` y `.estado-orden-select`).
+- **Modal y Flujo Seguro para Cambio Sugerido de Contraseña**:
+  - Detección automática para usuarios que ingresan con su documento inicial.
+  - Estilos dedicados en `css/modules/components.css` con efecto backdrop-blur, validaciones reactivas y botón de visualización de contraseña (*eye toggle*).
+- **Tarjetas de Usuarios Modernizadas**:
+  - Rediseño visual de las tarjetas en `app/views/usuarios/lista.php` con bordes suaves, iconos de contacto y centrado óptimo.
+
+### Corregido
+- **Persistencia de Ítems Temporales**:
+  - Eliminación de la redirección destructiva `&nueva=1` en los menús y dashboard, garantizando que el borrador de cotización se mantenga intacto al navegar entre diferentes módulos.
+- **Acciones en Órdenes de Compra**:
+  - Remoción del botón de descarga directa duplicado, unificando la acción en el botón interactivo `👁️ Ver P.O.`.
+- **Icono Toggle de Contraseña**:
+  - Preservación de la clase de posicionamiento absoluto al alternar la visibilidad de la contraseña en el modal.
+
+---
+
 ## [v2.2.0] - 2026-08-15
 ### Añadido
 - **Pestañas y Gestión de Estados en Órdenes de Compra**:
