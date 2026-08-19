@@ -1518,5 +1518,196 @@ td .estado-no-generado::before {
     align-self: center;
 }
 
+/* Modal Forzar / Sugerir Cambio de Contraseña Inicial */
+.modal-force-pass-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeInModal .2s ease-out;
+}
+
+.modal-force-pass-card {
+    background: #ffffff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 460px;
+    padding: 32px 28px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    position: relative;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    animation: slideUpModal .25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-modal-close-round {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 20px;
+    line-height: 1;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s;
+}
+
+.btn-modal-close-round:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.modal-force-pass-header {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+.modal-force-pass-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    color: #0284c7;
+    font-size: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.modal-force-pass-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+}
+
+.modal-force-pass-desc {
+    font-size: 13.5px;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.force-pass-label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+.force-pass-input {
+    width: 100%;
+    padding: 10px 40px 10px 14px;
+    border-radius: 10px;
+    border: 1.5px solid #cbd5e1;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    background: #f8fafc;
+    box-sizing: border-box;
+}
+
+.force-pass-input:focus {
+    border-color: #10757e;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(16, 117, 126, 0.15);
+}
+
+.password-input-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.force-pass-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+}
+
+.force-pass-toggle:hover {
+    color: #475569;
+}
+
+.force-pass-alert-box {
+    padding: 10px 14px;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    border-radius: 10px;
+    font-size: 12.5px;
+    margin-bottom: 14px;
+}
+
+.btn-force-pass-skip {
+    padding: 10px 16px;
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    color: #64748b;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.btn-force-pass-skip:hover {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.btn-force-pass-submit {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #10757e, #0e636b);
+    border: none;
+    color: #ffffff;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity .2s, transform .15s;
+}
+
+.btn-force-pass-submit:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+}
+
+.mb-18 { margin-bottom: 18px; }
+
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUpModal {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 
 
