@@ -1,83 +1,83 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v2.3.0 (Edición Comercial)  
-**Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS (SMACSS/ITCSS en `css/modules/`) · DomPDF · PHPUnit 10
+**Versión del Sistema:** v2.3.0  
+**Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular · DomPDF · PHPUnit 10
 
-Este documento formaliza los requisitos funcionales (RF), requisitos no funcionales (RNF), reglas de negocio y modelo de datos del **Sistema Impobiomedical**.
-
----
-
-## 1. Módulos y Requisitos Funcionales (RF)
-
-### 🔐 RF01 — Autenticación, Sesiones y Seguridad de Contraseñas
-* **RF01.1:** Inicio de sesión mediante Código/Documento y Contraseña cifrada con `bcrypt`.
-* **RF01.2:** Control de roles estricto: **Administrador** (acceso total a configuración, usuarios y métricas globales) y **Usuario/Asesor** (gestión de sus propias cotizaciones y consulta de catálogo/clientes).
-* **RF01.3 (Detección de Contraseña Inicial y Modal Sugerido):** Detección automática al iniciar sesión cuando la clave del usuario coincide con su número de documento, desplegando un modal interactivo para invitarlo a personalizar su contraseña (con botón de omisión para esa sesión).
-* **RF01.4:** Validación de contraseña personalizada (mínimo 6 caracteres, coincidencia de confirmación y prohibición de reutilizar el número de documento).
-* **RF01.5:** Visibilidad interactiva de contraseñas (botón de ojo 👁️ para alternar entre texto claro y oculto).
-* **RF01.6:** Bloqueo ante ataques de fuerza bruta mediante Rate Limiting en memoria de sesión por IP y endpoint.
-* **RF01.7:** Cierre de sesión seguro con invalidación total de cookies y almacenamiento de sesión.
-
-### 📊 RF02 — Panel de Control (Dashboard)
-* **RF02.1:** Indicadores clave de rendimiento (KPIs): Total de cotizaciones, productos registrados, clientes y cotizaciones del mes (filtrados por asesor para usuarios y consolidados para administradores).
-* **RF02.2:** Accesos directos rápidos a las funciones operativas más frecuentes (*Nueva Cotización*, *Consultar*, *Órdenes de Compra*, *Clientes*, *Catálogo*, *Usuarios*, *Estadísticas*).
-* **RF02.3:** Saludo personalizado con insignia destacada del código del asesor comercial (`EB-XX`).
-
-### 📝 RF03 — Cotizador Dinámico y Calculadora Comercial
-* **RF03.1:** Creación de cotizaciones con buscador interactivo en vivo de productos del catálogo médico.
-* **RF03.2 (Calculadora Dinámica de Ganancias Multietapa):** Cálculo automatizado paso a paso:
-  1. Precio base proveedor ($).
-  2. Etapa 1: Porcentaje de utilidad o sumas sobre el costo base (`utilidad`).
-  3. Etapa 2: Costos de flete y logística (`flete`).
-  4. Etapa 3: Calibración metrológica o instalación técnica (`calibracion`).
-  5. Etapa 4: Estampillas e impuestos territoriales (`estampillas`).
-  6. Cálculo del precio unitario final antes de IVA y sincronización del valor de venta sugerido al cliente.
-* **RF03.3 (Edición de Ítems en 2 Columnas):** Formulario de edición con distribución balanceada:
-  - **Columna izquierda:** Datos del producto (título, categoría, código, descripción, cantidad, IVA, imagen y Precio Unitario Final).
-  - **Columna derecha:** Información de proveedor, código de proveedor, panel de Calculadora Dinámica de Ganancias y resumen de Valor Final con IVA reactivo en tiempo real.
-* **RF03.4 (Persistencia de Ítems Temporales):** Mantenimiento continuo del borrador en curso y sus ítems temporales mientras el usuario navega entre módulos sin pérdida de datos.
-* **RF03.5:** Tratamiento tributario de IVA (19% discriminado o exento 0%).
-* **RF03.6:** Numeración consecutiva mensual inteligente con prefijo del asesor (Ej: `EB 01`, `EB 02`).
-* **RF03.7 (Versionamiento y Revisiones):** Modificación de cotizaciones existentes generando revisiones numeradas (Ej: `EB 01_01`), protegiendo el historial comercial.
-* **RF03.8 (Ciclo y Estados Comerciales):** Clasificación del estado de la negociación (`pendiente` 🟡, `concluida` 🟢, `descartada` 🔴) mediante selectores tipo *pill badge* interactivos vía AJAX para administradores.
-* **RF03.9:** Generación de PDF profesional con diseño corporativo listo para impresión y envío al cliente, además de Hoja de Respaldo interna confidencial.
-
-### 📦 RF04 — Gestión de Órdenes de Compra (P.O. - Purchase Orders)
-* **RF04.1:** Conversión de cotizaciones en estado `pendiente` en Órdenes de Compra a proveedores (bloqueo automático para cotizaciones concluidas o descartadas).
-* **RF04.2:** Selección granular de ítems asociados a un mismo proveedor.
-* **RF04.3:** Formulario de datos de despacho, condiciones de pago, datos bancarios de consignación, IVA y retenciones en la fuente.
-* **RF04.4 (Gestión de Estados y Pestañas):** Clasificación de órdenes en pestañas 🟡 **Órdenes Pendientes** y 🟢 **Órdenes Completadas** con selector *pill badge* reactivo vía AJAX para administradores.
-* **RF04.5 (Selección y Exportación Granular):** Checkboxes individuales y casilla maestra para exportación selectiva a PDF y archivo Excel (`.xls`) con sumatoria consolidada.
-* **RF04.6 (Visor y Descarga):** Botón `👁️ Ver P.O.` con modal interactivo para visualización e impresión/descarga directa del documento.
-
-### 🩺 RF05 — Catálogo de Productos Médicos
-* **RF05.1:** Cuadrícula moderna de productos en tarjetas (`.prod-grid` / `.prod-card`) con título, código, etiquetas de IVA y estado.
-* **RF05.2 (Buscador Dinámico en Tiempo Real):** Filtrado instantáneo en vivo mientras el usuario escribe sin recargar la página.
-* **RF05.3:** Registro y edición con subida y sanitización segura de imágenes (validación de extensiones y tipos MIME reales).
-* **RF05.4:** Exportación de catálogo consolidado en PDF con fotografías médicas miniatura de alta resolución y optimización de memoria.
-
-### 🏢 RF06 — Directorio de Clientes y Entidades
-* **RF06.1:** Registro de entidades de salud, hospitales, clínicas y médicos particulares con NIT, departamento, municipio/ciudad, contacto, teléfono, correo y dirección.
-* **RF06.2:** Autocompletado rápido de clientes y departamentos en el flujo de finalización de cotizaciones.
-
-### 👥 RF07 — Administración de Usuarios (Solo Admin)
-* **RF07.1:** Diseño moderno de tarjetas de usuarios (`.usr-card`) con avatar, rol, código, correo, teléfono y acciones.
-* **RF07.2:** Creación y edición de asesores comerciales con asignación de código único (`codigo_asesor`).
-* **RF07.3:** Campos de correo y teléfono opcionales.
-* **RF07.4:** Restablecimiento administrativo de contraseñas con un solo clic (asigna por defecto el documento del usuario).
-
-### 📈 RF08 — Reportes y Estadísticas
-* **RF08.1:** Filtros avanzados por rango de fechas, asesor y cliente.
-* **RF08.2 (Gráfico Evolutivo Comparativo):** Visualización interactiva en Chart.js de la relación mensual entre **Cotizaciones Totales** vs. **Cotizaciones Concluidas**.
-* **RF08.3:** Exportación consolidada de reportes en PDF con diseño formal, KPIs, tops y evolución mensual sincronizada.
+Este documento formaliza los requisitos funcionales (RF), requisitos no funcionales (RNF), control de acceso por roles y reglas de negocio del **Sistema Impobiomedical**.
 
 ---
 
-## 2. Requisitos No Funcionales (RNF)
+## 1. Control de Acceso y Visibilidad por Roles
 
-* **RNF01 (Seguridad y Resiliencia):** Todas las consultas SQL implementadas con PDO y parámetros preparados contra inyecciones SQL.
-* **RNF02 (Integridad de Peticiones):** Validación universal de tokens CSRF en todas las operaciones POST y DELETE.
-* **RNF03 (Arquitectura CSS Modular y Limpia):** Estilos organizados en `css/modules/` (SMACSS/ITCSS) sin código inline en las vistas PHP.
-* **RNF04 (Compatibilidad y Portabilidad):** Arquitectura ejecutable en servidores LAMP/LEMP tradicionales o contenedores Docker con script `deploy.sh` sin pérdida de datos ni destrucción de volúmenes.
-* **RNF05 (Calidad de Código):** Cobertura de pruebas unitarias automatizadas con PHPUnit y pipeline de CI en GitHub Actions.
-* **RNF06 (Diseño Responsivo y Experiencia de Usuario):** Interfaz adaptada para escritorio y pantallas móviles con tipografía Inter, transiciones suaves y componentes accesibles.
+El sistema cuenta con dos roles claramente diferenciados:
+
+* **Administrador (`admin`):** Acceso total al sistema. Dispone del menú de **Administración** (Gestión de Usuarios, Gestión de Productos y Gestión de Clientes), menú de **Cotizaciones** (Nueva Cotización, Consultar, Órdenes de Compra y Estadísticas/Reportes), y cambio de estados comerciales de cotizaciones y órdenes de compra.
+* **Usuario / Asesor Comercial (`usuario`):** Acceso enfocado exclusivamente a su operación comercial. Dispone del menú **Cotizaciones** con los submódulos de **Nueva Cotización**, **Consultar** (sus propias cotizaciones con indicadores visuales de estado) y **Órdenes de Compra**. No tiene acceso a los módulos de administración ni a estadísticas generales.
+
+---
+
+## 2. Requisitos Funcionales (RF)
+
+### 🔐 Autenticación y Seguridad de Acceso
+* **RF01:** El sistema debe permitir el inicio de sesión mediante documento o código de usuario y contraseña cifrada.
+* **RF02:** El sistema debe validar el rol del usuario autenticado y restringir el acceso a los módulos según sus permisos asignados.
+* **RF03:** El sistema debe detectar automáticamente cuando un usuario ingresa con su número de documento como contraseña inicial y desplegar una ventana para sugerirle personalizar su contraseña, permitiendo la opción de omitir el cambio para esa sesión.
+* **RF04:** El sistema debe validar que la nueva contraseña tenga una longitud mínima de 6 caracteres, coincida con su confirmación y sea diferente a su número de documento.
+* **RF05:** El sistema debe permitir alternar la visibilidad de los caracteres en los campos de contraseña mediante un botón interactivo.
+* **RF06:** El sistema debe bloquear intentos reiterados de acceso no autorizado aplicando límite de peticiones por tiempo e IP.
+* **RF07:** El sistema debe permitir el cierre seguro de sesión destruyendo la información almacenada y las cookies asociadas.
+
+### 📊 Panel de Control (Dashboard)
+* **RF08:** El sistema debe mostrar indicadores numéricos clave: cotizaciones totales, cotizaciones del mes en curso, total de clientes registrados y productos activos en catálogo.
+* **RF09:** El sistema debe filtrar los indicadores numéricos del dashboard para mostrar únicamente los datos correspondientes al asesor autenticado cuando se trate de un usuario con rol asesor.
+* **RF10:** El sistema debe presentar accesos directos rápidos acordes a los permisos del usuario conectado.
+* **RF11:** El sistema debe mostrar un saludo de bienvenida con la insignia del código asignado al asesor comercial.
+
+### 📝 Cotizaciones y Calculadora Comercial
+* **RF12:** El sistema debe permitir crear cotizaciones buscando productos del catálogo o ingresando productos de manera manual.
+* **RF13:** El sistema debe incluir una calculadora dinámica de ganancias que permita registrar operaciones multietapa sobre el costo del proveedor: utilidad, fletes, calibración y estampillas.
+* **RF14:** El sistema debe permitir la edición de productos agregados a la lista temporal distribuyendo el formulario en dos columnas: datos y precio unitario del producto a la izquierda, y calculadora de ganancias con cálculo de valor con IVA a la derecha.
+* **RF15:** El sistema debe mantener los productos agregados en la lista temporal de la cotización mientras el usuario navega entre diferentes módulos del sistema.
+* **RF16:** El sistema debe permitir aplicar IVA del 19% o registrar el producto como exento de IVA.
+* **RF17:** El sistema debe asignar un número consecutivo mensual precedido por el código del asesor comercial al momento de generar la cotización.
+* **RF18:** El sistema debe permitir modificar cotizaciones existentes generando una versión numerada de revisión que preserve el historial comercial original.
+* **RF19:** El sistema debe permitir a los administradores actualizar el estado comercial de las cotizaciones entre pendiente, concluida y descartada en tiempo real.
+* **RF20:** El sistema debe generar documentos PDF oficiales para el cliente con diseño corporativo y hojas de respaldo confidencial con costos y proveedores.
+
+### 📦 Órdenes de Compra (P.O. - Purchase Orders)
+* **RF21:** El sistema debe permitir generar órdenes de compra dirigidas a proveedores a partir de cotizaciones en estado pendiente.
+* **RF22:** El sistema debe bloquear la emisión de órdenes de compra para cotizaciones que se encuentren en estado concluida o descartada.
+* **RF23:** El sistema debe clasificar las órdenes de compra en pestañas de órdenes pendientes y órdenes completadas con contadores en tiempo real.
+* **RF24:** El sistema debe permitir a los administradores actualizar el estado de las órdenes de compra entre pendiente y completada.
+* **RF25:** El sistema debe permitir la selección individual y masiva de órdenes de compra mediante casillas de verificación para su exportación consolidada a PDF y Excel.
+* **RF26:** El sistema debe incluir un visor interactivo de documentos para previsualizar e imprimir la orden de compra directamente.
+
+### 🩺 Catálogo de Productos Médicos (Solo Administrador)
+* **RF27:** El sistema debe permitir registrar, editar y listar productos médicos organizados en cuadrícula de tarjetas con foto, código, título, IVA y estado.
+* **RF28:** El sistema debe permitir filtrar productos en el catálogo en tiempo real mientras el usuario escribe en el campo de búsqueda sin recargar la página.
+* **RF29:** El sistema debe validar y sanitizar los archivos de imagen subidos al catálogo comprobando tipos MIME reales y extensiones permitidas.
+* **RF30:** El sistema debe permitir exportar el catálogo completo consolidado en formato PDF con fotografías miniatura.
+
+### 🏢 Directorio de Clientes y Entidades (Solo Administrador)
+* **RF31:** El sistema debe permitir registrar y administrar clientes con NIT, departamento, municipio, persona de contacto, teléfono y correo electrónico.
+* **RF32:** El sistema debe autocompletar la información del cliente y su ubicación durante el proceso de finalización de una cotización.
+
+### 👥 Gestión de Usuarios (Solo Administrador)
+* **RF33:** El sistema debe permitir registrar y administrar cuentas de usuario asignando nombre, código único de asesor, documento, cargo, correo, teléfono y rol.
+* **RF34:** El sistema debe permitir restablecer la contraseña de cualquier usuario asignando por defecto su número de documento.
+
+### 📈 Estadísticas y Reportes (Solo Administrador)
+* **RF35:** El sistema debe permitir filtrar el volumen de cotizaciones por rango de fechas, asesor y cliente.
+* **RF36:** El sistema debe presentar un gráfico comparativo mensual de cotizaciones totales frente a cotizaciones concluidas.
+* **RF37:** El sistema debe generar reportes ejecutivos consolidados en formato PDF con métricas y tablas comparativas.
+
+---
+
+## 3. Requisitos No Funcionales (RNF)
+
+* **RNF01:** Todas las transacciones y consultas a la base de datos deben ejecutarse mediante PDO con sentencias preparadas y parámetros enlazados para prevenir ataques de inyección SQL.
+* **RNF02:** Todas las solicitudes que modifiquen el estado del sistema deben validar obligatoriamente un token de seguridad contra ataques de falsificación de petición en sitios cruzados (CSRF).
+* **RNF03:** La interfaz de usuario debe estar estructurada mediante hojas de estilo CSS modulares organizadas por componentes sin incrustar estilos inline en las vistas.
+* **RNF04:** El sistema debe ser compatible para su ejecución en entornos web con PHP 8.2 y servidores de base de datos MySQL 8 o MariaDB, permitiendo despliegues continuos sin pérdida de información ni sobreescritura de datos.
+* **RNF05:** El código fuente debe contar con pruebas unitarias automatizadas para validar la lógica de cálculos comerciales, consecutivos e integridad de seguridad.
+* **RNF06:** La interfaz debe ser adaptable y visualmente consistente para diferentes resoluciones de pantalla en computadores de escritorio y dispositivos móviles.
