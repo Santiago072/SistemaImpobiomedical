@@ -62,12 +62,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
             if (submitBtn && !submitBtn.disabled) {
+                // Si el botón es un icono compacto de eliminar en tabla/tarjeta, no cambiarle el texto para evitar que se desborde
+                const esBotonIcono = submitBtn.classList.contains('mod-btn-del') || form.classList.contains('form-inline-action');
+
                 setTimeout(function () {
                     if (e.defaultPrevented) return;
                     submitBtn.disabled = true;
                     submitBtn.style.opacity = '0.7';
                     submitBtn.style.cursor = 'not-allowed';
-                    if (submitBtn.tagName === 'BUTTON') {
+                    if (submitBtn.tagName === 'BUTTON' && !esBotonIcono) {
                         submitBtn.dataset.originalHtml = submitBtn.innerHTML;
                         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
                     }
