@@ -337,7 +337,20 @@ function autocompletar(p) {
     document.getElementById('hdnProductoId').value    = p.id;
     document.getElementById('inpTitulo').value        = p.titulo;
     document.getElementById('inpDesc').value          = p.descripcion;
-    document.getElementById('inpPrecio').value        = p.precio;
+    
+    // Si la calculadora de ganancias ya tiene un precio calculado de estampillas, respetarlo y no sobreescribir
+    const precioCalculadoEstampillas = parseFloat(document.getElementById('hdnEstampillas')?.value) || 0;
+    const precioProveedorBase = parseFloat(document.getElementById('inpPrecioProveedor')?.value) || 0;
+    
+    if (precioProveedorBase <= 0) {
+        document.getElementById('inpPrecio').value = p.precio;
+        const lbl = document.getElementById('lblPrecioFuente');
+        if (lbl) lbl.textContent = '';
+    } else {
+        // Si hay calculadora activa, recalcular totales para mantener sincronizado
+        calcularTotales();
+    }
+
     document.getElementById('inpCantidad').value      = 1;
     document.getElementById('inpIva').value           = (p.iva || 'si').toLowerCase();
     document.getElementById('inpPctIva').value        = parseFloat(p.porcentaje_iva || 19);
