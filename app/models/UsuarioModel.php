@@ -3,11 +3,11 @@
  * UsuarioModel — acceso a datos de la tabla usuarios (migrado a PDO).
  *
  * - SRP: toda la lógica SQL de usuarios vive aquí.
- * - NOTA: No implementa RepositoryInterface debido a parámetros específicos del método crear()
+ * - ISP: implementa RepositoryInterface (contrato estricto).
  *
  * Campos clave: codigo (ej: EB) — usado para numerar cotizaciones.
  */
-class UsuarioModel
+class UsuarioModel implements RepositoryInterface
 {
     private \PDO $db;
 

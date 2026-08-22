@@ -246,7 +246,7 @@ $esDashboard = $esDashboard ?? false;
                     
                     <div class="manual-step-grid">
                         <div class="manual-step-card">
-                            <div class="step-badge" style="background:#0f766e;">Usuarios y Claves</div>
+                            <div class="step-badge step-badge-teal">Usuarios y Claves</div>
                             <h4>Gestión de Asesores</h4>
                             <ul>
                                 <li><strong>Creación de Usuarios:</strong> Asigna el nombre, rol y el <strong>Código de Cotización</strong> (2 letras, ej: <code>EB</code>, <code>SL</code>).</li>
@@ -257,7 +257,7 @@ $esDashboard = $esDashboard ?? false;
                         </div>
 
                         <div class="manual-step-card">
-                            <div class="step-badge" style="background:#0f766e;">Productos</div>
+                            <div class="step-badge step-badge-teal">Productos</div>
                             <h4>Catálogo Central</h4>
                             <ul>
                                 <li><strong>Crear y Editar:</strong> Organiza productos con fotos médicas, categorías, código institucional, porcentaje de IVA y precios base.</li>
@@ -562,6 +562,9 @@ $esDashboard = $esDashboard ?? false;
     padding: 2px 8px;
     border-radius: 6px;
     margin-bottom: 8px;
+}
+.step-badge-teal {
+    background: #0f766e;
 }
 .manual-step-card h4 {
     font-size: 0.92rem;
