@@ -4,6 +4,22 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v2.4.0] - 2026-08-22
+### Añadido
+- **Manual de Usuario Interactivo y Adaptativo por Rol**:
+  - Botón interactivo `[ ❓ Ayuda ]` en la barra superior (`topbar.php`) accesible de forma global desde todos los módulos.
+  - Modal con pestañas temáticas: *1. Nueva Cotización*, *2. Consultar y Modificar*, *3. Órdenes de Compra*, *4. Clientes*, *5. Gestión Administrativa* y *6. Estadísticas y Reportes*.
+  - Renderizado adaptativo que muestra funciones operativas para asesores y la suite completa de administración para usuarios con rol `admin`.
+- **Actualización Documental Integral**:
+  - Actualización de `docs/MANUAL_USUARIO.md` reflejando el flujo de trabajo en 2 pasos, la suite de órdenes de compra y el nuevo sistema de ayuda rápida.
+
+### Corregido
+- **Módulo de Cotizaciones**:
+  - Corrección de la salida del modo *Modificar Cotización* al navegar a *Nueva Cotización* desde el menú lateral y panel principal.
+  - Preservación del precio calculado de Estampillas al autocompletar con productos del catálogo médico.
+
+---
+
 ## [v2.3.0] - 2026-08-18
 ### Añadido
 - **Buscador en Tiempo Real en Catálogo de Productos**:
