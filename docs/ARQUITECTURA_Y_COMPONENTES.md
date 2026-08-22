@@ -146,12 +146,13 @@ graph TB
 | [index.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/index.php) | Core | **OCP** | Front Controller centralizado; valida rutas y emite cabeceras de seguridad HTTP. |
 | [seguridad.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/config/seguridad.php) | Core | **SRP** | Manejo de sesiones blindadas, tokens CSRF, rate limiting, sanitización y escape XSS. |
 | [conexion.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/config/conexion.php) | Persistencia | **Singleton** | Conexión única PDO con `ERRMODE_EXCEPTION` y emulación deshabilitada. |
+| [RepositoryInterface.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/contracts/RepositoryInterface.php) | Contratos | **ISP** | Contrato base estandarizado para operaciones CRUD (`listar`, `contar`, `buscarPorId`, `eliminar`). |
 | [CotizacionController.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/controllers/CotizacionController.php) | Controlador | **SRP** | Orquesta el flujo de cotizaciones, creación de borradores y versiones. |
 | [FinalizarCotizacionService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/FinalizarCotizacionService.php) | Servicio | **SRP** | Generación de números consecutivos (`EB 01`, `EB 01_01`) y cierre de cotizaciones. |
-| [CotizacionItemService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/CotizacionItemService.php) | Servicio | **SRP** | Algoritmo de cálculo dinámico de utilidades, fletes, calibración, estampillas e IVA. |
+| [ItemCotizacionService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/ItemCotizacionService.php) | Servicio | **SRP** | Algoritmo de cálculo dinámico de utilidades, fletes, calibración, estampillas e IVA. |
 | [OrdenCompraController.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/controllers/OrdenCompraController.php) | Controlador | **SRP** | Emisión y control de órdenes, navegación por pestañas y exportación selectiva a PDF/Excel. |
 | [FileUploadService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/FileUploadService.php) | Servicio | **SRP** | Validación de tipos MIME reales, tamaños máximos y nombres únicos de archivos. |
-| [Modelos PDO](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/models/) | Persistencia | **DIP** | Acceso a datos con parámetros nombrados, eliminando cualquier vector de SQL Injection. |
+| [Modelos PDO](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/models/) | Persistencia | **ISP / DIP** | Acceso a datos con parámetros nombrados, eliminando cualquier vector de SQL Injection e implementando `RepositoryInterface`. |
 
 ---
 
@@ -160,6 +161,9 @@ graph TB
 ```text
 SistemaImpobiomedical/
 ├── app/
+│   ├── contracts/              # Interfaces y contratos del sistema (SOLID ISP)
+│   │   └── RepositoryInterface.php
+│   │
 │   ├── controllers/            # Controladores del sistema (MVC)
 │   │   ├── AuthController.php
 │   │   ├── ClienteController.php
@@ -170,7 +174,7 @@ SistemaImpobiomedical/
 │   │   ├── ProductoController.php
 │   │   └── UsuarioController.php
 │   │
-│   ├── models/                 # Modelos con persistencia PDO y sentencias preparadas
+│   ├── models/                 # Modelos con persistencia PDO y RepositoryInterface
 │   │   ├── ClienteModel.php
 │   │   ├── CotizacionModel.php
 │   │   ├── EstadisticaModel.php
@@ -178,10 +182,10 @@ SistemaImpobiomedical/
 │   │   ├── ProductoModel.php
 │   │   └── UsuarioModel.php
 │   │
-│   ├── services/               # Lógica de negocio y utilidades desacopladas
-│   │   ├── CotizacionItemService.php
+│   ├── services/               # Lógica de negocio y utilidades desacopladas (SOLID SRP)
 │   │   ├── FileUploadService.php
-│   │   └── FinalizarCotizacionService.php
+│   │   ├── FinalizarCotizacionService.php
+│   │   └── ItemCotizacionService.php
 │   │
 │   └── views/                  # Vistas modulares (HTML + PHP puro)
 │       ├── auth/               # Login y cambio de credenciales
