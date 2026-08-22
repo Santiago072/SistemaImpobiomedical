@@ -213,11 +213,27 @@ $esDashboard = $esDashboard ?? false;
             <div id="tab-clientes" class="tab-content">
                 <div class="manual-section">
                     <h3 class="manual-h3"><i class="bi bi-4-circle-fill text-primary"></i> Directorio de Clientes e Instituciones de Salud</h3>
-                    <p class="manual-p">Gestiona el catálogo de hospitales, clínicas, EPS e instituciones:</p>
-                    <ul>
-                        <li><strong>Búsqueda en tiempo real:</strong> Encuentra entidades por NIT, nombre, departamento o ciudad.</li>
-                        <li><strong>Crear / Actualizar:</strong> Registra datos de contacto, teléfonos y correo para agilizar el llenado automático en las cotizaciones.</li>
-                    </ul>
+                    <p class="manual-p">Gestiona y consulta el catálogo centralizado de hospitales, clínicas, EPS y entidades médicas:</p>
+                    
+                    <div class="manual-step-grid">
+                        <div class="manual-step-card">
+                            <div class="step-badge">Búsqueda y Filtros</div>
+                            <h4>Consulta en Tiempo Real</h4>
+                            <ul>
+                                <li><strong>Filtrado Inmediato:</strong> Encuentra entidades al instante buscando por NIT, razón social, departamento o municipio.</li>
+                                <li><strong>Validación de NIT Único:</strong> Evita duplicados en el registro institucional.</li>
+                            </ul>
+                        </div>
+
+                        <div class="manual-step-card">
+                            <div class="step-badge">Registro y Cotizaciones</div>
+                            <h4>Autocompletado Comercial</h4>
+                            <ul>
+                                <li><strong>Crear / Actualizar:</strong> Registra la persona de contacto, teléfono y correo electrónico.</li>
+                                <li><strong>Llenado Ágil:</strong> Al seleccionar un cliente en el paso final de una cotización, todos sus datos tributarios y geográficos se rellenan solos.</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -230,12 +246,13 @@ $esDashboard = $esDashboard ?? false;
                     
                     <div class="manual-step-grid">
                         <div class="manual-step-card">
-                            <div class="step-badge" style="background:#0f766e;">Usuarios</div>
+                            <div class="step-badge" style="background:#0f766e;">Usuarios y Claves</div>
                             <h4>Gestión de Asesores</h4>
                             <ul>
-                                <li>Crear usuarios asignando su <strong>Código de Cotización</strong> (2 letras, ej: <code>EB</code>, <code>SL</code>).</li>
-                                <li>Asignar roles (Administrador o Usuario).</li>
-                                <li><strong>Reset de Contraseña:</strong> Restablece la contraseña de cualquier usuario a su documento en 1 clic.</li>
+                                <li><strong>Creación de Usuarios:</strong> Asigna el nombre, rol y el <strong>Código de Cotización</strong> (2 letras, ej: <code>EB</code>, <code>SL</code>).</li>
+                                <li><strong>Contraseña Inicial:</strong> Al crear un usuario, su contraseña inicial por defecto es su <strong>número de documento</strong>.</li>
+                                <li><strong>Primer Ingreso:</strong> Cuando el usuario inicia sesión por primera vez con su documento, el sistema le sugiere actualizar su contraseña personal.</li>
+                                <li><strong>Restablecimiento:</strong> Si un asesor olvida su clave, el administrador puede restablecerla a su documento original con un solo clic.</li>
                             </ul>
                         </div>
 
@@ -243,9 +260,9 @@ $esDashboard = $esDashboard ?? false;
                             <div class="step-badge" style="background:#0f766e;">Productos</div>
                             <h4>Catálogo Central</h4>
                             <ul>
-                                <li>Crear, editar y organizar productos con fotos médicas, categorías, IVA y precios base.</li>
-                                <li>Exportación completa del catálogo de productos en formato PDF.</li>
-                                <li>La eliminación de un producto no afecta las cotizaciones históricas ya creadas.</li>
+                                <li><strong>Crear y Editar:</strong> Organiza productos con fotos médicas, categorías, código institucional, porcentaje de IVA y precios base.</li>
+                                <li><strong>Exportación:</strong> Descarga el catálogo completo de productos en PDF con diseño estructurado.</li>
+                                <li><strong>Seguridad de Datos:</strong> Eliminar o modificar un producto del catálogo no afecta las cotizaciones históricas ya emitidas.</li>
                             </ul>
                         </div>
                     </div>
@@ -256,12 +273,27 @@ $esDashboard = $esDashboard ?? false;
             <div id="tab-stats" class="tab-content">
                 <div class="manual-section">
                     <h3 class="manual-h3"><i class="bi bi-graph-up-arrow text-primary"></i> Estadísticas y Reportes Comerciales</h3>
-                    <p class="manual-p">Métricas ejecutivas de rendimiento comercial:</p>
-                    <ul>
-                        <li><strong>Gráficos de Cotizaciones:</strong> Seguimiento visual del volumen mensual y evolución de propuestas emitidas.</li>
-                        <li><strong>Rendimiento por Asesor:</strong> Comparativa del desempeño comercial entre usuarios.</li>
-                        <li><strong>Exportación Ejecutiva:</strong> Generación del reporte gerencial consolidado en PDF con gráficos y tablas resumen.</li>
-                    </ul>
+                    <p class="manual-p">Métricas ejecutivas y análisis de rendimiento para la toma de decisiones:</p>
+                    
+                    <div class="manual-step-grid">
+                        <div class="manual-step-card">
+                            <div class="step-badge">Métricas Clave</div>
+                            <h4>Evolución y Rendimiento</h4>
+                            <ul>
+                                <li><strong>Gráficos Mensuales:</strong> Seguimiento visual de la evolución y volumen de cotizaciones emitidas durante el año.</li>
+                                <li><strong>Efectividad Comercial:</strong> Comparativa visual entre cotizaciones totales vs. cotizaciones concluidas (ganadas).</li>
+                                <li><strong>Desempeño por Asesor:</strong> Tabla comparativa de actividad y volumen por cada usuario comercial.</li>
+                            </ul>
+                        </div>
+
+                        <div class="manual-step-card">
+                            <div class="step-badge">Exportación Ejecutiva</div>
+                            <h4>Informes Gerenciales</h4>
+                            <ul>
+                                <li><strong>Reporte en PDF:</strong> Generación instantánea del informe gerencial consolidado con gráficos estadísticos, tablas de totales y resumen ejecutivo para reuniones comerciales.</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
             <?php endif; ?>
@@ -418,6 +450,21 @@ $esDashboard = $esDashboard ?? false;
     border-bottom: 1px solid #e2e8f0;
     overflow-x: auto;
     gap: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+.modal-manual-tabs::-webkit-scrollbar {
+    height: 5px;
+}
+.modal-manual-tabs::-webkit-scrollbar-track {
+    background: transparent;
+}
+.modal-manual-tabs::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.modal-manual-tabs::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 .tab-btn {
     padding: 9px 14px;
@@ -435,6 +482,7 @@ $esDashboard = $esDashboard ?? false;
     gap: 6px;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
+    flex-shrink: 0;
 }
 .tab-btn:hover {
     color: #0f172a;
