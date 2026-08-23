@@ -1,75 +1,220 @@
-/* ── MEDIA QUERIES Y DISEÑO RESPONSIVE ── */
+/* ── MEDIA QUERIES Y DISEÑO RESPONSIVE GLOBAL ── */
 /* ════════════════════════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE GLOBAL — SISTEMA IMPOBIOMEDICAL
 ════════════════════════════════════════════════════════════ */
-@media (max-width: 480px) {
-    .grupo-fila {
-        grid-template-columns: 1fr;
-    }
 
-    .panel-right {
-        padding: 30px 20px;
-    }
-
-    .formulario-contenedor {
-        padding: 25px;
-    }
-
-    .tabla-datos th,
-    .tabla-datos td {
-        padding: 12px;
-        font-size: 13px;
+/* Pantallas grandes y medianas (<= 1200px) */
+@media (max-width: 1200px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
+/* Tablets en horizontal / Pantallas intermedias (<= 1024px) */
+@media (max-width: 1024px) {
+    .cot-grid {
+        grid-template-columns: 1fr;
+    }
+    .imo-form-row {
+        grid-template-columns: 1fr;
+    }
+    .prod-edit-layout {
+        grid-template-columns: 1fr;
+    }
+    .stats-charts-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .calc-op-row {
+        flex-wrap: wrap;
+    }
+}
+
+/* Tablets en vertical (<= 768px) */
 @media (max-width: 768px) {
     .menu-lateral {
-        margin-left: -120px;
+        margin-left: -140px;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.15);
     }
 
-    .menu-lateral.visible {
-        margin-left: 0;
+    .menu-lateral.visible,
+    body.menu-abierto-movil .menu-lateral {
+        margin-left: 0 !important;
+    }
+
+    .cabecera-superior {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 12px 18px;
+        height: auto;
+        min-height: 65px;
+        flex-wrap: wrap;
     }
 
     .contenido-principal {
         margin-left: 0 !important;
-        padding: 20px;
+        margin-top: 70px;
+        padding: 18px 14px;
     }
 
     .panel-flotante {
-        left: 120px;
+        left: 140px;
         width: 260px;
     }
 
-    .card-wrapper {
+    .page-header {
         flex-direction: column;
-        min-height: auto;
+        align-items: flex-start;
+        gap: 12px;
     }
 
-    .panel-left {
-        display: none;
+    .header-actions-wrap {
+        width: 100%;
+        justify-content: flex-start;
     }
 
-    .panel-right {
-        padding: 40px 30px;
-    }
-
-    .numero-principal {
-        font-size: 40px;
-    }
-
-    .contenedor-tarjetas {
+    .kpi-grid {
         grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .filters-bar-form,
+    .filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .filter-group,
+    .cot-filter-date,
+    .cot-filter-client,
+    .cot-filter-num,
+    .cot-filter-select {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    /* Tablas con scroll táctil suave */
+    .tabla-responsive,
+    .mod-table-wrap {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 12px;
+    }
+
+    .mod-table th,
+    .mod-table td {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .imo-modal {
+        width: 95% !important;
+        max-width: 95% !important;
+        margin: 10px;
+        border-radius: 14px;
+    }
+
+    .imo-modal-header {
+        padding: 16px 20px 14px;
+    }
+
+    .imo-modal-body {
+        padding: 18px 20px;
+    }
+
+    .imo-modal-footer {
+        padding: 14px 20px 18px;
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .imo-modal-footer button,
+    .imo-modal-footer a {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .modal-manual-card {
+        max-height: 92vh;
+        border-radius: 12px;
+    }
+
+    .modal-manual-header {
+        padding: 14px 18px;
+    }
+
+    .modal-manual-title {
+        font-size: 1rem;
+    }
+
+    .modal-manual-body {
+        padding: 16px;
+    }
+
+    .modal-manual-tabs {
+        padding: 6px 12px 0 12px;
+    }
+
+    .modal-manual-footer {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .modal-manual-footer button {
+        width: 100%;
     }
 }
 
-@media (max-width: 900px) {
-    .panel-dos-columnas {
+/* Teléfonos móviles pequeños (<= 480px) */
+@media (max-width: 480px) {
+    .contenido-principal {
+        padding: 14px 10px;
+    }
+
+    .page-title {
+        font-size: 1.25rem !important;
+    }
+
+    .actions-grid {
         grid-template-columns: 1fr;
     }
 
-    .contenedor-tarjetas {
-        grid-template-columns: 1fr;
+    .action-card {
+        padding: 16px;
+    }
+
+    .kpi-card {
+        padding: 16px 14px;
+    }
+
+    .kpi-num {
+        font-size: 22px;
+    }
+
+    .mod-btn-category {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+
+    .topbar-welcome-title {
+        font-size: 15px !important;
+    }
+
+    .btn-help-topbar {
+        padding: 4px 10px;
+        font-size: 0.76rem;
+    }
+
+    .prod-grid,
+    .usr-grid {
+        grid-template-columns: 1fr !important;
     }
 }
 
