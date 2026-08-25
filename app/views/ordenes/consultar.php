@@ -150,7 +150,7 @@ $tabActual = $tabActual ?? 'pendientes';
                             </td>
                             <td><?= htmlspecialchars($ord['condiciones_pago'] ?? '') ?></td>
                             <td class="text-center">
-                                <?php if ($rol === 'admin'): ?>
+                                <?php if ($rol === 'admin' || $rol === 'compras'): ?>
                                     <select class="estado-orden-select <?= $estOrd === 'completada' ? 'badge-green' : 'badge-gold' ?>" 
                                             data-id="<?= (int)$ord['id'] ?>"
                                             onchange="cambiarEstadoOrden(this)">

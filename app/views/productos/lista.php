@@ -28,11 +28,9 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <a href="<?= $exportUrl ?>&action=exportarPdf" download="Catalogo_Productos.pdf" class="btn-mod-primary btn-pdf-export">
                     <i class="bi bi-file-earmark-pdf"></i> PDF
                 </a>
-                <?php if ($_SESSION['rol'] === 'admin'): ?>
                 <button class="btn-mod-primary" onclick="abrirModalCrear()">
                     <i class="bi bi-plus-lg"></i> Nuevo Producto
                 </button>
-                <?php endif; ?>
             </div>
         </div>
 
@@ -111,9 +109,11 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <button class="mod-btn-edit" onclick="abrirModalEditar(<?= htmlspecialchars(json_encode($p)) ?>)" title="Editar">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
+                        <?php if (($_SESSION['rol'] ?? '') === 'admin'): ?>
                         <button class="mod-btn-del" onclick="confirmarEliminar(<?= intval($p['id']) ?>, '<?= htmlspecialchars(addslashes($p['titulo'])) ?>')" title="Eliminar">
                             <i class="bi bi-trash-fill"></i>
                         </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -27,11 +27,9 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                     <i class="bi bi-house-door-fill"></i>
                 </a>
             </li>
-            <?php if ($rol === 'admin'): ?>
-            <li class="menu-desplegable" data-panel="admin" title="Administración">
-                <a href="#"><i class="bi bi-gear-fill"></i></a>
+            <li class="menu-desplegable" data-panel="gestion" title="Gestión">
+                <a href="#"><i class="bi bi-grid-fill"></i></a>
             </li>
-            <?php endif; ?>
             <li class="menu-desplegable" data-panel="cotizaciones" title="Cotizaciones">
                 <a href="#"><i class="bi bi-file-earmark-text-fill"></i></a>
             </li>
@@ -55,11 +53,13 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     let   timeout;
 
     const menus = {
-        admin: `
-            <h3>Administración</h3>
+        gestion: `
+            <h3>Gestión</h3>
+            <?php if ($rol === 'admin'): ?>
             <li><a href="<?= $basePath ?>?module=usuarios"><i class="fas fa-users"></i> Gestión de Usuarios</a></li>
-            <li><a href="<?= $basePath ?>?module=productos"><i class="fas fa-box-open"></i> Gestión de Productos</a></li>
-            <li><a href="<?= $basePath ?>?module=clientes"><i class="fas fa-building"></i> Gestión de Clientes</a></li>
+            <?php endif; ?>
+            <li><a href="<?= $basePath ?>?module=productos"><i class="fas fa-box-open"></i> Catálogo de Productos</a></li>
+            <li><a href="<?= $basePath ?>?module=clientes"><i class="fas fa-building"></i> Directorio de Clientes</a></li>
         `,
         cotizaciones: `
             <h3>Cotizaciones</h3>

@@ -240,7 +240,7 @@ class OrdenCompraModel
                 WHERE o.id IN ($placeholders)";
 
         $params = $cleanIds;
-        if ($rol !== 'admin' && $usuarioId > 0) {
+        if (!in_array($rol, ['admin', 'compras'], true) && $usuarioId > 0) {
             $sql .= " AND o.usuario_id = ?";
             $params[] = $usuarioId;
         }
@@ -277,7 +277,7 @@ class OrdenCompraModel
         $condiciones = [];
         $params      = [];
 
-        if ($rol !== 'admin' && $usuarioId > 0) {
+        if (!in_array($rol, ['admin', 'compras'], true) && $usuarioId > 0) {
             $condiciones[]   = 'o.usuario_id = :uid';
             $params[':uid']  = $usuarioId;
         }

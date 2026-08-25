@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     password      VARCHAR(255) NULL,
     telefono      VARCHAR(20) NULL,
     cargo         VARCHAR(50) NULL,
-    rol           ENUM('admin', 'usuario') DEFAULT 'usuario',
+    rol           ENUM('admin', 'compras', 'usuario') DEFAULT 'usuario',
     estado        ENUM('activo', 'inactivo') DEFAULT 'activo',
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

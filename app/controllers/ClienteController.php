@@ -18,7 +18,7 @@ class ClienteController
 
     public function listar(): array
     {
-        verificar_admin();
+        verificar_autenticacion();
 
         $busqueda     = sanitizar_entrada($_GET['busqueda'] ?? '');
         $paginaActual = max(1, (int)($_GET['pagina'] ?? 1));
@@ -42,7 +42,7 @@ class ClienteController
 
     public function crear(): array
     {
-        verificar_admin();
+        verificar_autenticacion();
 
         $mensajeError = '';
         $csrf_token   = generar_token_csrf();
@@ -92,7 +92,7 @@ class ClienteController
 
     public function editar(): array
     {
-        verificar_admin();
+        verificar_autenticacion();
 
         $mensajeError = '';
         $csrf_token   = generar_token_csrf();

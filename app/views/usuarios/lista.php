@@ -141,7 +141,8 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <select name="rol" required>
                         <option value="">Seleccione un Rol</option>
                         <option value="admin">Administrador</option>
-                        <option value="usuario">Usuario</option>
+                        <option value="compras">Encargado de Compras</option>
+                        <option value="usuario">Usuario / Asesor</option>
                     </select>
                 </div>
             </div>
@@ -204,7 +205,8 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <label>Rol *</label>
                     <select id="e_rol" name="rol" required>
                         <option value="admin">Administrador</option>
-                        <option value="usuario">Usuario</option>
+                        <option value="compras">Encargado de Compras</option>
+                        <option value="usuario">Usuario / Asesor</option>
                     </select>
                 </div>
             </div>

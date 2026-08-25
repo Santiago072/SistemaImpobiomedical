@@ -78,7 +78,6 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
                     <i class="bi bi-cart-check-fill"></i>
                     <span>Órdenes de Compra</span>
                 </a>
-                <?php if ($rol === 'admin'): ?>
                 <a href="<?= $basePath ?>?module=clientes" class="action-card">
                     <i class="bi bi-building"></i>
                     <span>Clientes</span>
@@ -87,6 +86,7 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
                     <i class="bi bi-box-seam-fill"></i>
                     <span>Catálogo</span>
                 </a>
+                <?php if ($rol === 'admin'): ?>
                 <a href="<?= $basePath ?>?module=usuarios" class="action-card">
                     <i class="bi bi-people-fill"></i>
                     <span>Usuarios</span>

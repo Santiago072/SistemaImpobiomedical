@@ -253,7 +253,12 @@ class OrdenCompraController
     public function cambiarEstado(): void
     {
         verificar_autenticacion();
-        verificar_admin();
+        $rol = $_SESSION['rol'] ?? 'usuario';
+        if (!in_array($rol, ['admin', 'compras'], true)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'No tienes permisos para modificar el estado']);
+            exit();
+        }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);

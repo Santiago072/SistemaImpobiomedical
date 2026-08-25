@@ -4,6 +4,18 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v2.5.0] - 2026-08-25
+### Añadido
+- **Nuevo Rol Especializado: `compras` (Encargado de Compras)**:
+  - Capacidad para consultar y supervisar **todas las órdenes de compra consolidadas** en pestañas *Pendientes* y *Completadas*, al igual que el Administrador.
+  - Habilitación de selector de cambio de estado interactivo (🟡 *Pendiente* ⟷ 🟢 *Completada*) y exportación granular a PDF y Excel (.xls).
+  - Inclusión en los selectores de gestión de usuarios (`app/views/usuarios/lista.php`) y en la definición DDL de base de datos (`BD.txt`).
+- **Acceso Global al Catálogo de Productos y Directorio de Clientes**:
+  - Habilitación de los módulos de *Catálogo de Productos* y *Directorio de Clientes* en el menú lateral y dashboard principal para todos los usuarios.
+  - Permisos de consulta, creación y edición abiertos para todo el equipo operativo, manteniendo la acción de eliminación (🗑️) blindada exclusivamente para el Administrador.
+
+---
+
 ## [v2.4.0] - 2026-08-22
 ### Añadido
 - **Manual de Usuario Interactivo y Adaptativo por Rol**:

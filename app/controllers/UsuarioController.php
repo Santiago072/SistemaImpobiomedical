@@ -306,7 +306,7 @@ class UsuarioController
         if (!empty($correo) && !validar_email($correo)) {
             return 'El correo electrónico no es válido';
         }
-        if (!in_array($rol, ['admin', 'usuario'], true)) {
+        if (!in_array($rol, ['admin', 'compras', 'usuario'], true)) {
             return 'Rol no válido';
         }
         if (!$passwordOpcional && empty($password)) {
