@@ -9,6 +9,9 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 - **Persistencia de Borradores de Cotización**:
   - Eliminación de la sobreescritura destructiva `&nueva=1` en los enlaces de navegación del menú lateral y panel de control, garantizando que los ítems agregados se conserven al vencerse la sesión o navegar entre módulos.
   - Implementación del botón explícito `[ ❌ Cancelar Modificación y Empezar una Nueva ]` en `app/views/cotizaciones/crear.php` para descartar revisiones clonadas y reiniciar en limpio solo bajo acción voluntaria del asesor.
+- **Visualizador de PDF en Modales y Compatibilidad de Sesión**:
+  - Configuración de `session.cookie_samesite = 'Lax'` en `config/seguridad.php` para permitir que la cookie de sesión viaje correctamente en peticiones internas de visores PDF embebidos (`<iframe>`).
+  - Inclusión de script *Framebuster* en la vista de Login para evitar renderizado anidado si la sesión expira con un modal abierto.
 
 ### Cambiado
 - **Información Institucional en Cotización PDF**:

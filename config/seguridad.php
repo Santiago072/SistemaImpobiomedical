@@ -24,7 +24,7 @@ function iniciar_sesion_segura(): void
     ini_set('session.cookie_httponly', '1');
     ini_set('session.use_only_cookies', '1');
     ini_set('session.cookie_secure', (int)($_ENV['COOKIE_SECURE'] ?? getenv('COOKIE_SECURE') ?: 0));
-    ini_set('session.cookie_samesite', 'Strict');
+    ini_set('session.cookie_samesite', 'Lax');
 
     session_start();
 
