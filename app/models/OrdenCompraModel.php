@@ -107,11 +107,11 @@ class OrdenCompraModel
             return ['registrado' => false, 'ordenes' => 0, 'datos' => null];
         }
 
-        // 1. Contar total de órdenes previas de este proveedor (coincidencia exacta o parcial sin espacios extra)
+        // 1. Contar total de órdenes previas de este proveedor
         $stmtCount = $this->db->prepare(
             "SELECT COUNT(*) AS total
              FROM ordenes_compra
-             WHERE LOWER(REPLACE(TRIM(proveedor), ' ', '')) = LOWER(REPLACE(:term, ' ', ''))
+             WHERE LOWER(TRIM(proveedor)) = LOWER(:term)
                 OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)"
         );
         $stmtCount->execute([':term' => $termino]);
@@ -123,7 +123,7 @@ class OrdenCompraModel
                 "SELECT proveedor, proveedor_nit, tipo_contribuyente, condiciones_pago,
                         banco_nombre, banco_cuenta, banco_tipo_cuenta
                  FROM ordenes_compra
-                 WHERE LOWER(REPLACE(TRIM(proveedor), ' ', '')) = LOWER(REPLACE(:term, ' ', ''))
+                 WHERE LOWER(TRIM(proveedor)) = LOWER(:term)
                     OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)
                  ORDER BY id DESC
                  LIMIT 1"
