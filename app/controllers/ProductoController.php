@@ -185,5 +185,24 @@ class ProductoController
         include dirname(__DIR__, 2) . '/app/views/productos/pdf.php';
         exit();
     }
+
+    public function ajaxBuscar(): void
+    {
+        verificar_autenticacion();
+
+        $term = sanitizar_entrada($_GET['term'] ?? $_GET['busqueda'] ?? '');
+        $categoria = sanitizar_entrada($_GET['categoria'] ?? '');
+
+        $productos = $this->model->listar(0, 100, $term, $categoria);
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'status'    => 'ok',
+            'productos' => $productos,
+            'total'     => count($productos),
+            'isAdmin'   => (($_SESSION['rol'] ?? '') === 'admin'),
+        ]);
+        exit();
+    }
 }
 

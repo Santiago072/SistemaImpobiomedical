@@ -298,6 +298,9 @@ if ($module === 'productos') {
         case 'exportarPdf':
             $ctrl->exportarPdf();
             break;
+        case 'ajax_buscar':
+            $ctrl->ajaxBuscar();
+            break;
         case 'crear':
         case 'editar':
             $dataForm = $action === 'crear' ? $ctrl->crear() : $ctrl->editar();

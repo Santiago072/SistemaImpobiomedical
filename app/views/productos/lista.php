@@ -364,37 +364,111 @@ function cerrarModal(id, evento) {
 }
 
 let timerFiltro;
-const inputBusq = document.querySelector('.mod-search-input');
+const inputBusq   = document.querySelector('.mod-search-input');
+const prodGrid    = document.querySelector('.prod-grid');
+const paginacion  = document.querySelector('.mod-pag-info') ? document.querySelector('.mod-pag-info').parentElement.querySelector('.mod-pagination-wrap, .mod-paginacion, ul.pagination, div[class*="pagin"]') : null;
+const pagInfo     = document.querySelector('.mod-pag-info');
+const catActual   = '<?= addslashes($categoriaSel ?? '') ?>';
+const htmlOriginalGrid = prodGrid ? prodGrid.innerHTML : '';
+
+function renderizarProductosAjax(productos, isAdmin) {
+    if (!prodGrid) return;
+    if (!productos || productos.length === 0) {
+        prodGrid.innerHTML = `
+            <div class="mod-empty-card" style="grid-column: 1 / -1;">
+                <i class="bi bi-search"></i>
+                <p>No se encontraron productos coincidentes.</p>
+            </div>
+        `;
+        if (pagInfo) pagInfo.textContent = '0 producto(s) encontrado(s)';
+        return;
+    }
+
+    let html = '';
+    productos.forEach(p => {
+        const fotoTrim = (p.foto || '').trim();
+        const tieneFoto = fotoTrim.length > 0;
+        const fotoUrl = tieneFoto ? `${BASE}uploads/${fotoTrim}` : '';
+        const tituloEsc = escapeHtml(p.titulo || '');
+        const pJson = escapeHtml(JSON.stringify(p));
+
+        html += `
+        <div class="prod-card">
+            ${tieneFoto ? `
+                <img src="${fotoUrl}" class="prod-img" alt="${tituloEsc}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('form-hidden-action');">
+                <div class="prod-icon-fallback form-hidden-action"><i class="bi bi-box-seam"></i></div>
+            ` : `
+                <div class="prod-icon-fallback"><i class="bi bi-box-seam"></i></div>
+            `}
+            <div class="prod-body">
+                <div class="prod-name">${tituloEsc}</div>
+                <div class="prod-meta prod-meta-spacing">
+                    ${p.codigo_producto ? `<span class="prod-tag tag-code"><i class="bi bi-upc-scan"></i> ${escapeHtml(p.codigo_producto)}</span>` : ''}
+                </div>
+                <div class="prod-meta">
+                    <span class="prod-tag ${p.iva === 'si' ? 'tag-iva' : 'tag-noiva'}">
+                        IVA: ${p.iva === 'si' ? 'Sí' : 'No'}
+                    </span>
+                    ${p.estado !== 'activo' ? `<span class="prod-tag tag-inactive"><i class="bi bi-x-circle-fill"></i> Inactivo</span>` : ''}
+                </div>
+                <div class="prod-actions">
+                    <button class="mod-btn-edit" onclick="abrirModalEditar(${pJson})" title="Editar">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    ${isAdmin ? `
+                    <button class="mod-btn-del" onclick="confirmarEliminar(${parseInt(p.id)}, '${escapeJsString(p.titulo)}')" title="Eliminar">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+        `;
+    });
+
+    prodGrid.innerHTML = html;
+    if (pagInfo) {
+        pagInfo.textContent = `Mostrando ${productos.length} producto(s) encontrado(s)`;
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+function escapeJsString(text) {
+    if (!text) return '';
+    return String(text).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
 if (inputBusq) {
     inputBusq.addEventListener('input', function() {
         clearTimeout(timerFiltro);
-        const q = this.value.toLowerCase().trim();
+        const q = this.value.trim();
+
+        if (q === '') {
+            // Restaurar vista original
+            if (prodGrid) prodGrid.innerHTML = htmlOriginalGrid;
+            const wrapPag = document.querySelector('.mod-pagination-wrap, .mod-paginacion, ul.pagination, div[class*="pagin"]');
+            if (wrapPag) wrapPag.style.display = '';
+            if (pagInfo) pagInfo.style.display = '';
+            return;
+        }
+
         timerFiltro = setTimeout(() => {
-            const cards = document.querySelectorAll('.prod-grid .prod-card');
-            let encontrados = 0;
-            cards.forEach(card => {
-                const texto = card.textContent.toLowerCase();
-                if (texto.includes(q)) {
-                    card.style.display = 'flex';
-                    encontrados++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            let emptyMsg = document.getElementById('prod-no-results');
-            if (encontrados === 0 && cards.length > 0) {
-                if (!emptyMsg) {
-                    emptyMsg = document.createElement('div');
-                    emptyMsg.id = 'prod-no-results';
-                    emptyMsg.className = 'mod-empty-card';
-                    emptyMsg.innerHTML = '<i class="bi bi-search"></i><p>No se encontraron productos coincidentes.</p>';
-                    document.querySelector('.prod-grid').appendChild(emptyMsg);
-                }
-                emptyMsg.style.display = 'block';
-            } else if (emptyMsg) {
-                emptyMsg.style.display = 'none';
-            }
-        }, 150);
+            fetch(`${BASE}?module=productos&action=ajax_buscar&term=${encodeURIComponent(q)}&categoria=${encodeURIComponent(catActual)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        const wrapPag = document.querySelector('.mod-pagination-wrap, .mod-paginacion, ul.pagination, div[class*="pagin"]');
+                        if (wrapPag) wrapPag.style.display = 'none';
+                        renderizarProductosAjax(data.productos, data.isAdmin);
+                    }
+                })
+                .catch(err => console.error('Error en búsqueda AJAX:', err));
+        }, 200);
     });
 }
 </script>

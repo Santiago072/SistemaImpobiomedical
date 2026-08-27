@@ -191,8 +191,9 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: prodData.labels.length ? prodData.labels : ['Sin datos'],
             datasets: [{
                 data: prodData.data.length ? prodData.data : [1],
-                backgroundColor: ['#10757e', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#cbd5e1'],
-                borderWidth: 0
+                backgroundColor: ['#10757e', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#06b6d4'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
             }]
         },
         options: {
@@ -201,11 +202,44 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 legend: { 
                     position: 'right', 
-                    labels: { boxWidth: 12, padding: 20, font: { size: 12 } } 
+                    labels: { 
+                        boxWidth: 12, 
+                        padding: 14, 
+                        font: { size: 11.5, weight: '500' },
+                        generateLabels: function(chart) {
+                            const data = chart.data;
+                            if (data.labels.length && data.datasets.length) {
+                                return data.labels.map((label, i) => {
+                                    const meta = chart.getDatasetMeta(0);
+                                    const style = meta.controller.getStyle(i);
+                                    const val = data.datasets[0].data[i] || 0;
+                                    const labelCorto = label.length > 25 ? label.substring(0, 22) + '...' : label;
+                                    return {
+                                        text: `${labelCorto} (${val})`,
+                                        fillStyle: style.backgroundColor,
+                                        strokeStyle: style.borderColor,
+                                        lineWidth: style.borderWidth,
+                                        hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
+                                        index: i
+                                    };
+                                });
+                            }
+                            return [];
+                        }
+                    } 
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const val = context.raw || 0;
+                            return ` ${label}: ${val} unidad(es)`;
+                        }
+                    }
                 }
             },
-            cutout: '70%',
-            layout: { padding: 20 }
+            cutout: '65%',
+            layout: { padding: { top: 10, bottom: 10, left: 10, right: 10 } }
         }
     });
 
@@ -220,17 +254,54 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Cotizaciones emitidas',
                 data: clientData.data.length ? clientData.data : [0],
-                backgroundColor: 'rgba(139, 92, 246, 0.8)', // Morado
-                borderRadius: 4,
-                maxBarThickness: 40
+                backgroundColor: 'rgba(139, 92, 246, 0.85)', // Morado
+                borderColor: '#7c3aed',
+                borderWidth: 1,
+                borderRadius: 5,
+                maxBarThickness: 32
             }]
         },
         options: {
-            indexAxis: 'y', // Hace que las barras sean horizontales
+            indexAxis: 'y', // Barras horizontales
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+            layout: {
+                padding: { left: 10, right: 15, top: 5, bottom: 5 }
+            },
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            return context[0].label || '';
+                        },
+                        label: function(context) {
+                            return ` Cotizaciones: ${context.raw}`;
+                        }
+                    }
+                }
+            },
+            scales: { 
+                y: {
+                    ticks: {
+                        font: { size: 11.5, weight: '500' },
+                        color: '#334155',
+                        callback: function(val, index) {
+                            const label = this.getLabelForValue(val);
+                            if (typeof label === 'string' && label.length > 28) {
+                                return label.substring(0, 25) + '...';
+                            }
+                            return label;
+                        }
+                    },
+                    grid: { display: false }
+                },
+                x: { 
+                    beginAtZero: true, 
+                    ticks: { precision: 0, color: '#64748b' },
+                    grid: { color: '#f1f5f9' }
+                } 
+            }
         }
     });
 

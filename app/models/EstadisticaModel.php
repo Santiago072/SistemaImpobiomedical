@@ -147,18 +147,18 @@ class EstadisticaModel
     public function getTopProductos(int $limite = 5, ?string $fi = null, ?string $ff = null): array
     {
         $params = [];
-        $q = "SELECT p.titulo, COUNT(i.id) as cantidad
+        $q = "SELECT COALESCE(p.titulo, i.titulo) AS titulo_prod, SUM(i.cantidad) as cantidad
               FROM cotizacion_items i
-              JOIN productos p ON i.producto_id = p.id
+              LEFT JOIN productos p ON i.producto_id = p.id
               JOIN cotizaciones c ON i.cotizacion_id = c.id
-              WHERE c.estado = 'finalizada'";
+              WHERE c.estado = 'finalizada' AND i.titulo IS NOT NULL AND i.titulo != ''";
 
         if ($fi && $ff) {
             $q .= " AND c.fecha_creacion BETWEEN :fi AND :ff";
             $params = [':fi' => "$fi 00:00:00", ':ff' => "$ff 23:59:59"];
         }
 
-        $q .= " GROUP BY p.id ORDER BY cantidad DESC LIMIT :limite";
+        $q .= " GROUP BY titulo_prod ORDER BY cantidad DESC LIMIT :limite";
         $stmt = $this->db->prepare($q);
         foreach ($params as $k => $v) {
             $stmt->bindValue($k, $v);
@@ -168,7 +168,7 @@ class EstadisticaModel
 
         $datos = ['labels' => [], 'data' => []];
         foreach ($stmt->fetchAll() as $row) {
-            $datos['labels'][] = mb_substr($row['titulo'], 0, 45);
+            $datos['labels'][] = mb_substr($row['titulo_prod'], 0, 45);
             $datos['data'][]   = (int)$row['cantidad'];
         }
         return $datos;

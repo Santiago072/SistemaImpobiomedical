@@ -21,8 +21,11 @@ class ProductoModel implements RepositoryInterface
         $params = [];
 
         if ($busqueda !== '') {
-            $where[]       = "titulo LIKE :busqueda";
-            $params[':busqueda'] = "%$busqueda%";
+            $where[] = "(titulo LIKE :busq_tit OR codigo_producto LIKE :busq_cod OR categoria LIKE :busq_cat OR descripcion LIKE :busq_desc)";
+            $params[':busq_tit']  = "%$busqueda%";
+            $params[':busq_cod']  = "%$busqueda%";
+            $params[':busq_cat']  = "%$busqueda%";
+            $params[':busq_desc'] = "%$busqueda%";
         }
         if ($categoria !== '') {
             $where[]         = "categoria = :categoria";
@@ -48,8 +51,11 @@ class ProductoModel implements RepositoryInterface
         $params = [];
 
         if ($busqueda !== '') {
-            $where[]             = "titulo LIKE :busqueda";
-            $params[':busqueda'] = "%$busqueda%";
+            $where[] = "(titulo LIKE :busq_tit OR codigo_producto LIKE :busq_cod OR categoria LIKE :busq_cat OR descripcion LIKE :busq_desc)";
+            $params[':busq_tit']  = "%$busqueda%";
+            $params[':busq_cod']  = "%$busqueda%";
+            $params[':busq_cat']  = "%$busqueda%";
+            $params[':busq_desc'] = "%$busqueda%";
         }
         if ($categoria !== '') {
             $where[]              = "categoria = :categoria";
@@ -70,8 +76,11 @@ class ProductoModel implements RepositoryInterface
         $params = [];
 
         if ($busqueda !== '') {
-            $where[]             = "titulo LIKE :busqueda";
-            $params[':busqueda'] = "%$busqueda%";
+            $where[] = "(titulo LIKE :busq_tit OR codigo_producto LIKE :busq_cod OR categoria LIKE :busq_cat OR descripcion LIKE :busq_desc)";
+            $params[':busq_tit']  = "%$busqueda%";
+            $params[':busq_cod']  = "%$busqueda%";
+            $params[':busq_cat']  = "%$busqueda%";
+            $params[':busq_desc'] = "%$busqueda%";
         }
         if ($categoria !== '') {
             $where[]              = "categoria = :categoria";

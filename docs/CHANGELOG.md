@@ -21,8 +21,13 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 - **Badge de Estado de Proveedor reubicado al encabezado de la Sección 2:**
   - Mueve el badge `🟢 Proveedor Registrado / 🟡 Proveedor Nuevo` al lado del título `2. Datos de la Orden`, liberando espacio y nivelando los inputs.
   - Aplicado en `crear_directa.php` y `seleccionar_items.php`.
-- **Campo Categoría en Nueva Cotización (`crear.php`):**
-  - Sugerencias del buscador predictivo enriquecidas con miniatura, categoría y badge `+ Agregar`, consistente con Orden Directa.
+- **Búsqueda AJAX en Vivo en Catálogo de Productos (`productos/lista.php`):**
+  - Búsqueda asíncrona en tiempo real con debounce de 200ms contra toda la base de datos sin recargar la página.
+  - Consulta multicampo en `ProductoModel.php` cubriendo `titulo`, `codigo_producto`, `categoria` y `descripcion`.
+  - Acción `ajax_buscar` en `ProductoController.php` y ruta registrada en `index.php`.
+- **Módulo de Estadísticas y Gráficos:**
+  - **Top 5 Productos Cotizados**: Actualizado con `LEFT JOIN` y `COALESCE(p.titulo, i.titulo)` para incluir productos manuales y sumar `SUM(i.cantidad)` de unidades reales. Leyenda con nombres cortos y total de unidades.
+  - **Top 5 Clientes Recurrentes**: Truncado inteligente a 25 caracteres con puntos suspensivos en el eje Y de Chart.js y `layout.padding` para evitar que los nombres largos queden cortados. Tooltip flotante con nombre legal completo.
 
 ### Corregido
 - **Expiración de Sesión sin Aviso:**
