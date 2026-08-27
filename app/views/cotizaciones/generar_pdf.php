@@ -388,8 +388,10 @@ foreach ($items as $it):
 $html = ob_get_clean();
 
 $options = new Options();
-$options->set('isRemoteEnabled', true);
-$options->set('defaultFont', 'Arial');
+$options->set('isRemoteEnabled', false);
+$options->set('isPhpEnabled', false);
+$options->set('isHtml5ParserEnabled', true);
+$options->set('defaultFont', 'Helvetica');
 
 $dompdf = new Dompdf($options);
 $dompdf->loadHtml($html, 'UTF-8');

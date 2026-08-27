@@ -12,6 +12,7 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 - **Visualizador de PDF en Modales y Compatibilidad de Sesión**:
   - Configuración de `session.cookie_samesite = 'Lax'` en `config/seguridad.php` para permitir que la cookie de sesión viaje correctamente en peticiones internas de visores PDF embebidos (`<iframe>`).
   - Inclusión de script *Framebuster* en la vista de Login para evitar renderizado anidado si la sesión expira con un modal abierto.
+  - Optimización del motor de generación DomPDF en cotizaciones y órdenes de compra (`isRemoteEnabled=false`, `isHtml5ParserEnabled=true`), eliminando bloqueos de red y acelerando la renderización de PDFs al instante.
 
 ### Cambiado
 - **Información Institucional en Cotización PDF**:
