@@ -4,6 +4,18 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v2.5.1] - 2026-08-26
+### Corregido
+- **Persistencia de Borradores de Cotización**:
+  - Eliminación de la sobreescritura destructiva `&nueva=1` en los enlaces de navegación del menú lateral y panel de control, garantizando que los ítems agregados se conserven al vencerse la sesión o navegar entre módulos.
+  - Implementación del botón explícito `[ ❌ Cancelar Modificación y Empezar una Nueva ]` en `app/views/cotizaciones/crear.php` para descartar revisiones clonadas y reiniciar en limpio solo bajo acción voluntaria del asesor.
+
+### Cambiado
+- **Información Institucional en Cotización PDF**:
+  - Actualización de dirección de sede Sabaneta, Antioquia y teléfonos de contacto en el encabezado formal de `app/views/cotizaciones/generar_pdf.php`.
+
+---
+
 ## [v2.5.0] - 2026-08-25
 ### Añadido
 - **Nuevo Rol Especializado: `compras` (Encargado de Compras)**:

@@ -26,8 +26,14 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary btn-sm-action">
                     <i class="bi bi-arrow-right-circle-fill"></i> Continuar → Datos Cliente y PDF
                 </a>
+                <?php endif; ?>
+                <?php if (isset($_SESSION['cotizacion_revision_de'])): ?>
+                <a href="<?= $basePath ?>?module=cotizaciones&action=limpiar_borrador" class="btn-discard-draft" onclick="return confirm('¿Seguro que deseas cancelar la modificación y empezar una nueva cotización en blanco?');">
+                    <i class="bi bi-x-circle-fill"></i> Cancelar Modificación y Empezar una Nueva
+                </a>
+                <?php elseif ($totalItems > 0): ?>
                 <a href="<?= $basePath ?>?module=cotizaciones&action=limpiar_borrador" class="btn-discard-draft" onclick="return confirm('¿Seguro que deseas descartar esta cotización y empezar de cero?');">
-                    <i class="bi bi-trash-fill"></i> Descartar
+                    <i class="bi bi-trash-fill"></i> Descartar Borrador
                 </a>
                 <?php endif; ?>
             </div>

@@ -66,7 +66,7 @@ $rol      = $_SESSION['rol'] ?? 'usuario';
         <div class="quick-actions">
             <h2 class="section-title">Accesos Rápidos</h2>
             <div class="actions-grid">
-                <a href="<?= $basePath ?>?module=cotizaciones&action=crear&nueva=1" class="action-card">
+                <a href="<?= $basePath ?>?module=cotizaciones&action=crear" class="action-card">
                     <i class="bi bi-plus-circle-fill"></i>
                     <span>Nueva Cotización</span>
                 </a>

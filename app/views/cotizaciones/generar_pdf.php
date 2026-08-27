@@ -207,9 +207,9 @@ table { width:100%; border-collapse:collapse; }
         <div class="empresa-name">IMPOMIN S.A.S</div>
         <div class="empresa-nit">Nit. 900.535.843-3</div>
         <div class="empresa-addr" style="margin-top:5px;">
-          Cra 10 No. 9-80 Barrio Cooperativa Florencia-Caquetá<br>
-          Calle 33A No 71 A 27 - Laureles - Medellín - Colombia<br>
-          Telefax: (4)322 27 79 &nbsp;Cel. 317 34 53 644 / 310 26 90 595<br>
+          Cra. 10 #9-80 Barrio Cooperativa Florencia-Caquetá<br>
+          Cl. 61 Sur #43a85 - Sabaneta - Antioquia - Colombia<br>
+          Telefax: (4)322 27 79 &nbsp;Cel. 317 345 3644 / 310 269 0595<br>
           https://impobiomedical.impomin.com/ <br>
           Correo electrónico: impobiomedical@impomin.com
         </div>
