@@ -27,20 +27,29 @@
 }
 
 .tab-active-pend {
-    background: #fff;
+    background: #ffffff;
     color: #d97706;
     border-color: #d97706;
+    box-shadow: 0 -2px 8px rgba(217, 119, 6, 0.10), 0 2px 0 #fff;
+    font-size: 14px;
 }
 
 .tab-active-comp {
-    background: #fff;
+    background: #ffffff;
     color: #10757e;
     border-color: #10757e;
+    box-shadow: 0 -2px 8px rgba(16, 117, 126, 0.10), 0 2px 0 #fff;
+    font-size: 14px;
 }
 
 .tab-inactive {
-    background: transparent;
+    background: #f1f5f9;
     color: #64748b;
+}
+
+.tab-inactive:hover {
+    background: #e2e8f0;
+    color: #374151;
 }
 
 .tab-badge {
