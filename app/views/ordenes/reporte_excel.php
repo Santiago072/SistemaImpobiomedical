@@ -6,10 +6,12 @@
 
 while (ob_get_level() > 0) { ob_end_clean(); }
 
-$nombreArchivo = 'Reporte_Ordenes_Compra_' . '.xls';
+$fecha          = date('Y-m-d');
+$nombreArchivo  = 'Reporte_Ordenes_Compra_' . $fecha . '.xls';
 
-header('Content-Type: application/vnd.ms-excel; charset=utf-8');
+header('Content-Type: application/vnd.ms-excel');
 header('Content-Disposition: attachment; filename="' . $nombreArchivo . '"');
+header('Cache-Control: max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');
 

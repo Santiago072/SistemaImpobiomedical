@@ -84,6 +84,11 @@ CREATE TABLE IF NOT EXISTS cotizaciones (
     observaciones        TEXT NULL,
     estado               ENUM('borrador', 'finalizada') DEFAULT 'borrador',
     estado_comercial     ENUM('pendiente', 'concluida', 'descartada') DEFAULT 'pendiente',
+    -- es_revision: diferencia borradores normales de clones temporales de modificación.
+    -- Cuando el usuario hace "Modificar Cotización", se crea un clon con es_revision = 1.
+    -- Esto evita que al re-iniciar sesión o navegar a otro módulo, el sistema recupere
+    -- el clon en lugar del borrador real del usuario (es_revision = 0).
+    es_revision          TINYINT(1) NOT NULL DEFAULT 0,
     created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),

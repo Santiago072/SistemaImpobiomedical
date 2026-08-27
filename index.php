@@ -3,11 +3,11 @@
 // Detectar peticiones de PDF antes de abrir cualquier buffer
 $_modEarly  = $_GET['module'] ?? '';
 $_actEarly  = $_GET['action'] ?? '';
-if (($_modEarly === 'ordenes'      && ($_actEarly === 'generar_pdf' || $_actEarly === 'exportarPdf')) ||
+if (($_modEarly === 'ordenes'      && ($_actEarly === 'generar_pdf' || $_actEarly === 'exportarPdf' || $_actEarly === 'exportarExcel')) ||
     ($_modEarly === 'cotizaciones' && $_actEarly === 'generar_pdf') ||
     ($_modEarly === 'estadisticas' && $_actEarly === 'reporte_pdf') ||
     ($_modEarly === 'productos'    && $_actEarly === 'exportarPdf')) {
-    // No hacer ob_start() — los PDFs manejan su propio output binario
+    // No hacer ob_start() — los PDFs y Excels manejan su propio output binario
 } else {
     ob_start();
 }
@@ -98,9 +98,15 @@ require_once __DIR__ . '/config/conexion.php';
 require_once __DIR__ . '/config/seguridad.php';
 
 // ── Cabeceras de Seguridad HTTP ───────────────────────────────────────────────
-// Solo se emiten en peticiones HTML normales; las respuestas PDF/binario
-// omiten estas cabeceras porque van dentro de ob_start() aparte.
-if (!headers_sent()) {
+// Solo se emiten en peticiones HTML normales; las respuestas PDF/Excel/binario
+// omiten estas cabeceras para que no interfieran con el Content-Type de descarga.
+$esDescarga = (
+    ($_modEarly === 'ordenes'      && in_array($_actEarly, ['generar_pdf', 'exportarPdf', 'exportarExcel'])) ||
+    ($_modEarly === 'cotizaciones' && $_actEarly === 'generar_pdf') ||
+    ($_modEarly === 'estadisticas' && $_actEarly === 'reporte_pdf') ||
+    ($_modEarly === 'productos'    && $_actEarly === 'exportarPdf')
+);
+if (!headers_sent() && !$esDescarga) {
     // Evita que el sitio sea cargado dentro de un <iframe> (Clickjacking)
     header('X-Frame-Options: SAMEORIGIN');
     // Impide que el navegador detecte el tipo de contenido por su cuenta (MIME-Sniffing)

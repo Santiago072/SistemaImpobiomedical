@@ -118,7 +118,7 @@ class CotizacionModel
         return $row ?: null;
     }
 
-    /** Borrador con ítems, sin número, del usuario */
+    /** Borrador con ítems, sin número, del usuario (excluye clones de modificación) */
     public function buscarBorradorConItems(int $usuarioId): ?int
     {
         $stmt = $this->db->prepare(
@@ -127,11 +127,19 @@ class CotizacionModel
              WHERE c.usuario_id = :uid
                AND (c.numero_cotizacion IS NULL OR c.numero_cotizacion = '')
                AND c.estado = 'borrador'
+               AND c.es_revision = 0
              ORDER BY c.id DESC LIMIT 1"
         );
         $stmt->execute([':uid' => $usuarioId]);
         $row = $stmt->fetch();
         return $row ? (int)$row['id'] : null;
+    }
+
+    /** Marca un borrador como clon temporal de modificación (es_revision = 1) */
+    public function marcarComoRevision(int $id): void
+    {
+        $stmt = $this->db->prepare('UPDATE cotizaciones SET es_revision = 1 WHERE id = :id');
+        $stmt->execute([':id' => $id]);
     }
 
     public function buscarCabeceraVacia(int $usuarioId): ?int
@@ -141,6 +149,7 @@ class CotizacionModel
              WHERE usuario_id = :uid
                AND (numero_cotizacion IS NULL OR numero_cotizacion = '')
                AND estado = 'borrador'
+               AND es_revision = 0
              ORDER BY id DESC LIMIT 1"
         );
         $stmt->execute([':uid' => $usuarioId]);

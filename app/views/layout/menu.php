@@ -56,18 +56,18 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         gestion: `
             <h3>Gestión</h3>
             <?php if ($rol === 'admin'): ?>
-            <li><a href="<?= $basePath ?>?module=usuarios"><i class="fas fa-users"></i> Gestión de Usuarios</a></li>
+            <li><a href="<?= $basePath ?>?module=usuarios"><i class="bi bi-people-fill"></i> Gestión de Usuarios</a></li>
             <?php endif; ?>
-            <li><a href="<?= $basePath ?>?module=productos"><i class="fas fa-box-open"></i> Catálogo de Productos</a></li>
-            <li><a href="<?= $basePath ?>?module=clientes"><i class="fas fa-building"></i> Directorio de Clientes</a></li>
+            <li><a href="<?= $basePath ?>?module=productos"><i class="bi bi-box-seam-fill"></i> Catálogo de Productos</a></li>
+            <li><a href="<?= $basePath ?>?module=clientes"><i class="bi bi-building-fill"></i> Directorio de Clientes</a></li>
         `,
         cotizaciones: `
             <h3>Cotizaciones</h3>
-            <li><a href="<?= $basePath ?>?module=cotizaciones&action=crear"><i class="fas fa-plus-circle"></i> Nueva Cotización</a></li>
-            <li><a href="<?= $basePath ?>?module=cotizaciones&action=consultar"><i class="fas fa-search"></i> Consultar</a></li>
-            <li><a href="<?= $basePath ?>?module=ordenes&action=consultar"><i class="fas fa-cart-arrow-down"></i> Órdenes de Compra</a></li>
+            <li><a href="<?= $basePath ?>?module=cotizaciones&action=crear"><i class="bi bi-plus-circle-fill"></i> Nueva Cotización</a></li>
+            <li><a href="<?= $basePath ?>?module=cotizaciones&action=consultar"><i class="bi bi-search"></i> Consultar</a></li>
+            <li><a href="<?= $basePath ?>?module=ordenes&action=consultar"><i class="bi bi-cart-check-fill"></i> Órdenes de Compra</a></li>
             <?php if ($rol === 'admin'): ?>
-            <li><a href="<?= $basePath ?>?module=estadisticas"><i class="fas fa-chart-bar"></i> Estadísticas y Reportes</a></li>
+            <li><a href="<?= $basePath ?>?module=estadisticas"><i class="bi bi-bar-chart-fill"></i> Estadísticas y Reportes</a></li>
             <?php endif; ?>
         `
     };

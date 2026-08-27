@@ -170,7 +170,7 @@ $tabActual = $tabActual ?? 'pendientes';
                                         onclick="verOrdenPDF(<?= (int)$ord['id'] ?>, <?= (int)$ord['numero_po'] ?>)">
                                         <i class="bi bi-eye"></i> Ver P.O.
                                     </button>
-                                    <?php if ($rol === 'admin'): ?>
+                                    <?php if (in_array($rol, ['admin', 'compras'], true)): ?>
                                     <form method="POST" action="<?= $basePath ?>?module=ordenes&action=eliminar" class="form-inline-action" onsubmit="return confirm('¿Eliminar la P.O. <?= (int)$ord['numero_po'] ?>?')">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                                         <input type="hidden" name="id" value="<?= (int)$ord['id'] ?>">

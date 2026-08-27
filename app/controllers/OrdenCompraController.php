@@ -413,7 +413,13 @@ class OrdenCompraController
 
     public function eliminar(): void
     {
-        verificar_admin();
+        verificar_autenticacion();
+        $rol = $_SESSION['rol'] ?? 'usuario';
+        if (!in_array($rol, ['admin', 'compras'], true)) {
+            $_SESSION['flash_error'] = 'No tienes permisos para eliminar órdenes de compra.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            exit();
+        }
         verificar_rate_limit(10, 60, 'orden_eliminar');
 
         $token = $_POST['csrf_token'] ?? '';

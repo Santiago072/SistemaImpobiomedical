@@ -73,33 +73,59 @@ class CotizacionController
 
     private function recuperarOCrearBorrador(): int
     {
-        $usuarioId    = (int)$_SESSION['usuario_id'];
+        $usuarioId     = (int)$_SESSION['usuario_id'];
         $usuarioCodigo = $_SESSION['usuario_codigo'] ?? 'COT';
-        $asesorNombre = $_SESSION['usuario_nombre'] ?? '';
-        $asesorCargo  = $_SESSION['usuario_cargo'] ?? '';
+        $asesorNombre  = $_SESSION['usuario_nombre'] ?? '';
+        $asesorCargo   = $_SESSION['usuario_cargo'] ?? '';
+
+        // Si el usuario tiene un clon de modificación activo pero NO viene de haber
+        // ejecutado modificar() ahora mismo (flag _modificar_recien_activado), significa
+        // que navegó a otro módulo y regresó. Limpiar automáticamente el clon.
+        if (isset($_SESSION['cotizacion_revision_de']) &&
+            !isset($_SESSION['_modificar_recien_activado'])) {
+            // Eliminar el clon temporal si todavía existe en BD
+            if (isset($_SESSION['cotizacion_id'])) {
+                $clon = $this->model->buscarPorId((int)$_SESSION['cotizacion_id']);
+                if ($clon && (int)($clon['es_revision'] ?? 0) === 1) {
+                    $this->model->eliminar((int)$_SESSION['cotizacion_id']);
+                }
+            }
+            // Restaurar borrador previo si existía
+            if (isset($_SESSION['borrador_previo_id'])) {
+                $_SESSION['cotizacion_id'] = (int)$_SESSION['borrador_previo_id'];
+                unset($_SESSION['borrador_previo_id']);
+            } else {
+                unset($_SESSION['cotizacion_id']);
+            }
+            unset($_SESSION['cotizacion_revision_de']);
+        }
+
+        // Consumir el flag de reciente activación (si existe)
+        unset($_SESSION['_modificar_recien_activado']);
 
         if (!isset($_SESSION['cotizacion_id'])) {
             $id = $this->model->buscarBorradorConItems($usuarioId);
-            
+
             if ($id === null) {
                 $id = $this->model->buscarCabeceraVacia($usuarioId);
             }
-            
+
             if ($id === null) {
                 $id = $this->model->crearCabecera($usuarioId, $usuarioCodigo, $asesorNombre, $asesorCargo);
             }
-            
+
             $_SESSION['cotizacion_id'] = $id;
         } else {
             // Verificar que la cotización en sesión todavía existe y es válida
             $cotizacionExistente = $this->model->buscarPorId((int)$_SESSION['cotizacion_id']);
-            
+
             if (!$cotizacionExistente || $cotizacionExistente['estado'] !== 'borrador') {
-                // Si no existe o no es borrador, buscar uno nuevo
+                // Si no existe o no es borrador, buscar uno nuevo (sin clones de modificación)
                 $id = $this->model->buscarBorradorConItems($usuarioId)
                    ?? $this->model->buscarCabeceraVacia($usuarioId)
                    ?? $this->model->crearCabecera($usuarioId, $usuarioCodigo, $asesorNombre, $asesorCargo);
                 $_SESSION['cotizacion_id'] = $id;
+                unset($_SESSION['cotizacion_revision_de'], $_SESSION['borrador_previo_id']);
             }
         }
         return (int)$_SESSION['cotizacion_id'];
@@ -276,7 +302,7 @@ class CotizacionController
         exit();
     }
 
-    // ── MODIFICAR COTIZACIÓN (Clonar y nueva versión) ─────────────────────────
+    // ── MODIFICAR COTIZACIÓN (Clonar y nueva versión) ─────────────────────────────
     public function modificar(): void
     {
         verificar_autenticacion();
@@ -299,13 +325,25 @@ class CotizacionController
             exit();
         }
 
+        // Guardar el borrador actual del usuario antes de sobreescribir la sesión
+        if (isset($_SESSION['cotizacion_id'])) {
+            $borradorActual = $this->model->buscarPorId((int)$_SESSION['cotizacion_id']);
+            // Solo guardar como previo si es un borrador normal (no otro clon de modificación)
+            if ($borradorActual && (int)($borradorActual['es_revision'] ?? 0) === 0) {
+                $_SESSION['borrador_previo_id'] = (int)$_SESSION['cotizacion_id'];
+            }
+        }
+
         // Crear una nueva cabecera clonando la original pero en estado borrador
-        $usuarioId = (int)$_SESSION['usuario_id'];
+        $usuarioId     = (int)$_SESSION['usuario_id'];
         $usuarioCodigo = $_SESSION['usuario_codigo'] ?? '';
-        $asesorNombre = $cotizacionOriginal['asesor_nombre'];
-        $asesorCargo = $cotizacionOriginal['asesor_cargo'];
+        $asesorNombre  = $cotizacionOriginal['asesor_nombre'];
+        $asesorCargo   = $cotizacionOriginal['asesor_cargo'];
 
         $nuevoCotizacionId = $this->model->crearCabecera($usuarioId, $usuarioCodigo, $asesorNombre, $asesorCargo);
+
+        // Marcar el clon como revisión temporal para no confundirlo con borradores normales
+        $this->model->marcarComoRevision($nuevoCotizacionId);
 
         // Copiar los datos del cliente de la original a la nueva
         $this->model->clonarDatosCabecera($cotizacionOriginal['id'], $nuevoCotizacionId);
@@ -315,24 +353,36 @@ class CotizacionController
 
         // Establecer la nueva cotización como activa en la sesión
         $_SESSION['cotizacion_id'] = $nuevoCotizacionId;
-        
+
         // Guardar la referencia de que es una revisión
-        // Base de la revisión, por si es EB 08 o EB 08_01, extraer EB 08
         $partes = explode('_', $cotizacionOriginal['numero_cotizacion']);
         $_SESSION['cotizacion_revision_de'] = trim($partes[0]);
+
+        // Flag para que recuperarOCrearBorrador() sepa que venimos de modificar() ahora mismo
+        $_SESSION['_modificar_recien_activado'] = true;
 
         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
         exit();
     }
 
-    // ── DESCARTAR BORRADOR ────────────────────────────────────────────────────
+    // ── DESCARTAR BORRADOR ─────────────────────────────────────────
     public function limpiarBorrador(): void
     {
         verificar_autenticacion();
         if (isset($_SESSION['cotizacion_id'])) {
+            $clon = $this->model->buscarPorId((int)$_SESSION['cotizacion_id']);
+            // Eliminar siempre (sea clon o borrador normal descartado por el usuario)
             $this->model->eliminar((int)$_SESSION['cotizacion_id']);
-            unset($_SESSION['cotizacion_id'], $_SESSION['cotizacion_revision_de']);
+            unset($_SESSION['cotizacion_id']);
         }
+
+        // Si había un borrador previo guardado antes de entrar a modificar, restaurarlo
+        if (isset($_SESSION['borrador_previo_id'])) {
+            $_SESSION['cotizacion_id'] = (int)$_SESSION['borrador_previo_id'];
+            unset($_SESSION['borrador_previo_id']);
+        }
+
+        unset($_SESSION['cotizacion_revision_de'], $_SESSION['_modificar_recien_activado']);
         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
         exit();
     }
