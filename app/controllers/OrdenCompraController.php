@@ -61,7 +61,10 @@ class OrdenCompraController
             }
         }
 
-        return compact('cotizacion', 'items', 'proveedores', 'csrf_token');
+        $proveedorInicial = $proveedores[0] ?? '';
+        $infoProveedorInicial = !empty($proveedorInicial) ? $this->model->buscarHistorialProveedor($proveedorInicial) : null;
+
+        return compact('cotizacion', 'items', 'proveedores', 'csrf_token', 'infoProveedorInicial');
     }
 
     // ── PASO 2: Guardar orden + redirigir al PDF ──────────────────────────────

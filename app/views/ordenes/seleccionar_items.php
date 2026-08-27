@@ -206,30 +206,43 @@ include dirname(__DIR__) . '/layout/menu.php';
 
                 <div class="grid-form-fields">
 
+                    <?php
+                    $isRegistradoIni = !empty($infoProveedorInicial['registrado']);
+                    $ordenesPrevias  = (int)($infoProveedorInicial['ordenes'] ?? 0);
+                    $datosProvIni    = $infoProveedorInicial['datos'] ?? [];
+                    ?>
                     <div class="oc-field-group">
                         <label class="oc-label">
                             <i class="bi bi-building"></i> Proveedor (TO:) <span class="required-star">*</span>
-                            <span id="badgeEstadoProv" class="mod-badge badge-gold" style="margin-left: 8px; font-size: 11px;">
-                                <i class="bi bi-question-circle"></i> Verificando...
+                            <span id="badgeEstadoProv" class="mod-badge <?= $isRegistradoIni ? 'badge-green' : 'badge-gold' ?>" style="margin-left: 8px; font-size: 11px;">
+                                <?php if ($isRegistradoIni): ?>
+                                    <i class="bi bi-check-circle-fill"></i> Proveedor Registrado (<?= $ordenesPrevias ?> orden<?= $ordenesPrevias > 1 ? 'es' : '' ?>)
+                                <?php else: ?>
+                                    <i class="bi bi-plus-circle"></i> Proveedor Nuevo
+                                <?php endif; ?>
                             </span>
                         </label>
                         <input type="text" name="proveedor" id="inputProveedor" class="oc-input" required
                                placeholder="Nombre del proveedor" maxlength="200"
                                value="<?= htmlspecialchars($proveedores[0] ?? '') ?>" autocomplete="off">
-                        <input type="hidden" name="estado_proveedor" id="inputEstadoProveedor" value="nuevo">
-                        <small id="hintProveedor" class="text-muted" style="font-size: 11.5px; display: block; margin-top: 4px;"></small>
+                        <input type="hidden" name="estado_proveedor" id="inputEstadoProveedor" value="<?= $isRegistradoIni ? 'registrado' : 'nuevo' ?>">
+                        <small id="hintProveedor" class="text-muted" style="font-size: 11.5px; display: block; margin-top: 4px;">
+                            <?= $isRegistradoIni ? '✨ Proveedor registrado en el sistema.' : 'ℹ️ Es la primera vez que se genera orden a este proveedor.' ?>
+                        </small>
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-hash"></i> NIT del Proveedor</label>
                         <input type="text" name="proveedor_nit" id="inputProveedorNit" class="oc-input"
-                               placeholder="Ej: 79625307-6" maxlength="30">
+                               placeholder="Ej: 79625307-6" maxlength="30"
+                               value="<?= htmlspecialchars($datosProvIni['proveedor_nit'] ?? '') ?>">
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-person-badge"></i> Tipo de Contribuyente</label>
                         <input type="text" name="tipo_contribuyente" id="inputTipoContribuyente" class="oc-input"
-                               placeholder="Ej: PERSON NATURAL O SUCCESION LIQUIDA" maxlength="100">
+                               placeholder="Ej: PERSON NATURAL O SUCCESION LIQUIDA" maxlength="100"
+                               value="<?= htmlspecialchars($datosProvIni['tipo_contribuyente'] ?? '') ?>">
                     </div>
 
                     <div class="oc-field-group">
@@ -294,19 +307,22 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <div class="oc-field-group">
                             <label class="oc-label">Nombre del Banco</label>
                             <input type="text" name="banco_nombre" id="inputBancoNombre" class="oc-input"
-                                   placeholder="Ej: Bancolombia" maxlength="100">
+                                   placeholder="Ej: Bancolombia" maxlength="100"
+                                   value="<?= htmlspecialchars($datosProvIni['banco_nombre'] ?? '') ?>">
                         </div>
                         <div class="oc-field-group">
                             <label class="oc-label">Número de Cuenta</label>
                             <input type="text" name="banco_cuenta" id="inputBancoCuenta" class="oc-input"
-                                   placeholder="Ej: 123456789" maxlength="100">
+                                   placeholder="Ej: 123456789" maxlength="100"
+                                   value="<?= htmlspecialchars($datosProvIni['banco_cuenta'] ?? '') ?>">
                         </div>
                         <div class="oc-field-group">
                             <label class="oc-label">Tipo de Cuenta</label>
+                            <?php $tipoCtaIni = $datosProvIni['banco_tipo_cuenta'] ?? ''; ?>
                             <select name="banco_tipo_cuenta" id="inputBancoTipoCuenta" class="oc-input">
                                 <option value="">Seleccione...</option>
-                                <option value="Ahorros">Ahorros</option>
-                                <option value="Corriente">Corriente</option>
+                                <option value="Ahorros" <?= $tipoCtaIni === 'Ahorros' ? 'selected' : '' ?>>Ahorros</option>
+                                <option value="Corriente" <?= $tipoCtaIni === 'Corriente' ? 'selected' : '' ?>>Corriente</option>
                             </select>
                         </div>
                     </div>
