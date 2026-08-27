@@ -123,7 +123,10 @@ class OrdenCompraController
         $bancoCuenta        = mb_substr(sanitizar_entrada($_POST['banco_cuenta'] ?? ''), 0, 100);
         $bancoTipoCuenta    = mb_substr(sanitizar_entrada($_POST['banco_tipo_cuenta'] ?? ''), 0, 100);
 
-        $estadoProveedor    = in_array($_POST['estado_proveedor'] ?? '', ['registrado', 'nuevo'], true) ? $_POST['estado_proveedor'] : 'nuevo';
+        // Verificar estado de proveedor directamente contra la base de datos (seguro y automático)
+        $historialProv = $this->model->buscarHistorialProveedor($proveedor);
+        $estadoProveedor = (!empty($historialProv['registrado']) && (int)$historialProv['ordenes'] > 0) ? 'registrado' : 'nuevo';
+
         $flete              = max(0, (float)($_POST['flete'] ?? 0));
         $tipoDescuento      = in_array($_POST['tipo_descuento'] ?? '', ['monto', 'porcentaje'], true) ? $_POST['tipo_descuento'] : 'monto';
         $descuentoValor     = max(0, (float)($_POST['descuento_valor'] ?? 0));

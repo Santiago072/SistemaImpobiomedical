@@ -268,7 +268,7 @@ table { width:100%; border-collapse:collapse; }
       </table>
     </td>
     <td style="width:38%; text-align:right; vertical-align:bottom; font-size:10px;">
-      <strong style="color:#1a3a5c;">FECHA:&nbsp;&nbsp;&nbsp;FLORENCIA, <?= $fechaFmt ?></strong>
+      <strong style="color:#1a3a5c;">FECHA:&nbsp;&nbsp;&nbsp;<?= $fechaFmt ?></strong>
     </td>
   </tr>
 </table>

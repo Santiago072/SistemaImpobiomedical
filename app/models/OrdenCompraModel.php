@@ -108,14 +108,19 @@ class OrdenCompraModel
         }
 
         try {
-            // 1. Contar total de órdenes previas de este proveedor
+            // 1. Contar total de órdenes previas de este proveedor (coincidencia flexible)
             $stmtCount = $this->db->prepare(
                 "SELECT COUNT(*) AS total
                  FROM ordenes_compra
-                 WHERE LOWER(TRIM(proveedor)) = LOWER(:term)
-                    OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)"
+                 WHERE LOWER(TRIM(proveedor)) = LOWER(:termExact)
+                    OR LOWER(TRIM(proveedor)) LIKE LOWER(:termLike)
+                    OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :termNit)"
             );
-            $stmtCount->execute([':term' => $termino]);
+            $stmtCount->execute([
+                ':termExact' => $termino,
+                ':termLike'  => '%' . $termino . '%',
+                ':termNit'   => $termino
+            ]);
             $totalOrdenes = (int)$stmtCount->fetchColumn();
 
             // 2. Si tiene al menos 1 orden previa, es un proveedor registrado
@@ -124,12 +129,17 @@ class OrdenCompraModel
                     "SELECT proveedor, proveedor_nit, tipo_contribuyente, condiciones_pago,
                             banco_nombre, banco_cuenta, banco_tipo_cuenta
                      FROM ordenes_compra
-                     WHERE LOWER(TRIM(proveedor)) = LOWER(:term)
-                        OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)
+                     WHERE LOWER(TRIM(proveedor)) = LOWER(:termExact)
+                        OR LOWER(TRIM(proveedor)) LIKE LOWER(:termLike)
+                        OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :termNit)
                      ORDER BY id DESC
                      LIMIT 1"
                 );
-                $stmt->execute([':term' => $termino]);
+                $stmt->execute([
+                    ':termExact' => $termino,
+                    ':termLike'  => '%' . $termino . '%',
+                    ':termNit'   => $termino
+                ]);
                 $row = $stmt->fetch();
 
                 return [
