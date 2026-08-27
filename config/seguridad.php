@@ -203,7 +203,7 @@ function verificar_autenticacion(): void
 {
     if (!isset($_SESSION['usuario_id'], $_SESSION['usuario_nombre'])) {
         $base = defined('BASE_URL') ? BASE_URL : '/';
-        header("Location: {$base}");
+        header("Location: {$base}?timeout=1");
         exit();
     }
     

@@ -24,6 +24,9 @@ $tabActual = $tabActual ?? 'pendientes';
                 <h1 class="mod-title"><i class="bi bi-cart-check-fill"></i> Órdenes de Compra</h1>
                 <p class="mod-sub">Consulte, clasifique y exporte las órdenes de compra generadas</p>
             </div>
+            <a href="<?= $basePath ?>?module=ordenes&action=crear_directa" class="btn-mod-primary" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; text-decoration: none; padding: 10px 18px; border-radius: 8px;">
+                <i class="bi bi-plus-circle-fill"></i> Nueva Orden Mostrador
+            </a>
         </div>
 
         <?php if (!empty($_SESSION['flash_success'])): ?>
@@ -158,9 +161,13 @@ $tabActual = $tabActual ?? 'pendientes';
                                 </div>
                             </td>
                             <td>
-                                <?php if (!empty($ord['cotizacion_numero'])): ?>
+                                <?php if (!empty($ord['cotizacion_numero']) && strtoupper($ord['cotizacion_numero']) !== 'MOSTRADOR'): ?>
                                 <span class="tag-code">
                                     <?= htmlspecialchars($ord['cotizacion_numero']) ?>
+                                </span>
+                                <?php else: ?>
+                                <span class="mod-badge badge-blue" style="font-size: 11px; padding: 3px 8px;">
+                                    <i class="bi bi-shop"></i> Mostrador
                                 </span>
                                 <?php endif; ?>
                             </td>

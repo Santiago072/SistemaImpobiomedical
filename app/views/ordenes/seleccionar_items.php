@@ -200,28 +200,28 @@ include dirname(__DIR__) . '/layout/menu.php';
 
             <!-- ── PASO 2: Datos del proveedor / orden ── -->
             <div class="mod-table-wrap section-card-orden">
-                <h3 class="section-title-orden">
-                    <i class="bi bi-2-circle-fill"></i> Datos de la Orden de Compra
-                </h3>
+                <?php
+                $isRegistradoIni = !empty($infoProveedorInicial['registrado']);
+                $ordenesPrevias  = (int)($infoProveedorInicial['ordenes'] ?? 0);
+                $datosProvIni    = $infoProveedorInicial['datos'] ?? [];
+                ?>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <h3 class="section-title-orden" style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <i class="bi bi-2-circle-fill"></i> Datos de la Orden de Compra
+                        <span id="badgeEstadoProv" class="mod-badge <?= $isRegistradoIni ? 'badge-green' : 'badge-gold' ?>" style="font-size: 12px; padding: 3px 10px; font-weight: 600;">
+                            <?php if ($isRegistradoIni): ?>
+                                <i class="bi bi-check-circle-fill"></i> Proveedor Registrado (<?= $ordenesPrevias ?> orden<?= $ordenesPrevias > 1 ? 'es' : '' ?>)
+                            <?php else: ?>
+                                <i class="bi bi-plus-circle"></i> Proveedor Nuevo
+                            <?php endif; ?>
+                        </span>
+                    </h3>
+                </div>
 
                 <div class="grid-form-fields">
 
-                    <?php
-                    $isRegistradoIni = !empty($infoProveedorInicial['registrado']);
-                    $ordenesPrevias  = (int)($infoProveedorInicial['ordenes'] ?? 0);
-                    $datosProvIni    = $infoProveedorInicial['datos'] ?? [];
-                    ?>
                     <div class="oc-field-group">
-                        <label class="oc-label" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
-                            <span><i class="bi bi-building"></i> Proveedor (TO:) <span class="required-star">*</span></span>
-                            <span id="badgeEstadoProv" class="mod-badge <?= $isRegistradoIni ? 'badge-green' : 'badge-gold' ?>" style="font-size: 11px; padding: 2px 8px;">
-                                <?php if ($isRegistradoIni): ?>
-                                    <i class="bi bi-check-circle-fill"></i> Proveedor Registrado (<?= $ordenesPrevias ?> orden<?= $ordenesPrevias > 1 ? 'es' : '' ?>)
-                                <?php else: ?>
-                                    <i class="bi bi-plus-circle"></i> Proveedor Nuevo
-                                <?php endif; ?>
-                            </span>
-                        </label>
+                        <label class="oc-label"><i class="bi bi-building"></i> Proveedor (TO:) <span class="required-star">*</span></label>
                         <input type="text" name="proveedor" id="inputProveedor" class="oc-input" required
                                placeholder="Nombre del proveedor" maxlength="200"
                                value="<?= htmlspecialchars($proveedores[0] ?? '') ?>" autocomplete="off">
@@ -600,6 +600,24 @@ NOTA:
     const hintProv    = document.getElementById('hintProveedor');
     const hdnEstado   = document.getElementById('inputEstadoProveedor');
     let timerBusqueda = null;
+    let ultimoProvAutocompletado = '';
+
+    function limpiarCamposProveedor() {
+        const nitInp   = document.getElementById('inputProveedorNit');
+        const tcontInp = document.getElementById('inputTipoContribuyente');
+        const condInp  = document.getElementById('inputCondicionesPago');
+        const bnomInp  = document.getElementById('inputBancoNombre');
+        const bctaInp  = document.getElementById('inputBancoCuenta');
+        const btipoInp = document.getElementById('inputBancoTipoCuenta');
+
+        if (nitInp) nitInp.value = '';
+        if (tcontInp) tcontInp.value = '';
+        if (condInp) condInp.value = 'Según acuerdo';
+        if (bnomInp) bnomInp.value = '';
+        if (bctaInp) bctaInp.value = '';
+        if (btipoInp) btipoInp.value = '';
+        ultimoProvAutocompletado = '';
+    }
 
     function verificarProveedor(nombre) {
         if (!nombre || !nombre.trim()) {
@@ -609,6 +627,7 @@ NOTA:
             }
             if (hintProv) hintProv.innerHTML = '';
             if (hdnEstado) hdnEstado.value = 'nuevo';
+            limpiarCamposProveedor();
             return;
         }
 
@@ -628,7 +647,7 @@ NOTA:
                     if (hdnEstado) hdnEstado.value = 'registrado';
                     if (hintProv) hintProv.innerHTML = '✨ Se autocompletaron datos de la última orden de este proveedor.';
 
-                    // Autocompletar datos si los campos están vacíos
+                    // Autocompletar datos
                     const d = res.datos;
                     if (d) {
                         const nitInp   = document.getElementById('inputProveedorNit');
@@ -638,12 +657,13 @@ NOTA:
                         const bctaInp  = document.getElementById('inputBancoCuenta');
                         const btipoInp = document.getElementById('inputBancoTipoCuenta');
 
-                        if (nitInp && !nitInp.value) nitInp.value = d.proveedor_nit || '';
-                        if (tcontInp && !tcontInp.value) tcontInp.value = d.tipo_contribuyente || '';
-                        if (condInp && (!condInp.value || condInp.value === 'Según acuerdo')) condInp.value = d.condiciones_pago || 'Según acuerdo';
-                        if (bnomInp && !bnomInp.value) bnomInp.value = d.banco_nombre || '';
-                        if (bctaInp && !bctaInp.value) bctaInp.value = d.banco_cuenta || '';
-                        if (btipoInp && !btipoInp.value) btipoInp.value = d.banco_tipo_cuenta || '';
+                        if (nitInp) nitInp.value = d.proveedor_nit || '';
+                        if (tcontInp) tcontInp.value = d.tipo_contribuyente || '';
+                        if (condInp) condInp.value = d.condiciones_pago || 'Según acuerdo';
+                        if (bnomInp) bnomInp.value = d.banco_nombre || '';
+                        if (bctaInp) bctaInp.value = d.banco_cuenta || '';
+                        if (btipoInp) btipoInp.value = d.banco_tipo_cuenta || '';
+                        ultimoProvAutocompletado = nombre.trim();
                     }
                 } else {
                     if (badgeProv) {
@@ -652,6 +672,9 @@ NOTA:
                     }
                     if (hdnEstado) hdnEstado.value = 'nuevo';
                     if (hintProv) hintProv.innerHTML = 'ℹ️ Es la primera vez que se genera orden a este proveedor.';
+                    if (ultimoProvAutocompletado && ultimoProvAutocompletado !== nombre.trim()) {
+                        limpiarCamposProveedor();
+                    }
                 }
             })
             .catch(() => {
@@ -667,13 +690,17 @@ NOTA:
         inputProv.addEventListener('input', function() {
             clearTimeout(timerBusqueda);
             const val = this.value;
-            timerBusqueda = setTimeout(() => verificarProveedor(val), 350);
+            if (!val.trim()) {
+                limpiarCamposProveedor();
+                if (badgeProv) {
+                    badgeProv.className = 'mod-badge badge-gold';
+                    badgeProv.innerHTML = '<i class="bi bi-question-circle"></i> Ingrese proveedor';
+                }
+                if (hdnEstado) hdnEstado.value = 'nuevo';
+            } else {
+                timerBusqueda = setTimeout(() => verificarProveedor(val), 300);
+            }
         });
-
-        // Verificación inicial si ya tiene proveedor cargado
-        if (inputProv.value.trim()) {
-            verificarProveedor(inputProv.value.trim());
-        }
     }
 
     actualizarResumen();

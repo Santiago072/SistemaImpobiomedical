@@ -197,6 +197,106 @@ class OrdenCompraController
         exit();
     }
 
+    // ── NUEVA ORDEN DIRECTA / MOSTRADOR (Sin Cotización) ───────────────────────
+
+    public function crearDirecta(): array
+    {
+        verificar_autenticacion();
+        $csrf_token = generar_token_csrf();
+        $fechaActual = date('Y-m-d');
+
+        return compact('csrf_token', 'fechaActual');
+    }
+
+    public function crearDirectaGuardar(): void
+    {
+        verificar_autenticacion();
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            exit();
+        }
+
+        if (!verificar_token_csrf($_POST['csrf_token'] ?? '')) {
+            $_SESSION['flash_error'] = 'Token de seguridad inválido o expirado.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=crear_directa');
+            exit();
+        }
+
+        verificar_rate_limit(10, 60, 'orden_directa_crear');
+
+        $usuarioId = (int)$_SESSION['usuario_id'];
+        $proveedor = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 200);
+
+        if (empty($proveedor)) {
+            $_SESSION['flash_error'] = 'Debe indicar el nombre del proveedor.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=crear_directa');
+            exit();
+        }
+
+        $itemsRaw = $_POST['items'] ?? [];
+        if (empty($itemsRaw) || !is_array($itemsRaw)) {
+            $_SESSION['flash_error'] = 'Debe agregar al menos un producto a la orden.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=crear_directa');
+            exit();
+        }
+
+        $proveedorNit       = mb_substr(sanitizar_entrada($_POST['proveedor_nit'] ?? ''), 0, 30);
+        $tipoContribuyente  = mb_substr(sanitizar_entrada($_POST['tipo_contribuyente'] ?? ''), 0, 100);
+        $condicionesPago    = mb_substr(sanitizar_entrada($_POST['condiciones_pago'] ?? 'Según acuerdo'), 0, 100);
+        $iva                = mb_substr(sanitizar_entrada($_POST['iva'] ?? '19%'), 0, 20);
+        $departamentoCompras= mb_substr(sanitizar_entrada($_POST['departamento_compras'] ?? ''), 0, 100);
+        $nota               = mb_substr(sanitizar_entrada($_POST['nota'] ?? ''), 0, 1000);
+        $retencion          = (float)($_POST['retencion'] ?? 0);
+        $fecha              = mb_substr(sanitizar_entrada($_POST['fecha'] ?? date('Y-m-d')), 0, 10);
+
+        $bancoNombre        = mb_substr(sanitizar_entrada($_POST['banco_nombre'] ?? ''), 0, 100);
+        $bancoCuenta        = mb_substr(sanitizar_entrada($_POST['banco_cuenta'] ?? ''), 0, 100);
+        $bancoTipoCuenta    = mb_substr(sanitizar_entrada($_POST['banco_tipo_cuenta'] ?? ''), 0, 100);
+
+        // Estado del proveedor calculado contra la BD
+        $historialProv = $this->model->buscarHistorialProveedor($proveedor);
+        $estadoProveedor = (!empty($historialProv['registrado']) && (int)$historialProv['ordenes'] > 0) ? 'registrado' : 'nuevo';
+
+        $flete              = max(0, (float)($_POST['flete'] ?? 0));
+        $tipoDescuento      = in_array($_POST['tipo_descuento'] ?? '', ['monto', 'porcentaje'], true) ? $_POST['tipo_descuento'] : 'monto';
+        $descuentoValor     = max(0, (float)($_POST['descuento_valor'] ?? 0));
+        $descuentoCalculado = max(0, (float)($_POST['descuento'] ?? 0));
+
+        // Crear la orden con cotizacion_id NULL y cotizacion_numero MOSTRADOR
+        $ordenId = $this->model->crearOrden(
+            null, 'MOSTRADOR', $usuarioId,
+            $proveedor, $proveedorNit, $tipoContribuyente,
+            $condicionesPago, $iva, $departamentoCompras,
+            $nota, $retencion, $fecha,
+            $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
+            $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado
+        );
+
+        // Insertar los ítems
+        foreach ($itemsRaw as $it) {
+            $titulo = mb_substr(sanitizar_entrada($it['titulo'] ?? ''), 0, 255);
+            if (empty($titulo)) continue;
+
+            $codigoProveedor = mb_substr(sanitizar_entrada($it['codigo_proveedor'] ?? ''), 0, 60);
+            $descripcion     = mb_substr(sanitizar_entrada($it['descripcion'] ?? ''), 0, 2000);
+            $cantidad        = max(1, (int)($it['cantidad'] ?? 1));
+            $precioUnit      = max(0, (float)($it['precio'] ?? 0));
+            $ivaItem         = sanitizar_entrada($it['iva'] ?? 'si');
+            $pctIva          = $ivaItem === 'si' ? 19.00 : 0.00;
+
+            $this->model->insertarItem(
+                $ordenId, null, $codigoProveedor,
+                $titulo, $descripcion, $cantidad,
+                $precioUnit, $ivaItem, $pctIva
+            );
+        }
+
+        // Redirigir al PDF
+        header('Location: ' . BASE_URL . '?module=ordenes&action=generar_pdf&id=' . $ordenId);
+        exit();
+    }
+
     // ── CONSULTAR órdenes ─────────────────────────────────────────────────────
 
     public function consultar(): array

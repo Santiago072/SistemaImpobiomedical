@@ -1,6 +1,6 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** 2.3.0  
+**Versión:** 2.6.0  
 **Fecha:** Agosto 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS (SMACSS/ITCSS en `css/modules/`) · DomPDF · PHPUnit 10
 
@@ -131,7 +131,8 @@ graph TB
 | Cotizaciones | PDF | `/?module=cotizaciones&action=generar_pdf&ver=EB01` | Visor / descarga de PDF oficial |
 | Cotizaciones | Respaldo | `/?module=cotizaciones&action=ver_respaldo&numero=EB01` | Hoja confidencial de costos de proveedores |
 | Órdenes | Consultar | `/?module=ordenes&action=consultar` | Listado de órdenes por pestañas (Pendientes / Completadas) |
-| Órdenes | Crear P.O. | `/?module=ordenes&action=seleccionar_items&cotizacion=EB01` | Generar orden para un proveedor |
+| Órdenes | Crear P.O. | `/?module=ordenes&action=seleccionar_items&cotizacion=EB01` | Generar orden para un proveedor desde cotización |
+| Órdenes | **Orden Directa** | `/?module=ordenes&action=crear_directa` | **Nueva** — Generar P.O. sin cotización previa (compra directa) |
 | Productos | Listar | `/?module=productos` | Catálogo médico y subida de imágenes |
 | Clientes | Listar | `/?module=clientes` | Directorio de entidades de salud |
 | Usuarios | Listar | `/?module=usuarios` | Gestión de cuentas de asesores y roles |

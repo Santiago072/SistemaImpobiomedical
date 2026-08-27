@@ -28,7 +28,7 @@ class OrdenCompraModel
     // ── CRUD Orden ────────────────────────────────────────────────────────────
 
     public function crearOrden(
-        int    $cotizacionId,
+        ?int   $cotizacionId,
         string $cotizacionNumero,
         int    $usuarioId,
         string $proveedor,
@@ -47,7 +47,8 @@ class OrdenCompraModel
         float  $flete = 0.00,
         string $tipoDescuento = 'monto',
         float  $descuentoValor = 0.00,
-        float  $descuento = 0.00
+        float  $descuento = 0.00,
+        string $clienteDestino = 'MOSTRADOR / IMPOBIOMEDICAL'
     ): int {
         $this->db->beginTransaction();
         try {
@@ -56,11 +57,11 @@ class OrdenCompraModel
                 "INSERT INTO ordenes_compra
                  (numero_po, cotizacion_id, cotizacion_numero, usuario_id,
                   proveedor, proveedor_nit, estado_proveedor, tipo_contribuyente,
-                  condiciones_pago, iva, departamento_compras, nota, retencion,
-                  flete, tipo_descuento, descuento_valor, descuento, fecha,
-                  banco_nombre, banco_cuenta, banco_tipo_cuenta)
+                  cliente_destino, condiciones_pago, iva, departamento_compras,
+                  nota, retencion, flete, tipo_descuento, descuento_valor,
+                  descuento, fecha, banco_nombre, banco_cuenta, banco_tipo_cuenta)
                  VALUES (:po, :cid, :cnum, :uid, :prov, :pnit, :eprov, :tcont,
-                         :condpago, :iva, :depto, :nota, :ret,
+                         :cdest, :condpago, :iva, :depto, :nota, :ret,
                          :flete, :tdesc, :dval, :desc, :fecha,
                          :bnom, :bcuenta, :btipo)"
             );
@@ -73,6 +74,7 @@ class OrdenCompraModel
                 ':pnit'    => $proveedorNit,
                 ':eprov'   => $estadoProveedor,
                 ':tcont'   => $tipoContribuyente,
+                ':cdest'   => $clienteDestino,
                 ':condpago'=> $condicionesPago,
                 ':iva'     => $iva,
                 ':depto'   => $departamentoCompras,
@@ -165,7 +167,7 @@ class OrdenCompraModel
 
     public function insertarItem(
         int    $ordenId,
-        int    $cotizacionItemId,
+        ?int   $cotizacionItemId,
         string $codigoProveedor,
         string $titulo,
         string $descripcion,

@@ -328,9 +328,25 @@ function buscarProductos(q) {
                 json.data.forEach(p => {
                     const div = document.createElement('div');
                     div.className = 'sugerencia-item';
+                    div.style.cssText = 'padding: 10px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.15s;';
+                    div.onmouseenter = () => div.style.background = '#f8fafc';
+                    div.onmouseleave = () => div.style.background = '#fff';
+
+                    const fotoHtml = p.foto 
+                        ? `<img src="${BASE}uploads/${p.foto}" style="width: 38px; height: 38px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; flex-shrink: 0;">`
+                        : `<div style="width: 38px; height: 38px; border-radius: 6px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;"><i class="bi bi-box-seam"></i></div>`;
+
                     div.innerHTML = `
-                        ${p.foto ? `<img src="${BASE}uploads/${p.foto}">` : '<div style="width:36px;height:36px;border-radius:6px;background:#e5e7eb;flex-shrink:0;"></div>'}
-                        <div><div class="sugerencia-nombre">${p.titulo}</div>`;
+                        ${fotoHtml}
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 13px; color: #1e293b;">${p.titulo}</div>
+                            <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
+                                ${p.categoria ? `<span class="mod-badge badge-blue" style="font-size: 10px; padding: 1px 6px;">${p.categoria}</span> ` : ''}
+                                
+                            </div>
+                        </div>
+                        <span class="mod-badge badge-green" style="font-size: 11px;">+ Agregar</span>
+                    `;
                     div.addEventListener('click', () => autocompletar(p));
                     lista.appendChild(div);
                 });

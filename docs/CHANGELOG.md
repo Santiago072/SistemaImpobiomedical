@@ -4,6 +4,39 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v2.6.0] - 2026-08-27
+### Añadido
+- **Nueva Orden de Compra Directa (sin cotización previa) — "Nueva Orden Directa":**
+  - Vista `app/views/ordenes/crear_directa.php` con buscador predictivo del catálogo médico (miniatura, título, categoría, código) y badge `+ Agregar`.
+  - Botón `+ Agregar Producto Manual` para líneas libres sin catálogo.
+  - Botón `Limpiar Productos` estilizado con confirmación de seguridad.
+  - Botón `Cancelar` corregido sin subrayado de texto.
+  - Resumen en tiempo real (Subtotal, Descuento $ o %, Retención %, Flete, Total).
+  - Métodos `crearDirecta()` y `crearDirectaGuardar()` en `OrdenCompraController.php`.
+  - Rutas `crear_directa` y `crear_directa_guardar` registradas en `index.php`.
+- **Autocompletado y Auto-limpieza de Datos de Proveedor:**
+  - Al escribir un proveedor ya registrado se autocompletan NIT, tipo de contribuyente, condiciones de pago y datos bancarios de la última orden.
+  - Al borrar o cambiar el campo Proveedor, todos los datos bancarios y NIT se limpian automáticamente (reactivo sin recarga de página).
+  - Aplicado en **ambas vistas**: `crear_directa.php` (Orden Directa) y `seleccionar_items.php` (Orden desde Cotización).
+- **Badge de Estado de Proveedor reubicado al encabezado de la Sección 2:**
+  - Mueve el badge `🟢 Proveedor Registrado / 🟡 Proveedor Nuevo` al lado del título `2. Datos de la Orden`, liberando espacio y nivelando los inputs.
+  - Aplicado en `crear_directa.php` y `seleccionar_items.php`.
+- **Campo Categoría en Nueva Cotización (`crear.php`):**
+  - Sugerencias del buscador predictivo enriquecidas con miniatura, categoría y badge `+ Agregar`, consistente con Orden Directa.
+
+### Corregido
+- **Expiración de Sesión sin Aviso:**
+  - `verificar_autenticacion()` ahora redirige siempre con `?timeout=1` cuando no hay sesión activa (antes redirigía a login sin parámetro, omitiendo el mensaje de aviso).
+  - Banner `⚠️ Su sesión ha expirado por inactividad. Por favor inicie sesión nuevamente.` ahora se muestra en todos los casos de sesión caducada.
+  - CSS del banner en `auth.css` ajustado: `min-height` adaptativo, color ámbar de advertencia y texto legible completo.
+- **Espacio del campo IVA en cotizaciones cortado:** Anchos de columna corregidos (`width: 100%; min-width: 105px;`) en la tabla de ítems de `crear_directa.php`.
+- **`OrdenCompraModel::insertarItem()`** acepta ahora `?int $cotizacionItemId` (`nullable`) para ítems de órdenes directas sin cotización de origen.
+
+### Cambiado
+- **`BD.txt` sincronizado al 100%** con el esquema real de MariaDB del contenedor VPS, eliminando discrepancias de columnas históricas.
+
+---
+
 ## [v2.5.1] - 2026-08-26
 ### Corregido
 - **Persistencia de Borradores de Cotización**:

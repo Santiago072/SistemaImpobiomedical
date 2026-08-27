@@ -402,6 +402,14 @@ if ($module === 'ordenes') {
         case 'crear':
             $ctrl->crear();
             break;
+        case 'crear_directa':
+            $data = $ctrl->crearDirecta();
+            extract($data);
+            include __DIR__ . '/app/views/ordenes/crear_directa.php';
+            break;
+        case 'crear_directa_guardar':
+            $ctrl->crearDirectaGuardar();
+            break;
         case 'consultar':
             $data    = $ctrl->consultar();
             $pagBaseUrl = BASE_URL . '?module=ordenes&action=consultar';
