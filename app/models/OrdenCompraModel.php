@@ -97,8 +97,8 @@ class OrdenCompraModel
     }
 
     /**
-     * Consulta el historial de un proveedor por nombre o NIT.
-     * Retorna si ya está registrado (conteo de órdenes) y los últimos datos bancarios/fiscales usados.
+     * Consulta el historial de un proveedor exclusivamente en base a órdenes de compra emitidas.
+     * Retorna registrado = true únicamente si ya tiene al menos una orden previa (>= 1).
      */
     public function buscarHistorialProveedor(string $termino): array
     {
@@ -107,34 +107,46 @@ class OrdenCompraModel
             return ['registrado' => false, 'ordenes' => 0, 'datos' => null];
         }
 
-        $stmt = $this->db->prepare(
-            "SELECT proveedor, proveedor_nit, tipo_contribuyente, condiciones_pago,
-                    banco_nombre, banco_cuenta, banco_tipo_cuenta, COUNT(*) OVER() as total_ordenes
+        // 1. Contar total de órdenes previas de este proveedor
+        $stmtCount = $this->db->prepare(
+            "SELECT COUNT(*) AS total
              FROM ordenes_compra
              WHERE LOWER(TRIM(proveedor)) = LOWER(:term)
-                OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)
-             ORDER BY id DESC
-             LIMIT 1"
+                OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)"
         );
-        $stmt->execute([':term' => $termino]);
-        $row = $stmt->fetch();
+        $stmtCount->execute([':term' => $termino]);
+        $totalOrdenes = (int)$stmtCount->fetchColumn();
 
-        if ($row) {
+        // 2. Si tiene al menos 1 orden previa, es un proveedor registrado
+        if ($totalOrdenes > 0) {
+            $stmt = $this->db->prepare(
+                "SELECT proveedor, proveedor_nit, tipo_contribuyente, condiciones_pago,
+                        banco_nombre, banco_cuenta, banco_tipo_cuenta
+                 FROM ordenes_compra
+                 WHERE LOWER(TRIM(proveedor)) = LOWER(:term)
+                    OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)
+                 ORDER BY id DESC
+                 LIMIT 1"
+            );
+            $stmt->execute([':term' => $termino]);
+            $row = $stmt->fetch();
+
             return [
                 'registrado' => true,
-                'ordenes'    => (int)$row['total_ordenes'],
+                'ordenes'    => $totalOrdenes,
                 'datos'      => [
-                    'proveedor'          => $row['proveedor'],
-                    'proveedor_nit'      => $row['proveedor_nit'],
-                    'tipo_contribuyente' => $row['tipo_contribuyente'],
-                    'condiciones_pago'   => $row['condiciones_pago'],
-                    'banco_nombre'       => $row['banco_nombre'],
-                    'banco_cuenta'       => $row['banco_cuenta'],
-                    'banco_tipo_cuenta'  => $row['banco_tipo_cuenta'],
+                    'proveedor'          => $row['proveedor'] ?? $termino,
+                    'proveedor_nit'      => $row['proveedor_nit'] ?? '',
+                    'tipo_contribuyente' => $row['tipo_contribuyente'] ?? '',
+                    'condiciones_pago'   => $row['condiciones_pago'] ?? '',
+                    'banco_nombre'       => $row['banco_nombre'] ?? '',
+                    'banco_cuenta'       => $row['banco_cuenta'] ?? '',
+                    'banco_tipo_cuenta'  => $row['banco_tipo_cuenta'] ?? '',
                 ]
             ];
         }
 
+        // Si no tiene órdenes previas emitidas en el sistema, es proveedor nuevo
         return ['registrado' => false, 'ordenes' => 0, 'datos' => null];
     }
 

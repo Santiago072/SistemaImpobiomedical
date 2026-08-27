@@ -267,13 +267,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <!-- NUEVOS CAMPOS: DESCUENTO Y FLETE -->
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-tag-fill"></i> Descuento</label>
-                        <div style="display: flex; gap: 6px;">
-                            <select name="tipo_descuento" id="inputTipoDescuento" class="oc-input" style="width: 80px; flex-shrink: 0;">
-                                <option value="monto">$ (COP)</option>
-                                <option value="porcentaje">%</option>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <select name="tipo_descuento" id="inputTipoDescuento" class="oc-input" style="width: 95px; min-width: 95px; flex-shrink: 0; padding: 10px 8px; font-weight: 600; text-align: center;">
+                                <option value="monto" selected>$ COP</option>
+                                <option value="porcentaje">% Porc.</option>
                             </select>
                             <input type="number" name="descuento_valor" id="inputDescuentoValor" class="oc-input"
-                                   placeholder="0" min="0" step="0.01" value="0">
+                                   placeholder="0" min="0" step="0.01" value="0" style="flex: 1;">
                         </div>
                         <input type="hidden" name="descuento" id="inputDescuentoCalculado" value="0">
                     </div>

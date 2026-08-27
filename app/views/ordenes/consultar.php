@@ -142,7 +142,9 @@ $tabActual = $tabActual ?? 'pendientes';
                             <td><?= htmlspecialchars($ord['fecha'] ?? '') ?></td>
                             <td>
                                 <strong><?= htmlspecialchars($ord['proveedor']) ?></strong>
-                                <?php $ep = $ord['estado_proveedor'] ?? 'nuevo'; ?>
+                                <?php 
+                                $ep = $ord['estado_proveedor'] ?? 'nuevo'; 
+                                ?>
                                 <div style="margin-top: 3px;">
                                     <?php if ($ep === 'registrado'): ?>
                                         <span class="mod-badge badge-green" style="font-size: 10.5px; padding: 2px 7px;">
