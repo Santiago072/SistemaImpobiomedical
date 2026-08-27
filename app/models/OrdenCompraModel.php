@@ -107,46 +107,49 @@ class OrdenCompraModel
             return ['registrado' => false, 'ordenes' => 0, 'datos' => null];
         }
 
-        // 1. Contar total de órdenes previas de este proveedor
-        $stmtCount = $this->db->prepare(
-            "SELECT COUNT(*) AS total
-             FROM ordenes_compra
-             WHERE LOWER(TRIM(proveedor)) = LOWER(:term)
-                OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)"
-        );
-        $stmtCount->execute([':term' => $termino]);
-        $totalOrdenes = (int)$stmtCount->fetchColumn();
-
-        // 2. Si tiene al menos 1 orden previa, es un proveedor registrado
-        if ($totalOrdenes > 0) {
-            $stmt = $this->db->prepare(
-                "SELECT proveedor, proveedor_nit, tipo_contribuyente, condiciones_pago,
-                        banco_nombre, banco_cuenta, banco_tipo_cuenta
+        try {
+            // 1. Contar total de órdenes previas de este proveedor
+            $stmtCount = $this->db->prepare(
+                "SELECT COUNT(*) AS total
                  FROM ordenes_compra
                  WHERE LOWER(TRIM(proveedor)) = LOWER(:term)
-                    OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)
-                 ORDER BY id DESC
-                 LIMIT 1"
+                    OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)"
             );
-            $stmt->execute([':term' => $termino]);
-            $row = $stmt->fetch();
+            $stmtCount->execute([':term' => $termino]);
+            $totalOrdenes = (int)$stmtCount->fetchColumn();
 
-            return [
-                'registrado' => true,
-                'ordenes'    => $totalOrdenes,
-                'datos'      => [
-                    'proveedor'          => $row['proveedor'] ?? $termino,
-                    'proveedor_nit'      => $row['proveedor_nit'] ?? '',
-                    'tipo_contribuyente' => $row['tipo_contribuyente'] ?? '',
-                    'condiciones_pago'   => $row['condiciones_pago'] ?? '',
-                    'banco_nombre'       => $row['banco_nombre'] ?? '',
-                    'banco_cuenta'       => $row['banco_cuenta'] ?? '',
-                    'banco_tipo_cuenta'  => $row['banco_tipo_cuenta'] ?? '',
-                ]
-            ];
+            // 2. Si tiene al menos 1 orden previa, es un proveedor registrado
+            if ($totalOrdenes > 0) {
+                $stmt = $this->db->prepare(
+                    "SELECT proveedor, proveedor_nit, tipo_contribuyente, condiciones_pago,
+                            banco_nombre, banco_cuenta, banco_tipo_cuenta
+                     FROM ordenes_compra
+                     WHERE LOWER(TRIM(proveedor)) = LOWER(:term)
+                        OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)
+                     ORDER BY id DESC
+                     LIMIT 1"
+                );
+                $stmt->execute([':term' => $termino]);
+                $row = $stmt->fetch();
+
+                return [
+                    'registrado' => true,
+                    'ordenes'    => $totalOrdenes,
+                    'datos'      => [
+                        'proveedor'          => $row['proveedor'] ?? $termino,
+                        'proveedor_nit'      => $row['proveedor_nit'] ?? '',
+                        'tipo_contribuyente' => $row['tipo_contribuyente'] ?? '',
+                        'condiciones_pago'   => $row['condiciones_pago'] ?? '',
+                        'banco_nombre'       => $row['banco_nombre'] ?? '',
+                        'banco_cuenta'       => $row['banco_cuenta'] ?? '',
+                        'banco_tipo_cuenta'  => $row['banco_tipo_cuenta'] ?? '',
+                    ]
+                ];
+            }
+        } catch (\Throwable $e) {
+            error_log('Error en buscarHistorialProveedor: ' . $e->getMessage());
         }
 
-        // Si no tiene órdenes previas emitidas en el sistema, es proveedor nuevo
         return ['registrado' => false, 'ordenes' => 0, 'datos' => null];
     }
 
