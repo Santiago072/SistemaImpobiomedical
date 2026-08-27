@@ -41,15 +41,15 @@ $totalRegistros = count($datosExcel ?? []);
 
 <table>
     <tr>
-        <td colspan="9" class="titulo">IMPOMIN S.A.S — IMPOBIOMEDICAL</td>
+        <td colspan="13" class="titulo">IMPOMIN S.A.S — IMPOBIOMEDICAL</td>
     </tr>
     <tr>
-        <td colspan="9" class="subtitulo">REPORTE DE ÓRDENES DE COMPRA (P.O.)</td>
+        <td colspan="13" class="subtitulo">REPORTE DE ÓRDENES DE COMPRA (P.O.)</td>
     </tr>
     <tr>
-        <td colspan="9" class="meta">Fecha de Generación: <?= $fechaSoloFecha ?> | Total de Órdenes Exportadas: <?= $totalRegistros ?></td>
+        <td colspan="13" class="meta">Fecha de Generación: <?= $fechaSoloFecha ?> | Total de Órdenes Exportadas: <?= $totalRegistros ?></td>
     </tr>
-    <tr><td colspan="9"></td></tr>
+    <tr><td colspan="13"></td></tr>
 </table>
 
 <table>
@@ -58,11 +58,14 @@ $totalRegistros = count($datosExcel ?? []);
             <th>N° P.O.</th>
             <th>Fecha</th>
             <th>Proveedor</th>
+            <th>Estado Prov.</th>
             <th>NIT / Identificación</th>
             <th>Banco</th>
             <th>N° Cuenta</th>
             <th>Tipo de Cuenta</th>
             <th>Cliente a Entregar</th>
+            <th>Descuento ($)</th>
+            <th>Flete ($)</th>
             <th>Estado</th>
             <th>Valor a Pagar ($)</th>
         </tr>
@@ -71,19 +74,25 @@ $totalRegistros = count($datosExcel ?? []);
         <?php 
         $sumaTotal = 0;
         foreach ($datosExcel as $row): 
-            $val = (float)($row['valor_pagar'] ?? 0);
+            $val  = (float)($row['valor_pagar'] ?? 0);
+            $desc = (float)($row['descuento'] ?? 0);
+            $flet = (float)($row['flete'] ?? 0);
+            $ep   = ($row['estado_proveedor'] ?? 'nuevo') === 'registrado' ? 'Registrado' : 'Nuevo';
             $sumaTotal += $val;
-            $est = $row['estado'] ?? 'pendiente';
+            $est  = $row['estado'] ?? 'pendiente';
         ?>
         <tr>
             <td class="text-center" style="font-weight:bold;"><?= (int)$row['numero_po'] ?></td>
             <td class="text-center"><?= htmlspecialchars($row['fecha'] ?? '') ?></td>
             <td style="font-weight:bold;"><?= htmlspecialchars($row['proveedor'] ?? '') ?></td>
+            <td class="text-center <?= $ep === 'Registrado' ? 'badge-comp' : 'badge-pend' ?>"><?= $ep ?></td>
             <td class="text-center" style="mso-number-format:'\@';"><?= htmlspecialchars($row['nit'] ?? '') ?></td>
             <td class="text-center"><?= htmlspecialchars($row['banco_nombre'] ?? '—') ?></td>
             <td class="text-center" style="mso-number-format:'\@';"><?= htmlspecialchars($row['banco_cuenta'] ?? '—') ?></td>
             <td class="text-center"><?= htmlspecialchars($row['banco_tipo_cuenta'] ?? '—') ?></td>
             <td><?= htmlspecialchars($row['cliente'] ?? '—') ?></td>
+            <td class="text-right" style="mso-number-format:'\$#,##0.00';">$ <?= number_format($desc, 2, ',', '.') ?></td>
+            <td class="text-right" style="mso-number-format:'\$#,##0.00';">$ <?= number_format($flet, 2, ',', '.') ?></td>
             <td class="text-center <?= $est === 'completada' ? 'badge-comp' : 'badge-pend' ?>">
                 <?= $est === 'completada' ? 'Completada' : 'Pendiente' ?>
             </td>
@@ -93,7 +102,7 @@ $totalRegistros = count($datosExcel ?? []);
     </tbody>
     <tfoot>
         <tr>
-            <th colspan="9" style="text-align:right; font-size:12pt; background-color:#e2e8f0; color:#1e293b;">TOTAL GENERAL:</th>
+            <th colspan="12" style="text-align:right; font-size:12pt; background-color:#e2e8f0; color:#1e293b;">TOTAL GENERAL:</th>
             <th class="money" style="font-size:12pt; background-color:#e2e8f0; mso-number-format:'\$#,##0.00';">$ <?= number_format($sumaTotal, 2, ',', '.') ?></th>
         </tr>
     </tfoot>

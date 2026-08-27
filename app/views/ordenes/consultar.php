@@ -140,7 +140,21 @@ $tabActual = $tabActual ?? 'pendientes';
                             </td>
                             <td><strong><?= (int)$ord['numero_po'] ?></strong></td>
                             <td><?= htmlspecialchars($ord['fecha'] ?? '') ?></td>
-                            <td><?= htmlspecialchars($ord['proveedor']) ?></td>
+                            <td>
+                                <strong><?= htmlspecialchars($ord['proveedor']) ?></strong>
+                                <?php $ep = $ord['estado_proveedor'] ?? 'nuevo'; ?>
+                                <div style="margin-top: 3px;">
+                                    <?php if ($ep === 'registrado'): ?>
+                                        <span class="mod-badge badge-green" style="font-size: 10.5px; padding: 2px 7px;">
+                                            <i class="bi bi-check-circle-fill"></i> Registrado
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="mod-badge badge-gold" style="font-size: 10.5px; padding: 2px 7px;">
+                                            <i class="bi bi-plus-circle"></i> Nuevo
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
                             <td>
                                 <?php if (!empty($ord['cotizacion_numero'])): ?>
                                 <span class="tag-code">

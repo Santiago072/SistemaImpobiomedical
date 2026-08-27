@@ -51,6 +51,11 @@ if (!function_exists('imgB64OC2')) {
 $logoDir    = dirname(__DIR__, 3) . '/logo/';
 $imgLogoPdf = imgB64OC2($logoDir . 'logopdf.png');
 
+$flete             = (float)($orden['flete'] ?? 0);
+$descuento         = (float)($orden['descuento'] ?? 0);
+$tipoDescuento     = $orden['tipo_descuento'] ?? 'monto';
+$descuentoValor    = (float)($orden['descuento_valor'] ?? 0);
+
 // Cálculos
 $subtotal = 0; $totalIva = 0;
 foreach ($items as $it) {
@@ -62,8 +67,9 @@ foreach ($items as $it) {
     $subtotal += $sub;
     $totalIva += $aplica ? $sub * ($pct / 100) : 0;
 }
-$retencion = $subtotal * ($retencionPct / 100);
-$total     = $subtotal + $totalIva - $retencion;
+$subtotalNeto = max(0, $subtotal - $descuento);
+$retencion = $subtotalNeto * ($retencionPct / 100);
+$total     = $subtotalNeto + $totalIva - $retencion + $flete;
 
 // Formato número colombiano: punto miles, sin decimales
 if (!function_exists('fmt')) {
@@ -253,16 +259,31 @@ table { width:100%; border-collapse:collapse; }
 </tr>
 <?php endforeach; ?>
 
+<?php
+$filasTotales = 4; // Subtotal, IVA, Retención, Total
+if ($descuento > 0) $filasTotales += 2; // Descuento y Subtotal con Descuento
+if ($flete > 0) $filasTotales += 1;     // Flete
+?>
 <!-- Fila nota + totales -->
-<!-- nota ocupa cols 1-4, rowspan 4; totales en las 3 cols de la derecha -->
+<!-- nota ocupa cols 1-4, rowspan dinámico según desglose; totales en las 3 cols de la derecha -->
 <tr>
-  <td colspan="4" rowspan="4"
+  <td colspan="4" rowspan="<?= $filasTotales ?>"
       style="border:1px solid #7f7f7f; padding:8px 10px; font-size:8px; vertical-align:top; background:#fff; line-height:1.75;">
     <?= nl2br(htmlspecialchars($nota)) ?>
   </td>
-  <td class="tot-lbl">SUBTOTAL</td>
+  <td class="tot-lbl">SUBTOTAL ÍTEMS</td>
   <td colspan="2" class="tot-val"><?= fmt($subtotal) ?></td>
 </tr>
+<?php if ($descuento > 0): ?>
+<tr>
+  <td class="tot-lbl">DESCUENTO <?= $tipoDescuento === 'porcentaje' ? '(' . number_format($descuentoValor, 1) . '%)' : '' ?></td>
+  <td colspan="2" class="tot-val" style="color:#b91c1c;">- <?= fmt($descuento) ?></td>
+</tr>
+<tr>
+  <td class="tot-lbl">SUBTOTAL CON DESCUENTO</td>
+  <td colspan="2" class="tot-val"><?= fmt($subtotalNeto) ?></td>
+</tr>
+<?php endif; ?>
 <tr>
   <td class="tot-lbl">IVA</td>
   <td colspan="2" class="tot-val"><?= fmt($totalIva) ?></td>
@@ -271,8 +292,14 @@ table { width:100%; border-collapse:collapse; }
   <td class="tot-lbl">RET <?= number_format($retencionPct, 1) ?>%</td>
   <td colspan="2" class="tot-val"><?= fmt($retencion) ?></td>
 </tr>
+<?php if ($flete > 0): ?>
 <tr>
-  <td class="tot-grand-lbl">TOTAL</td>
+  <td class="tot-lbl">FLETE</td>
+  <td colspan="2" class="tot-val"><?= fmt($flete) ?></td>
+</tr>
+<?php endif; ?>
+<tr>
+  <td class="tot-grand-lbl">TOTAL A PAGAR</td>
   <td colspan="2" class="tot-grand-val"><?= fmt($total) ?></td>
 </tr>
 </table>

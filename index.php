@@ -420,6 +420,9 @@ if ($module === 'ordenes') {
         case 'generar_pdf':
             include __DIR__ . '/app/views/ordenes/generar_pdf.php';
             break;
+        case 'ajax_consultar_proveedor':
+            $ctrl->consultarProveedor();
+            break;
         case 'eliminar':
             $ctrl->eliminar();
             break;

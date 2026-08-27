@@ -120,6 +120,12 @@ class OrdenCompraController
         $bancoCuenta        = mb_substr(sanitizar_entrada($_POST['banco_cuenta'] ?? ''), 0, 100);
         $bancoTipoCuenta    = mb_substr(sanitizar_entrada($_POST['banco_tipo_cuenta'] ?? ''), 0, 100);
 
+        $estadoProveedor    = in_array($_POST['estado_proveedor'] ?? '', ['registrado', 'nuevo'], true) ? $_POST['estado_proveedor'] : 'nuevo';
+        $flete              = max(0, (float)($_POST['flete'] ?? 0));
+        $tipoDescuento      = in_array($_POST['tipo_descuento'] ?? '', ['monto', 'porcentaje'], true) ? $_POST['tipo_descuento'] : 'monto';
+        $descuentoValor     = max(0, (float)($_POST['descuento_valor'] ?? 0));
+        $descuentoCalculado = max(0, (float)($_POST['descuento'] ?? 0));
+
         if (!$cotizacionId || empty($proveedor)) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=datos');
             exit();
@@ -155,7 +161,8 @@ class OrdenCompraController
             $proveedor, $proveedorNit, $tipoContribuyente,
             $condicionesPago, $iva, $departamentoCompras,
             $nota, $retencion, $fecha,
-            $bancoNombre, $bancoCuenta, $bancoTipoCuenta
+            $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
+            $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado
         );
 
         // Insertar los ítems seleccionados
@@ -364,16 +371,26 @@ class OrdenCompraController
                 $subtotal += $sub;
                 $totalIva += $aplica ? $sub * ($pct / 100) : 0;
             }
-            $retencion = $subtotal * ((float)$ord['retencion'] / 100);
-            $valorPagar = $subtotal + $totalIva - $retencion;
+            $descuento = (float)($ord['descuento'] ?? 0);
+            $subtotalNeto = max(0, $subtotal - $descuento);
+            $retencion = $subtotalNeto * ((float)$ord['retencion'] / 100);
+            $flete = (float)($ord['flete'] ?? 0);
+            $valorPagar = $subtotalNeto + $totalIva - $retencion + $flete;
 
             $datos[] = [
                 'proveedor'         => $ord['proveedor'],
+                'estado_proveedor'  => $ord['estado_proveedor'] ?? 'nuevo',
                 'numero_po'         => $ord['numero_po'],
                 'banco_nombre'      => $ord['banco_nombre'] ?? '',
                 'banco_cuenta'      => $ord['banco_cuenta'] ?? '',
                 'banco_tipo_cuenta' => $ord['banco_tipo_cuenta'] ?? '',
                 'nit'               => $ord['proveedor_nit'],
+                'subtotal'          => $subtotal,
+                'descuento'         => $descuento,
+                'subtotal_neto'     => $subtotalNeto,
+                'iva'               => $totalIva,
+                'retencion'         => $retencion,
+                'flete'             => $flete,
                 'valor_pagar'       => $valorPagar,
                 'cliente'           => $ord['cliente_nombre'] ?? '',
                 'estado'            => $ord['estado'] ?? 'pendiente',
@@ -381,6 +398,21 @@ class OrdenCompraController
             ];
         }
         return $datos;
+    }
+
+    /**
+     * Endpoint AJAX para consultar si un proveedor ya está en la base de datos
+     */
+    public function consultarProveedor(): void
+    {
+        verificar_autenticacion();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $termino = sanitizar_entrada($_GET['term'] ?? '');
+        $resultado = $this->model->buscarHistorialProveedor($termino);
+
+        echo json_encode($resultado);
+        exit();
     }
 
 

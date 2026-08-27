@@ -185,12 +185,15 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <div id="resumenSeleccion" class="resumen-seleccion-box">
                     <div class="header-actions-wrap align-center mb-10">
                         <span>Ítems seleccionados: <strong id="cntItems">0</strong></span>
-                        <span>Subtotal: <strong id="cntSubtotal">$ 0</strong></span>
-                        <span>IVA: <strong id="cntIva">$ 0</strong></span>
+                        <span>Subtotal Ítems: <strong id="cntSubtotal">$ 0</strong></span>
+                        <span class="text-danger">Descuento: <strong id="cntDesc">$ 0</strong></span>
+                        <span>Subtotal con Descuento: <strong id="cntSubNeto">$ 0</strong></span>
                     </div>
                     <div class="header-actions-wrap align-center pt-10 border-top-teal">
+                        <span>IVA: <strong id="cntIva">$ 0</strong></span>
                         <span class="text-warning-gold">Retención (<span id="lblRetPct">2.5</span>%): <strong id="cntRet" class="text-warning-gold">$ 0</strong></span>
-                        <div class="text-total-wrap font-bold">TOTAL: <span id="cntTotal" class="resumen-total-text">$ 0</span></div>
+                        <span class="text-info">Flete: <strong id="cntFlete">$ 0</strong></span>
+                        <div class="text-total-wrap font-bold">TOTAL A PAGAR: <span id="cntTotal" class="resumen-total-text">$ 0</span></div>
                     </div>
                 </div>
             </div>
@@ -204,21 +207,28 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <div class="grid-form-fields">
 
                     <div class="oc-field-group">
-                        <label class="oc-label"><i class="bi bi-building"></i> Proveedor (TO:) <span class="required-star">*</span></label>
-                        <input type="text" name="proveedor" class="oc-input" required
+                        <label class="oc-label">
+                            <i class="bi bi-building"></i> Proveedor (TO:) <span class="required-star">*</span>
+                            <span id="badgeEstadoProv" class="mod-badge badge-gold" style="margin-left: 8px; font-size: 11px;">
+                                <i class="bi bi-question-circle"></i> Verificando...
+                            </span>
+                        </label>
+                        <input type="text" name="proveedor" id="inputProveedor" class="oc-input" required
                                placeholder="Nombre del proveedor" maxlength="200"
-                               value="<?= htmlspecialchars($proveedores[0] ?? '') ?>">
+                               value="<?= htmlspecialchars($proveedores[0] ?? '') ?>" autocomplete="off">
+                        <input type="hidden" name="estado_proveedor" id="inputEstadoProveedor" value="nuevo">
+                        <small id="hintProveedor" class="text-muted" style="font-size: 11.5px; display: block; margin-top: 4px;"></small>
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-hash"></i> NIT del Proveedor</label>
-                        <input type="text" name="proveedor_nit" class="oc-input"
+                        <input type="text" name="proveedor_nit" id="inputProveedorNit" class="oc-input"
                                placeholder="Ej: 79625307-6" maxlength="30">
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-person-badge"></i> Tipo de Contribuyente</label>
-                        <input type="text" name="tipo_contribuyente" class="oc-input"
+                        <input type="text" name="tipo_contribuyente" id="inputTipoContribuyente" class="oc-input"
                                placeholder="Ej: PERSON NATURAL O SUCCESION LIQUIDA" maxlength="100">
                     </div>
 
@@ -230,7 +240,7 @@ include dirname(__DIR__) . '/layout/menu.php';
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-credit-card"></i> Condiciones de Pago</label>
-                        <input type="text" name="condiciones_pago" class="oc-input"
+                        <input type="text" name="condiciones_pago" id="inputCondicionesPago" class="oc-input"
                                placeholder="Ej: Según acuerdo" maxlength="100"
                                value="Según acuerdo">
                     </div>
@@ -254,6 +264,26 @@ include dirname(__DIR__) . '/layout/menu.php';
                                placeholder="Ej: 2.5" min="0" max="100" step="0.01" value="2.5">
                     </div>
 
+                    <!-- NUEVOS CAMPOS: DESCUENTO Y FLETE -->
+                    <div class="oc-field-group">
+                        <label class="oc-label"><i class="bi bi-tag-fill"></i> Descuento</label>
+                        <div style="display: flex; gap: 6px;">
+                            <select name="tipo_descuento" id="inputTipoDescuento" class="oc-input" style="width: 80px; flex-shrink: 0;">
+                                <option value="monto">$ (COP)</option>
+                                <option value="porcentaje">%</option>
+                            </select>
+                            <input type="number" name="descuento_valor" id="inputDescuentoValor" class="oc-input"
+                                   placeholder="0" min="0" step="0.01" value="0">
+                        </div>
+                        <input type="hidden" name="descuento" id="inputDescuentoCalculado" value="0">
+                    </div>
+
+                    <div class="oc-field-group">
+                        <label class="oc-label"><i class="bi bi-truck"></i> Valor de Flete ($)</label>
+                        <input type="number" name="flete" id="inputFlete" class="oc-input"
+                               placeholder="0" min="0" step="0.01" value="0">
+                    </div>
+
                 </div>
 
                 <div class="bank-details-wrap">
@@ -263,17 +293,17 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <div class="grid-form-fields">
                         <div class="oc-field-group">
                             <label class="oc-label">Nombre del Banco</label>
-                            <input type="text" name="banco_nombre" class="oc-input"
+                            <input type="text" name="banco_nombre" id="inputBancoNombre" class="oc-input"
                                    placeholder="Ej: Bancolombia" maxlength="100">
                         </div>
                         <div class="oc-field-group">
                             <label class="oc-label">Número de Cuenta</label>
-                            <input type="text" name="banco_cuenta" class="oc-input"
+                            <input type="text" name="banco_cuenta" id="inputBancoCuenta" class="oc-input"
                                    placeholder="Ej: 123456789" maxlength="100">
                         </div>
                         <div class="oc-field-group">
                             <label class="oc-label">Tipo de Cuenta</label>
-                            <select name="banco_tipo_cuenta" class="oc-input">
+                            <select name="banco_tipo_cuenta" id="inputBancoTipoCuenta" class="oc-input">
                                 <option value="">Seleccione...</option>
                                 <option value="Ahorros">Ahorros</option>
                                 <option value="Corriente">Corriente</option>
@@ -369,6 +399,7 @@ NOTA:
                 const iva   = aplica ? sub * (pct / 100) : 0;
                 celdaTot.textContent = '$ ' + Math.round(sub + iva).toLocaleString('es-CO');
                 celdaTot.dataset.pu = pu;  // Actualizar el dataset también
+                celdaTot.dataset.pu = pu;
             }
             actualizarResumen();
         });
@@ -381,11 +412,17 @@ NOTA:
         });
     });
 
-    // ── Actualizar resumen cuando cambia el % de retención ────────────────
+    // ── Actualizar resumen cuando cambian retención, flete o descuento ────
     const retInput = document.getElementById('inputRetencion');
-    if (retInput) {
-        retInput.addEventListener('input', actualizarResumen);
-    }
+    const fleteInput = document.getElementById('inputFlete');
+    const descTipoInput = document.getElementById('inputTipoDescuento');
+    const descValInput = document.getElementById('inputDescuentoValor');
+    const descHdnInput = document.getElementById('inputDescuentoCalculado');
+
+    if (retInput) retInput.addEventListener('input', actualizarResumen);
+    if (fleteInput) fleteInput.addEventListener('input', actualizarResumen);
+    if (descTipoInput) descTipoInput.addEventListener('change', actualizarResumen);
+    if (descValInput) descValInput.addEventListener('input', actualizarResumen);
 
     // ── Resumen de selección ──────────────────────────────────────────────
     const alertaProveedor = document.getElementById('alertaProveedorMixto');
@@ -401,7 +438,6 @@ NOTA:
                 const prov     = row.dataset.proveedor || '';
                 if (prov) proveedoresSeleccionados.add(prov);
 
-                // Leer precio, cantidad, IVA de la fila
                 const qtyInp = row.querySelector('.qty-input');
                 const puInp  = row.querySelector('.precio-input');
                 const celdaTot = row.querySelector('.celda-total');
@@ -416,23 +452,49 @@ NOTA:
             }
         });
 
-        // Leer porcentaje de retención del input
-        const retInput = document.getElementById('inputRetencion');
+        // Cálculo de descuento ($ o %)
+        const descTipo = descTipoInput ? descTipoInput.value : 'monto';
+        const descVal  = descValInput ? (parseFloat(descValInput.value) || 0) : 0;
+        let descuentoCalculado = 0;
+
+        if (descTipo === 'porcentaje') {
+            descuentoCalculado = subSinIva * (descVal / 100);
+        } else {
+            descuentoCalculado = descVal;
+        }
+        if (descuentoCalculado > subSinIva) descuentoCalculado = subSinIva;
+        if (descHdnInput) descHdnInput.value = descuentoCalculado.toFixed(2);
+
+        const subtotalConDescuento = Math.max(0, subSinIva - descuentoCalculado);
+
+        // Leer porcentaje de retención del input (se calcula sobre subtotal con descuento)
         const retPct   = retInput ? (parseFloat(retInput.value) || 0) : 0;
-        const retVal   = subSinIva * (retPct / 100);
-        const totalNeto = subSinIva + ivaTotal - retVal;
+        const retVal   = subtotalConDescuento * (retPct / 100);
+
+        // Flete
+        const fleteVal = fleteInput ? (parseFloat(fleteInput.value) || 0) : 0;
+
+        // Total a pagar
+        const totalNeto = subtotalConDescuento + ivaTotal - retVal + fleteVal;
 
         cntItems.textContent = cnt;
         cntSub.textContent   = '$ ' + Math.round(subSinIva).toLocaleString('es-CO');
 
+        const cntDesc = document.getElementById('cntDesc');
+        const cntSubNeto = document.getElementById('cntSubNeto');
         const cntIva  = document.getElementById('cntIva');
         const cntRet  = document.getElementById('cntRet');
+        const cntFlete = document.getElementById('cntFlete');
         const cntTot  = document.getElementById('cntTotal');
         const lblRet  = document.getElementById('lblRetPct');
-        if (cntIva)  cntIva.textContent  = '$ ' + Math.round(ivaTotal).toLocaleString('es-CO');
-        if (cntRet)  cntRet.textContent  = '$ ' + Math.round(retVal).toLocaleString('es-CO');
-        if (cntTot)  cntTot.textContent  = '$ ' + Math.round(totalNeto).toLocaleString('es-CO');
-        if (lblRet)  lblRet.textContent  = retPct.toString();
+
+        if (cntDesc)    cntDesc.textContent    = '- $ ' + Math.round(descuentoCalculado).toLocaleString('es-CO');
+        if (cntSubNeto) cntSubNeto.textContent = '$ ' + Math.round(subtotalConDescuento).toLocaleString('es-CO');
+        if (cntIva)     cntIva.textContent     = '$ ' + Math.round(ivaTotal).toLocaleString('es-CO');
+        if (cntRet)     cntRet.textContent     = '$ ' + Math.round(retVal).toLocaleString('es-CO');
+        if (cntFlete)   cntFlete.textContent   = '+ $ ' + Math.round(fleteVal).toLocaleString('es-CO');
+        if (cntTot)     cntTot.textContent     = '$ ' + Math.round(totalNeto).toLocaleString('es-CO');
+        if (lblRet)     lblRet.textContent     = retPct.toString();
 
         const provMixto = proveedoresSeleccionados.size > 1;
         if (alertaProveedor) {
@@ -490,6 +552,14 @@ NOTA:
                     row.querySelector('.item-check').checked = false;
                 }
             });
+
+            if (prov) {
+                const inpProv = document.getElementById('inputProveedor');
+                if (inpProv) {
+                    inpProv.value = prov;
+                    verificarProveedor(prov);
+                }
+            }
             actualizarResumen();
         });
     });
@@ -501,12 +571,99 @@ NOTA:
                 const row  = this.closest('tr');
                 const prov = row.dataset.proveedor;
                 if (prov) {
-                    const inp = document.querySelector('input[name="proveedor"]');
-                    if (!inp.value.trim()) inp.value = prov;
+                    const inp = document.getElementById('inputProveedor');
+                    if (inp && !inp.value.trim()) {
+                        inp.value = prov;
+                        verificarProveedor(prov);
+                    }
                 }
             }
         });
     });
+
+    // ── Detección en Vivo de Estado del Proveedor y Autocompletado ─────────
+    const inputProv   = document.getElementById('inputProveedor');
+    const badgeProv   = document.getElementById('badgeEstadoProv');
+    const hintProv    = document.getElementById('hintProveedor');
+    const hdnEstado   = document.getElementById('inputEstadoProveedor');
+    let timerBusqueda = null;
+
+    function verificarProveedor(nombre) {
+        if (!nombre || !nombre.trim()) {
+            if (badgeProv) {
+                badgeProv.className = 'mod-badge badge-gold';
+                badgeProv.innerHTML = '<i class="bi bi-question-circle"></i> Ingrese proveedor';
+            }
+            if (hintProv) hintProv.innerHTML = '';
+            if (hdnEstado) hdnEstado.value = 'nuevo';
+            return;
+        }
+
+        if (badgeProv) {
+            badgeProv.className = 'mod-badge badge-gold';
+            badgeProv.innerHTML = '<i class="bi bi-arrow-repeat"></i> Verificando...';
+        }
+
+        fetch('<?= $basePath ?>?module=ordenes&action=ajax_consultar_proveedor&term=' + encodeURIComponent(nombre.trim()))
+            .then(res => res.json())
+            .then(res => {
+                if (res.registrado) {
+                    if (badgeProv) {
+                        badgeProv.className = 'mod-badge badge-green';
+                        badgeProv.innerHTML = '<i class="bi bi-check-circle-fill"></i> Proveedor Registrado (' + res.ordenes + ' orden' + (res.ordenes > 1 ? 'es' : '') + ')';
+                    }
+                    if (hdnEstado) hdnEstado.value = 'registrado';
+                    if (hintProv) hintProv.innerHTML = '✨ Se autocompletaron datos de la última orden de este proveedor.';
+
+                    // Autocompletar datos si los campos están vacíos
+                    const d = res.datos;
+                    if (d) {
+                        const nitInp   = document.getElementById('inputProveedorNit');
+                        const tcontInp = document.getElementById('inputTipoContribuyente');
+                        const condInp  = document.getElementById('inputCondicionesPago');
+                        const bnomInp  = document.getElementById('inputBancoNombre');
+                        const bctaInp  = document.getElementById('inputBancoCuenta');
+                        const btipoInp = document.getElementById('inputBancoTipoCuenta');
+
+                        if (nitInp && !nitInp.value) nitInp.value = d.proveedor_nit || '';
+                        if (tcontInp && !tcontInp.value) tcontInp.value = d.tipo_contribuyente || '';
+                        if (condInp && (!condInp.value || condInp.value === 'Según acuerdo')) condInp.value = d.condiciones_pago || 'Según acuerdo';
+                        if (bnomInp && !bnomInp.value) bnomInp.value = d.banco_nombre || '';
+                        if (bctaInp && !bctaInp.value) bctaInp.value = d.banco_cuenta || '';
+                        if (btipoInp && !btipoInp.value) btipoInp.value = d.banco_tipo_cuenta || '';
+                    }
+                } else {
+                    if (badgeProv) {
+                        badgeProv.className = 'mod-badge badge-gold';
+                        badgeProv.innerHTML = '<i class="bi bi-plus-circle"></i> Proveedor Nuevo';
+                    }
+                    if (hdnEstado) hdnEstado.value = 'nuevo';
+                    if (hintProv) hintProv.innerHTML = 'ℹ️ Es la primera vez que se genera orden a este proveedor.';
+                }
+            })
+            .catch(() => {
+                if (badgeProv) {
+                    badgeProv.className = 'mod-badge badge-gold';
+                    badgeProv.innerHTML = '<i class="bi bi-info-circle"></i> Proveedor Nuevo';
+                }
+                if (hdnEstado) hdnEstado.value = 'nuevo';
+            });
+    }
+
+    if (inputProv) {
+        inputProv.addEventListener('input', function() {
+            clearTimeout(timerBusqueda);
+            const val = this.value;
+            timerBusqueda = setTimeout(() => verificarProveedor(val), 350);
+        });
+
+        // Verificación inicial si ya tiene proveedor cargado
+        if (inputProv.value.trim()) {
+            verificarProveedor(inputProv.value.trim());
+        }
+    }
+
+    actualizarResumen();
 })();
 </script>
 

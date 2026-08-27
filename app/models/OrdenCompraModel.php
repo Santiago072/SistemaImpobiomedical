@@ -42,7 +42,12 @@ class OrdenCompraModel
         string $fecha,
         string $bancoNombre = '',
         string $bancoCuenta = '',
-        string $bancoTipoCuenta = ''
+        string $bancoTipoCuenta = '',
+        string $estadoProveedor = 'nuevo',
+        float  $flete = 0.00,
+        string $tipoDescuento = 'monto',
+        float  $descuentoValor = 0.00,
+        float  $descuento = 0.00
     ): int {
         $this->db->beginTransaction();
         try {
@@ -50,11 +55,13 @@ class OrdenCompraModel
             $stmt = $this->db->prepare(
                 "INSERT INTO ordenes_compra
                  (numero_po, cotizacion_id, cotizacion_numero, usuario_id,
-                  proveedor, proveedor_nit, tipo_contribuyente,
-                  condiciones_pago, iva, departamento_compras, nota, retencion, fecha,
+                  proveedor, proveedor_nit, estado_proveedor, tipo_contribuyente,
+                  condiciones_pago, iva, departamento_compras, nota, retencion,
+                  flete, tipo_descuento, descuento_valor, descuento, fecha,
                   banco_nombre, banco_cuenta, banco_tipo_cuenta)
-                 VALUES (:po, :cid, :cnum, :uid, :prov, :pnit, :tcont,
-                         :condpago, :iva, :depto, :nota, :ret, :fecha,
+                 VALUES (:po, :cid, :cnum, :uid, :prov, :pnit, :eprov, :tcont,
+                         :condpago, :iva, :depto, :nota, :ret,
+                         :flete, :tdesc, :dval, :desc, :fecha,
                          :bnom, :bcuenta, :btipo)"
             );
             $stmt->execute([
@@ -64,12 +71,17 @@ class OrdenCompraModel
                 ':uid'     => $usuarioId,
                 ':prov'    => $proveedor,
                 ':pnit'    => $proveedorNit,
+                ':eprov'   => $estadoProveedor,
                 ':tcont'   => $tipoContribuyente,
                 ':condpago'=> $condicionesPago,
                 ':iva'     => $iva,
                 ':depto'   => $departamentoCompras,
                 ':nota'    => $nota,
                 ':ret'     => $retencion,
+                ':flete'   => $flete,
+                ':tdesc'   => $tipoDescuento,
+                ':dval'    => $descuentoValor,
+                ':desc'    => $descuento,
                 ':fecha'   => $fecha,
                 ':bnom'    => $bancoNombre,
                 ':bcuenta' => $bancoCuenta,
@@ -82,6 +94,48 @@ class OrdenCompraModel
             $this->db->rollBack();
             throw $e;
         }
+    }
+
+    /**
+     * Consulta el historial de un proveedor por nombre o NIT.
+     * Retorna si ya está registrado (conteo de órdenes) y los últimos datos bancarios/fiscales usados.
+     */
+    public function buscarHistorialProveedor(string $termino): array
+    {
+        $termino = trim($termino);
+        if (empty($termino)) {
+            return ['registrado' => false, 'ordenes' => 0, 'datos' => null];
+        }
+
+        $stmt = $this->db->prepare(
+            "SELECT proveedor, proveedor_nit, tipo_contribuyente, condiciones_pago,
+                    banco_nombre, banco_cuenta, banco_tipo_cuenta, COUNT(*) OVER() as total_ordenes
+             FROM ordenes_compra
+             WHERE LOWER(TRIM(proveedor)) = LOWER(:term)
+                OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :term)
+             ORDER BY id DESC
+             LIMIT 1"
+        );
+        $stmt->execute([':term' => $termino]);
+        $row = $stmt->fetch();
+
+        if ($row) {
+            return [
+                'registrado' => true,
+                'ordenes'    => (int)$row['total_ordenes'],
+                'datos'      => [
+                    'proveedor'          => $row['proveedor'],
+                    'proveedor_nit'      => $row['proveedor_nit'],
+                    'tipo_contribuyente' => $row['tipo_contribuyente'],
+                    'condiciones_pago'   => $row['condiciones_pago'],
+                    'banco_nombre'       => $row['banco_nombre'],
+                    'banco_cuenta'       => $row['banco_cuenta'],
+                    'banco_tipo_cuenta'  => $row['banco_tipo_cuenta'],
+                ]
+            ];
+        }
+
+        return ['registrado' => false, 'ordenes' => 0, 'datos' => null];
     }
 
     public function insertarItem(
