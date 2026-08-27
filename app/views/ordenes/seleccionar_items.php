@@ -212,9 +212,9 @@ include dirname(__DIR__) . '/layout/menu.php';
                     $datosProvIni    = $infoProveedorInicial['datos'] ?? [];
                     ?>
                     <div class="oc-field-group">
-                        <label class="oc-label">
-                            <i class="bi bi-building"></i> Proveedor (TO:) <span class="required-star">*</span>
-                            <span id="badgeEstadoProv" class="mod-badge <?= $isRegistradoIni ? 'badge-green' : 'badge-gold' ?>" style="margin-left: 8px; font-size: 11px;">
+                        <label class="oc-label" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+                            <span><i class="bi bi-building"></i> Proveedor (TO:) <span class="required-star">*</span></span>
+                            <span id="badgeEstadoProv" class="mod-badge <?= $isRegistradoIni ? 'badge-green' : 'badge-gold' ?>" style="font-size: 11px; padding: 2px 8px;">
                                 <?php if ($isRegistradoIni): ?>
                                     <i class="bi bi-check-circle-fill"></i> Proveedor Registrado (<?= $ordenesPrevias ?> orden<?= $ordenesPrevias > 1 ? 'es' : '' ?>)
                                 <?php else: ?>
@@ -226,9 +226,6 @@ include dirname(__DIR__) . '/layout/menu.php';
                                placeholder="Nombre del proveedor" maxlength="200"
                                value="<?= htmlspecialchars($proveedores[0] ?? '') ?>" autocomplete="off">
                         <input type="hidden" name="estado_proveedor" id="inputEstadoProveedor" value="<?= $isRegistradoIni ? 'registrado' : 'nuevo' ?>">
-                        <small id="hintProveedor" class="text-muted" style="font-size: 11.5px; display: block; margin-top: 4px;">
-                            <?= $isRegistradoIni ? '✨ Proveedor registrado en el sistema.' : 'ℹ️ Es la primera vez que se genera orden a este proveedor.' ?>
-                        </small>
                     </div>
 
                     <div class="oc-field-group">
