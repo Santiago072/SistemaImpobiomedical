@@ -78,31 +78,6 @@ class CotizacionController
         $asesorNombre  = $_SESSION['usuario_nombre'] ?? '';
         $asesorCargo   = $_SESSION['usuario_cargo'] ?? '';
 
-        // Si el usuario tiene un clon de modificación activo pero NO viene de haber
-        // ejecutado modificar() ahora mismo (flag _modificar_recien_activado), significa
-        // que navegó a otro módulo y regresó. Limpiar automáticamente el clon.
-        if (isset($_SESSION['cotizacion_revision_de']) &&
-            !isset($_SESSION['_modificar_recien_activado'])) {
-            // Eliminar el clon temporal si todavía existe en BD
-            if (isset($_SESSION['cotizacion_id'])) {
-                $clon = $this->model->buscarPorId((int)$_SESSION['cotizacion_id']);
-                if ($clon && (int)($clon['es_revision'] ?? 0) === 1) {
-                    $this->model->eliminar((int)$_SESSION['cotizacion_id']);
-                }
-            }
-            // Restaurar borrador previo si existía
-            if (isset($_SESSION['borrador_previo_id'])) {
-                $_SESSION['cotizacion_id'] = (int)$_SESSION['borrador_previo_id'];
-                unset($_SESSION['borrador_previo_id']);
-            } else {
-                unset($_SESSION['cotizacion_id']);
-            }
-            unset($_SESSION['cotizacion_revision_de']);
-        }
-
-        // Consumir el flag de reciente activación (si existe)
-        unset($_SESSION['_modificar_recien_activado']);
-
         if (!isset($_SESSION['cotizacion_id'])) {
             $id = $this->model->buscarBorradorConItems($usuarioId);
 

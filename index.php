@@ -188,6 +188,30 @@ header('Cache-Control: post-check=0, pre-check=0', false);
 header('Pragma: no-cache');
 header('Expires: Sat, 26 Jul 1997 05:00:00 GMT'); // Fecha en el pasado para asegurar expiración
 
+// ── Limpieza de modificación temporal si el usuario sale a otro módulo ────────
+// Si el usuario estaba modificando una cotización y navega a panel, productos, clientes, ordenes,
+// usuarios, estadisticas, o consultar cotizaciones, se descarta el clon temporal y se restaura el borrador.
+if (isset($_SESSION['cotizacion_revision_de'])) {
+    $esFlujoCotizacion = ($module === 'cotizaciones' && in_array($action, ['crear', 'editar_item', 'eliminar_item', 'finalizar', 'ajax_buscar_productos', 'ajax_get_producto', 'ajax_buscar_clientes', 'ajax_get_cliente', 'modificar', 'limpiar_borrador']));
+    
+    if (!$esFlujoCotizacion) {
+        if (isset($_SESSION['cotizacion_id'])) {
+            $cotModelTemp = new CotizacionModel($db);
+            $clonTemp = $cotModelTemp->buscarPorId((int)$_SESSION['cotizacion_id']);
+            if ($clonTemp && (int)($clonTemp['es_revision'] ?? 0) === 1) {
+                $cotModelTemp->eliminar((int)$_SESSION['cotizacion_id']);
+            }
+        }
+        if (isset($_SESSION['borrador_previo_id'])) {
+            $_SESSION['cotizacion_id'] = (int)$_SESSION['borrador_previo_id'];
+            unset($_SESSION['borrador_previo_id']);
+        } else {
+            unset($_SESSION['cotizacion_id']);
+        }
+        unset($_SESSION['cotizacion_revision_de'], $_SESSION['_modificar_recien_activado']);
+    }
+}
+
 // ── Dispatch por módulo ───────────────────────────────────────────────────────
 
 if ($module === 'panel') {
