@@ -344,20 +344,19 @@ class CotizacionController
     public function limpiarBorrador(): void
     {
         verificar_autenticacion();
-        if (isset($_SESSION['cotizacion_id'])) {
-            $clon = $this->model->buscarPorId((int)$_SESSION['cotizacion_id']);
-            // Eliminar siempre (sea clon o borrador normal descartado por el usuario)
-            $this->model->eliminar((int)$_SESSION['cotizacion_id']);
-            unset($_SESSION['cotizacion_id']);
-        }
+        $usuarioId = (int)$_SESSION['usuario_id'];
 
-        // Si había un borrador previo guardado antes de entrar a modificar, restaurarlo
-        if (isset($_SESSION['borrador_previo_id'])) {
-            $_SESSION['cotizacion_id'] = (int)$_SESSION['borrador_previo_id'];
-            unset($_SESSION['borrador_previo_id']);
-        }
+        // Eliminar TODOS los borradores pendientes (y sus ítems) de este usuario
+        $this->model->eliminarTodosBorradoresDelUsuario($usuarioId);
 
-        unset($_SESSION['cotizacion_revision_de'], $_SESSION['_modificar_recien_activado']);
+        // Limpiar todas las variables de sesión relacionadas con borradores y revisiones
+        unset(
+            $_SESSION['cotizacion_id'],
+            $_SESSION['cotizacion_revision_de'],
+            $_SESSION['borrador_previo_id'],
+            $_SESSION['_modificar_recien_activado']
+        );
+
         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
         exit();
     }

@@ -34,9 +34,10 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
   - `verificar_autenticacion()` ahora redirige siempre con `?timeout=1` cuando no hay sesión activa (antes redirigía a login sin parámetro, omitiendo el mensaje de aviso).
   - Banner `⚠️ Su sesión ha expirado por inactividad. Por favor inicie sesión nuevamente.` ahora se muestra en todos los casos de sesión caducada.
   - CSS del banner en `auth.css` ajustado: `min-height` adaptativo, color ámbar de advertencia y texto legible completo.
-- **Preservación del Modo Modificación en Cotizaciones:**
+- **Preservación del Modo Modificación y Purga de Borradores en Cotizaciones:**
   - Corrección del reinicio involuntario al navegar entre Paso 1 (Ítems), Editar Producto y Paso 2 (Datos del Cliente).
   - El clon temporal de modificación ahora se descarta únicamente si el usuario navega a otro módulo del sistema o cancela explícitamente.
+  - El botón `Descartar Borrador` ahora ejecuta una purga integral en la base de datos eliminando todos los borradores incompletos huérfanos del usuario (`eliminarTodosBorradoresDelUsuario`), garantizando un lienzo 100% en blanco.
 - **Blindaje y Resiliencia en Generación de PDFs (Cotizaciones y Órdenes de Compra):**
   - Validación profunda de imágenes con `getimagesize()` y soporte de conversión al vuelo de formatos `.webp` a JPEG en memoria para DomPDF.
   - Bloque `try-catch` con fallback automático: si una imagen falla o está corrupta, el PDF se genera limpiamente en lugar de arrojar error 500.

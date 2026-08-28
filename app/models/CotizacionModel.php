@@ -529,4 +529,24 @@ class CotizacionModel
         $stmt = $this->db->prepare('DELETE FROM cotizaciones WHERE id = :id');
         return $stmt->execute([':id' => $id]);
     }
+
+    /**
+     * Elimina todos los borradores (y sus ítems) que pertenezcan al usuario especificado.
+     */
+    public function eliminarTodosBorradoresDelUsuario(int $usuarioId): bool
+    {
+        // 1. Eliminar ítems de todos los borradores del usuario
+        $stmtItems = $this->db->prepare(
+            "DELETE i FROM cotizacion_items i
+             INNER JOIN cotizaciones c ON i.cotizacion_id = c.id
+             WHERE c.usuario_id = :uid AND c.estado = 'borrador'"
+        );
+        $stmtItems->execute([':uid' => $usuarioId]);
+
+        // 2. Eliminar las cabeceras en borrador del usuario
+        $stmtCot = $this->db->prepare(
+            "DELETE FROM cotizaciones WHERE usuario_id = :uid AND estado = 'borrador'"
+        );
+        return $stmtCot->execute([':uid' => $usuarioId]);
+    }
 }
