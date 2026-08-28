@@ -40,11 +40,36 @@ use Dompdf\Options;
 
 if (!function_exists('imgB64OC2')) {
     function imgB64OC2(string $ruta): string {
-        if (!file_exists($ruta)) return '';
-        $ext  = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
-        $mime = in_array($ext, ['jpg','jpeg']) ? 'jpeg' : 'png';
-        $raw  = @file_get_contents($ruta);
-        return $raw ? 'data:image/' . $mime . ';base64,' . base64_encode($raw) : '';
+        if (!file_exists($ruta) || !is_readable($ruta)) return '';
+        try {
+            $info = @getimagesize($ruta);
+            if (!$info || empty($info['mime'])) return '';
+            $mime = $info['mime'];
+
+            if ($mime === 'image/webp' && function_exists('imagecreatefromwebp') && function_exists('imagejpeg')) {
+                $im = @imagecreatefromwebp($ruta);
+                if ($im) {
+                    ob_start();
+                    imagejpeg($im, null, 90);
+                    $jpegData = ob_get_clean();
+                    imagedestroy($im);
+                    if ($jpegData) {
+                        return 'data:image/jpeg;base64,' . base64_encode($jpegData);
+                    }
+                }
+                return '';
+            }
+
+            if (!in_array($mime, ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'])) {
+                return '';
+            }
+
+            $raw = @file_get_contents($ruta);
+            return $raw ? 'data:' . $mime . ';base64,' . base64_encode($raw) : '';
+        } catch (\Throwable $e) {
+            error_log('Error procesando imagen para orden PDF: ' . $e->getMessage());
+            return '';
+        }
     }
 }
 
@@ -332,10 +357,22 @@ $options->set('defaultFont', 'Helvetica');
 
 $dompdf = new Dompdf($options);
 $dompdf->loadHtml($html, 'UTF-8');
-$dompdf->setPaper('A4', 'portrait');
-$dompdf->render();
+$dompdf->setPaper('letter', 'portrait');
 
-while (ob_get_level()) ob_end_clean();
+try {
+    $dompdf->render();
+} catch (\Throwable $e) {
+    error_log('Error en DomPDF orden render: ' . $e->getMessage());
+    $htmlSinImagenes = preg_replace('/<img[^>]+>/i', '', $html);
+    $dompdf = new Dompdf($options);
+    $dompdf->loadHtml($htmlSinImagenes, 'UTF-8');
+    $dompdf->setPaper('letter', 'portrait');
+    $dompdf->render();
+}
 
-$dompdf->stream("orden_compra_PO{$po}.pdf", ['Attachment' => (bool)$forzar]);
+while (ob_get_level()) {
+    ob_end_clean();
+}
+
+$dompdf->stream("orden_compra_{$poFormatted}.pdf", ['Attachment' => false]);
 exit();

@@ -34,6 +34,10 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
   - `verificar_autenticacion()` ahora redirige siempre con `?timeout=1` cuando no hay sesión activa (antes redirigía a login sin parámetro, omitiendo el mensaje de aviso).
   - Banner `⚠️ Su sesión ha expirado por inactividad. Por favor inicie sesión nuevamente.` ahora se muestra en todos los casos de sesión caducada.
   - CSS del banner en `auth.css` ajustado: `min-height` adaptativo, color ámbar de advertencia y texto legible completo.
+- **Blindaje y Resiliencia en Generación de PDFs (Cotizaciones y Órdenes de Compra):**
+  - Validación profunda de imágenes con `getimagesize()` y soporte de conversión al vuelo de formatos `.webp` a JPEG en memoria para DomPDF.
+  - Bloque `try-catch` con fallback automático: si una imagen falla o está corrupta, el PDF se genera limpiamente en lugar de arrojar error 500.
+  - Aplicado en `app/views/cotizaciones/generar_pdf.php` y `app/views/ordenes/generar_pdf.php`.
 - **Espacio del campo IVA en cotizaciones cortado:** Anchos de columna corregidos (`width: 100%; min-width: 105px;`) en la tabla de ítems de `crear_directa.php`.
 - **`OrdenCompraModel::insertarItem()`** acepta ahora `?int $cotizacionItemId` (`nullable`) para ítems de órdenes directas sin cotización de origen.
 

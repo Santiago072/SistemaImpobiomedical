@@ -40,14 +40,43 @@ require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-// ── Helper: imagen a base64 ───────────────────────────────────────────────────
+// ── Helper: imagen a base64 seguro y robusto ─────────────────────────────────
 function imgBase64(string $ruta): string {
-    if (!file_exists($ruta)) return '';
-    $ext  = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
-    $mime = in_array($ext, ['jpg','jpeg']) ? 'jpeg' : ($ext === 'png' ? 'png' : $ext);
-    $d    = @file_get_contents($ruta);
-    if (!$d) return '';
-    return 'data:image/' . $mime . ';base64,' . base64_encode($d);
+    if (!file_exists($ruta) || !is_readable($ruta)) return '';
+    
+    try {
+        $info = @getimagesize($ruta);
+        if (!$info || empty($info['mime'])) return '';
+        
+        $mime = $info['mime']; // image/jpeg, image/png, image/gif, image/webp
+        
+        // DomPDF soporta nativamente JPEG, PNG y GIF
+        if ($mime === 'image/webp' && function_exists('imagecreatefromwebp') && function_exists('imagejpeg')) {
+            // Convertir WebP al vuelo a JPEG en memoria para DomPDF
+            $im = @imagecreatefromwebp($ruta);
+            if ($im) {
+                ob_start();
+                imagejpeg($im, null, 90);
+                $jpegData = ob_get_clean();
+                imagedestroy($im);
+                if ($jpegData) {
+                    return 'data:image/jpeg;base64,' . base64_encode($jpegData);
+                }
+            }
+            return '';
+        }
+
+        if (!in_array($mime, ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'])) {
+            return '';
+        }
+
+        $d = @file_get_contents($ruta);
+        if (!$d) return '';
+        return 'data:' . $mime . ';base64,' . base64_encode($d);
+    } catch (\Throwable $e) {
+        error_log('Error procesando imagen para PDF: ' . $e->getMessage());
+        return '';
+    }
 }
 
 $logoDir      = dirname(__DIR__, 3) . '/logo/';
@@ -396,7 +425,18 @@ $options->set('defaultFont', 'Helvetica');
 $dompdf = new Dompdf($options);
 $dompdf->loadHtml($html, 'UTF-8');
 $dompdf->setPaper('A4', 'portrait');
-$dompdf->render();
+
+try {
+    $dompdf->render();
+} catch (\Throwable $e) {
+    error_log('Error en DomPDF render: ' . $e->getMessage());
+    // Intentar renderizar sin imágenes si falló por alguna imagen
+    $htmlSinImagenes = preg_replace('/<img[^>]+>/i', '', $html);
+    $dompdf = new Dompdf($options);
+    $dompdf->loadHtml($htmlSinImagenes, 'UTF-8');
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+}
 
 // Limpiar cualquier búfer de salida residual que pueda corromper el PDF
 while (ob_get_level()) {
