@@ -28,6 +28,11 @@ include dirname(__DIR__) . '/layout/menu.php';
             </a>
         </div>
 
+        <?php if (!empty($_SESSION['flash_error'])): ?>
+        <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($_SESSION['flash_error']) ?></div>
+        <?php unset($_SESSION['flash_error']); ?>
+        <?php endif; ?>
+
         <?php if (isset($_GET['error']) && $_GET['error'] === 'no_items'): ?>
         <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> Debe seleccionar al menos un ítem.</div>
         <?php endif; ?>

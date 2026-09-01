@@ -128,7 +128,9 @@ class CotizacionModel
                AND (c.numero_cotizacion IS NULL OR c.numero_cotizacion = '')
                AND c.estado = 'borrador'
                AND c.es_revision = 0
-             ORDER BY c.id DESC LIMIT 1"
+             GROUP BY c.id
+             ORDER BY MAX(i.id) DESC, c.id DESC
+             LIMIT 1"
         );
         $stmt->execute([':uid' => $usuarioId]);
         $row = $stmt->fetch();
