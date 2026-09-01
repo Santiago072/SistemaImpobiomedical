@@ -48,7 +48,9 @@ class OrdenCompraModel
         string $tipoDescuento = 'monto',
         float  $descuentoValor = 0.00,
         float  $descuento = 0.00,
-        string $clienteDestino = 'MOSTRADOR / IMPOBIOMEDICAL'
+        string $clienteDestino = 'MOSTRADOR / IMPOBIOMEDICAL',
+        string $fleteIva = 'no',
+        float  $fletePorcentajeIva = 19.00
     ): int {
         $this->db->beginTransaction();
         try {
@@ -58,11 +60,13 @@ class OrdenCompraModel
                  (numero_po, cotizacion_id, cotizacion_numero, usuario_id,
                   proveedor, proveedor_nit, estado_proveedor, tipo_contribuyente,
                   cliente_destino, condiciones_pago, iva, departamento_compras,
-                  nota, retencion, flete, tipo_descuento, descuento_valor,
-                  descuento, fecha, banco_nombre, banco_cuenta, banco_tipo_cuenta)
+                  nota, retencion, flete, flete_iva, flete_porcentaje_iva,
+                  tipo_descuento, descuento_valor, descuento, fecha,
+                  banco_nombre, banco_cuenta, banco_tipo_cuenta)
                  VALUES (:po, :cid, :cnum, :uid, :prov, :pnit, :eprov, :tcont,
                          :cdest, :condpago, :iva, :depto, :nota, :ret,
-                         :flete, :tdesc, :dval, :desc, :fecha,
+                         :flete, :fiva, :fpctiva,
+                         :tdesc, :dval, :desc, :fecha,
                          :bnom, :bcuenta, :btipo)"
             );
             $stmt->execute([
@@ -81,6 +85,8 @@ class OrdenCompraModel
                 ':nota'    => $nota,
                 ':ret'     => $retencion,
                 ':flete'   => $flete,
+                ':fiva'    => $fleteIva,
+                ':fpctiva' => $fletePorcentajeIva,
                 ':tdesc'   => $tipoDescuento,
                 ':dval'    => $descuentoValor,
                 ':desc'    => $descuento,

@@ -429,13 +429,21 @@ $dompdf->setPaper('A4', 'portrait');
 try {
     $dompdf->render();
 } catch (\Throwable $e) {
-    error_log('Error en DomPDF render: ' . $e->getMessage());
-    // Intentar renderizar sin imágenes si falló por alguna imagen
-    $htmlSinImagenes = preg_replace('/<img[^>]+>/i', '', $html);
-    $dompdf = new Dompdf($options);
-    $dompdf->loadHtml($htmlSinImagenes, 'UTF-8');
-    $dompdf->setPaper('A4', 'portrait');
-    $dompdf->render();
+    error_log('Error en DomPDF render cotización: ' . $e->getMessage());
+    // Si falló por alguna imagen de producto rota, eliminar solo las imágenes de productos y preservar el logo si es posible
+    $htmlSinImgProd = preg_replace('/<img[^>]+uploads\/[^>]+>/i', '', $html);
+    try {
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($htmlSinImgProd, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+    } catch (\Throwable $e2) {
+        $htmlSinImagenes = preg_replace('/<img[^>]+>/i', '', $html);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($htmlSinImagenes, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+    }
 }
 
 // Limpiar cualquier búfer de salida residual que pueda corromper el PDF

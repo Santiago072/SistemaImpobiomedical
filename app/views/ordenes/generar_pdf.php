@@ -77,12 +77,14 @@ $logoDir    = dirname(__DIR__, 3) . '/logo/';
 $imgLogoPdf = imgB64OC2($logoDir . 'logopdf.png');
 
 $flete             = (float)($orden['flete'] ?? 0);
+$fleteIva          = ($orden['flete_iva'] ?? 'no') === 'si';
+$fletePctIva       = (float)($orden['flete_porcentaje_iva'] ?? 19.00);
 $descuento         = (float)($orden['descuento'] ?? 0);
 $tipoDescuento     = $orden['tipo_descuento'] ?? 'monto';
 $descuentoValor    = (float)($orden['descuento_valor'] ?? 0);
 
 // Cálculos
-$subtotal = 0; $totalIva = 0;
+$subtotal = 0; $totalIvaItems = 0;
 foreach ($items as $it) {
     $pu     = (float)$it['precio_unit'];
     $qty    = (int)$it['cantidad'];
@@ -90,24 +92,18 @@ foreach ($items as $it) {
     $aplica = strtolower($it['iva']) === 'si';
     $sub    = $pu * $qty;
     $subtotal += $sub;
-    $totalIva += $aplica ? $sub * ($pct / 100) : 0;
+    $totalIvaItems += $aplica ? $sub * ($pct / 100) : 0;
 }
 $subtotalNeto = max(0, $subtotal - $descuento);
 $retencion = $subtotalNeto * ($retencionPct / 100);
+$ivaFlete = ($fleteIva && $flete > 0) ? $flete * ($fletePctIva / 100) : 0;
+$totalIva = $totalIvaItems + $ivaFlete;
 $total     = $subtotalNeto + $totalIva - $retencion + $flete;
 
 // Formato número colombiano: punto miles, sin decimales
 if (!function_exists('fmt')) {
     function fmt(float $n): string {
         return '$&nbsp;' . number_format($n, 0, ',', '.');
-    }
-}
-
-// DEBUG: capturar qué hay en el buffer ANTES de limpiar
-if (ob_get_level() > 0) {
-    $_preLen = strlen(ob_get_contents() ?: '');
-    if ($_preLen > 0) {
-        error_log('[PDF-ORDER] Buffer previo: ' . $_preLen . ' bytes');
     }
 }
 
@@ -227,7 +223,6 @@ table { width:100%; border-collapse:collapse; }
 </table>
 
 <!-- ══ TABLA ITEMS ══ -->
-<!-- Fila PURCHASE DEPARTMENT | IVA | PAYMENT TERMS -->
 <table>
 <tr>
   <td colspan="4" class="h-azul" style="padding:4px; border:1px solid #1f3864; text-align:center; font-size:9px; letter-spacing:0.5px;">PURCHASE DEPARTMENT</td>
@@ -240,7 +235,7 @@ table { width:100%; border-collapse:collapse; }
   <td colspan="2" class="f-lblue" style="text-align:center; font-size:8px; padding:2px 4px; border:1px solid #7f7f7f; border-top:none; border-left:none;"><?= htmlspecialchars($condicionesPago) ?></td>
 </tr>
 
-<!-- Cabeceras columnas — igual que imagen: COD | CANT | DESCRIPCION Y REQUISITOS | %IVA | (imagen) | UNIT | TOTAL -->
+<!-- Cabeceras columnas -->
 <tr>
   <th class="th" style="width:9%;">COD</th>
   <th class="th" style="width:6%;">CANT</th>
@@ -269,7 +264,6 @@ table { width:100%; border-collapse:collapse; }
 <tr class="<?= $cls ?>">
   <td class="b tc vm" style="padding:7px 3px; font-size:8px; font-weight:bold;"><?= htmlspecialchars($codProv) ?></td>
   <td class="b tc vm" style="padding:7px 2px; font-size:10.5px; font-weight:bold;"><?= $qty ?></td>
-  <!-- Título del producto — en mayúsculas, centrado, sin descripción -->
   <td class="b tc vm" style="padding:7px 8px; font-size:9px; font-weight:bold;" <?= $imgItem ? '' : 'colspan="2"' ?>>
     <?= mb_strtoupper(htmlspecialchars($it['titulo'])) ?>
   </td>
@@ -290,7 +284,6 @@ if ($descuento > 0) $filasTotales += 2; // Descuento y Subtotal con Descuento
 if ($flete > 0) $filasTotales += 1;     // Flete
 ?>
 <!-- Fila nota + totales -->
-<!-- nota ocupa cols 1-4, rowspan dinámico según desglose; totales en las 3 cols de la derecha -->
 <tr>
   <td colspan="4" rowspan="<?= $filasTotales ?>"
       style="border:1px solid #7f7f7f; padding:8px 10px; font-size:8px; vertical-align:top; background:#fff; line-height:1.75;">
@@ -319,7 +312,7 @@ if ($flete > 0) $filasTotales += 1;     // Flete
 </tr>
 <?php if ($flete > 0): ?>
 <tr>
-  <td class="tot-lbl">FLETE</td>
+  <td class="tot-lbl">FLETE <?= $fleteIva ? '(+19% IVA)' : '' ?></td>
   <td colspan="2" class="tot-val"><?= fmt($flete) ?></td>
 </tr>
 <?php endif; ?>
@@ -374,5 +367,6 @@ while (ob_get_level()) {
     ob_end_clean();
 }
 
+$poFormatted = str_pad($po, 3, '0', STR_PAD_LEFT);
 $dompdf->stream("orden_compra_{$poFormatted}.pdf", ['Attachment' => false]);
 exit();

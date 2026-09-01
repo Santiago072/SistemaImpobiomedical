@@ -290,8 +290,15 @@ include dirname(__DIR__) . '/layout/menu.php';
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-truck"></i> Valor de Flete ($)</label>
-                        <input type="number" name="flete" id="inputFlete" class="oc-input"
-                               placeholder="0" min="0" step="0.01" value="0">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="number" name="flete" id="inputFlete" class="oc-input"
+                                   placeholder="0" min="0" step="0.01" value="0" style="flex: 1;">
+                            <select name="flete_iva" id="inputFleteIva" class="oc-input" style="width: 105px; min-width: 105px; flex-shrink: 0; padding: 10px 8px; font-weight: 600; text-align: center;">
+                                <option value="no" selected>Sin IVA</option>
+                                <option value="si">+ 19% IVA</option>
+                            </select>
+                            <input type="hidden" name="flete_porcentaje_iva" id="inputFletePorcentajeIva" value="19">
+                        </div>
                     </div>
 
                 </div>
@@ -428,12 +435,14 @@ NOTA:
     // ── Actualizar resumen cuando cambian retención, flete o descuento ────
     const retInput = document.getElementById('inputRetencion');
     const fleteInput = document.getElementById('inputFlete');
+    const fleteIvaSelect = document.getElementById('inputFleteIva');
     const descTipoInput = document.getElementById('inputTipoDescuento');
     const descValInput = document.getElementById('inputDescuentoValor');
     const descHdnInput = document.getElementById('inputDescuentoCalculado');
 
     if (retInput) retInput.addEventListener('input', actualizarResumen);
     if (fleteInput) fleteInput.addEventListener('input', actualizarResumen);
+    if (fleteIvaSelect) fleteIvaSelect.addEventListener('change', actualizarResumen);
     if (descTipoInput) descTipoInput.addEventListener('change', actualizarResumen);
     if (descValInput) descValInput.addEventListener('input', actualizarResumen);
 
@@ -484,11 +493,16 @@ NOTA:
         const retPct   = retInput ? (parseFloat(retInput.value) || 0) : 0;
         const retVal   = subtotalConDescuento * (retPct / 100);
 
-        // Flete
+        // Flete e IVA de Flete
+        const fleteIvaInput = document.getElementById('inputFleteIva');
         const fleteVal = fleteInput ? (parseFloat(fleteInput.value) || 0) : 0;
+        const fleteAplicaIva = fleteIvaInput ? fleteIvaInput.value === 'si' : false;
+        const fleteIvaVal = fleteAplicaIva ? fleteVal * 0.19 : 0;
+
+        const ivaGranTotal = ivaTotal + fleteIvaVal;
 
         // Total a pagar
-        const totalNeto = subtotalConDescuento + ivaTotal - retVal + fleteVal;
+        const totalNeto = subtotalConDescuento + ivaGranTotal - retVal + fleteVal;
 
         cntItems.textContent = cnt;
         cntSub.textContent   = '$ ' + Math.round(subSinIva).toLocaleString('es-CO');
@@ -503,9 +517,9 @@ NOTA:
 
         if (cntDesc)    cntDesc.textContent    = '- $ ' + Math.round(descuentoCalculado).toLocaleString('es-CO');
         if (cntSubNeto) cntSubNeto.textContent = '$ ' + Math.round(subtotalConDescuento).toLocaleString('es-CO');
-        if (cntIva)     cntIva.textContent     = '$ ' + Math.round(ivaTotal).toLocaleString('es-CO');
+        if (cntIva)     cntIva.textContent     = '$ ' + Math.round(ivaGranTotal).toLocaleString('es-CO') + (fleteAplicaIva && fleteVal > 0 ? ' (inc. IVA flete)' : '');
         if (cntRet)     cntRet.textContent     = '$ ' + Math.round(retVal).toLocaleString('es-CO');
-        if (cntFlete)   cntFlete.textContent   = '+ $ ' + Math.round(fleteVal).toLocaleString('es-CO');
+        if (cntFlete)   cntFlete.textContent   = '+ $ ' + Math.round(fleteVal).toLocaleString('es-CO') + (fleteAplicaIva ? ' (con IVA)' : '');
         if (cntTot)     cntTot.textContent     = '$ ' + Math.round(totalNeto).toLocaleString('es-CO');
         if (lblRet)     lblRet.textContent     = retPct.toString();
 

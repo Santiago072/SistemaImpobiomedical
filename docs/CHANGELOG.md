@@ -34,6 +34,14 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
   - `verificar_autenticacion()` ahora redirige siempre con `?timeout=1` cuando no hay sesión activa (antes redirigía a login sin parámetro, omitiendo el mensaje de aviso).
   - Banner `⚠️ Su sesión ha expirado por inactividad. Por favor inicie sesión nuevamente.` ahora se muestra en todos los casos de sesión caducada.
   - CSS del banner en `auth.css` ajustado: `min-height` adaptativo, color ámbar de advertencia y texto legible completo.
+- **IVA Opcional en Flete para Órdenes de Compra:**
+  - Selector `¿Flete con IVA?` (`Sin IVA` / `+ 19% IVA`) agregado en `seleccionar_items.php` y `crear_directa.php`.
+  - Columnas `flete_iva` y `flete_porcentaje_iva` añadidas al modelo y esquema de base de datos (`BD.txt`).
+  - Cálculo dinámico en JavaScript y desglose en la tabla de totales del PDF de la orden de compra.
+- **Manejo Seguro de Excepciones al Generar Órdenes de Compra:**
+  - Bloque `try-catch` con `$_SESSION['flash_error']` y redirección limpia en `OrdenCompraController::crear()` para evitar caídas a pantalla 500.
+- **Preservación y Fallback Granular de Imágenes en PDFs:**
+  - En `generar_pdf.php` de cotizaciones, si una imagen individual está corrupta, el fallback elimina únicamente las imágenes de producto rotas preservando el logo y las imágenes válidas.
 - **Preservación del Modo Modificación y Purga de Borradores en Cotizaciones:**
   - Corrección del reinicio involuntario al navegar entre Paso 1 (Ítems), Editar Producto y Paso 2 (Datos del Cliente).
   - El clon temporal de modificación ahora se descarta únicamente si el usuario navega a otro módulo del sistema o cancela explícitamente.

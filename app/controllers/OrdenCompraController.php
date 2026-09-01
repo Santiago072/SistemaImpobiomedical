@@ -128,6 +128,8 @@ class OrdenCompraController
         $estadoProveedor = (!empty($historialProv['registrado']) && (int)$historialProv['ordenes'] > 0) ? 'registrado' : 'nuevo';
 
         $flete              = max(0, (float)($_POST['flete'] ?? 0));
+        $fleteIva           = in_array($_POST['flete_iva'] ?? '', ['si', 'no'], true) ? $_POST['flete_iva'] : 'no';
+        $fletePorcentajeIva = max(0, (float)($_POST['flete_porcentaje_iva'] ?? 19.00));
         $tipoDescuento      = in_array($_POST['tipo_descuento'] ?? '', ['monto', 'porcentaje'], true) ? $_POST['tipo_descuento'] : 'monto';
         $descuentoValor     = max(0, (float)($_POST['descuento_valor'] ?? 0));
         $descuentoCalculado = max(0, (float)($_POST['descuento'] ?? 0));
@@ -161,40 +163,47 @@ class OrdenCompraController
             exit();
         }
 
-        // Crear la orden
-        $ordenId = $this->model->crearOrden(
-            $cotizacionId, $cotizacionNumero, $usuarioId,
-            $proveedor, $proveedorNit, $tipoContribuyente,
-            $condicionesPago, $iva, $departamentoCompras,
-            $nota, $retencion, $fecha,
-            $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
-            $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado
-        );
-
-        // Insertar los ítems seleccionados
-        $itemsData = $_POST['items_data'] ?? [];
-        foreach ($itemsIds as $itemId) {
-            $itemId = (int)$itemId;
-            $d      = $itemsData[$itemId] ?? [];
-
-            $codigoProveedor = mb_substr(sanitizar_entrada($d['codigo_proveedor'] ?? ''), 0, 60);
-            $titulo          = mb_substr(sanitizar_entrada($d['titulo'] ?? ''), 0, 255);
-            $descripcion     = mb_substr(sanitizar_entrada($d['descripcion'] ?? ''), 0, 2000);
-            $cantidad        = max(1, (int)($d['cantidad'] ?? 1));
-            $precioUnit      = (float)($d['precio'] ?? 0);
-            $ivaItem         = sanitizar_entrada($d['iva'] ?? 'si');
-            $pctIva          = (float)($d['porcentaje_iva'] ?? 19);
-
-            $this->model->insertarItem(
-                $ordenId, $itemId, $codigoProveedor,
-                $titulo, $descripcion, $cantidad,
-                $precioUnit, $ivaItem, $pctIva
+        try {
+            // Crear la orden
+            $ordenId = $this->model->crearOrden(
+                $cotizacionId, $cotizacionNumero, $usuarioId,
+                $proveedor, $proveedorNit, $tipoContribuyente,
+                $condicionesPago, $iva, $departamentoCompras,
+                $nota, $retencion, $fecha,
+                $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
+                $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
+                'MOSTRADOR / IMPOBIOMEDICAL', $fleteIva, $fletePorcentajeIva
             );
-        }
 
-        // Redirigir al PDF
-        header('Location: ' . BASE_URL . '?module=ordenes&action=generar_pdf&id=' . $ordenId);
-        exit();
+            // Insertar los ítems seleccionados
+            foreach ($itemsIds as $itemId) {
+                $itemId = (int)$itemId;
+                $d      = $itemsData[$itemId] ?? [];
+
+                $codigoProveedor = mb_substr(sanitizar_entrada($d['codigo_proveedor'] ?? ''), 0, 60);
+                $titulo          = mb_substr(sanitizar_entrada($d['titulo'] ?? ''), 0, 255);
+                $descripcion     = mb_substr(sanitizar_entrada($d['descripcion'] ?? ''), 0, 2000);
+                $cantidad        = max(1, (int)($d['cantidad'] ?? 1));
+                $precioUnit      = (float)($d['precio'] ?? 0);
+                $ivaItem         = sanitizar_entrada($d['iva'] ?? 'si');
+                $pctIva          = (float)($d['porcentaje_iva'] ?? 19);
+
+                $this->model->insertarItem(
+                    $ordenId, $itemId, $codigoProveedor,
+                    $titulo, $descripcion, $cantidad,
+                    $precioUnit, $ivaItem, $pctIva
+                );
+            }
+
+            // Redirigir al PDF
+            header('Location: ' . BASE_URL . '?module=ordenes&action=generar_pdf&id=' . $ordenId);
+            exit();
+        } catch (\Throwable $e) {
+            error_log('Error creando orden de compra: ' . $e->getMessage());
+            $_SESSION['flash_error'] = 'Error al generar la orden: ' . $e->getMessage();
+            header('Location: ' . BASE_URL . '?module=ordenes&action=seleccionar_items&cotizacion=' . urlencode($cotizacionNumero));
+            exit();
+        }
     }
 
     // ── NUEVA ORDEN DIRECTA / MOSTRADOR (Sin Cotización) ───────────────────────
@@ -259,6 +268,8 @@ class OrdenCompraController
         $estadoProveedor = (!empty($historialProv['registrado']) && (int)$historialProv['ordenes'] > 0) ? 'registrado' : 'nuevo';
 
         $flete              = max(0, (float)($_POST['flete'] ?? 0));
+        $fleteIva           = in_array($_POST['flete_iva'] ?? '', ['si', 'no'], true) ? $_POST['flete_iva'] : 'no';
+        $fletePorcentajeIva = max(0, (float)($_POST['flete_porcentaje_iva'] ?? 19.00));
         $tipoDescuento      = in_array($_POST['tipo_descuento'] ?? '', ['monto', 'porcentaje'], true) ? $_POST['tipo_descuento'] : 'monto';
         $descuentoValor     = max(0, (float)($_POST['descuento_valor'] ?? 0));
         $descuentoCalculado = max(0, (float)($_POST['descuento'] ?? 0));
@@ -270,7 +281,8 @@ class OrdenCompraController
             $condicionesPago, $iva, $departamentoCompras,
             $nota, $retencion, $fecha,
             $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
-            $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado
+            $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
+            'MOSTRADOR / IMPOBIOMEDICAL', $fleteIva, $fletePorcentajeIva
         );
 
         // Insertar los ítems

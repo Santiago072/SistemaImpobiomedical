@@ -151,6 +151,8 @@ CREATE TABLE IF NOT EXISTS ordenes_compra (
     nota                 TEXT NULL,
     retencion            DECIMAL(5,2) DEFAULT 2.50,
     flete                DECIMAL(20,2) DEFAULT 0.00,
+    flete_iva            ENUM('si', 'no') DEFAULT 'no',
+    flete_porcentaje_iva DECIMAL(5,2) DEFAULT 19.00,
     tipo_descuento       ENUM('monto', 'porcentaje') DEFAULT 'monto',
     descuento_valor      DECIMAL(20,2) DEFAULT 0.00,
     descuento            DECIMAL(20,2) DEFAULT 0.00,

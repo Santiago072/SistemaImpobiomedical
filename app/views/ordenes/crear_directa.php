@@ -178,8 +178,15 @@ include dirname(__DIR__) . '/layout/menu.php';
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-truck"></i> Valor de Flete ($)</label>
-                        <input type="number" name="flete" id="inputFlete" class="oc-input"
-                               placeholder="0" min="0" step="0.01" value="0">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="number" name="flete" id="inputFlete" class="oc-input"
+                                   placeholder="0" min="0" step="0.01" value="0" style="flex: 1;">
+                            <select name="flete_iva" id="inputFleteIva" class="oc-input" style="width: 105px; min-width: 105px; flex-shrink: 0; padding: 10px 8px; font-weight: 600; text-align: center;">
+                                <option value="no" selected>Sin IVA</option>
+                                <option value="si">+ 19% IVA</option>
+                            </select>
+                            <input type="hidden" name="flete_porcentaje_iva" id="inputFletePorcentajeIva" value="19">
+                        </div>
                     </div>
 
                 </div>
@@ -466,24 +473,28 @@ include dirname(__DIR__) . '/layout/menu.php';
         document.getElementById('lblRetPct').textContent = retPct;
         const retencion = subtotalConDesc * (retPct / 100);
 
-        // Flete
+        // Flete e IVA de flete
         const flete = parseFloat(document.getElementById('inputFlete').value) || 0;
+        const fleteIvaSel = document.getElementById('inputFleteIva');
+        const fleteAplicaIva = fleteIvaSel ? fleteIvaSel.value === 'si' : false;
+        const fleteIvaVal = fleteAplicaIva ? flete * 0.19 : 0;
+        const totalIvaFinal = totalIva + fleteIvaVal;
 
         // TOTAL FINAL
-        const totalPagar = subtotalConDesc + totalIva - retencion + flete;
+        const totalPagar = subtotalConDesc + totalIvaFinal - retencion + flete;
 
         document.getElementById('cntItems').textContent = filas.length;
         document.getElementById('cntSubtotal').textContent = formatPesos(subtotal);
         document.getElementById('cntDesc').textContent = '- ' + formatPesos(descCalculado);
         document.getElementById('cntSubNeto').textContent = formatPesos(subtotalConDesc);
-        document.getElementById('cntIva').textContent = '+ ' + formatPesos(totalIva);
+        document.getElementById('cntIva').textContent = '+ ' + formatPesos(totalIvaFinal) + (fleteAplicaIva && flete > 0 ? ' (inc. IVA flete)' : '');
         document.getElementById('cntRet').textContent = '- ' + formatPesos(retencion);
-        document.getElementById('cntFlete').textContent = '+ ' + formatPesos(flete);
+        document.getElementById('cntFlete').textContent = '+ ' + formatPesos(flete) + (fleteAplicaIva ? ' (con IVA)' : '');
         document.getElementById('cntTotal').textContent = formatPesos(totalPagar);
     }
 
     // Escuchadores de cambio en totales
-    ['inputTipoDescuento', 'inputDescuentoValor', 'inputRetencion', 'inputFlete'].forEach(id => {
+    ['inputTipoDescuento', 'inputDescuentoValor', 'inputRetencion', 'inputFlete', 'inputFleteIva'].forEach(id => {
         const elem = document.getElementById(id);
         if (elem) {
             elem.addEventListener('input', calcularTotales);
