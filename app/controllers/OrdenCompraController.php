@@ -172,7 +172,7 @@ class OrdenCompraController
                 $nota, $retencion, $fecha,
                 $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
                 $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
-                'MOSTRADOR / IMPOBIOMEDICAL', $fleteIva, $fletePorcentajeIva
+                $fleteIva, $fletePorcentajeIva
             );
 
             // Insertar los ítems seleccionados
@@ -282,7 +282,7 @@ class OrdenCompraController
             $nota, $retencion, $fecha,
             $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
             $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
-            'MOSTRADOR / IMPOBIOMEDICAL', $fleteIva, $fletePorcentajeIva
+            $fleteIva, $fletePorcentajeIva
         );
 
         // Insertar los ítems

@@ -48,7 +48,6 @@ class OrdenCompraModel
         string $tipoDescuento = 'monto',
         float  $descuentoValor = 0.00,
         float  $descuento = 0.00,
-        string $clienteDestino = 'MOSTRADOR / IMPOBIOMEDICAL',
         string $fleteIva = 'no',
         float  $fletePorcentajeIva = 19.00
     ): int {
@@ -59,12 +58,12 @@ class OrdenCompraModel
                 "INSERT INTO ordenes_compra
                  (numero_po, cotizacion_id, cotizacion_numero, usuario_id,
                   proveedor, proveedor_nit, estado_proveedor, tipo_contribuyente,
-                  cliente_destino, condiciones_pago, iva, departamento_compras,
+                  condiciones_pago, iva, departamento_compras,
                   nota, retencion, flete, flete_iva, flete_porcentaje_iva,
                   tipo_descuento, descuento_valor, descuento, fecha,
                   banco_nombre, banco_cuenta, banco_tipo_cuenta)
                  VALUES (:po, :cid, :cnum, :uid, :prov, :pnit, :eprov, :tcont,
-                         :cdest, :condpago, :iva, :depto, :nota, :ret,
+                         :condpago, :iva, :depto, :nota, :ret,
                          :flete, :fiva, :fpctiva,
                          :tdesc, :dval, :desc, :fecha,
                          :bnom, :bcuenta, :btipo)"
@@ -78,7 +77,6 @@ class OrdenCompraModel
                 ':pnit'    => $proveedorNit,
                 ':eprov'   => $estadoProveedor,
                 ':tcont'   => $tipoContribuyente,
-                ':cdest'   => $clienteDestino,
                 ':condpago'=> $condicionesPago,
                 ':iva'     => $iva,
                 ':depto'   => $departamentoCompras,
