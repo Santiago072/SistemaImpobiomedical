@@ -111,7 +111,7 @@ class CotizacionModel
     public function buscarPorNumero(string $numero): ?array
     {
         $stmt = $this->db->prepare(
-            'SELECT * FROM cotizaciones WHERE numero_cotizacion = :num LIMIT 1'
+            'SELECT * FROM cotizaciones WHERE numero_cotizacion = :num ORDER BY id DESC LIMIT 1'
         );
         $stmt->execute([':num' => $numero]);
         $row = $stmt->fetch();
