@@ -187,11 +187,8 @@ include dirname(__DIR__) . '/layout/menu.php';
         <div class="modal-pdf-header">
             <h3><i class="bi bi-file-earmark-pdf"></i> Cotización: <span id="pdf-titulo"></span></h3>
             <div class="modal-pdf-acciones">
-                <a id="btn-descargar-excel" href="#" class="btn-descargar-excel" title="Descargar en Excel (Rápido, sin imágenes)">
-                    <i class="bi bi-file-earmark-excel-fill"></i> Descargar Excel
-                </a>
                 <a id="btn-descargar" href="#" class="btn-descargar-pdf" download>
-                    <i class="bi bi-download"></i> Descargar PDF
+                    <i class="bi bi-download"></i> Descargar
                 </a>
                 <button type="button" class="btn-cerrar-pdf" onclick="cerrarPDF()">
                     <i class="bi bi-x-lg"></i> Cerrar
@@ -211,12 +208,11 @@ include dirname(__DIR__) . '/layout/menu.php';
 
 <script>
 function verPDF(numero, cliente) {
-    const modal      = document.getElementById('modal-pdf-viewer');
-    const frame      = document.getElementById('pdf-frame');
-    const titulo     = document.getElementById('pdf-titulo');
-    const btnDesc    = document.getElementById('btn-descargar');
-    const btnDescXls = document.getElementById('btn-descargar-excel');
-    const err        = document.getElementById('pdf-error');
+    const modal   = document.getElementById('modal-pdf-viewer');
+    const frame   = document.getElementById('pdf-frame');
+    const titulo  = document.getElementById('pdf-titulo');
+    const btnDesc = document.getElementById('btn-descargar');
+    const err     = document.getElementById('pdf-error');
 
     err.style.display   = 'none';
     frame.style.display = 'block';
@@ -224,9 +220,6 @@ function verPDF(numero, cliente) {
     frame.src           = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&ver=' + encodeURIComponent(numero);
     btnDesc.href        = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&ver=' + encodeURIComponent(numero) + '&descargar=1';
     btnDesc.setAttribute('download', 'cotizacion_' + numero + '.pdf');
-    if (btnDescXls) {
-        btnDescXls.href = '<?= $basePath ?>?module=cotizaciones&action=exportar_excel&ver=' + encodeURIComponent(numero);
-    }
     modal.style.display          = 'block';
     document.body.style.overflow = 'hidden';
 }
