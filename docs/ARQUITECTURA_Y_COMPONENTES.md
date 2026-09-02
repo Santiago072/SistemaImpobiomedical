@@ -1,7 +1,7 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** 2.6.0  
-**Fecha:** Agosto 2026  
+**Versión:** 2.7.0  
+**Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS (SMACSS/ITCSS en `css/modules/`) · DomPDF · PHPUnit 10
 
 ---
@@ -502,12 +502,15 @@ El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de produc
    - Encabezado institucional con logo corporativo de Impobiomedical.
    - Datos completos de la entidad y ciudad.
    - Tabla de productos cotizados con especificaciones técnicas, precios unitarios, subtotales, IVA discriminado y condiciones comerciales.
-2. **Hoja de Respaldo de Proveedores (`app/views/cotizaciones/respaldo.php`)**:
+2. **Exportación de Cotizaciones a Excel (`app/views/cotizaciones/exportar_excel.php`)**:
+   - Generación ligera (.xls) sin imágenes orientada a máxima velocidad de descarga y compatibilidad analítica.
+   - Detalle estructurado de ítems, precios unitarios, IVA calculado y totales comerciales.
+3. **Hoja de Respaldo de Proveedores (`app/views/cotizaciones/respaldo.php`)**:
    - Documento interno confidencial con costos de proveedor, desglose de márgenes por ítem y utilidad bruta proyectada.
-3. **Orden de Compra (`app/views/ordenes/`)**:
-   - Documento P.O. formal con datos bancarios del proveedor y desglose tributario.
+4. **Orden de Compra (`app/views/ordenes/`)**:
+   - Documento P.O. formal con datos bancarios del proveedor y desglose tributario (incluyendo IVA opcional en flete).
    - Exportación dual: **PDF oficial** y **Excel (.xls)** con sumatoria contable.
-4. **Catálogo Médico con Imágenes (`app/views/productos/pdf.php`)**:
+5. **Catálogo Médico con Imágenes (`app/views/productos/pdf.php`)**:
    - Renderizado optimizado de fotografías médicas con reglas `page-break-inside: avoid`, `@ini_set('memory_limit', '256M')` y timeout extendido a 120s.
 
 ---

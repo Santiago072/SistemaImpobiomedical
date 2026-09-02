@@ -4,6 +4,23 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v2.7.0] - 2026-09-02
+### Añadido
+- **Exportación de Cotizaciones a Excel (Sin Imágenes, Ultrarrápido):**
+  - Nuevo botón de descarga directa `Excel` en la tabla de acciones de `consultar.php` para todas las cotizaciones generadas.
+  - Vista especializada `app/views/cotizaciones/exportar_excel.php` que genera una hoja de cálculo (.xls) limpia, estilizada y ligera con la información completa de la cotización (datos de cliente, asesor, tabla de productos detallada, subtotal, IVA y totales comerciales).
+  - Al omitir las imágenes de los productos, la descarga es instantánea incluso con decenas de ítems cotizados.
+- **Nueva Categoría "Servicio Calibración":**
+  - Incorporada como categoría seleccionable en la creación y edición de productos (`productos/lista.php`) y en la pantalla de cotización (`cotizaciones/crear.php`).
+
+### Corregido
+- **Cálculo Robusto de Consecutivo Mensual:**
+  - El consecutivo mensual ahora busca y extrae el valor numérico máximo real (`MAX`) de las cotizaciones finalizadas del mes correspondiente a la fecha de la cotización, asegurando un incremento secuencial continuo (`01`, `02`, `03`...) sin estancarse en `01`.
+- **Carga de Versión Más Reciente en Búsqueda por Número:**
+  - `buscarPorNumero()` en `CotizacionModel.php` ahora aplica `ORDER BY id DESC LIMIT 1`, garantizando que al consultar o visualizar cotizaciones con numeraciones coincidentes se recupere siempre el registro más reciente y completo con todos sus productos.
+
+---
+
 ## [v2.6.0] - 2026-08-27
 ### Añadido
 - **Nueva Orden de Compra Directa (sin cotización previa) — "Nueva Orden Directa":**
@@ -29,21 +46,6 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
   - **Top 5 Productos Cotizados**: Actualizado con `LEFT JOIN` y `COALESCE(p.titulo, i.titulo)` para incluir productos manuales y sumar `SUM(i.cantidad)` de unidades reales. Leyenda con nombres cortos y total de unidades.
   - **Top 5 Clientes Recurrentes**: Truncado inteligente a 25 caracteres con puntos suspensivos en el eje Y de Chart.js y `layout.padding` para evitar que los nombres largos queden cortados. Tooltip flotante con nombre legal completo.
 
-### Añadido
-- **Exportación de Cotizaciones a Excel (Sin Imágenes, Ultrarrápido):**
-  - Nuevo botón de descarga `Excel` tanto en la tabla de acciones de `consultar.php` como en el visor emergente de la cotización (`Descargar Excel`).
-  - Vista especializada `app/views/cotizaciones/exportar_excel.php` que genera una hoja de cálculo limpia, estilizada y ligera con la información completa de la cotización (datos de cliente, asesor, tabla de productos detallada, subtotal, IVA y totales comerciales).
-  - Al omitir las imágenes de los productos, la descarga es instantánea incluso con decenas de ítems cotizados.
-- **Nueva Categoría "Servicio Calibración":**
-  - Incorporada como categoría seleccionable en la creación y edición de productos (`productos/lista.php`) y en la pantalla de cotización (`cotizaciones/crear.php`).
-
-### Corregido
-- **Cálculo Robusto de Consecutivo Mensual:**
-  - El consecutivo mensual ahora busca y extrae el valor numérico máximo real (`MAX`) de las cotizaciones finalizadas del mes correspondiente a la fecha de la cotización, asegurando un incremento secuencial continuo (`01`, `02`, `03`...) sin estancarse en `01`.
-- **Expiración de Sesión sin Aviso:**
-  - `verificar_autenticacion()` ahora redirige siempre con `?timeout=1` cuando no hay sesión activa (antes redirigía a login sin parámetro, omitiendo el mensaje de aviso).
-  - Banner `⚠️ Su sesión ha expirado por inactividad. Por favor inicie sesión nuevamente.` ahora se muestra en todos los casos de sesión caducada.
-  - CSS del banner en `auth.css` ajustado: `min-height` adaptativo, color ámbar de advertencia y texto legible completo.
 - **IVA Opcional en Flete para Órdenes de Compra:**
   - Selector `¿Flete con IVA?` (`Sin IVA` / `+ 19% IVA`) agregado en `seleccionar_items.php` y `crear_directa.php`.
   - Columnas `flete_iva` y `flete_porcentaje_iva` añadidas al modelo y esquema de base de datos (`BD.txt`).

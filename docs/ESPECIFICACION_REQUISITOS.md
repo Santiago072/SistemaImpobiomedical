@@ -1,6 +1,6 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v2.3.0  
+**Versión del Sistema:** v2.6.0  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular · DomPDF · PHPUnit 10
 
 Este documento formaliza los requisitos funcionales (RF), requisitos no funcionales (RNF), control de acceso por roles y reglas de negocio del **Sistema Impobiomedical**.
@@ -39,37 +39,39 @@ El sistema cuenta con dos roles claramente diferenciados:
 * **RF14:** El sistema debe permitir la edición de productos agregados a la lista temporal distribuyendo el formulario en dos columnas: datos y precio unitario del producto a la izquierda, y calculadora de ganancias con cálculo de valor con IVA a la derecha.
 * **RF15:** El sistema debe mantener los productos agregados en la lista temporal de la cotización mientras el usuario navega entre diferentes módulos del sistema.
 * **RF16:** El sistema debe permitir aplicar IVA del 19% o registrar el producto como exento de IVA.
-* **RF17:** El sistema debe asignar un número consecutivo mensual precedido por el código del asesor comercial al momento de generar la cotización.
+* **RF17:** El sistema debe calcular el número consecutivo mensual mediante la detección del valor máximo secuencial del mes, asegurando un avance continuo (`01`, `02`, `03`...) precedido por el código del asesor comercial.
 * **RF18:** El sistema debe permitir modificar cotizaciones existentes generando una versión numerada de revisión que preserve el historial comercial original.
 * **RF19:** El sistema debe permitir a los administradores actualizar el estado comercial de las cotizaciones entre pendiente, concluida y descartada en tiempo real.
 * **RF20:** El sistema debe generar documentos PDF oficiales para el cliente con diseño corporativo y hojas de respaldo confidencial con costos y proveedores.
+* **RF21:** El sistema debe permitir la exportación de cotizaciones a Excel en un formato estructurado y ultrarrápido sin imágenes para optimizar tiempos en listas extensas.
 
 ### 📦 Órdenes de Compra (P.O. - Purchase Orders)
-* **RF21:** El sistema debe permitir generar órdenes de compra dirigidas a proveedores a partir de cotizaciones en estado pendiente.
-* **RF22:** El sistema debe bloquear la emisión de órdenes de compra para cotizaciones que se encuentren en estado concluida o descartada.
-* **RF23:** El sistema debe clasificar las órdenes de compra en pestañas de órdenes pendientes y órdenes completadas con contadores en tiempo real.
-* **RF24:** El sistema debe permitir a los administradores actualizar el estado de las órdenes de compra entre pendiente y completada.
-* **RF25:** El sistema debe permitir la selección individual y masiva de órdenes de compra mediante casillas de verificación para su exportación consolidada a PDF y Excel.
-* **RF26:** El sistema debe incluir un visor interactivo de documentos para previsualizar e imprimir la orden de compra directamente.
+* **RF22:** El sistema debe permitir generar órdenes de compra dirigidas a proveedores a partir de cotizaciones en estado pendiente o mediante la creación de Órdenes Directas de mostrador.
+* **RF23:** El sistema debe bloquear la emisión de órdenes de compra para cotizaciones que se encuentren en estado concluida o descartada.
+* **RF24:** El sistema debe permitir parametrizar IVA opcional (0% o 19%) sobre el costo de flete en órdenes de compra.
+* **RF25:** El sistema debe clasificar las órdenes de compra en pestañas de órdenes pendientes y órdenes completadas con contadores en tiempo real.
+* **RF26:** El sistema debe permitir a los administradores actualizar el estado de las órdenes de compra entre pendiente y completada.
+* **RF27:** El sistema debe permitir la selección individual y masiva de órdenes de compra mediante casillas de verificación para su exportación consolidada a PDF y Excel.
+* **RF28:** El sistema debe incluir un visor interactivo de documentos para previsualizar e imprimir la orden de compra directamente.
 
 ### 🩺 Catálogo de Productos Médicos (Solo Administrador)
-* **RF27:** El sistema debe permitir registrar, editar y listar productos médicos organizados en cuadrícula de tarjetas con foto, código, título, IVA y estado.
-* **RF28:** El sistema debe permitir filtrar productos en el catálogo en tiempo real mientras el usuario escribe en el campo de búsqueda sin recargar la página.
-* **RF29:** El sistema debe validar y sanitizar los archivos de imagen subidos al catálogo comprobando tipos MIME reales y extensiones permitidas.
-* **RF30:** El sistema debe permitir exportar el catálogo completo consolidado en formato PDF con fotografías miniatura.
+* **RF29:** El sistema debe permitir registrar, editar y listar productos médicos organizados en cuadrícula de tarjetas con foto, código, título, categoría (incluyendo *Servicio Calibración*), IVA y estado.
+* **RF30:** El sistema debe permitir filtrar productos en el catálogo en tiempo real mediante búsqueda asíncrona (AJAX) mientras el usuario escribe en el campo de búsqueda sin recargar la página.
+* **RF31:** El sistema debe validar y sanitizar los archivos de imagen subidos al catálogo comprobando tipos MIME reales y extensiones permitidas.
+* **RF32:** El sistema debe permitir exportar el catálogo completo consolidado en formato PDF con fotografías miniatura.
 
 ### 🏢 Directorio de Clientes y Entidades (Solo Administrador)
-* **RF31:** El sistema debe permitir registrar y administrar clientes con NIT, departamento, municipio, persona de contacto, teléfono y correo electrónico.
-* **RF32:** El sistema debe autocompletar la información del cliente y su ubicación durante el proceso de finalización de una cotización.
+* **RF33:** El sistema debe permitir registrar y administrar clientes con NIT, departamento, municipio, persona de contacto, teléfono y correo electrónico.
+* **RF34:** El sistema debe autocompletar la información del cliente y su ubicación durante el proceso de finalización de una cotización.
 
 ### 👥 Gestión de Usuarios (Solo Administrador)
-* **RF33:** El sistema debe permitir registrar y administrar cuentas de usuario asignando nombre, código único de asesor, documento, cargo, correo, teléfono y rol.
-* **RF34:** El sistema debe permitir restablecer la contraseña de cualquier usuario asignando por defecto su número de documento.
+* **RF35:** El sistema debe permitir registrar y administrar cuentas de usuario asignando nombre, código único de asesor, documento, cargo, correo, teléfono y rol.
+* **RF36:** El sistema debe permitir restablecer la contraseña de cualquier usuario asignando por defecto su número de documento.
 
 ### 📈 Estadísticas y Reportes (Solo Administrador)
-* **RF35:** El sistema debe permitir filtrar el volumen de cotizaciones por rango de fechas, asesor y cliente.
-* **RF36:** El sistema debe presentar un gráfico comparativo mensual de cotizaciones totales frente a cotizaciones concluidas.
-* **RF37:** El sistema debe generar reportes ejecutivos consolidados en formato PDF con métricas y tablas comparativas.
+* **RF37:** El sistema debe permitir filtrar el volumen de cotizaciones por rango de fechas, asesor y cliente.
+* **RF38:** El sistema debe presentar un gráfico comparativo mensual de cotizaciones totales frente a cotizaciones concluidas y tops de productos/clientes recurrentes.
+* **RF39:** El sistema debe generar reportes ejecutivos consolidados en formato PDF con métricas y tablas comparativas.
 
 ---
 

@@ -52,23 +52,24 @@ Al iniciar sesión llegará al **Panel Principal**, que muestra:
 ## 3. Nueva Cotización (Flujo en 2 Pasos)
 
 ### Paso 1: Agregar Productos (Ítems)
-* **Buscar del Catálogo:** Digite el nombre del producto en el buscador en vivo y seleccione la opción deseada para autocompletar título, descripción técnica, imagen y categoría.
-* **Ingreso Manual:** Puede registrar productos médicos personalizados directamente completando los campos requeridos.
+* **Buscar del Catálogo:** Digite el nombre del producto en el buscador en vivo y seleccione la opción deseada para autocompletar título, descripción técnica, imagen y categoría (incluyendo *Servicio Calibración*).
+* **Ingreso Manual:** Puede registrar productos o servicios médicos personalizados directamente completando los campos requeridos y seleccionando su categoría.
 * **Calculadora de Ganancias Dinámica:** Permite ingresar el precio base del proveedor y calcular utilidad, flete, calibración y estampillas. El valor resultante se establece como el precio unitario del producto para la cotización.
-* **Agregar:** Presione **"Agregar a Cotización"** para almacenar temporalmente el ítem.
+* **Agregar:** Presione **"Agregar a Cotización"** para almacenar temporalmente el ítem. Los borradores y productos agregados quedan preservados inteligentemente.
 
 ### Paso 2: Datos del Cliente y Finalización
 1. Haga clic en **"Continuar → Datos Cliente y PDF"**.
 2. **Seleccionar Cliente:** Busque por NIT o Nombre para autocompletar automáticamente ciudad, departamento, dirección, contacto y correo.
 3. **Condiciones Comerciales:** Ingrese forma de pago (Contado, 30 días, etc.) y días de validez.
-4. **Finalizar:** Clic en **"Finalizar Cotización"**. El sistema genera el número consecutivo mensual (ej: `EB 01`) y abre el visor PDF.
+4. **Finalizar:** Clic en **"Finalizar Cotización"**. El sistema calcula el consecutivo mensual de forma continua (`01`, `02`, `03`...) según el código del asesor y abre el visor PDF.
 
 ---
 
 ## 4. Consultar Cotizaciones y Revisiones
 
 * **Filtros de Búsqueda:** Filtre por fecha, cliente, número de cotización o estado comercial (🟡 *Pendiente*, 🟢 *Concluida*, 🔴 *Descartada*).
-* **Ver PDF:** Abre el PDF formal para el cliente en un modal interactivo.
+* **Ver PDF:** Abre el PDF formal para el cliente en un visor emergente interactivo con opción de descarga de PDF.
+* **Descargar Excel:** Botón verde `[ 📊 Excel ]` para descargar la cotización en una hoja de cálculo estructurada de forma inmediata (sin imágenes para máxima velocidad con muchos productos).
 * **Hoja de Respaldo:** Consulta interna confidencial con los costos de proveedor y márgenes para auditoría.
 * **Modificar / Revisión:** Genera una nueva versión (ej: `EB 01_01`) sin sobreescribir la cotización original.
 * **Emitir Orden:** Botón directo para pasar los ítems cotizados a una Orden de Compra formal.
