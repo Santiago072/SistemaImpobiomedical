@@ -384,7 +384,17 @@ class CotizacionModel
             $condiciones[] = 'c.usuario_id = :uid';
             $params[':uid'] = $usuarioId;
         }
-        if (!empty($filtros['fecha'])) {
+        // Rango de fechas
+        if (!empty($filtros['fecha_desde'])) {
+            $condiciones[] = 'DATE(c.fecha_creacion) >= :fecha_desde';
+            $params[':fecha_desde'] = $filtros['fecha_desde'];
+        }
+        if (!empty($filtros['fecha_hasta'])) {
+            $condiciones[] = 'DATE(c.fecha_creacion) <= :fecha_hasta';
+            $params[':fecha_hasta'] = $filtros['fecha_hasta'];
+        }
+        // Compatibilidad con filtro de fecha única
+        if (empty($filtros['fecha_desde']) && empty($filtros['fecha_hasta']) && !empty($filtros['fecha'])) {
             $condiciones[] = 'DATE(c.fecha_creacion) = :fecha';
             $params[':fecha'] = $filtros['fecha'];
         }

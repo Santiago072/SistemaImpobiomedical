@@ -429,6 +429,8 @@ class CotizacionController
         $paginaActual = max(1, (int)($_GET['pagina'] ?? 1));
         $offset       = ($paginaActual - 1) * $this->porPagina;
         $busquedaFecha   = '';
+        $busquedaFechaDesde = '';
+        $busquedaFechaHasta = '';
         $busquedaCliente = '';
         $busquedaNumero  = '';
 
@@ -437,6 +439,8 @@ class CotizacionController
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $filtros = [];
+            if (!empty($_POST['fecha_desde']))       $filtros['fecha_desde']       = sanitizar_entrada($_POST['fecha_desde']);
+            if (!empty($_POST['fecha_hasta']))       $filtros['fecha_hasta']       = sanitizar_entrada($_POST['fecha_hasta']);
             if (!empty($_POST['fecha']))             $filtros['fecha']             = sanitizar_entrada($_POST['fecha']);
             if (!empty($_POST['nombre_cliente']))    $filtros['nombre_cliente']    = sanitizar_entrada($_POST['nombre_cliente']);
             if (!empty($_POST['numero_cotizacion'])) $filtros['numero_cotizacion'] = sanitizar_entrada($_POST['numero_cotizacion']);
@@ -454,6 +458,8 @@ class CotizacionController
         }
 
         $filtros = $_SESSION['cotizacion_filtros'] ?? [];
+        $busquedaFechaDesde = $filtros['fecha_desde'] ?? '';
+        $busquedaFechaHasta = $filtros['fecha_hasta'] ?? '';
         $busquedaFecha   = $filtros['fecha'] ?? '';
         $busquedaCliente = $filtros['nombre_cliente'] ?? '';
         $busquedaNumero  = $filtros['numero_cotizacion'] ?? '';
@@ -463,7 +469,8 @@ class CotizacionController
         $totalPaginas = (int)ceil($total / $this->porPagina);
         $cotizaciones = $this->model->buscarConFiltros($filtros, $offset, $this->porPagina, $usuarioId, $rol);
 
-        return compact('cotizaciones', 'csrf_token', 'mensajeError', 'busquedaFecha', 'busquedaCliente',
+        return compact('cotizaciones', 'csrf_token', 'mensajeError', 'busquedaFecha', 'busquedaFechaDesde',
+                       'busquedaFechaHasta', 'busquedaCliente',
                        'busquedaNumero', 'busquedaEstado', 'paginaActual', 'totalPaginas', 'rol');
     }
 

@@ -39,7 +39,10 @@ include dirname(__DIR__) . '/layout/menu.php';
             <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=consultar" class="mod-search-form orden-search-form">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                 <span class="mod-search-icon"><i class="bi bi-funnel"></i></span>
-                <input type="date" name="fecha" value="<?= htmlspecialchars($busquedaFecha) ?>" class="mod-search-input cot-filter-date" onchange="this.form.submit()">
+                <label class="cot-date-label">Desde</label>
+                <input type="date" name="fecha_desde" value="<?= htmlspecialchars($busquedaFechaDesde ?? '') ?>" class="mod-search-input cot-filter-date" title="Fecha desde" onchange="this.form.submit()">
+                <label class="cot-date-label">Hasta</label>
+                <input type="date" name="fecha_hasta" value="<?= htmlspecialchars($busquedaFechaHasta ?? '') ?>" class="mod-search-input cot-filter-date" title="Fecha hasta" onchange="this.form.submit()">
                 <input type="text" name="nombre_cliente" value="<?= htmlspecialchars($busquedaCliente) ?>" placeholder="Buscar por cliente..." maxlength="60" class="mod-search-input cot-filter-client">
                 <input type="text" name="numero_cotizacion" value="<?= htmlspecialchars($busquedaNumero) ?>" placeholder="Número cotización..." maxlength="20" class="mod-search-input cot-filter-num">
                 <select name="estado_comercial" class="mod-search-input cot-filter-select" onchange="this.form.submit()">
@@ -50,13 +53,24 @@ include dirname(__DIR__) . '/layout/menu.php';
                 </select>
                 
                 <button type="submit" class="imo-btn-save orden-search-btn"><i class="bi bi-search"></i> Buscar</button>
-                <?php if (!empty($cotizaciones) || $busquedaFecha || $busquedaCliente || $busquedaNumero || !empty($busquedaEstado)): ?>
+                <?php 
+                $hayFiltros = (!empty($busquedaFechaDesde) || !empty($busquedaFechaHasta) || !empty($busquedaFecha) || !empty($busquedaCliente) || !empty($busquedaNumero) || !empty($busquedaEstado));
+                if ($hayFiltros): ?>
                 <a href="<?= $basePath ?>?module=cotizaciones&action=consultar&limpiar=1" class="mod-btn-clear" title="Limpiar filtros">
                     <i class="bi bi-x-lg"></i>
                 </a>
                 <?php endif; ?>
             </form>
         </div>
+        <?php if (($busquedaFechaDesde ?? '') || ($busquedaFechaHasta ?? '')): ?>
+        <div style="font-size:12.5px; color:#475569; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+            <i class="bi bi-calendar-range" style="color:#10757e;"></i>
+            <span>Mostrando cotizaciones
+                <?= $busquedaFechaDesde ? 'desde <strong>' . htmlspecialchars($busquedaFechaDesde) . '</strong>' : '' ?>
+                <?= $busquedaFechaHasta ? ' hasta <strong>' . htmlspecialchars($busquedaFechaHasta) . '</strong>' : '' ?>
+            </span>
+        </div>
+        <?php endif; ?>
 
         <!-- Tabla de resultados -->
         <div class="mod-table-wrap">

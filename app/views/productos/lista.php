@@ -21,13 +21,15 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
             <div class="header-actions-wrap">
                 <?php 
-                $exportUrl = $basePath . '?module=productos'
+                $exportCat = $basePath . '?module=productos&action=exportarPdf'
                            . (!empty($categoriaSel) ? '&categoria=' . urlencode($categoriaSel) : '')
                            . (!empty($busqueda) ? '&busqueda=' . urlencode($busqueda) : '');
                 ?>
-                <a href="<?= $exportUrl ?>&action=exportarPdf" download="Catalogo_Productos.pdf" class="btn-mod-primary btn-pdf-export">
+                <button type="button" id="btn-pdf-header" class="btn-mod-primary btn-pdf-export"
+                        onclick="exportarPdfHeader('<?= addslashes($exportCat) ?>')"
+                        title="Exportar PDF de la categoría/búsqueda actual">
                     <i class="bi bi-file-earmark-pdf"></i> PDF
-                </a>
+                </button>
                 <button class="btn-mod-primary" onclick="abrirModalCrear()">
                     <i class="bi bi-plus-lg"></i> Nuevo Producto
                 </button>
@@ -88,6 +90,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <label class="prod-select-circle" title="Seleccionar para PDF">
                     <input type="checkbox" class="chk-select-prod" value="<?= $pid ?>" onchange="toggleSeleccionProducto(this)">
                 </label>
+                <span data-cat="<?= htmlspecialchars($p['categoria'] ?? '') ?>" style="display:none;"></span>
                 <?php if (!empty(trim($p['foto']))): ?>
                 <img src="<?= $basePath ?>uploads/<?= htmlspecialchars(trim($p['foto'])) ?>"
                      class="prod-img" alt="<?= htmlspecialchars($p['titulo']) ?>"
@@ -140,17 +143,17 @@ include dirname(__DIR__) . '/layout/menu.php';
         <div id="bar-seleccion-productos" class="prod-selection-bar">
             <div class="sel-info">
                 <span class="sel-badge"><span id="txt-cant-seleccionados">0</span> seleccionados</span>
-                <span>para exportar</span>
+                <span id="txt-cats-seleccionadas" style="font-size:11px; color:#94a3b8;"></span>
             </div>
-            <form id="form-exportar-seleccionados" method="POST" action="<?= $basePath ?>?module=productos&action=exportarPdf" target="_blank" style="margin:0; display:inline;">
+            <form id="form-exportar-seleccionados" method="POST" action="<?= $basePath ?>?module=productos&action=exportarPdf" target="_blank" style="margin:0; display:inline;" onsubmit="return manejarExportarPdf(this)">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <input type="hidden" name="ids" id="inp-ids-seleccionados" value="">
-                <button type="submit" class="btn-sel-pdf">
-                    <i class="bi bi-file-earmark-pdf"></i> Exportar Selección PDF
+                <button type="submit" id="btn-exportar-sel-pdf" class="btn-sel-pdf">
+                    <i class="bi bi-file-earmark-pdf"></i> <span id="txt-btn-exportar">Exportar PDF</span>
                 </button>
             </form>
             <button type="button" class="btn-sel-clear" onclick="deseleccionarTodosProductos()">
-                <i class="bi bi-x-circle"></i> Limpiar selección
+                <i class="bi bi-x-circle"></i> Limpiar
             </button>
         </div>
 
@@ -396,12 +399,39 @@ const pagInfo     = document.querySelector('.mod-pag-info');
 const catActual   = '<?= addslashes($categoriaSel ?? '') ?>';
 const htmlOriginalGrid = prodGrid ? prodGrid.innerHTML : '';
 
-// Gestión de selección de productos para exportar PDF
-const productosSeleccionados = new Set();
+// ── Gestión de selección de productos para exportar PDF ──────────────────────
+const SS_KEY = 'prod_sel_ids';
+const SS_KEY_CATS = 'prod_sel_cats';
+
+// Restaurar selección desde sessionStorage al cargar la página
+const productosSeleccionados = new Set(
+    (sessionStorage.getItem(SS_KEY) || '').split(',').filter(Boolean).map(Number)
+);
+// Mapa id→categoria para mostrar categorías en barra
+const productoCategoria = {};
+document.querySelectorAll('.prod-card').forEach(card => {
+    const pid = parseInt(card.dataset.id);
+    const catSpan = card.querySelector('[data-cat]');
+    if (catSpan) productoCategoria[pid] = catSpan.dataset.cat;
+});
+
+// Aplicar estado guardado a los checkboxes ya pintados en la página
+document.querySelectorAll('.chk-select-prod').forEach(chk => {
+    const pid = parseInt(chk.value);
+    if (productosSeleccionados.has(pid)) {
+        chk.checked = true;
+        const card = chk.closest('.prod-card');
+        if (card) card.classList.add('is-selected');
+    }
+});
+actualizarBarraSeleccion();
 
 function toggleSeleccionProducto(chk) {
     const pid = parseInt(chk.value);
     const card = document.getElementById('prod-card-' + pid) || chk.closest('.prod-card');
+    // Capturar categoría del data-cat del card
+    const catEl = card ? card.querySelector('[data-cat]') : null;
+    if (catEl) productoCategoria[pid] = catEl.dataset.cat;
 
     if (chk.checked) {
         productosSeleccionados.add(pid);
@@ -410,33 +440,82 @@ function toggleSeleccionProducto(chk) {
         productosSeleccionados.delete(pid);
         if (card) card.classList.remove('is-selected');
     }
+    persistirSeleccion();
     actualizarBarraSeleccion();
+}
+
+function persistirSeleccion() {
+    sessionStorage.setItem(SS_KEY, Array.from(productosSeleccionados).join(','));
 }
 
 function actualizarBarraSeleccion() {
     const bar = document.getElementById('bar-seleccion-productos');
     const txt = document.getElementById('txt-cant-seleccionados');
     const inp = document.getElementById('inp-ids-seleccionados');
+    const txtCats = document.getElementById('txt-cats-seleccionadas');
     const count = productosSeleccionados.size;
 
     if (count > 0) {
         if (bar) bar.style.display = 'inline-flex';
         if (txt) txt.textContent = count;
         if (inp) inp.value = Array.from(productosSeleccionados).join(',');
+        // Mostrar categorías de los seleccionados
+        if (txtCats) {
+            const cats = [...new Set(Array.from(productosSeleccionados).map(id => productoCategoria[id]).filter(Boolean))];
+            txtCats.textContent = cats.length > 0 ? '· ' + cats.join(', ') : '';
+        }
     } else {
         if (bar) bar.style.display = 'none';
         if (inp) inp.value = '';
+        if (txtCats) txtCats.textContent = '';
     }
 }
 
 function deseleccionarTodosProductos() {
     productosSeleccionados.clear();
+    persistirSeleccion();
     document.querySelectorAll('.chk-select-prod').forEach(chk => {
         chk.checked = false;
         const card = chk.closest('.prod-card');
         if (card) card.classList.remove('is-selected');
     });
     actualizarBarraSeleccion();
+}
+
+function manejarExportarPdf(form) {
+    const count = productosSeleccionados.size;
+    if (count === 0) {
+        alert('Selecciona al menos un producto para exportar el PDF.');
+        return false;
+    }
+    const btn = document.getElementById('btn-exportar-sel-pdf');
+    const txtBtn = document.getElementById('txt-btn-exportar');
+    if (btn) btn.disabled = true;
+    if (txtBtn) txtBtn.textContent = 'Generando...';
+    // Restaurar botón después de 10s (tiempo suficiente para que se abra la nueva pestaña)
+    setTimeout(() => {
+        if (btn) btn.disabled = false;
+        if (txtBtn) txtBtn.textContent = 'Exportar PDF';
+    }, 10000);
+    return true;
+}
+
+function exportarPdfHeader(url) {
+    if (productosSeleccionados.size > 0) {
+        const ok = confirm(
+            `Tienes ${productosSeleccionados.size} producto(s) seleccionado(s) en la barra inferior.\n` +
+            `¿Deseas exportar solo esos productos en PDF?\n\n` +
+            `• Aceptar → exportar los seleccionados\n` +
+            `• Cancelar → exportar toda la categoría/búsqueda actual`
+        );
+        if (ok) {
+            // Enviar selección por POST
+            document.getElementById('form-exportar-seleccionados').submit();
+            return;
+        }
+    }
+    // Sin selección o usuario eligió categoría: abrir URL GET
+    window.open(url, '_blank');
 }
 
 function renderizarProductosAjax(productos, isAdmin) {
@@ -459,15 +538,19 @@ function renderizarProductosAjax(productos, isAdmin) {
         const fotoUrl = tieneFoto ? `${BASE}uploads/${fotoTrim}` : '';
         const tituloEsc = escapeHtml(p.titulo || '');
         const pJson = escapeHtml(JSON.stringify(p));
+        const catEsc = escapeHtml(p.categoria || '');
 
         const pid = parseInt(p.id);
         const estaSel = productosSeleccionados.has(pid);
+        // Actualizar mapa de categorías también para productos AJAX
+        if (p.categoria) productoCategoria[pid] = p.categoria;
 
         html += `
         <div class="prod-card ${estaSel ? 'is-selected' : ''}" data-id="${pid}" id="prod-card-${pid}">
             <label class="prod-select-circle" title="Seleccionar para PDF">
                 <input type="checkbox" class="chk-select-prod" value="${pid}" ${estaSel ? 'checked' : ''} onchange="toggleSeleccionProducto(this)">
             </label>
+            <span data-cat="${catEsc}" style="display:none;"></span>
             ${tieneFoto ? `
                 <img src="${fotoUrl}" class="prod-img" alt="${tituloEsc}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('form-hidden-action');">
                 <div class="prod-icon-fallback form-hidden-action"><i class="bi bi-box-seam"></i></div>
