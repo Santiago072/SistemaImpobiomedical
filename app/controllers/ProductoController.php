@@ -174,13 +174,21 @@ class ProductoController
         verificar_autenticacion();
         verificar_rate_limit(15, 60, 'exportar_pdf_catalogo');
 
-        @ini_set('memory_limit', '256M');
-        @set_time_limit(120);
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(180);
 
-        $busqueda = sanitizar_entrada($_GET['busqueda'] ?? '');
-        $categoriaSel = sanitizar_entrada($_GET['categoria'] ?? '');
+        $busqueda = sanitizar_entrada($_REQUEST['busqueda'] ?? '');
+        $categoriaSel = sanitizar_entrada($_REQUEST['categoria'] ?? '');
         
-        $productos = $this->model->listarParaExportar($busqueda, $categoriaSel);
+        $idsRaw = $_POST['ids'] ?? $_GET['ids'] ?? '';
+        $ids = [];
+        if (is_array($idsRaw)) {
+            $ids = array_filter(array_map('intval', $idsRaw));
+        } elseif (is_string($idsRaw) && trim($idsRaw) !== '') {
+            $ids = array_filter(array_map('intval', explode(',', $idsRaw)));
+        }
+
+        $productos = $this->model->listarParaExportar($busqueda, $categoriaSel, $ids);
 
         include dirname(__DIR__, 2) . '/app/views/productos/pdf.php';
         exit();

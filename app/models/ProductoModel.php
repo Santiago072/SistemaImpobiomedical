@@ -45,21 +45,31 @@ class ProductoModel implements RepositoryInterface
         return $stmt->fetchAll();
     }
 
-    public function listarParaExportar(string $busqueda = '', string $categoria = ''): array
+    public function listarParaExportar(string $busqueda = '', string $categoria = '', array $ids = []): array
     {
         $where  = [];
         $params = [];
 
-        if ($busqueda !== '') {
-            $where[] = "(titulo LIKE :busq_tit OR codigo_producto LIKE :busq_cod OR categoria LIKE :busq_cat OR descripcion LIKE :busq_desc)";
-            $params[':busq_tit']  = "%$busqueda%";
-            $params[':busq_cod']  = "%$busqueda%";
-            $params[':busq_cat']  = "%$busqueda%";
-            $params[':busq_desc'] = "%$busqueda%";
-        }
-        if ($categoria !== '') {
-            $where[]              = "categoria = :categoria";
-            $params[':categoria'] = $categoria;
+        if (!empty($ids)) {
+            $placeholders = [];
+            foreach ($ids as $idx => $idVal) {
+                $pName = ':id_' . $idx;
+                $placeholders[] = $pName;
+                $params[$pName] = (int)$idVal;
+            }
+            $where[] = "id IN (" . implode(',', $placeholders) . ")";
+        } else {
+            if ($busqueda !== '') {
+                $where[] = "(titulo LIKE :busq_tit OR codigo_producto LIKE :busq_cod OR categoria LIKE :busq_cat OR descripcion LIKE :busq_desc)";
+                $params[':busq_tit']  = "%$busqueda%";
+                $params[':busq_cod']  = "%$busqueda%";
+                $params[':busq_cat']  = "%$busqueda%";
+                $params[':busq_desc'] = "%$busqueda%";
+            }
+            if ($categoria !== '') {
+                $where[]              = "categoria = :categoria";
+                $params[':categoria'] = $categoria;
+            }
         }
 
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';

@@ -81,8 +81,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <p>No se encontraron productos.</p>
             </div>
             <?php else: ?>
-            <?php foreach ($productos as $p): ?>
-            <div class="prod-card">
+            <?php foreach ($productos as $p): 
+                $pid = (int)$p['id'];
+            ?>
+            <div class="prod-card" data-id="<?= $pid ?>" id="prod-card-<?= $pid ?>">
+                <label class="prod-select-circle" title="Seleccionar para PDF">
+                    <input type="checkbox" class="chk-select-prod" value="<?= $pid ?>" onchange="toggleSeleccionProducto(this)">
+                </label>
                 <?php if (!empty(trim($p['foto']))): ?>
                 <img src="<?= $basePath ?>uploads/<?= htmlspecialchars(trim($p['foto'])) ?>"
                      class="prod-img" alt="<?= htmlspecialchars($p['titulo']) ?>"
@@ -130,6 +135,24 @@ include dirname(__DIR__) . '/layout/menu.php';
         <?php if (($total ?? 0) > 0): ?>
         <p class="mod-pag-info">Página <?= $paginaActual ?> de <?= $totalPaginas ?> (<?= $total ?> productos)</p>
         <?php endif; ?>
+
+        <!-- Barra flotante para exportar selección -->
+        <div id="bar-seleccion-productos" class="prod-selection-bar">
+            <div class="sel-info">
+                <span class="sel-badge"><span id="txt-cant-seleccionados">0</span> seleccionados</span>
+                <span>para exportar</span>
+            </div>
+            <form id="form-exportar-seleccionados" method="POST" action="<?= $basePath ?>?module=productos&action=exportarPdf" target="_blank" style="margin:0; display:inline;">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                <input type="hidden" name="ids" id="inp-ids-seleccionados" value="">
+                <button type="submit" class="btn-sel-pdf">
+                    <i class="bi bi-file-earmark-pdf"></i> Exportar Selección PDF
+                </button>
+            </form>
+            <button type="button" class="btn-sel-clear" onclick="deseleccionarTodosProductos()">
+                <i class="bi bi-x-circle"></i> Limpiar selección
+            </button>
+        </div>
 
     </main>
 </div>
@@ -373,6 +396,49 @@ const pagInfo     = document.querySelector('.mod-pag-info');
 const catActual   = '<?= addslashes($categoriaSel ?? '') ?>';
 const htmlOriginalGrid = prodGrid ? prodGrid.innerHTML : '';
 
+// Gestión de selección de productos para exportar PDF
+const productosSeleccionados = new Set();
+
+function toggleSeleccionProducto(chk) {
+    const pid = parseInt(chk.value);
+    const card = document.getElementById('prod-card-' + pid) || chk.closest('.prod-card');
+
+    if (chk.checked) {
+        productosSeleccionados.add(pid);
+        if (card) card.classList.add('is-selected');
+    } else {
+        productosSeleccionados.delete(pid);
+        if (card) card.classList.remove('is-selected');
+    }
+    actualizarBarraSeleccion();
+}
+
+function actualizarBarraSeleccion() {
+    const bar = document.getElementById('bar-seleccion-productos');
+    const txt = document.getElementById('txt-cant-seleccionados');
+    const inp = document.getElementById('inp-ids-seleccionados');
+    const count = productosSeleccionados.size;
+
+    if (count > 0) {
+        if (bar) bar.style.display = 'inline-flex';
+        if (txt) txt.textContent = count;
+        if (inp) inp.value = Array.from(productosSeleccionados).join(',');
+    } else {
+        if (bar) bar.style.display = 'none';
+        if (inp) inp.value = '';
+    }
+}
+
+function deseleccionarTodosProductos() {
+    productosSeleccionados.clear();
+    document.querySelectorAll('.chk-select-prod').forEach(chk => {
+        chk.checked = false;
+        const card = chk.closest('.prod-card');
+        if (card) card.classList.remove('is-selected');
+    });
+    actualizarBarraSeleccion();
+}
+
 function renderizarProductosAjax(productos, isAdmin) {
     if (!prodGrid) return;
     if (!productos || productos.length === 0) {
@@ -394,8 +460,14 @@ function renderizarProductosAjax(productos, isAdmin) {
         const tituloEsc = escapeHtml(p.titulo || '');
         const pJson = escapeHtml(JSON.stringify(p));
 
+        const pid = parseInt(p.id);
+        const estaSel = productosSeleccionados.has(pid);
+
         html += `
-        <div class="prod-card">
+        <div class="prod-card ${estaSel ? 'is-selected' : ''}" data-id="${pid}" id="prod-card-${pid}">
+            <label class="prod-select-circle" title="Seleccionar para PDF">
+                <input type="checkbox" class="chk-select-prod" value="${pid}" ${estaSel ? 'checked' : ''} onchange="toggleSeleccionProducto(this)">
+            </label>
             ${tieneFoto ? `
                 <img src="${fotoUrl}" class="prod-img" alt="${tituloEsc}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('form-hidden-action');">
                 <div class="prod-icon-fallback form-hidden-action"><i class="bi bi-box-seam"></i></div>
@@ -453,6 +525,15 @@ if (inputBusq) {
         if (q === '') {
             // Restaurar vista original
             if (prodGrid) prodGrid.innerHTML = htmlOriginalGrid;
+            // Re-sincronizar estado de selección en la vista restaurada
+            document.querySelectorAll('.chk-select-prod').forEach(chk => {
+                const pid = parseInt(chk.value);
+                if (productosSeleccionados.has(pid)) {
+                    chk.checked = true;
+                    const card = chk.closest('.prod-card');
+                    if (card) card.classList.add('is-selected');
+                }
+            });
             const wrapPag = document.querySelector('.mod-pagination-wrap, .mod-paginacion, ul.pagination, div[class*="pagin"]');
             if (wrapPag) wrapPag.style.display = '';
             if (pagInfo) pagInfo.style.display = '';

@@ -12,13 +12,62 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 
 if (!function_exists('imgBase64')) {
-    function imgBase64(string $ruta): string {
-        if (!file_exists($ruta)) return '';
-        $ext  = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
-        $mime = in_array($ext, ['jpg','jpeg']) ? 'jpeg' : ($ext === 'png' ? 'png' : $ext);
-        $d    = @file_get_contents($ruta);
-        if (!$d) return '';
-        return 'data:image/' . $mime . ';base64,' . base64_encode($d);
+    function imgBase64(string $ruta, int $maxWidth = 300): string {
+        if (!file_exists($ruta) || !is_readable($ruta)) return '';
+
+        try {
+            $info = @getimagesize($ruta);
+            if (!$info || empty($info['mime'])) return '';
+
+            $mime = $info['mime'];
+
+            // Si es WebP, convertir a JPEG
+            if ($mime === 'image/webp' && function_exists('imagecreatefromwebp') && function_exists('imagejpeg')) {
+                $im = @imagecreatefromwebp($ruta);
+                if ($im) {
+                    ob_start();
+                    imagejpeg($im, null, 80);
+                    $data = ob_get_clean();
+                    imagedestroy($im);
+                    return 'data:image/jpeg;base64,' . base64_encode($data);
+                }
+            }
+
+            // Para imágenes JPG o PNG muy grandes, redimensionar si GD está disponible para ahorrar memoria
+            if (in_array($mime, ['image/jpeg', 'image/png']) && function_exists('imagecreatetruecolor')) {
+                $origW = $info[0];
+                $origH = $info[1];
+                if ($origW > $maxWidth) {
+                    $newW = $maxWidth;
+                    $newH = (int)round(($origH * $maxWidth) / $origW);
+                    $src = ($mime === 'image/jpeg') ? @imagecreatefromjpeg($ruta) : @imagecreatefrompng($ruta);
+                    if ($src) {
+                        $dst = imagecreatetruecolor($newW, $newH);
+                        if ($mime === 'image/png') {
+                            imagealphablending($dst, false);
+                            imagesavealpha($dst, true);
+                        }
+                        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
+                        ob_start();
+                        if ($mime === 'image/jpeg') {
+                            imagejpeg($dst, null, 75);
+                        } else {
+                            imagepng($dst, 6);
+                        }
+                        $data = ob_get_clean();
+                        imagedestroy($src);
+                        imagedestroy($dst);
+                        return 'data:' . $mime . ';base64,' . base64_encode($data);
+                    }
+                }
+            }
+
+            $d = @file_get_contents($ruta);
+            if (!$d) return '';
+            return 'data:' . $mime . ';base64,' . base64_encode($d);
+        } catch (\Throwable $e) {
+            return '';
+        }
     }
 }
 
