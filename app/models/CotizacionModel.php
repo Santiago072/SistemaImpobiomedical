@@ -21,7 +21,7 @@ class CotizacionModel
     public function contarDelUsuario(int $usuarioId): int
     {
         $stmt = $this->db->prepare(
-            "SELECT COUNT(*) AS total FROM cotizaciones WHERE usuario_id = :uid AND estado != 'borrador'"
+            "SELECT COUNT(*) AS total FROM cotizaciones WHERE usuario_id = :uid AND estado = 'finalizada'"
         );
         $stmt->execute([':uid' => $usuarioId]);
         return (int)$stmt->fetchColumn();
@@ -31,7 +31,7 @@ class CotizacionModel
     {
         $stmt = $this->db->prepare(
             "SELECT COUNT(*) AS total FROM cotizaciones
-             WHERE usuario_id = :uid AND estado != 'borrador'
+             WHERE usuario_id = :uid AND estado = 'finalizada'
              AND MONTH(fecha_creacion)=MONTH(CURDATE())
              AND YEAR(fecha_creacion)=YEAR(CURDATE())"
         );
@@ -45,7 +45,7 @@ class CotizacionModel
         // Nota: Filtramos por usuario_id como parámetro (seguro), el rol decide el filtro
         $query = "SELECT DATE_FORMAT(fecha_creacion, '%Y-%m') AS mes, COUNT(*) AS total
                   FROM cotizaciones
-                  WHERE estado != 'borrador'
+                  WHERE estado = 'finalizada'
                   AND fecha_creacion >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)"
                . ($rol !== 'admin' ? " AND usuario_id = :uid" : "")
                . " GROUP BY mes ORDER BY mes ASC";
