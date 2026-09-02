@@ -271,19 +271,36 @@ class CotizacionModel
                 }
                 $numeroCotizacion = $revisionDe . '_' . str_pad($nextSuffix, 2, '0', STR_PAD_LEFT);
             } else {
-                $mes     = date('Y-m');
-                $stmtCnt = $this->db->prepare(
-                    "SELECT COUNT(*) AS total FROM cotizaciones
+                // Determinar el mes objetivo basado en la fecha de creación de la cotización
+                $mesObj = !empty($fechaCreacion) ? date('Y-m', strtotime($fechaCreacion)) : date('Y-m');
+                $prefix = trim($codigo) . ' ';
+
+                // Buscar todos los números finalizados del usuario en este mes para extraer el máximo secuencial
+                $stmtMax = $this->db->prepare(
+                    "SELECT numero_cotizacion FROM cotizaciones
                      WHERE usuario_codigo = :cod
                        AND estado = 'finalizada'
                        AND DATE_FORMAT(fecha_creacion, '%Y-%m') = :mes
                        AND numero_cotizacion NOT LIKE '%\_%'
                      FOR UPDATE"
                 );
-                $stmtCnt->execute([':cod' => $codigo, ':mes' => $mes]);
-                $cnt = (int)$stmtCnt->fetchColumn();
+                $stmtMax->execute([':cod' => $codigo, ':mes' => $mesObj]);
+                $rows = $stmtMax->fetchAll();
 
-                $numeroCotizacion = trim($codigo) . ' ' . str_pad($cnt + 1, 2, '0', STR_PAD_LEFT);
+                $maxNum = 0;
+                foreach ($rows as $r) {
+                    $numStr = trim($r['numero_cotizacion'] ?? '');
+                    // Extraer los dígitos finales después del prefijo (ej: "EB-HM 01" -> 1, "EB-HM 02" -> 2)
+                    if (preg_match('/(?:^|\s)(\d+)$/', $numStr, $m)) {
+                        $val = (int)$m[1];
+                        if ($val > $maxNum) {
+                            $maxNum = $val;
+                        }
+                    }
+                }
+
+                $nextNum = $maxNum + 1;
+                $numeroCotizacion = trim($codigo) . ' ' . str_pad($nextNum, 2, '0', STR_PAD_LEFT);
             }
 
             // Calcular fecha de validez

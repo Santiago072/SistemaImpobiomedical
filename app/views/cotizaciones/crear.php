@@ -140,6 +140,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                 <option value="Repuestos">Repuestos</option>
                                 <option value="Equipo de Terapia">Equipo de Terapia</option>
                                 <option value="Medicamentos">Medicamentos</option>
+                                <option value="Servicio Calibracion">Servicio Calibración</option>
                             </select>
                         </div>
 

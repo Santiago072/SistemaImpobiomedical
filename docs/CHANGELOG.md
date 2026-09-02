@@ -29,7 +29,13 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
   - **Top 5 Productos Cotizados**: Actualizado con `LEFT JOIN` y `COALESCE(p.titulo, i.titulo)` para incluir productos manuales y sumar `SUM(i.cantidad)` de unidades reales. Leyenda con nombres cortos y total de unidades.
   - **Top 5 Clientes Recurrentes**: Truncado inteligente a 25 caracteres con puntos suspensivos en el eje Y de Chart.js y `layout.padding` para evitar que los nombres largos queden cortados. Tooltip flotante con nombre legal completo.
 
+### Añadido
+- **Nueva Categoría "Servicio Calibración":**
+  - Incorporada como categoría seleccionable en la creación y edición de productos (`productos/lista.php`) y en la pantalla de cotización (`cotizaciones/crear.php`).
+
 ### Corregido
+- **Cálculo Robusto de Consecutivo Mensual:**
+  - El consecutivo mensual ahora busca y extrae el valor numérico máximo real (`MAX`) de las cotizaciones finalizadas del mes correspondiente a la fecha de la cotización, asegurando un incremento secuencial continuo (`01`, `02`, `03`...) sin estancarse en `01`.
 - **Expiración de Sesión sin Aviso:**
   - `verificar_autenticacion()` ahora redirige siempre con `?timeout=1` cuando no hay sesión activa (antes redirigía a login sin parámetro, omitiendo el mensaje de aviso).
   - Banner `⚠️ Su sesión ha expirado por inactividad. Por favor inicie sesión nuevamente.` ahora se muestra en todos los casos de sesión caducada.
