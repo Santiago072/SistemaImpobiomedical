@@ -30,6 +30,10 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
   - **Top 5 Clientes Recurrentes**: Truncado inteligente a 25 caracteres con puntos suspensivos en el eje Y de Chart.js y `layout.padding` para evitar que los nombres largos queden cortados. Tooltip flotante con nombre legal completo.
 
 ### Añadido
+- **Exportación de Cotizaciones a Excel (Sin Imágenes, Ultrarrápido):**
+  - Nuevo botón de descarga `Excel` tanto en la tabla de acciones de `consultar.php` como en el visor emergente de la cotización (`Descargar Excel`).
+  - Vista especializada `app/views/cotizaciones/exportar_excel.php` que genera una hoja de cálculo limpia, estilizada y ligera con la información completa de la cotización (datos de cliente, asesor, tabla de productos detallada, subtotal, IVA y totales comerciales).
+  - Al omitir las imágenes de los productos, la descarga es instantánea incluso con decenas de ítems cotizados.
 - **Nueva Categoría "Servicio Calibración":**
   - Incorporada como categoría seleccionable en la creación y edición de productos (`productos/lista.php`) y en la pantalla de cotización (`cotizaciones/crear.php`).
 

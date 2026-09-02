@@ -373,6 +373,9 @@ if ($module === 'cotizaciones') {
         case 'generar_pdf':
             include __DIR__ . '/app/views/cotizaciones/generar_pdf.php';
             break;
+        case 'exportar_excel':
+            include __DIR__ . '/app/views/cotizaciones/exportar_excel.php';
+            break;
         case 'ver_respaldo':
             $data = $ctrl->verRespaldo();
             extract($data);

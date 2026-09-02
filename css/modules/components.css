@@ -756,6 +756,31 @@
     box-shadow: 0 8px 25px rgba(46, 204, 113, .2);
 }
 
+.btn-descargar-excel {
+    background: rgba(16, 185, 129, .2);
+    border: 1px solid rgba(16, 185, 129, .4);
+    color: #a7f3d0;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all .3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.btn-descargar-excel:hover {
+    background: rgba(16, 185, 129, .35);
+    border-color: rgba(16, 185, 129, .6);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, .25);
+}
+
 .btn-ver-pdf {
     background: rgba(52, 152, 219, .15);
     border: 1px solid rgba(52, 152, 219, .3);

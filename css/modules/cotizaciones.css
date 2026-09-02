@@ -26,6 +26,31 @@
     color: #ffffff;
 }
 
+.btn-excel-cot {
+    width: auto;
+    padding: 0 12px;
+    background: #dcfce7;
+    color: #15803d;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    height: 34px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .2s;
+}
+
+.btn-excel-cot:hover {
+    background: #16a34a;
+    color: #ffffff;
+    border-color: #16a34a;
+}
+
 .btn-modificar-cot {
     width: auto;
     padding: 0 12px;
