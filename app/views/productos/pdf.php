@@ -65,7 +65,7 @@ ob_start();
 <title>Catálogo de Productos — Impobiomedical</title>
 <style>
 @page {
-    margin: 15px 18px 25px 18px;
+    margin: 22px 26px 28px 26px;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
@@ -85,14 +85,14 @@ table.master-table {
 .hdr-wrap {
     border: 1.5px solid #10757e;
     border-radius: 4px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     overflow: hidden;
     background: #ffffff;
 }
 
 /* ── Filtros Badges ── */
 .meta-bar {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     text-align: center;
 }
 .filter-badge {
@@ -100,9 +100,9 @@ table.master-table {
     background: #eff6ff;
     border: 1px solid #bfdbfe;
     color: #1d4ed8;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 8px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 8.5px;
     font-weight: bold;
     margin: 0 4px;
 }
@@ -112,6 +112,7 @@ table.prod-table {
     width: 100%;
     border-collapse: collapse;
     border: 1.5px solid #10757e;
+    margin-top: 4px;
     page-break-inside: auto;
 }
 table.prod-table thead tr {
@@ -121,7 +122,7 @@ table.prod-table th {
     background-color: #10757e;
     color: #ffffff;
     font-weight: bold;
-    padding: 6px 4px;
+    padding: 8px 6px;
     text-align: center;
     font-size: 8.5px;
     text-transform: uppercase;
@@ -132,39 +133,44 @@ table.prod-table tr {
 }
 table.prod-table td {
     border: 1px solid #cbd5e1;
-    padding: 5px 6px;
-    vertical-align: middle;
+    padding: 8px 8px;
+    vertical-align: top;
     font-size: 8px;
 }
 
 /* Filas alternas */
 table.prod-table tbody tr:nth-child(even) { background-color: #f8fafc; }
 
-td.col-codigo { font-weight: bold; color: #0f766e; text-align: center; width: 14%; font-size: 8px; }
-td.col-categoria { color: #475569; font-weight: bold; text-align: center; width: 16%; font-size: 7.5px; }
-td.col-img { text-align: center; vertical-align: middle; padding: 3px; width: 12%; }
-td.col-nombre { font-weight: bold; color: #1e293b; text-align: left; vertical-align: top; width: 26%; }
-td.col-desc { text-align: left; font-size: 7.5px; color: #475569; line-height: 1.3; vertical-align: top; width: 32%; word-wrap: break-word; }
+td.col-codigo { font-weight: bold; color: #0f766e; text-align: center; width: 14%; font-size: 8.5px; padding-top: 9px; }
+td.col-categoria { color: #475569; font-weight: bold; text-align: center; width: 16%; font-size: 8px; padding-top: 9px; }
+td.col-img { text-align: center; vertical-align: middle; padding: 6px; width: 13%; }
+td.col-nombre { font-weight: bold; color: #1e293b; text-align: left; vertical-align: top; width: 25%; line-height: 1.35; }
+td.col-desc { text-align: left; font-size: 7.8px; color: #475569; line-height: 1.45; vertical-align: top; width: 32%; word-wrap: break-word; }
 
 .img-thumb {
-    max-width: 55px;
-    max-height: 55px;
+    max-width: 58px;
+    max-height: 58px;
     width: auto;
     height: auto;
     display: block;
     margin: 0 auto;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-radius: 3px;
+    padding: 2px;
+    background: #ffffff;
 }
 .no-img {
-    font-size: 7px;
+    font-size: 7.5px;
     color: #94a3b8;
     font-style: italic;
+    display: inline-block;
+    padding: 4px;
 }
 
 .footer-table {
-    margin-top: 10px;
+    margin-top: 14px;
     border-top: 1px solid #cbd5e1;
-    padding-top: 4px;
+    padding-top: 6px;
     width: 100%;
 }
 .footer-table td {
