@@ -1,7 +1,7 @@
 <?php
 /**
  * Vista: PDF de Catálogo de Productos — IMPOMIN S.A.S / Impobiomedical
- * Generado con DomPDF optimizado para catálogo con imágenes.
+ * Generado con DomPDF optimizado para catálogo con imágenes y salto de página fluido.
  */
 
 // Limpiar cualquier buffer previo
@@ -12,54 +12,30 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 
 if (!function_exists('imgBase64')) {
-    function imgBase64(string $ruta, int $maxWidth = 300): string {
+    function imgBase64(string $ruta): string {
         if (!file_exists($ruta) || !is_readable($ruta)) return '';
-
         try {
             $info = @getimagesize($ruta);
             if (!$info || empty($info['mime'])) return '';
-
             $mime = $info['mime'];
 
-            // Si es WebP, convertir a JPEG
+            // Si es WebP, convertir a JPEG para DomPDF
             if ($mime === 'image/webp' && function_exists('imagecreatefromwebp') && function_exists('imagejpeg')) {
                 $im = @imagecreatefromwebp($ruta);
                 if ($im) {
                     ob_start();
                     imagejpeg($im, null, 80);
-                    $data = ob_get_clean();
+                    $jpegData = ob_get_clean();
                     imagedestroy($im);
-                    return 'data:image/jpeg;base64,' . base64_encode($data);
-                }
-            }
-
-            // Para imágenes JPG o PNG muy grandes, redimensionar si GD está disponible para ahorrar memoria
-            if (in_array($mime, ['image/jpeg', 'image/png']) && function_exists('imagecreatetruecolor')) {
-                $origW = $info[0];
-                $origH = $info[1];
-                if ($origW > $maxWidth) {
-                    $newW = $maxWidth;
-                    $newH = (int)round(($origH * $maxWidth) / $origW);
-                    $src = ($mime === 'image/jpeg') ? @imagecreatefromjpeg($ruta) : @imagecreatefrompng($ruta);
-                    if ($src) {
-                        $dst = imagecreatetruecolor($newW, $newH);
-                        if ($mime === 'image/png') {
-                            imagealphablending($dst, false);
-                            imagesavealpha($dst, true);
-                        }
-                        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
-                        ob_start();
-                        if ($mime === 'image/jpeg') {
-                            imagejpeg($dst, null, 75);
-                        } else {
-                            imagepng($dst, 6);
-                        }
-                        $data = ob_get_clean();
-                        imagedestroy($src);
-                        imagedestroy($dst);
-                        return 'data:' . $mime . ';base64,' . base64_encode($data);
+                    if ($jpegData) {
+                        return 'data:image/jpeg;base64,' . base64_encode($jpegData);
                     }
                 }
+                return '';
+            }
+
+            if (!in_array($mime, ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'])) {
+                return '';
             }
 
             $d = @file_get_contents($ruta);
@@ -88,21 +64,35 @@ ob_start();
 <meta charset="UTF-8">
 <title>Catálogo de Productos — Impobiomedical</title>
 <style>
+@page {
+    margin: 15px 18px 25px 18px;
+}
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: Arial, Helvetica, sans-serif; font-size: 8.5px; color: #1f2937; padding: 15px 18px; }
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 8.5px;
+    color: #1f2937;
+}
+
+/* Master Table para encabezado repetitivo limpio */
+table.master-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: none;
+}
 
 /* ── Encabezado Corporativo ── */
 .hdr-wrap {
     border: 1.5px solid #10757e;
     border-radius: 4px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     overflow: hidden;
     background: #ffffff;
 }
 
 /* ── Filtros Badges ── */
 .meta-bar {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     text-align: center;
 }
 .filter-badge {
@@ -110,33 +100,39 @@ body { font-family: Arial, Helvetica, sans-serif; font-size: 8.5px; color: #1f29
     background: #eff6ff;
     border: 1px solid #bfdbfe;
     color: #1d4ed8;
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 8.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 8px;
     font-weight: bold;
     margin: 0 4px;
 }
 
-/* ── Tabla Principal ── */
+/* ── Tabla Principal de Productos ── */
 table.prod-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 5px;
-    border: 2px solid #10757e;
+    border: 1.5px solid #10757e;
+    page-break-inside: auto;
+}
+table.prod-table thead tr {
+    background-color: #10757e;
 }
 table.prod-table th {
     background-color: #10757e;
     color: #ffffff;
     font-weight: bold;
-    padding: 7px 6px;
+    padding: 6px 4px;
     text-align: center;
-    font-size: 9px;
+    font-size: 8.5px;
     text-transform: uppercase;
-    border: 1.5px solid #0d5c63;
+    border: 1px solid #0d5c63;
+}
+table.prod-table tr {
+    page-break-inside: avoid;
 }
 table.prod-table td {
-    border: 1.5px solid #cbd5e1;
-    padding: 6px 6px;
+    border: 1px solid #cbd5e1;
+    padding: 5px 6px;
     vertical-align: middle;
     font-size: 8px;
 }
@@ -144,117 +140,138 @@ table.prod-table td {
 /* Filas alternas */
 table.prod-table tbody tr:nth-child(even) { background-color: #f8fafc; }
 
-td.col-codigo { font-weight: bold; color: #0f766e; text-align: center; font-size: 8.5px; }
-td.col-categoria { color: #475569; font-style: italic; font-weight: bold; text-align: center; }
-td.col-img { text-align: center; vertical-align: middle; padding: 4px; }
-td.col-nombre { font-weight: bold; color: #1e293b; text-align: left; vertical-align: top; }
-td.col-desc { text-align: left; font-size: 8px; color: #475569; line-height: 1.35; word-wrap: break-word; vertical-align: top; }
+td.col-codigo { font-weight: bold; color: #0f766e; text-align: center; width: 14%; font-size: 8px; }
+td.col-categoria { color: #475569; font-weight: bold; text-align: center; width: 16%; font-size: 7.5px; }
+td.col-img { text-align: center; vertical-align: middle; padding: 3px; width: 12%; }
+td.col-nombre { font-weight: bold; color: #1e293b; text-align: left; vertical-align: top; width: 26%; }
+td.col-desc { text-align: left; font-size: 7.5px; color: #475569; line-height: 1.3; vertical-align: top; width: 32%; word-wrap: break-word; }
 
 .img-thumb {
-    max-width: 65px;
-    max-height: 65px;
+    max-width: 55px;
+    max-height: 55px;
     width: auto;
     height: auto;
-    object-fit: contain;
-    border-radius: 3px;
+    display: block;
+    margin: 0 auto;
     border: 1px solid #e2e8f0;
 }
 .no-img {
     font-size: 7px;
     color: #94a3b8;
     font-style: italic;
-    display: inline-block;
-    padding: 4px;
 }
 
-.footer-table { margin-top: 14px; border-top: 1px solid #cbd5e1; padding-top: 5px; width:100%; }
-.footer-table td { font-size: 7.5px; color: #64748b; border:none; text-align: left; }
+.footer-table {
+    margin-top: 10px;
+    border-top: 1px solid #cbd5e1;
+    padding-top: 4px;
+    width: 100%;
+}
+.footer-table td {
+    font-size: 7.5px;
+    color: #64748b;
+    border: none;
+    text-align: left;
+}
 </style>
 </head>
 <body>
 
-<!-- ENCABEZADO CORPORATIVO CON LOGOS -->
-<div class="hdr-wrap">
-  <div style="background:#10757e; height:5px;"></div>
-  <table style="width:100%; border-collapse:collapse; background:#ffffff;">
+<table class="master-table">
+  <thead style="display: table-header-group;">
     <tr>
-      <!-- COL 1: Logo IMPOMIN + Datos -->
-      <td style="width:34%; padding:7px 10px; vertical-align:top; border-right:1px solid #e2e8f0; text-align:left;">
-        <?php if ($imgLogoImp): ?>
-          <img src="<?= $imgLogoImp ?>" style="height:32px; object-fit:contain; margin-bottom:3px;"><br>
-        <?php endif; ?>
-        <div style="font-size:10px; font-weight:bold; color:#1f3864;">IMPOMIN S.A.S</div>
-        <div style="font-size:8px; font-weight:bold; color:#10757e;">Nit. 900.535.843-3</div>
-        <div style="font-size:7px; color:#475569; margin-top:2px; line-height:1.2;">
-          Cra 10 No. 9-80 Barrio Cooperativa - Florencia<br>
-          Calle 33A No 71 A 27 - Laureles - Medellín<br>
-          impobiomedical@impomin.com
+      <td style="border:none; padding:0;">
+        <!-- ENCABEZADO CORPORATIVO CON LOGOS -->
+        <div class="hdr-wrap">
+          <div style="background:#10757e; height:4px;"></div>
+          <table style="width:100%; border-collapse:collapse; background:#ffffff;">
+            <tr>
+              <!-- COL 1: Logo IMPOMIN + Datos -->
+              <td style="width:34%; padding:6px 10px; vertical-align:top; border-right:1px solid #e2e8f0; text-align:left;">
+                <?php if ($imgLogoImp): ?>
+                  <img src="<?= $imgLogoImp ?>" style="height:28px; margin-bottom:2px;"><br>
+                <?php endif; ?>
+                <div style="font-size:9.5px; font-weight:bold; color:#1f3864;">IMPOMIN S.A.S</div>
+                <div style="font-size:7.5px; font-weight:bold; color:#10757e;">Nit. 900.535.843-3</div>
+                <div style="font-size:6.8px; color:#475569; margin-top:1px; line-height:1.2;">
+                  Cra 10 No. 9-80 Barrio Cooperativa - Florencia<br>
+                  Calle 33A No 71 A 27 - Laureles - Medellín<br>
+                  impobiomedical@impomin.com
+                </div>
+              </td>
+
+              <!-- COL 2: Título y Filtros -->
+              <td style="width:36%; text-align:center; vertical-align:middle; padding:5px 8px; border-right:1px solid #e2e8f0;">
+                <div style="font-size:12px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">Catálogo de Productos</div>
+                <div style="font-size:8.5px; font-weight:bold; color:#10757e; margin-top:1px;">Sistema Impobiomedical</div>
+                <div style="font-size:7.5px; color:#64748b; margin-top:3px;">Fecha: <?= $fechaSoloFecha ?> | Registros: <?= $totalRegistros ?></div>
+              </td>
+
+              <!-- COL 3: Logo IMPOBIOMEDICAL -->
+              <td style="width:30%; text-align:center; vertical-align:middle; padding:5px 8px;">
+                <?php if ($imgLogoPdf): ?>
+                  <img src="<?= $imgLogoPdf ?>" style="max-width:150px; max-height:55px;">
+                <?php endif; ?>
+              </td>
+            </tr>
+          </table>
+          <div style="background:#10757e; height:2px;"></div>
         </div>
-      </td>
 
-      <!-- COL 2: Título y Filtros -->
-      <td style="width:36%; text-align:center; vertical-align:middle; padding:6px 8px; border-right:1px solid #e2e8f0;">
-        <div style="font-size:13px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">Catálogo de Productos</div>
-        <div style="font-size:9px; font-weight:bold; color:#10757e; margin-top:1px;">Sistema Impobiomedical</div>
-        <div style="font-size:8px; color:#64748b; margin-top:4px;">Fecha: <?= $fechaSoloFecha ?> | Registros: <?= $totalRegistros ?></div>
-      </td>
-
-      <!-- COL 3: Logo IMPOBIOMEDICAL -->
-      <td style="width:30%; text-align:center; vertical-align:middle; padding:6px 8px;">
-        <?php if ($imgLogoPdf): ?>
-          <img src="<?= $imgLogoPdf ?>" style="max-width:170px; max-height:65px; object-fit:contain;">
+        <?php if (!empty($categoriaSel) || !empty($busqueda)): ?>
+        <div class="meta-bar">
+            <?php if (!empty($categoriaSel)): ?>
+                <span class="filter-badge">Categoría: <?= htmlspecialchars($categoriaSel) ?></span>
+            <?php endif; ?>
+            <?php if (!empty($busqueda)): ?>
+                <span class="filter-badge">Búsqueda: "<?= htmlspecialchars($busqueda) ?>"</span>
+            <?php endif; ?>
+        </div>
         <?php endif; ?>
       </td>
     </tr>
-  </table>
-  <div style="background:#10757e; height:3px;"></div>
-</div>
+  </thead>
 
-<!-- MOSTRAR FILTROS SI SE ESTÁ EN UNA CATEGORÍA O BÚSQUEDA -->
-<?php if (!empty($categoriaSel) || !empty($busqueda)): ?>
-<div class="meta-bar">
-    <?php if (!empty($categoriaSel)): ?>
-        <span class="filter-badge">Categoría: <?= htmlspecialchars($categoriaSel) ?></span>
-    <?php endif; ?>
-    <?php if (!empty($busqueda)): ?>
-        <span class="filter-badge">Búsqueda: "<?= htmlspecialchars($busqueda) ?>"</span>
-    <?php endif; ?>
-</div>
-<?php endif; ?>
-
-<table class="prod-table">
-    <thead>
-        <tr>
-            <th style="width: 12%;">Código</th>
-            <th style="width: 15%;">Categoría</th>
-            <th style="width: 13%;">Imagen</th>
-            <th style="width: 25%;">Nombre</th>
-            <th style="width: 35%;">Descripción</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($productos as $p): 
-            $fotoNombre = $p['foto'] ?? '';
-            $imgProd = '';
-            if (!empty($fotoNombre) && file_exists($uploadsDir . $fotoNombre)) {
-                $imgProd = imgBase64($uploadsDir . $fotoNombre);
-            }
-        ?>
-        <tr>
-            <td class="col-codigo"><?= htmlspecialchars($p['codigo_producto'] ?? '') ?></td>
-            <td class="col-categoria"><?= htmlspecialchars($p['categoria'] ?? '') ?></td>
-            <td class="col-img">
-                <?php if ($imgProd): ?>
-                    <img src="<?= $imgProd ?>" class="img-thumb">
-                <?php else: ?>
-                    <span class="no-img">Sin imagen</span>
-                <?php endif; ?>
-            </td>
-            <td class="col-nombre"><?= htmlspecialchars($p['titulo'] ?? '') ?></td>
-            <td class="col-desc"><?= nl2br(htmlspecialchars($p['descripcion'] ?? '')) ?></td>
-        </tr>
-        <?php endforeach; ?>
-    </tbody>
+  <tbody>
+    <tr>
+      <td style="border:none; padding:0;">
+        <table class="prod-table">
+            <thead>
+                <tr>
+                    <th style="width: 14%;">Código</th>
+                    <th style="width: 16%;">Categoría</th>
+                    <th style="width: 12%;">Imagen</th>
+                    <th style="width: 26%;">Nombre</th>
+                    <th style="width: 32%;">Descripción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($productos as $p): 
+                    $fotoNombre = $p['foto'] ?? '';
+                    $imgProd = '';
+                    if (!empty($fotoNombre) && file_exists($uploadsDir . $fotoNombre)) {
+                        $imgProd = imgBase64($uploadsDir . $fotoNombre);
+                    }
+                ?>
+                <tr>
+                    <td class="col-codigo"><?= htmlspecialchars($p['codigo_producto'] ?? '') ?></td>
+                    <td class="col-categoria"><?= htmlspecialchars($p['categoria'] ?? '') ?></td>
+                    <td class="col-img">
+                        <?php if ($imgProd): ?>
+                            <img src="<?= $imgProd ?>" class="img-thumb">
+                        <?php else: ?>
+                            <span class="no-img">Sin imagen</span>
+                        <?php endif; ?>
+                    </td>
+                    <td class="col-nombre"><?= htmlspecialchars($p['titulo'] ?? '') ?></td>
+                    <td class="col-desc"><?= nl2br(htmlspecialchars($p['descripcion'] ?? '')) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 <table class="footer-table">
@@ -270,13 +287,33 @@ $html = ob_get_clean();
 
 $options = new Options();
 $options->set('isRemoteEnabled', false);
-$options->set('defaultFont', 'Arial');
 $options->set('isPhpEnabled', false);
+$options->set('isHtml5ParserEnabled', true);
+$options->set('defaultFont', 'Helvetica');
 
 $dompdf = new Dompdf($options);
 $dompdf->loadHtml($html, 'UTF-8');
 $dompdf->setPaper('A4', 'portrait');
-$dompdf->render();
+
+try {
+    $dompdf->render();
+} catch (\Throwable $e) {
+    error_log('Error renderizando catalogo PDF: ' . $e->getMessage());
+    // Fallback de seguridad sin imagenes de productos si alguna imagen corrompida falla
+    $htmlSinImgProd = preg_replace('/<img[^>]+uploads\/[^>]+>/i', '', $html);
+    try {
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($htmlSinImgProd, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+    } catch (\Throwable $e2) {
+        $htmlSinImg = preg_replace('/<img[^>]+>/i', '', $html);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($htmlSinImg, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+    }
+}
 
 while (ob_get_level()) ob_end_clean();
 
