@@ -30,13 +30,17 @@ class OrdenCompraController
         verificar_autenticacion();
         $csrf_token = generar_token_csrf();
 
-        $numero = sanitizar_entrada($_GET['cotizacion'] ?? '');
-        if (empty($numero)) {
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
-            exit();
+        $id = (int)($_GET['id'] ?? 0);
+        $cotizacion = null;
+        if ($id > 0) {
+            $cotizacion = $this->cotizacionModel->buscarPorId($id);
+        } else {
+            $numero = sanitizar_entrada($_GET['cotizacion'] ?? '');
+            if (!empty($numero)) {
+                $cotizacion = $this->cotizacionModel->buscarPorNumero($numero);
+            }
         }
 
-        $cotizacion = $this->cotizacionModel->buscarPorNumero($numero);
         if (!$cotizacion) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
             exit();

@@ -123,24 +123,24 @@ include dirname(__DIR__) . '/layout/menu.php';
                                 <div class="mod-actions">
                                     <?php if (!empty($cot['numero_cotizacion'])): ?>
                                     <button type="button" class="btn-orden-view"
-                                        onclick="verPDF('<?= htmlspecialchars($cot['numero_cotizacion']) ?>', '<?= htmlspecialchars($cot['nombre_cliente'] ?? $cot['cliente_nombre'] ?? '') ?>')">
+                                        onclick="verPDF(<?= (int)$cot['id'] ?>, '<?= htmlspecialchars(addslashes($cot['numero_cotizacion'])) ?>', '<?= htmlspecialchars(addslashes($cot['nombre_cliente'] ?? $cot['cliente_nombre'] ?? '')) ?>')">
                                         <i class="bi bi-eye"></i> Ver PDF
                                     </button>
-                                    <a href="<?= $basePath ?>?module=cotizaciones&action=exportar_excel&ver=<?= urlencode($cot['numero_cotizacion']) ?>" 
+                                    <a href="<?= $basePath ?>?module=cotizaciones&action=exportar_excel&id=<?= (int)$cot['id'] ?>&ver=<?= urlencode($cot['numero_cotizacion']) ?>" 
                                        class="btn-excel-cot" title="Descargar Cotización en Excel (Rápido, sin imágenes)">
                                         <i class="bi bi-file-earmark-excel-fill"></i> Excel
                                     </a>
                                     <button type="button" class="btn-respaldo-view"
-                                        onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=ver_respaldo&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Hoja de Respaldo Proveedores">
+                                        onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=ver_respaldo&id=<?= (int)$cot['id'] ?>&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Hoja de Respaldo Proveedores">
                                         <i class="bi bi-file-earmark-spreadsheet"></i> Respaldo
                                     </button>
                                     <button type="button" class="btn-modificar-cot"
-                                        onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=modificar&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Crear nueva versión / Modificar Cotización">
+                                        onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=modificar&id=<?= (int)$cot['id'] ?>&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Crear nueva versión / Modificar Cotización">
                                         <i class="bi bi-pencil-square"></i> Modificar
                                     </button>
                                      <?php if ($estCom === 'pendiente'): ?>
                                      <button type="button" class="btn-accion-orden btn-orden-cot-enabled" data-cotizacion="<?= htmlspecialchars($cot['numero_cotizacion']) ?>"
-                                         onclick="window.location.href='<?= $basePath ?>?module=ordenes&action=seleccionar_items&cotizacion=<?= urlencode($cot['numero_cotizacion']) ?>'"
+                                         onclick="window.location.href='<?= $basePath ?>?module=ordenes&action=seleccionar_items&id=<?= (int)$cot['id'] ?>&cotizacion=<?= urlencode($cot['numero_cotizacion']) ?>'"
                                          title="Generar Orden de Compra">
                                          <i class="bi bi-cart-plus-fill"></i> Orden
                                      </button>
@@ -221,7 +221,7 @@ include dirname(__DIR__) . '/layout/menu.php';
 </div>
 
 <script>
-function verPDF(numero, cliente) {
+function verPDF(id, numero, cliente) {
     const modal   = document.getElementById('modal-pdf-viewer');
     const frame   = document.getElementById('pdf-frame');
     const titulo  = document.getElementById('pdf-titulo');
@@ -231,8 +231,8 @@ function verPDF(numero, cliente) {
     err.style.display   = 'none';
     frame.style.display = 'block';
     titulo.textContent  = numero + ' - ' + cliente;
-    frame.src           = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&ver=' + encodeURIComponent(numero);
-    btnDesc.href        = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&ver=' + encodeURIComponent(numero) + '&descargar=1';
+    frame.src           = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&id=' + id + '&ver=' + encodeURIComponent(numero);
+    btnDesc.href        = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&id=' + id + '&ver=' + encodeURIComponent(numero) + '&descargar=1';
     btnDesc.setAttribute('download', 'cotizacion_' + numero + '.pdf');
     modal.style.display          = 'block';
     document.body.style.overflow = 'hidden';

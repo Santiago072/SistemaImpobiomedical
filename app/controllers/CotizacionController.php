@@ -130,13 +130,17 @@ class CotizacionController
     public function verRespaldo(): array
     {
         verificar_autenticacion();
-        $numero = $_GET['numero'] ?? '';
-        if (empty($numero)) {
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
-            exit();
+        $id = (int)($_GET['id'] ?? 0);
+        $cotizacion = null;
+        if ($id > 0) {
+            $cotizacion = $this->model->buscarPorId($id);
+        } else {
+            $numero = $_GET['numero'] ?? '';
+            if (!empty($numero)) {
+                $cotizacion = $this->model->buscarPorNumero($numero);
+            }
         }
 
-        $cotizacion = $this->model->buscarPorNumero($numero);
         if (!$cotizacion) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
             exit();
@@ -281,13 +285,17 @@ class CotizacionController
     public function modificar(): void
     {
         verificar_autenticacion();
-        $numero = $_GET['numero'] ?? '';
-        if (empty($numero)) {
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
-            exit();
+        $id = (int)($_GET['id'] ?? 0);
+        $cotizacionOriginal = null;
+        if ($id > 0) {
+            $cotizacionOriginal = $this->model->buscarPorId($id);
+        } else {
+            $numero = $_GET['numero'] ?? '';
+            if (!empty($numero)) {
+                $cotizacionOriginal = $this->model->buscarPorNumero($numero);
+            }
         }
 
-        $cotizacionOriginal = $this->model->buscarPorNumero($numero);
         if (!$cotizacionOriginal) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
             exit();
@@ -529,19 +537,25 @@ class CotizacionController
         verificar_autenticacion();
         verificar_rate_limit(15, 60, 'generar_pdf');
 
-        if (!isset($_GET['ver'])) {
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
-            exit();
+        $id = (int)($_GET['id'] ?? 0);
+        $cotizacion = null;
+        if ($id > 0) {
+            $cotizacion = $this->model->buscarPorId($id);
+        } elseif (isset($_GET['ver'])) {
+            $numero = sanitizar_entrada($_GET['ver']);
+            $cotizacion = $this->model->buscarPorNumero($numero);
         }
 
-        $numero     = sanitizar_entrada($_GET['ver']);
-        $forzar     = isset($_GET['descargar']);
-        $cotizacion = $this->model->buscarPorNumero($numero);
-
         if (!$cotizacion) {
+            if (!isset($_GET['ver']) && $id <= 0) {
+                header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+                exit();
+            }
             http_response_code(404);
             die('Cotización no encontrada.');
         }
+
+        $forzar = isset($_GET['descargar']);
 
         return [
             'cotizacion' => $cotizacion,
