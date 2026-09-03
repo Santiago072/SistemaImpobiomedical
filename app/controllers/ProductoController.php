@@ -177,9 +177,6 @@ class ProductoController
         @ini_set('memory_limit', '512M');
         @set_time_limit(180);
 
-        $busqueda = sanitizar_entrada($_REQUEST['busqueda'] ?? '');
-        $categoriaSel = sanitizar_entrada($_REQUEST['categoria'] ?? '');
-        
         $idsRaw = $_POST['ids'] ?? $_GET['ids'] ?? '';
         $ids = [];
         if (is_array($idsRaw)) {
@@ -188,8 +185,18 @@ class ProductoController
             $ids = array_filter(array_map('intval', explode(',', $idsRaw)));
         }
 
+        if (empty($ids)) {
+            $_SESSION['flash_error'] = 'Debe seleccionar al menos un producto para exportar el catálogo en PDF.';
+            header('Location: ' . BASE_URL . '?module=productos&action=lista');
+            exit();
+        }
+
+        $busqueda = sanitizar_entrada($_REQUEST['busqueda'] ?? '');
+        $categoriaSel = sanitizar_entrada($_REQUEST['categoria'] ?? '');
+
         $productos = $this->model->listarParaExportar($busqueda, $categoriaSel, $ids);
 
+        while (ob_get_level() > 0) { ob_end_clean(); }
         include dirname(__DIR__, 2) . '/app/views/productos/pdf.php';
         exit();
     }

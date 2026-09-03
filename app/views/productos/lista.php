@@ -26,8 +26,8 @@ include dirname(__DIR__) . '/layout/menu.php';
                            . (!empty($busqueda) ? '&busqueda=' . urlencode($busqueda) : '');
                 ?>
                 <button type="button" id="btn-pdf-header" class="btn-mod-primary btn-pdf-export"
-                        onclick="exportarPdfHeader('<?= addslashes($exportCat) ?>')"
-                        title="Exportar PDF de la categoría/búsqueda actual">
+                        onclick="exportarPdfHeader()"
+                        title="Exportar PDF de productos seleccionados">
                     <i class="bi bi-file-earmark-pdf"></i> PDF
                 </button>
                 <button class="btn-mod-primary" onclick="abrirModalCrear()">
@@ -500,22 +500,12 @@ function manejarExportarPdf(form) {
     return true;
 }
 
-function exportarPdfHeader(url) {
-    if (productosSeleccionados.size > 0) {
-        const ok = confirm(
-            `Tienes ${productosSeleccionados.size} producto(s) seleccionado(s) en la barra inferior.\n` +
-            `¿Deseas exportar solo esos productos en PDF?\n\n` +
-            `• Aceptar → exportar los seleccionados\n` +
-            `• Cancelar → exportar toda la categoría/búsqueda actual`
-        );
-        if (ok) {
-            // Enviar selección por POST
-            document.getElementById('form-exportar-seleccionados').submit();
-            return;
-        }
+function exportarPdfHeader() {
+    if (productosSeleccionados.size === 0) {
+        alert('⚠️ Debe seleccionar al menos un producto mediante el círculo de selección antes de generar el catálogo en PDF.');
+        return;
     }
-    // Sin selección o usuario eligió categoría: abrir URL GET
-    window.open(url, '_blank');
+    document.getElementById('form-exportar-seleccionados').submit();
 }
 
 function renderizarProductosAjax(productos, isAdmin) {

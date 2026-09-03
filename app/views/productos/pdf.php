@@ -122,13 +122,7 @@ table.prod-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 5px;
-    border: 1.5px solid #10757e;
-}
-table.prod-table thead {
-    display: table-header-group;
-}
-table.prod-table tr {
-    page-break-inside: avoid;
+    border: 2px solid #10757e;
 }
 table.prod-table th {
     background-color: #10757e;
