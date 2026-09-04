@@ -45,10 +45,13 @@ if (!empty($fechaInicio) && !empty($fechaFin)) {
 
 $fechaGenerado = date('d/m/Y H:i');
 
-// Máximos para barras proporcionales
+// Máximos para barras proporcionales y total para porcentajes
 $maxClientes   = !empty($topClientes['data'])   ? max($topClientes['data'])   : 1;
 $maxProductos  = !empty($topProductos['data'])  ? max($topProductos['data'])  : 1;
 $maxVendedores = !empty($topVendedores['data']) ? max($topVendedores['data']) : 1;
+$totalVendidoPeriodo = !empty($kpis['monto_vendido']) && $kpis['monto_vendido'] > 0 
+    ? (float)$kpis['monto_vendido'] 
+    : (!empty($topClientes['data']) ? (float)array_sum($topClientes['data']) : 0);
 
 // Meses formateados
 $mesesFmt = array_map(function($m) {
@@ -236,30 +239,35 @@ table { width:100%; border-collapse:collapse; }
   <tr>
     <!-- Top Clientes -->
     <td class="col-l">
-      <h2>Top Clientes (Monto Vendido $$)</h2>
+      <h2>Top Clientes (Monto Vendido $)</h2>
       <table class="top-table">
         <thead>
           <tr>
-            <th style="width:20px;">#</th>
+            <th style="width:18px;">#</th>
             <th>Cliente</th>
-            <th style="width:25%;">Proporción</th>
-            <th style="width:65px; text-align:right;">Monto</th>
+            <th style="width:26%;">Proporción</th>
+            <th style="width:32px; text-align:center;">%</th>
+            <th style="width:62px; text-align:right;">Monto</th>
           </tr>
         </thead>
         <tbody>
           <?php if (empty($topClientes['labels'])): ?>
-          <tr><td colspan="4" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados</td></tr>
+          <tr><td colspan="5" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados</td></tr>
           <?php else: ?>
-          <?php foreach ($topClientes['labels'] as $i => $label): ?>
+          <?php foreach ($topClientes['labels'] as $i => $label): 
+              $montoCliente = (float)($topClientes['data'][$i] ?? 0);
+              $pctCliente   = $totalVendidoPeriodo > 0 ? round(($montoCliente / $totalVendidoPeriodo) * 100, 1) : 0;
+          ?>
           <tr>
             <td style="font-weight:bold; color:#10757e;"><?= $i+1 ?></td>
             <td><?= htmlspecialchars($label) ?></td>
             <td>
               <div class="bar-outer">
-                <div class="bar-inner" style="width:<?= barPct((int)$topClientes['data'][$i], (int)$maxClientes) ?>%;"></div>
+                <div class="bar-inner" style="width:<?= barPct((int)$montoCliente, (int)$maxClientes) ?>%;"></div>
               </div>
             </td>
-            <td style="text-align:right; font-weight:bold; color:#0f172a; font-size:7.5px;"><?= fmtR($topClientes['data'][$i]) ?></td>
+            <td style="text-align:center; font-weight:bold; color:#10757e; font-size:7.5px;"><?= number_format($pctCliente, 1, ',', '.') ?>%</td>
+            <td style="text-align:right; font-weight:bold; color:#0f172a; font-size:7.5px;"><?= fmtR($montoCliente) ?></td>
           </tr>
           <?php endforeach; ?>
           <?php endif; ?>
