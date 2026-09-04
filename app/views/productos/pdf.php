@@ -48,7 +48,7 @@ if (!function_exists('obtenerThumbnailRuta')) {
 
             if ($origW <= 0 || $origH <= 0) return '';
 
-            // Si GD está disponible, generar miniatura ligera
+            // ── Capa 1: GD con soporte nativo ───────────────────────────────
             if (function_exists('imagecreatetruecolor')) {
                 $src = null;
                 if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
@@ -72,7 +72,6 @@ if (!function_exists('obtenerThumbnailRuta')) {
                     imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
                     imagedestroy($src);
 
-                    // Guardar como JPEG optimizado en disco (pesa ~5KB)
                     imagejpeg($dst, $thumbPath, 72);
                     imagedestroy($dst);
 
@@ -82,13 +81,43 @@ if (!function_exists('obtenerThumbnailRuta')) {
                 }
             }
 
-            // WebP / AVIF sin soporte GD en el servidor: DomPDF tampoco puede renderizarlos.
-            // Retornar vacío para que el PDF muestre el placeholder "Sin imagen" en lugar de fallar.
-            if (in_array($mime, ['image/webp', 'image/avif']) && !function_exists('imagecreatefromwebp')) {
-                return '';
+            // ── Capa 2: Imagick (para WebP/AVIF cuando GD no los soporta) ───
+            if (in_array($mime, ['image/webp', 'image/avif']) && class_exists('Imagick')) {
+                try {
+                    $im = new \Imagick($rutaOriginal);
+                    $im->setImageFormat('jpeg');
+                    $im->thumbnailImage($maxW, $maxH, true);
+                    $im->setImageCompressionQuality(75);
+                    $im->writeImage($thumbPath);
+                    $im->destroy();
+                    if (file_exists($thumbPath)) {
+                        return $thumbPath;
+                    }
+                } catch (\Exception $e) {
+                    // Imagick falló, intentar CLI
+                }
             }
 
-            // Si no se pudo redimensionar, retornar el original si no es excesivamente grande
+            // ── Capa 3: ImageMagick CLI (convert) ───────────────────────────
+            if (in_array($mime, ['image/webp', 'image/avif']) && !file_exists($thumbPath)) {
+                $cmd = sprintf(
+                    'convert %s -resize %dx%d\\> -quality 80 %s 2>/dev/null',
+                    escapeshellarg($rutaOriginal),
+                    $maxW, $maxH,
+                    escapeshellarg($thumbPath)
+                );
+                @exec($cmd, $out, $ret);
+                if ($ret === 0 && file_exists($thumbPath)) {
+                    return $thumbPath;
+                }
+            }
+
+            // ── Sin soporte para este formato: omitir imagen ─────────────────
+            if (in_array($mime, ['image/webp', 'image/avif'])) {
+                return ''; // DomPDF no puede manejar WebP/AVIF nativamente
+            }
+
+            // Fallback final: retornar original si no es excesivamente grande
             return filesize($rutaOriginal) < 1000000 ? $rutaOriginal : '';
         } catch (\Throwable $e) {
             return '';
