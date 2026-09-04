@@ -82,6 +82,12 @@ if (!function_exists('obtenerThumbnailRuta')) {
                 }
             }
 
+            // WebP / AVIF sin soporte GD en el servidor: DomPDF tampoco puede renderizarlos.
+            // Retornar vacío para que el PDF muestre el placeholder "Sin imagen" en lugar de fallar.
+            if (in_array($mime, ['image/webp', 'image/avif']) && !function_exists('imagecreatefromwebp')) {
+                return '';
+            }
+
             // Si no se pudo redimensionar, retornar el original si no es excesivamente grande
             return filesize($rutaOriginal) < 1000000 ? $rutaOriginal : '';
         } catch (\Throwable $e) {
@@ -95,6 +101,8 @@ if (!function_exists('imgBase64')) {
         if (!file_exists($ruta) || !is_readable($ruta)) return '';
         $info = @getimagesize($ruta);
         $mime = $info['mime'] ?? 'image/png';
+        // WebP / AVIF sin soporte GD: DomPDF no puede renderizarlos, omitir
+        if (in_array($mime, ['image/webp', 'image/avif']) && !function_exists('imagecreatefromwebp')) return '';
         $d = @file_get_contents($ruta);
         return $d ? ('data:' . $mime . ';base64,' . base64_encode($d)) : '';
     }
