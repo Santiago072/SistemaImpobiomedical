@@ -21,13 +21,18 @@ class EstadisticaController
         $fechaInicio = $_GET['fecha_inicio'] ?? null;
         $fechaFin    = $_GET['fecha_fin']    ?? null;
 
-        $kpis          = $this->model->getKpisGenerales($fechaInicio, $fechaFin);
-        $topClientes   = $this->model->getTopClientes(5, $fechaInicio, $fechaFin);
-        $topProductos  = $this->model->getTopProductos(5, $fechaInicio, $fechaFin);
-        $topVendedores = $this->model->getTopVendedores(5, $fechaInicio, $fechaFin);
-        $evolucion     = $this->model->getMetricasEvolucion($fechaInicio, $fechaFin);
+        $kpis                 = $this->model->getKpisGenerales($fechaInicio, $fechaFin);
+        $topClientes          = $this->model->getTopClientes(5, $fechaInicio, $fechaFin);
+        $topProductos         = $this->model->getTopProductos(5, $fechaInicio, $fechaFin);
+        $topVendedores        = $this->model->getTopVendedores(5, $fechaInicio, $fechaFin);
+        $evolucion            = $this->model->getMetricasEvolucion($fechaInicio, $fechaFin);
+        $evolucionPorUsuario  = $this->model->getEvolucionTodosUsuarios($fechaInicio, $fechaFin);
 
-        return compact('kpis', 'topClientes', 'topProductos', 'topVendedores', 'evolucion', 'fechaInicio', 'fechaFin');
+        require_once dirname(__DIR__) . '/models/UsuarioModel.php';
+        $usuarioModel = new UsuarioModel($this->model->getDbConnection());
+        $usuarios     = $usuarioModel->listarActivos();
+
+        return compact('kpis', 'topClientes', 'topProductos', 'topVendedores', 'evolucion', 'evolucionPorUsuario', 'usuarios', 'fechaInicio', 'fechaFin');
     }
 
     public function reportePdf(): void

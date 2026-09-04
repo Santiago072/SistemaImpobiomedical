@@ -15,6 +15,11 @@ class EstadisticaModel
         $this->db = $conexion;
     }
 
+    public function getDbConnection(): \PDO
+    {
+        return $this->db;
+    }
+
     // ── 1. KPIs Generales ───────────────────────────────────────────────────
     public function getKpisGenerales(?string $fecha_inicio = null, ?string $fecha_fin = null): array
     {
@@ -114,20 +119,23 @@ class EstadisticaModel
         return $kpis;
     }
 
-    // ── 2. Top Clientes ──────────────────────────────────────────────────────
+    // ── 2. Top Clientes (por Monto Vendido $$) ─────────────────────────────
     public function getTopClientes(int $limite = 5, ?string $fi = null, ?string $ff = null): array
     {
         $params = [];
-        $q = "SELECT cliente_nombre, COUNT(*) as cantidad
-              FROM cotizaciones
-              WHERE estado = 'finalizada' AND cliente_nombre != ''";
+        $q = "SELECT c.cliente_nombre, SUM(oi.cantidad * ci.precio) as total_comprado
+              FROM orden_compra_items oi
+              JOIN ordenes_compra o ON oi.orden_id = o.id
+              JOIN cotizacion_items ci ON oi.cotizacion_item_id = ci.id
+              JOIN cotizaciones c ON o.cotizacion_id = c.id
+              WHERE c.estado = 'finalizada' AND c.cliente_nombre != ''";
 
         if ($fi && $ff) {
-            $q .= " AND fecha_creacion BETWEEN :fi AND :ff";
+            $q .= " AND o.fecha BETWEEN :fi AND :ff";
             $params = [':fi' => "$fi 00:00:00", ':ff' => "$ff 23:59:59"];
         }
 
-        $q .= " GROUP BY cliente_nombre ORDER BY cantidad DESC LIMIT :limite";
+        $q .= " GROUP BY c.cliente_nombre ORDER BY total_comprado DESC LIMIT :limite";
         $stmt = $this->db->prepare($q);
         foreach ($params as $k => $v) {
             $stmt->bindValue($k, $v);
@@ -138,7 +146,7 @@ class EstadisticaModel
         $datos = ['labels' => [], 'data' => []];
         foreach ($stmt->fetchAll() as $row) {
             $datos['labels'][] = mb_substr($row['cliente_nombre'], 0, 45);
-            $datos['data'][]   = (int)$row['cantidad'];
+            $datos['data'][]   = (float)($row['total_comprado'] ?? 0);
         }
         return $datos;
     }
@@ -208,14 +216,22 @@ class EstadisticaModel
     }
 
     // ── 5. Evolución mensual: Cotizaciones Totales vs Concluidas ─────────────
-    public function getMetricasEvolucion(?string $fi = null, ?string $ff = null): array
+    public function getMetricasEvolucion(?string $fi = null, ?string $ff = null, ?int $usuario_id = null): array
     {
         $params = [];
+        $whereEvo = "";
+
         if ($fi && $ff) {
-            $whereEvo  = " AND c.fecha_creacion BETWEEN :fi AND :ff";
-            $params = [':fi' => "$fi 00:00:00", ':ff' => "$ff 23:59:59"];
+            $whereEvo .= " AND c.fecha_creacion BETWEEN :fi AND :ff";
+            $params[':fi'] = "$fi 00:00:00";
+            $params[':ff'] = "$ff 23:59:59";
         } else {
-            $whereEvo = " AND c.fecha_creacion >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
+            $whereEvo .= " AND c.fecha_creacion >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
+        }
+
+        if ($usuario_id && $usuario_id > 0) {
+            $whereEvo .= " AND c.usuario_id = :uid";
+            $params[':uid'] = $usuario_id;
         }
 
         $q = "SELECT
@@ -236,6 +252,47 @@ class EstadisticaModel
             $datos['concluidas'][]   = (int)$row['concluidas'];
         }
         return $datos;
+    }
+
+    /**
+     * Retorna la evolución mensual pre-calculada de todos los usuarios para alternar en JS
+     */
+    public function getEvolucionTodosUsuarios(?string $fi = null, ?string $ff = null): array
+    {
+        $params = [];
+        $whereEvo = "";
+        if ($fi && $ff) {
+            $whereEvo .= " AND c.fecha_creacion BETWEEN :fi AND :ff";
+            $params[':fi'] = "$fi 00:00:00";
+            $params[':ff'] = "$ff 23:59:59";
+        } else {
+            $whereEvo .= " AND c.fecha_creacion >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
+        }
+
+        $q = "SELECT
+                c.usuario_id,
+                DATE_FORMAT(c.fecha_creacion, '%Y-%m') as mes,
+                COUNT(c.id) as cotizaciones,
+                SUM(CASE WHEN c.estado_comercial = 'concluida' THEN 1 ELSE 0 END) as concluidas
+              FROM cotizaciones c
+              WHERE c.estado = 'finalizada' $whereEvo
+              GROUP BY c.usuario_id, mes ORDER BY mes ASC";
+
+        $stmt = $this->db->prepare($q);
+        $stmt->execute($params);
+
+        $res = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $uid = (int)$row['usuario_id'];
+            if (!isset($res[$uid])) {
+                $res[$uid] = [];
+            }
+            $res[$uid][$row['mes']] = [
+                'cotizaciones' => (int)$row['cotizaciones'],
+                'concluidas'   => (int)$row['concluidas'],
+            ];
+        }
+        return $res;
     }
 
     // ── 6. Datos completos para exportar PDF de Reporte ─────────────────────

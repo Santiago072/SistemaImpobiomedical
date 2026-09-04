@@ -230,14 +230,14 @@ table { width:100%; border-collapse:collapse; }
   <tr>
     <!-- Top Clientes -->
     <td class="col-l">
-      <h2>Top Clientes Recurrentes</h2>
+      <h2>Top Clientes (Monto Vendido $$)</h2>
       <table class="top-table">
         <thead>
           <tr>
-            <th style="width:22px;">#</th>
+            <th style="width:20px;">#</th>
             <th>Cliente</th>
-            <th style="width:32%;">Frecuencia</th>
-            <th style="width:35px; text-align:right;">Cot.</th>
+            <th style="width:25%;">Proporción</th>
+            <th style="width:65px; text-align:right;">Monto</th>
           </tr>
         </thead>
         <tbody>
@@ -250,10 +250,10 @@ table { width:100%; border-collapse:collapse; }
             <td><?= htmlspecialchars($label) ?></td>
             <td>
               <div class="bar-outer">
-                <div class="bar-inner" style="width:<?= barPct($topClientes['data'][$i], $maxClientes) ?>%;"></div>
+                <div class="bar-inner" style="width:<?= barPct((int)$topClientes['data'][$i], (int)$maxClientes) ?>%;"></div>
               </div>
             </td>
-            <td style="text-align:right; font-weight:bold; color:#0f172a;"><?= $topClientes['data'][$i] ?></td>
+            <td style="text-align:right; font-weight:bold; color:#0f172a; font-size:7.5px;"><?= fmtR($topClientes['data'][$i]) ?></td>
           </tr>
           <?php endforeach; ?>
           <?php endif; ?>

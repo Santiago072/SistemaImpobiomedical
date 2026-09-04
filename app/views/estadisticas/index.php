@@ -85,9 +85,24 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         <!-- Gráficos -->
         <div class="charts-grid">
             
-            <!-- Rendimiento Mensual (Barras y Líneas) -->
+            <!-- Rendimiento Mensual (Barras y Líneas con Selector de Vendedor) -->
             <div class="chart-container">
-                <h2 class="section-title"><i class="bi bi-graph-up"></i> Evolución Mensual: Cotizaciones Totales vs Concluidas</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
+                    <h2 class="section-title" style="margin: 0; border: none; padding: 0;">
+                        <i class="bi bi-graph-up"></i> Evolución Mensual: Cotizaciones Totales vs Concluidas
+                    </h2>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="selectVendedorEvolucion" style="font-size: 12px; font-weight: 600; color: #4b5563;">Vendedor:</label>
+                        <select id="selectVendedorEvolucion" style="padding: 6px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 12.5px; font-weight: 500; color: #1e293b; background: #f8fafc; outline: none; cursor: pointer;">
+                            <option value="todos">Todos los usuarios</option>
+                            <?php if (!empty($usuarios)): ?>
+                                <?php foreach ($usuarios as $u): ?>
+                                    <option value="<?= (int)$u['id'] ?>"><?= htmlspecialchars($u['nombre']) ?></option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                </div>
                 <div class="chart-wrapper chart-wrapper-lg">
                     <canvas id="evolucionChart"></canvas>
                 </div>
@@ -101,9 +116,9 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 </div>
             </div>
 
-            <!-- Top Clientes (Barras Horizontales) -->
+            <!-- Top Clientes por Monto Vendido (Barras Horizontales) -->
             <div class="chart-container">
-                <h2 class="section-title">Top 5 Clientes Recurrentes</h2>
+                <h2 class="section-title"><i class="bi bi-cash-stack" style="color: #8b5cf6;"></i> Top 5 Clientes (Monto Vendido $$)</h2>
                 <div class="chart-wrapper chart-wrapper-md">
                     <canvas id="clientesChart"></canvas>
                 </div>
@@ -140,10 +155,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ── 1. Gráfico de Evolución (Cotizaciones Totales vs Concluidas) ──
     const ctxEvolucion = document.getElementById('evolucionChart').getContext('2d');
-    const evolucionData = <?= json_encode($evolucion) ?>;
-    const labelsEvolucion = (evolucionData.meses || []).map(formatMes);
+    const evolucionGeneral = <?= json_encode($evolucion) ?>;
+    const evolucionPorUsuario = <?= json_encode($evolucionPorUsuario ?? []) ?>;
+    const mesesBase = evolucionGeneral.meses || [];
+    const labelsEvolucion = mesesBase.map(formatMes);
 
-    new Chart(ctxEvolucion, {
+    const chartEvolucion = new Chart(ctxEvolucion, {
         type: 'bar',
         data: {
             labels: labelsEvolucion.length ? labelsEvolucion : ['Sin datos'],
@@ -151,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     type: 'bar',
                     label: 'Cotizaciones Totales',
-                    data: (evolucionData.cotizaciones && evolucionData.cotizaciones.length) ? evolucionData.cotizaciones : [0],
+                    data: (evolucionGeneral.cotizaciones && evolucionGeneral.cotizaciones.length) ? evolucionGeneral.cotizaciones : [0],
                     backgroundColor: 'rgba(59, 130, 246, 0.85)', // Azul vibrante
                     borderColor: '#2563eb',
                     borderWidth: 1.5,
@@ -161,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 {
                     type: 'bar',
                     label: 'Cotizaciones Concluidas 🟢',
-                    data: (evolucionData.concluidas && evolucionData.concluidas.length) ? evolucionData.concluidas : [0],
+                    data: (evolucionGeneral.concluidas && evolucionGeneral.concluidas.length) ? evolucionGeneral.concluidas : [0],
                     backgroundColor: 'rgba(16, 185, 129, 0.9)', // Verde esmeralda
                     borderColor: '#059669',
                     borderWidth: 1.5,
@@ -175,11 +192,38 @@ document.addEventListener('DOMContentLoaded', function() {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { position: 'top', labels: { font: { weight: 'bold' } } }
+                legend: { position: 'top', labels: { font: { weight: 'bold' } } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` ${context.dataset.label}: ${context.raw} cotización(es)`;
+                        }
+                    }
+                }
             },
             scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
         }
     });
+
+    // Event listener para el selector de vendedor
+    const selVendedor = document.getElementById('selectVendedorEvolucion');
+    if (selVendedor) {
+        selVendedor.addEventListener('change', function() {
+            const val = this.value;
+            if (val === 'todos') {
+                chartEvolucion.data.datasets[0].data = evolucionGeneral.cotizaciones || [0];
+                chartEvolucion.data.datasets[1].data = evolucionGeneral.concluidas || [0];
+            } else {
+                const uid = parseInt(val, 10);
+                const userEvo = evolucionPorUsuario[uid] || {};
+                const cotis = mesesBase.map(m => userEvo[m] ? userEvo[m].cotizaciones : 0);
+                const concs = mesesBase.map(m => userEvo[m] ? userEvo[m].concluidas : 0);
+                chartEvolucion.data.datasets[0].data = cotis;
+                chartEvolucion.data.datasets[1].data = concs;
+            }
+            chartEvolucion.update();
+        });
+    }
 
     // ── 2. Top Productos (Doughnut) ──
     const ctxProd = document.getElementById('productosChart').getContext('2d');
@@ -243,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // ── 3. Top Clientes (Bar Horizontal) ──
+    // ── 3. Top Clientes (Monto Vendido $$ - Bar Horizontal) ──
     const ctxClientes = document.getElementById('clientesChart').getContext('2d');
     const clientData = <?= json_encode($topClientes) ?>;
 
@@ -252,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: clientData.labels.length ? clientData.labels : ['Sin datos'],
             datasets: [{
-                label: 'Cotizaciones emitidas',
+                label: 'Monto Comprado ($)',
                 data: clientData.data.length ? clientData.data : [0],
                 backgroundColor: 'rgba(139, 92, 246, 0.85)', // Morado
                 borderColor: '#7c3aed',
@@ -276,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             return context[0].label || '';
                         },
                         label: function(context) {
-                            return ` Cotizaciones: ${context.raw}`;
+                            return ' Total Comprado: $' + Number(context.raw || 0).toLocaleString('es-CO');
                         }
                     }
                 }
@@ -298,7 +342,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 x: { 
                     beginAtZero: true, 
-                    ticks: { precision: 0, color: '#64748b' },
+                    ticks: { 
+                        color: '#64748b',
+                        callback: function(val) {
+                            if (val >= 1000000) return '$' + (val / 1000000).toFixed(1) + 'M';
+                            if (val >= 1000) return '$' + (val / 1000).toFixed(0) + 'k';
+                            return '$' + val;
+                        }
+                    },
                     grid: { color: '#f1f5f9' }
                 } 
             }
