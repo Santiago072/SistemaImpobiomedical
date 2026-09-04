@@ -93,29 +93,22 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 8.5px;
     color: #1f2937;
-    padding: 22px 26px 20px 26px;
+    padding: 20px 24px;
     background: #ffffff;
-}
-
-/* Master Table para encabezado repetitivo limpio */
-table.master-table {
-    width: 100%;
-    border-collapse: collapse;
-    border: none;
 }
 
 /* ── Encabezado Corporativo ── */
 .hdr-wrap {
     border: 1.5px solid #10757e;
     border-radius: 4px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     overflow: hidden;
     background: #ffffff;
 }
 
 /* ── Filtros Badges ── */
 .meta-bar {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     text-align: center;
 }
 .filter-badge {
@@ -137,6 +130,9 @@ table.prod-table {
     border: 1.5px solid #10757e;
     page-break-inside: auto;
 }
+table.prod-table thead {
+    display: table-header-group;
+}
 table.prod-table thead tr {
     background-color: #10757e;
 }
@@ -155,7 +151,7 @@ table.prod-table tr {
 }
 table.prod-table td {
     border: 1px solid #cbd5e1;
-    padding: 7px 8px;
+    padding: 6px 8px;
     vertical-align: middle;
     font-size: 8px;
 }
@@ -168,40 +164,37 @@ tr.cat-header-row td {
     background-color: #e6f4f5 !important;
     border-top: 1.5px solid #10757e;
     border-bottom: 1.5px solid #10757e;
+    border-left: 4px solid #10757e;
     padding: 6px 10px;
     font-size: 9.5px;
     font-weight: bold;
     color: #0d5c63;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.5px;
 }
 
 td.col-codigo {
     font-weight: bold;
     color: #0f766e;
     text-align: center;
-    width: 14%;
     font-size: 8.5px;
 }
 td.col-categoria {
     color: #475569;
     font-weight: bold;
     text-align: center;
-    width: 16%;
     font-size: 8px;
 }
 td.col-img {
     text-align: center;
     vertical-align: middle;
     padding: 4px;
-    width: 13%;
 }
 td.col-nombre {
     font-weight: bold;
     color: #1e293b;
     text-align: left;
     vertical-align: middle;
-    width: 25%;
     line-height: 1.35;
 }
 td.col-desc {
@@ -210,7 +203,6 @@ td.col-desc {
     color: #334155;
     line-height: 1.45;
     vertical-align: middle;
-    width: 32%;
     word-wrap: break-word;
 }
 
@@ -250,121 +242,117 @@ td.col-desc {
 </head>
 <body>
 
-<table class="master-table">
-  <thead style="display: table-header-group;">
+<?php
+$esCatalogoCompleto = isset($modo) && $modo === 'completo';
+$incluirImagenes = !$esCatalogoCompleto;
+$totalCols = $incluirImagenes ? 5 : 4;
+?>
+
+<!-- ENCABEZADO CORPORATIVO CON LOGOS -->
+<div class="hdr-wrap">
+  <div style="background:#10757e; height:4px;"></div>
+  <table style="width:100%; border-collapse:collapse; background:#ffffff;">
     <tr>
-      <td style="border:none; padding:0;">
-        <!-- ENCABEZADO CORPORATIVO CON LOGOS -->
-        <div class="hdr-wrap">
-          <div style="background:#10757e; height:4px;"></div>
-          <table style="width:100%; border-collapse:collapse; background:#ffffff;">
-            <tr>
-              <!-- COL 1: Logo IMPOMIN + Datos -->
-              <td style="width:34%; padding:6px 10px; vertical-align:top; border-right:1px solid #e2e8f0; text-align:left;">
-                <?php if ($imgLogoImp): ?>
-                  <img src="<?= $imgLogoImp ?>" style="height:28px; margin-bottom:2px;"><br>
-                <?php endif; ?>
-                <div style="font-size:9.5px; font-weight:bold; color:#1f3864;">IMPOMIN S.A.S</div>
-                <div style="font-size:7.5px; font-weight:bold; color:#10757e;">Nit. 900.535.843-3</div>
-                <div style="font-size:6.8px; color:#475569; margin-top:1px; line-height:1.2;">
-                  Cra 10 No. 9-80 Barrio Cooperativa - Florencia<br>
-                  Calle 33A No 71 A 27 - Laureles - Medellín<br>
-                  impobiomedical@impomin.com
-                </div>
-              </td>
-
-              <!-- COL 2: Título y Filtros -->
-              <td style="width:36%; text-align:center; vertical-align:middle; padding:5px 8px; border-right:1px solid #e2e8f0;">
-                <div style="font-size:12px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">Catálogo de Productos</div>
-                <div style="font-size:8.5px; font-weight:bold; color:#10757e; margin-top:1px;">Sistema Impobiomedical</div>
-                <div style="font-size:7.5px; color:#64748b; margin-top:3px;">Fecha: <?= $fechaSoloFecha ?> | Registros: <?= $totalRegistros ?></div>
-              </td>
-
-              <!-- COL 3: Logo IMPOBIOMEDICAL -->
-              <td style="width:30%; text-align:center; vertical-align:middle; padding:5px 8px;">
-                <?php if ($imgLogoPdf): ?>
-                  <img src="<?= $imgLogoPdf ?>" style="max-width:150px; max-height:55px;">
-                <?php endif; ?>
-              </td>
-            </tr>
-          </table>
-          <div style="background:#10757e; height:2px;"></div>
+      <!-- COL 1: Logo IMPOMIN + Datos -->
+      <td style="width:34%; padding:6px 10px; vertical-align:top; border-right:1px solid #e2e8f0; text-align:left;">
+        <?php if ($imgLogoImp): ?>
+          <img src="<?= $imgLogoImp ?>" style="height:28px; margin-bottom:2px;"><br>
+        <?php endif; ?>
+        <div style="font-size:9.5px; font-weight:bold; color:#1f3864;">IMPOMIN S.A.S</div>
+        <div style="font-size:7.5px; font-weight:bold; color:#10757e;">Nit. 900.535.843-3</div>
+        <div style="font-size:6.8px; color:#475569; margin-top:1px; line-height:1.2;">
+          Cra 10 No. 9-80 Barrio Cooperativa - Florencia<br>
+          Calle 33A No 71 A 27 - Laureles - Medellín<br>
+          impobiomedical@impomin.com
         </div>
+      </td>
 
-        <?php if (!empty($categoriaSel) || !empty($busqueda)): ?>
-        <div class="meta-bar">
-            <?php if (!empty($categoriaSel)): ?>
-                <span class="filter-badge">Categoría: <?= htmlspecialchars($categoriaSel) ?></span>
-            <?php endif; ?>
-            <?php if (!empty($busqueda)): ?>
-                <span class="filter-badge">Búsqueda: "<?= htmlspecialchars($busqueda) ?>"</span>
-            <?php endif; ?>
-        </div>
+      <!-- COL 2: Título y Filtros -->
+      <td style="width:36%; text-align:center; vertical-align:middle; padding:5px 8px; border-right:1px solid #e2e8f0;">
+        <div style="font-size:12px; font-weight:bold; color:#1f3864; text-transform:uppercase; letter-spacing:0.3px;">Catálogo de Productos</div>
+        <div style="font-size:8.5px; font-weight:bold; color:#10757e; margin-top:1px;">Sistema Impobiomedical</div>
+        <div style="font-size:7.5px; color:#64748b; margin-top:3px;">Fecha: <?= $fechaSoloFecha ?> | Registros: <?= $totalRegistros ?></div>
+      </td>
+
+      <!-- COL 3: Logo IMPOBIOMEDICAL -->
+      <td style="width:30%; text-align:center; vertical-align:middle; padding:5px 8px;">
+        <?php if ($imgLogoPdf): ?>
+          <img src="<?= $imgLogoPdf ?>" style="max-width:150px; max-height:55px;">
         <?php endif; ?>
       </td>
     </tr>
-  </thead>
+  </table>
+  <div style="background:#10757e; height:2px;"></div>
+</div>
 
-  <tbody>
-    <tr>
-      <td style="border:none; padding:0;">
-        <table class="prod-table">
-            <thead>
-                <tr>
-                    <th style="width: 14%;">Código</th>
-                    <th style="width: 16%;">Categoría</th>
-                    <th style="width: 12%;">Imagen</th>
-                    <th style="width: 26%;">Nombre</th>
-                    <th style="width: 32%;">Descripción</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php 
-                $ultimaCategoria = null;
-                foreach ($productos as $p): 
-                    $catActual = trim($p['categoria'] ?? '');
-                    if ($catActual === '') {
-                        $catActual = 'Sin Categoría';
-                    }
+<?php if (!empty($categoriaSel) || !empty($busqueda)): ?>
+<div class="meta-bar">
+    <?php if (!empty($categoriaSel)): ?>
+        <span class="filter-badge">Categoría: <?= htmlspecialchars($categoriaSel) ?></span>
+    <?php endif; ?>
+    <?php if (!empty($busqueda)): ?>
+        <span class="filter-badge">Búsqueda: "<?= htmlspecialchars($busqueda) ?>"</span>
+    <?php endif; ?>
+</div>
+<?php endif; ?>
 
-                    // Separador de categoría cuando cambia o inicia un grupo nuevo
-                    if ($catActual !== $ultimaCategoria):
-                        $ultimaCategoria = $catActual;
-                ?>
-                <tr class="cat-header-row">
-                    <td colspan="5">
-                        <span style="display:inline-block; vertical-align:middle;">
-                            &#9656; <?= htmlspecialchars($catActual) ?>
-                        </span>
-                    </td>
-                </tr>
+<table class="prod-table">
+    <thead>
+        <tr>
+            <th style="width: <?= $incluirImagenes ? '13%' : '14%' ?>;">Código</th>
+            <th style="width: <?= $incluirImagenes ? '15%' : '18%' ?>;">Categoría</th>
+            <?php if ($incluirImagenes): ?>
+            <th style="width: 12%;">Imagen</th>
+            <?php endif; ?>
+            <th style="width: <?= $incluirImagenes ? '25%' : '28%' ?>;">Nombre</th>
+            <th style="width: <?= $incluirImagenes ? '35%' : '40%' ?>;">Descripción</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php 
+        $ultimaCategoria = null;
+        foreach ($productos as $p): 
+            $catActual = trim($p['categoria'] ?? '');
+            if ($catActual === '') {
+                $catActual = 'Sin Categoría';
+            }
+
+            // Separador de categoría cuando cambia o inicia un grupo nuevo
+            if ($catActual !== $ultimaCategoria):
+                $ultimaCategoria = $catActual;
+        ?>
+        <tr class="cat-header-row">
+            <td colspan="<?= $totalCols ?>">
+                &bull; <?= htmlspecialchars(mb_strtoupper($catActual)) ?>
+            </td>
+        </tr>
+        <?php endif; ?>
+        <?php 
+            $imgProd = '';
+            if ($incluirImagenes) {
+                $fotoNombre = $p['foto'] ?? '';
+                if (!empty($fotoNombre) && file_exists($uploadsDir . $fotoNombre)) {
+                    $imgProd = imgBase64($uploadsDir . $fotoNombre, 90, 90);
+                }
+            }
+        ?>
+        <tr>
+            <td class="col-codigo"><?= htmlspecialchars($p['codigo_producto'] ?? '') ?></td>
+            <td class="col-categoria"><?= htmlspecialchars($p['categoria'] ?? '') ?></td>
+            <?php if ($incluirImagenes): ?>
+            <td class="col-img">
+                <?php if ($imgProd): ?>
+                    <img src="<?= $imgProd ?>" class="img-thumb">
+                <?php else: ?>
+                    <span class="no-img">Sin imagen</span>
                 <?php endif; ?>
-                <?php 
-                    $fotoNombre = $p['foto'] ?? '';
-                    $imgProd = '';
-                    if (!empty($fotoNombre) && file_exists($uploadsDir . $fotoNombre)) {
-                        $imgProd = imgBase64($uploadsDir . $fotoNombre, 90, 90);
-                    }
-                ?>
-                <tr>
-                    <td class="col-codigo"><?= htmlspecialchars($p['codigo_producto'] ?? '') ?></td>
-                    <td class="col-categoria"><?= htmlspecialchars($p['categoria'] ?? '') ?></td>
-                    <td class="col-img">
-                        <?php if ($imgProd): ?>
-                            <img src="<?= $imgProd ?>" class="img-thumb">
-                        <?php else: ?>
-                            <span class="no-img">Sin imagen</span>
-                        <?php endif; ?>
-                    </td>
-                    <td class="col-nombre"><?= htmlspecialchars($p['titulo'] ?? '') ?></td>
-                    <td class="col-desc"><?= nl2br(htmlspecialchars($p['descripcion'] ?? '')) ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-      </td>
-    </tr>
-  </tbody>
+            </td>
+            <?php endif; ?>
+            <td class="col-nombre"><?= htmlspecialchars($p['titulo'] ?? '') ?></td>
+            <td class="col-desc"><?= nl2br(htmlspecialchars($p['descripcion'] ?? '')) ?></td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
 </table>
 
 <table class="footer-table">
