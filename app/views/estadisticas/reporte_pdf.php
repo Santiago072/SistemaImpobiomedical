@@ -137,6 +137,13 @@ table { width:100%; border-collapse:collapse; }
 
 .section-spacer { height: 12px; }
 
+/* ── Ventas Mensuales por Cliente ── */
+.mes-badge { display: inline-block; background: #1f3864; color: #ffffff; padding: 2px 7px; border-radius: 4px; font-weight: bold; font-size: 8px; }
+.tbl-mes-cliente th { background: #1f3864; color: #ffffff; padding: 5px 8px; font-size: 8px; text-align: left; font-weight: bold; }
+.tbl-mes-cliente td { padding: 4.5px 8px; border-bottom: 1px solid #e2e8f0; font-size: 8px; vertical-align: middle; }
+.tbl-mes-cliente tr:nth-child(even) td { background: #f8fafc; }
+.tbl-mes-header-td { background: #f1f5f9 !important; font-weight: bold; color: #1e293b; border-top: 1.5px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 6px 8px !important; }
+
 /* ── Footer ── */
 .footer-table { margin-top: 14px; border-top: 1px solid #cbd5e1; padding-top: 5px; }
 .footer-table td { font-size: 7.5px; color: #64748b; }
@@ -408,6 +415,71 @@ table { width:100%; border-collapse:collapse; }
   </tfoot>
   <?php endif; ?>
 </table>
+
+<div class="section-spacer"></div>
+
+<!-- ══ Ventas por Cliente por Mes (Monto y % del Mes) ══ -->
+<h2>Ventas a Clientes por Mes (Desglose y % de Participación Mensual)</h2>
+<?php if (empty($ventasClientesMes['meses'])): ?>
+<table class="top-table">
+  <tr><td style="text-align:center; color:#9ca3af; padding:10px;">Sin ventas registradas por cliente en este período</td></tr>
+</table>
+<?php else: ?>
+<table class="tbl-mes-cliente" style="width:100%;">
+  <thead>
+    <tr>
+      <th style="width:22px;">#</th>
+      <th>Cliente</th>
+      <th style="width:24%;">Proporción</th>
+      <th style="width:38px; text-align:center;">% Mes</th>
+      <th style="width:80px; text-align:right;">Monto Vendido</th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php 
+    // Mostrar los meses más recientes primero
+    $mesesOrdenados = array_reverse($ventasClientesMes['meses']);
+    foreach ($mesesOrdenados as $mKey):
+        $clientesDelMes = $ventasClientesMes['porMes'][$mKey] ?? [];
+        if (empty($clientesDelMes)) continue;
+
+        // Calcular el total vendido en este mes específico
+        $totalMesVendido = array_sum(array_column($clientesDelMes, 'monto'));
+        $maxMontoMes = !empty($clientesDelMes) ? max(array_column($clientesDelMes, 'monto')) : 1;
+
+        // Formatear nombre de mes (ej. Ene 2026)
+        $partesM = explode('-', $mKey);
+        $nombresM = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        $labelMes = isset($partesM[1]) ? ($nombresM[(int)$partesM[1] - 1] . ' ' . $partesM[0]) : $mKey;
+    ?>
+    <tr>
+      <td colspan="5" class="tbl-mes-header-td">
+        <span class="mes-badge"><?= htmlspecialchars($labelMes) ?></span>
+        <span style="font-size:8px; color:#475569; margin-left:8px; font-weight:normal;">
+          Total facturado en el mes: <strong style="color:#0f172a;"><?= fmtR($totalMesVendido) ?></strong> (<?= count($clientesDelMes) ?> cliente<?= count($clientesDelMes) > 1 ? 's' : '' ?>)
+        </span>
+      </td>
+    </tr>
+    <?php foreach ($clientesDelMes as $idx => $c): 
+        $montoC = (float)($c['monto'] ?? 0);
+        $pctC   = $totalMesVendido > 0 ? round(($montoC / $totalMesVendido) * 100, 1) : 0;
+    ?>
+    <tr>
+      <td style="font-weight:bold; color:#10757e;"><?= $idx + 1 ?></td>
+      <td><?= htmlspecialchars($c['cliente']) ?></td>
+      <td>
+        <div class="bar-outer">
+          <div class="bar-inner" style="width:<?= barPct((int)$montoC, (int)$maxMontoMes) ?>%;"></div>
+        </div>
+      </td>
+      <td style="text-align:center; font-weight:bold; color:#059669; font-size:7.5px;"><?= number_format($pctC, 1, ',', '.') ?>%</td>
+      <td style="text-align:right; font-weight:bold; color:#0f172a; font-size:7.5px;"><?= fmtR($montoC) ?></td>
+    </tr>
+    <?php endforeach; ?>
+    <?php endforeach; ?>
+  </tbody>
+</table>
+<?php endif; ?>
 
 <!-- ══ FOOTER ══ -->
 <table class="footer-table">
