@@ -106,6 +106,9 @@ $imgLogoImp = imgBase64($logoDir . 'logoimp.png');
 $fechaSoloFecha = date('d/m/Y');
 $totalRegistros = count($productos ?? []);
 
+// Diagnóstico: registrar cuántos productos se van a renderizar
+error_log('[PDF_CATALOGO] Iniciando generacion. Productos: ' . $totalRegistros . ' | Memoria: ' . round(memory_get_usage()/1024/1024, 1) . 'MB');
+
 ob_start();
 ?>
 <!DOCTYPE html>
@@ -424,6 +427,15 @@ $totalCols = 4;
 <?php
 $html = ob_get_clean();
 
+// Diagnóstico: si el HTML quedó vacío, registrarlo en el log y usar HTML de emergencia
+if (empty($html)) {
+    error_log('[PDF_CATALOGO] ERROR: html vacio tras ob_get_clean. Productos: ' . $totalRegistros . ' | Memoria: ' . round(memory_get_usage()/1024/1024, 1) . 'MB');
+    // HTML de emergencia para no devolver PDF en blanco
+    $html = '<!DOCTYPE html><html><body><p style="font-family:Arial;font-size:12px;color:#dc2626;">Error interno al generar el catálogo. Revise los logs del servidor.</p></body></html>';
+} else {
+    error_log('[PDF_CATALOGO] HTML generado OK: ' . strlen($html) . ' bytes | Memoria: ' . round(memory_get_usage()/1024/1024, 1) . 'MB');
+}
+
 $options = new Options();
 $options->set('isRemoteEnabled', false);
 $options->set('isPhpEnabled', false);
@@ -436,20 +448,26 @@ $dompdf->setPaper('A4', 'portrait');
 
 try {
     $dompdf->render();
+    error_log('[PDF_CATALOGO] Render DomPDF exitoso. Memoria final: ' . round(memory_get_usage()/1024/1024, 1) . 'MB');
 } catch (\Throwable $e) {
-    error_log('Error renderizando catalogo PDF: ' . $e->getMessage());
+    error_log('[PDF_CATALOGO] Error render con imgs: ' . $e->getMessage());
+    // Fallback 1: sin imagenes de uploads (quita solo imagenes de productos)
     $htmlSinImgProd = preg_replace('/<img[^>]+uploads\/[^>]+>/i', '', $html);
     try {
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($htmlSinImgProd, 'UTF-8');
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
+        error_log('[PDF_CATALOGO] Fallback1 (sin imgs producto) exitoso.');
     } catch (\Throwable $e2) {
+        error_log('[PDF_CATALOGO] Error fallback1: ' . $e2->getMessage());
+        // Fallback 2: sin ninguna imagen
         $htmlSinImg = preg_replace('/<img[^>]+>/i', '', $html);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($htmlSinImg, 'UTF-8');
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
+        error_log('[PDF_CATALOGO] Fallback2 (sin toda img) aplicado.');
     }
 }
 

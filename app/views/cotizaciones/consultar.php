@@ -131,7 +131,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                     <option value="descartada" <?= $estCom === 'descartada' ? 'selected' : '' ?>>🔴 Descartada</option>
                                 </select>
                                 <div class="cot-fecha-cambio-lbl" style="font-size:10px; color:#64748b; margin-top:4px; font-weight:500;">
-                                    <?php if (!empty($cot['fecha_cambio_estado'])): ?>
+                                    <?php if (!empty($cot['fecha_cambio_estado']) && $estCom !== 'pendiente'): ?>
                                         <i class="bi bi-clock-history"></i> <?= date('d/m/Y H:i', strtotime($cot['fecha_cambio_estado'])) ?>
                                     <?php else: ?>
                                         <span style="color:#94a3b8;">Sin cambio</span>
