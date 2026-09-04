@@ -13,6 +13,8 @@ require_once dirname(__DIR__, 2) . '/config/seguridad.php';
 class CotizacionController
 {
     private CotizacionModel   $model;
+    private ProductoModel     $productoModel;
+    private ClienteModel      $clienteModel;
     private FileUploadService $uploader;
     private ItemCotizacionService $itemService;
     private FinalizarCotizacionService $finalizarService;

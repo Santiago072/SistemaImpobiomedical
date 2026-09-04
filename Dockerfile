@@ -5,13 +5,14 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libwebp-dev \
     libzip-dev \
     libonig-dev \
     libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Configurar e instalar extensiones PHP
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+# Configurar e instalar extensiones PHP (GD con soporte JPEG, FreeType y WebP)
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install mysqli pdo pdo_mysql gd mbstring intl zip
 
 # Instalar Caddy, Composer y dependencias del sistema
