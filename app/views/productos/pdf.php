@@ -173,33 +173,47 @@ tr.cat-header-row td {
     letter-spacing: 0.5px;
 }
 
-td.col-codigo {
-    font-weight: bold;
-    color: #0f766e;
-    text-align: center;
-    font-size: 8.5px;
-}
-td.col-categoria {
-    color: #475569;
-    font-weight: bold;
-    text-align: center;
-    font-size: 8px;
-}
-td.col-img {
-    text-align: center;
-    vertical-align: middle;
-    padding: 4px;
-}
 td.col-nombre {
     font-weight: bold;
     color: #1e293b;
     text-align: left;
     vertical-align: middle;
     line-height: 1.35;
+    font-size: 8.5px;
+}
+td.col-iva {
+    text-align: center;
+    vertical-align: middle;
+    font-weight: bold;
+    font-size: 8px;
+}
+.badge-iva-si {
+    display: inline-block;
+    background-color: #e6f4ea;
+    color: #137333;
+    border: 1px solid #ceead6;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 7.5px;
+}
+.badge-iva-no {
+    display: inline-block;
+    background-color: #f1f3f4;
+    color: #5f6368;
+    border: 1px solid #dadce0;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 7.5px;
+}
+td.col-img {
+    text-align: center;
+    vertical-align: middle;
+    padding: 4px;
 }
 td.col-desc {
     text-align: left;
-    font-size: 7.8px;
+    font-size: 8px;
     color: #334155;
     line-height: 1.45;
     vertical-align: middle;
@@ -245,7 +259,7 @@ td.col-desc {
 <?php
 $esCatalogoCompleto = isset($modo) && $modo === 'completo';
 $incluirImagenes = !$esCatalogoCompleto;
-$totalCols = $incluirImagenes ? 5 : 4;
+$totalCols = $incluirImagenes ? 4 : 3;
 ?>
 
 <!-- ENCABEZADO CORPORATIVO CON LOGOS -->
@@ -299,13 +313,12 @@ $totalCols = $incluirImagenes ? 5 : 4;
 <table class="prod-table">
     <thead>
         <tr>
-            <th style="width: <?= $incluirImagenes ? '13%' : '14%' ?>;">Código</th>
-            <th style="width: <?= $incluirImagenes ? '15%' : '18%' ?>;">Categoría</th>
+            <th style="width: <?= $incluirImagenes ? '30%' : '36%' ?>;">Nombre</th>
+            <th style="width: <?= $incluirImagenes ? '12%' : '14%' ?>;">Aplica IVA</th>
             <?php if ($incluirImagenes): ?>
-            <th style="width: 12%;">Imagen</th>
+            <th style="width: 14%;">Imagen</th>
             <?php endif; ?>
-            <th style="width: <?= $incluirImagenes ? '25%' : '28%' ?>;">Nombre</th>
-            <th style="width: <?= $incluirImagenes ? '35%' : '40%' ?>;">Descripción</th>
+            <th style="width: <?= $incluirImagenes ? '44%' : '50%' ?>;">Descripción</th>
         </tr>
     </thead>
     <tbody>
@@ -335,10 +348,20 @@ $totalCols = $incluirImagenes ? 5 : 4;
                     $imgProd = imgBase64($uploadsDir . $fotoNombre, 90, 90);
                 }
             }
+            $aplicaIva = strtolower($p['iva'] ?? '') === 'si';
+            $porcIva = (float)($p['porcentaje_iva'] ?? 19);
         ?>
         <tr>
-            <td class="col-codigo"><?= htmlspecialchars($p['codigo_producto'] ?? '') ?></td>
-            <td class="col-categoria"><?= htmlspecialchars($p['categoria'] ?? '') ?></td>
+            <td class="col-nombre">
+                <?= htmlspecialchars($p['titulo'] ?? '') ?>
+            </td>
+            <td class="col-iva">
+                <?php if ($aplicaIva): ?>
+                    <span class="badge-iva-si">Sí (<?= $porcIva ?>%)</span>
+                <?php else: ?>
+                    <span class="badge-iva-no">No</span>
+                <?php endif; ?>
+            </td>
             <?php if ($incluirImagenes): ?>
             <td class="col-img">
                 <?php if ($imgProd): ?>
@@ -348,7 +371,6 @@ $totalCols = $incluirImagenes ? 5 : 4;
                 <?php endif; ?>
             </td>
             <?php endif; ?>
-            <td class="col-nombre"><?= htmlspecialchars($p['titulo'] ?? '') ?></td>
             <td class="col-desc"><?= nl2br(htmlspecialchars($p['descripcion'] ?? '')) ?></td>
         </tr>
         <?php endforeach; ?>
