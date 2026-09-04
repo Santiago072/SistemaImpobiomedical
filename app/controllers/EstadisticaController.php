@@ -28,11 +28,13 @@ class EstadisticaController
         $evolucion            = $this->model->getMetricasEvolucion($fechaInicio, $fechaFin);
         $evolucionPorUsuario  = $this->model->getEvolucionTodosUsuarios($fechaInicio, $fechaFin);
 
+        $ventasClientesMes    = $this->model->getVentasMensualesPorCliente($fechaInicio, $fechaFin);
+
         require_once dirname(__DIR__) . '/models/UsuarioModel.php';
         $usuarioModel = new UsuarioModel($this->model->getDbConnection());
         $usuarios     = $usuarioModel->listarActivos();
 
-        return compact('kpis', 'topClientes', 'topProductos', 'topVendedores', 'evolucion', 'evolucionPorUsuario', 'usuarios', 'fechaInicio', 'fechaFin');
+        return compact('kpis', 'topClientes', 'topProductos', 'topVendedores', 'evolucion', 'evolucionPorUsuario', 'usuarios', 'ventasClientesMes', 'fechaInicio', 'fechaFin');
     }
 
     public function reportePdf(): void

@@ -131,6 +131,42 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                     <canvas id="vendedoresChart"></canvas>
                 </div>
             </div>
+
+            <!-- Ventas a Clientes por Mes (Valor Total Vendido $$) -->
+            <div class="chart-container" style="grid-column: 1 / -1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
+                    <div>
+                        <h2 class="section-title" style="margin: 0; border: none; padding: 0;">
+                            <i class="bi bi-wallet2" style="color: #059669;"></i> Ventas por Cliente por Mes (Monto Real Vendido $$)
+                        </h2>
+                        <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b;">
+                            Visualiza a qué clientes se les vendió y el valor total facturado en cada período mensual.
+                        </p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="selectMesVentasClientes" style="font-size: 12px; font-weight: 600; color: #4b5563;">Mes:</label>
+                        <select id="selectMesVentasClientes" style="padding: 6px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 12.5px; font-weight: 600; color: #0f172a; background: #f8fafc; outline: none; cursor: pointer;">
+                            <?php if (!empty($ventasClientesMes['meses'])): ?>
+                                <?php 
+                                // Invertir para que el mes más reciente aparezca primero
+                                $mesesRev = array_reverse($ventasClientesMes['meses']);
+                                foreach ($mesesRev as $m): 
+                                    $parts = explode('-', $m);
+                                    $nombresMes = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+                                    $nombreMes = isset($parts[1]) ? ($nombresMes[(int)$parts[1] - 1] . ' ' . $parts[0]) : $m;
+                                ?>
+                                    <option value="<?= htmlspecialchars($m) ?>"><?= htmlspecialchars($nombreMes) ?></option>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <option value="">Sin datos de ventas</option>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-wrapper chart-wrapper-lg" style="min-height: 350px;">
+                    <canvas id="ventasClientesMesChart"></canvas>
+                </div>
+            </div>
             
         </div>
 
@@ -389,6 +425,99 @@ document.addEventListener('DOMContentLoaded', function() {
             scales: { x: { beginAtZero: true } }
         }
     });
+
+    // ── 5. Ventas por Cliente por Mes (Gráfico de Barras con Valor Total $$) ──
+    const canvasVentasMes = document.getElementById('ventasClientesMesChart');
+    if (canvasVentasMes) {
+        const ctxVentasMes = canvasVentasMes.getContext('2d');
+        const dataVentasMes = <?= json_encode($ventasClientesMes['porMes'] ?? []) ?>;
+        const selMes = document.getElementById('selectMesVentasClientes');
+
+        const obtenerDatosMes = (mes) => {
+            const items = dataVentasMes[mes] || [];
+            return {
+                labels: items.map(it => it.cliente),
+                montos: items.map(it => it.monto)
+            };
+        };
+
+        const mesInicial = selMes ? selMes.value : '';
+        const inicial = obtenerDatosMes(mesInicial);
+
+        const chartVentasMes = new Chart(ctxVentasMes, {
+            type: 'bar',
+            data: {
+                labels: inicial.labels.length ? inicial.labels : ['Sin ventas en este período'],
+                datasets: [{
+                    label: 'Total Vendido ($)',
+                    data: inicial.montos.length ? inicial.montos : [0],
+                    backgroundColor: 'rgba(16, 185, 129, 0.85)', // Verde corporativo
+                    borderColor: '#059669',
+                    borderWidth: 1.5,
+                    borderRadius: 6,
+                    maxBarThickness: 42
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { top: 10, bottom: 10, left: 10, right: 15 }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label || '';
+                            },
+                            label: function(context) {
+                                return ' Monto Vendido: $' + Number(context.raw || 0).toLocaleString('es-CO');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: { size: 11, weight: '500' },
+                            color: '#334155',
+                            callback: function(val, index) {
+                                const label = this.getLabelForValue(val);
+                                if (typeof label === 'string' && label.length > 20) {
+                                    return label.substring(0, 18) + '...';
+                                }
+                                return label;
+                            }
+                        },
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#64748b',
+                            callback: function(val) {
+                                if (val >= 1000000) return '$' + (val / 1000000).toFixed(1) + 'M';
+                                if (val >= 1000) return '$' + (val / 1000).toFixed(0) + 'k';
+                                return '$' + val;
+                            }
+                        },
+                        grid: { color: '#f1f5f9' }
+                    }
+                }
+            }
+        });
+
+        if (selMes) {
+            selMes.addEventListener('change', function() {
+                const mesSel = this.value;
+                const d = obtenerDatosMes(mesSel);
+                chartVentasMes.data.labels = d.labels.length ? d.labels : ['Sin ventas en este período'];
+                chartVentasMes.data.datasets[0].data = d.montos.length ? d.montos : [0];
+                chartVentasMes.update();
+            });
+        }
+    }
 
 });
 </script>

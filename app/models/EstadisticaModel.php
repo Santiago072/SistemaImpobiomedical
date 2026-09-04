@@ -295,7 +295,60 @@ class EstadisticaModel
         return $res;
     }
 
-    // ── 6. Datos completos para exportar PDF de Reporte ─────────────────────
+    /**
+     * ── 6. Ventas mensuales por cliente (Valor total vendido $$ por mes y cliente) ──
+     */
+    public function getVentasMensualesPorCliente(?string $fi = null, ?string $ff = null): array
+    {
+        $params = [];
+        $where = "";
+        if ($fi && $ff) {
+            $where .= " AND o.fecha BETWEEN :fi AND :ff";
+            $params[':fi'] = "$fi 00:00:00";
+            $params[':ff'] = "$ff 23:59:59";
+        } else {
+            $where .= " AND o.fecha >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
+        }
+
+        $q = "SELECT
+                DATE_FORMAT(o.fecha, '%Y-%m') as mes,
+                c.cliente_nombre,
+                SUM(oi.cantidad * ci.precio) as total_vendido
+              FROM orden_compra_items oi
+              JOIN ordenes_compra o ON oi.orden_id = o.id
+              JOIN cotizacion_items ci ON oi.cotizacion_item_id = ci.id
+              JOIN cotizaciones c ON o.cotizacion_id = c.id
+              WHERE c.estado = 'finalizada' AND c.cliente_nombre != '' $where
+              GROUP BY mes, c.cliente_nombre
+              ORDER BY mes ASC, total_vendido DESC";
+
+        $stmt = $this->db->prepare($q);
+        $stmt->execute($params);
+
+        // Estructurar: lista de meses, lista de clientes por mes con sus montos
+        $meses = [];
+        $porMes = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $m = $row['mes'];
+            if (!in_array($m, $meses)) {
+                $meses[] = $m;
+            }
+            if (!isset($porMes[$m])) {
+                $porMes[$m] = [];
+            }
+            $porMes[$m][] = [
+                'cliente' => $row['cliente_nombre'],
+                'monto'   => (float)$row['total_vendido']
+            ];
+        }
+
+        return [
+            'meses'  => $meses,
+            'porMes' => $porMes
+        ];
+    }
+
+    // ── 7. Datos completos para exportar PDF de Reporte ─────────────────────
     public function getDatosReporte(?string $fi = null, ?string $ff = null): array
     {
         return [
@@ -304,6 +357,7 @@ class EstadisticaModel
             'topProductos'  => $this->getTopProductos(10, $fi, $ff),
             'topVendedores' => $this->getTopVendedores(10, $fi, $ff),
             'evolucion'     => $this->getMetricasEvolucion($fi, $ff),
+            'ventasClientesMes' => $this->getVentasMensualesPorCliente($fi, $ff),
         ];
     }
 }
