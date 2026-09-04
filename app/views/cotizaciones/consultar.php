@@ -81,7 +81,8 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <th>Fecha</th>
                         <th>Cliente / Entidad</th>
                         <th>Ciudad</th>
-                        <th class="text-center">Estado</th>
+                        <th class="text-center">Estado Comercial</th>
+                        <th class="text-center">Entrega</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -90,13 +91,30 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <?php foreach ($cotizaciones as $cot): 
                             $estCom = $cot['estado_comercial'] ?? 'pendiente';
                             $badgeClass = 'badge-gold';
-                            $badgeLabel = 'Pendiente';
                             if ($estCom === 'concluida') {
                                 $badgeClass = 'badge-green';
-                                $badgeLabel = 'Concluida';
                             } elseif ($estCom === 'descartada') {
                                 $badgeClass = 'badge-red';
-                                $badgeLabel = 'Descartada';
+                            }
+                            
+                            $estEnt = $cot['estado_entrega'] ?? 'pendiente';
+                            $entClass = 'badge-gold';
+                            if ($estEnt === 'en_transito') {
+                                $entClass = 'badge-blue';
+                            } elseif ($estEnt === 'entregado') {
+                                $entClass = 'badge-green';
+                            }
+                            
+                            // Calcular días de entrega si ya fue entregado
+                            $diasEntregaTxt = '';
+                            if ($estEnt === 'entregado' && !empty($cot['fecha_entrega'])) {
+                                $fBase = !empty($cot['fecha_cambio_estado']) ? $cot['fecha_cambio_estado'] : $cot['fecha_creacion'];
+                                $tB = strtotime($fBase);
+                                $tE = strtotime($cot['fecha_entrega']);
+                                if ($tB && $tE && $tE >= $tB) {
+                                    $diasDiff = (int)round(($tE - $tB) / 86400);
+                                    $diasEntregaTxt = $diasDiff === 1 ? ' (1 día)' : " ($diasDiff días)";
+                                }
                             }
                         ?>
                         <tr>
@@ -112,6 +130,31 @@ include dirname(__DIR__) . '/layout/menu.php';
                                     <option value="concluida" <?= $estCom === 'concluida' ? 'selected' : '' ?>>🟢 Concluida</option>
                                     <option value="descartada" <?= $estCom === 'descartada' ? 'selected' : '' ?>>🔴 Descartada</option>
                                 </select>
+                                <div class="cot-fecha-cambio-lbl" style="font-size:10px; color:#64748b; margin-top:4px; font-weight:500;">
+                                    <?php if (!empty($cot['fecha_cambio_estado'])): ?>
+                                        <i class="bi bi-clock-history"></i> <?= date('d/m/Y H:i', strtotime($cot['fecha_cambio_estado'])) ?>
+                                    <?php else: ?>
+                                        <span style="color:#94a3b8;">Sin cambio</span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <select class="estado-entrega-select <?= $entClass ?>" 
+                                        data-id="<?= (int)$cot['id'] ?>"
+                                        onchange="cambiarEstadoEntrega(this)">
+                                    <option value="pendiente" <?= $estEnt === 'pendiente' ? 'selected' : '' ?>>🟡 Pendiente</option>
+                                    <option value="en_transito" <?= $estEnt === 'en_transito' ? 'selected' : '' ?>>🔵 En Tránsito</option>
+                                    <option value="entregado" <?= $estEnt === 'entregado' ? 'selected' : '' ?>>🟢 Entregado</option>
+                                </select>
+                                <div class="cot-tiempo-entrega-lbl" style="font-size:10px; color:#15803d; margin-top:4px; font-weight:600;">
+                                    <?php if ($estEnt === 'entregado' && !empty($cot['fecha_entrega'])): ?>
+                                        <i class="bi bi-check2-all"></i> <?= date('d/m/Y', strtotime($cot['fecha_entrega'])) ?><?= $diasEntregaTxt ?>
+                                    <?php elseif ($estEnt === 'en_transito'): ?>
+                                        <span style="color:#2563eb;"><i class="bi bi-truck"></i> En camino</span>
+                                    <?php else: ?>
+                                        <span style="color:#94a3b8;">Por despachar</span>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                             <td>
                                 <div class="mod-actions">
@@ -160,14 +203,14 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <?php endforeach; ?>
                     <?php elseif (isset($_GET['buscando'])): ?>
                     <tr>
-                        <td colspan="7" class="mod-empty">
+                        <td colspan="8" class="mod-empty">
                             <i class="bi bi-search"></i>
                             <p>No se encontraron cotizaciones.</p>
                         </td>
                     </tr>
                     <?php else: ?>
                     <tr>
-                        <td colspan="7" class="mod-empty">
+                        <td colspan="8" class="mod-empty">
                             <i class="bi bi-funnel"></i>
                             <p>Use los filtros de arriba para buscar cotizaciones.</p>
                         </td>
@@ -278,6 +321,12 @@ function cambiarEstadoComercial(select) {
             select.style.color = conf.color;
             select.style.background = conf.bg;
 
+            // Actualizar fecha debajo del select de estado comercial
+            const lblFecha = fila ? fila.querySelector('.cot-fecha-cambio-lbl') : null;
+            if (lblFecha && d.fecha_cambio) {
+                lblFecha.innerHTML = `<i class="bi bi-clock-history"></i> ${d.fecha_cambio}`;
+            }
+
             // Actualizar reactivamente el botón de Orden en la fila
             if (btnOrden) {
                 const numCot = btnOrden.getAttribute('data-cotizacion') || '';
@@ -314,6 +363,68 @@ function cambiarEstadoComercial(select) {
         select.disabled = false;
         select.style.opacity = '1';
         alert('Error de conexión al actualizar estado.');
+    });
+}
+
+function cambiarEstadoEntrega(select) {
+    const id = select.getAttribute('data-id');
+    const nuevoEstado = select.value;
+    const csrfToken = '<?= htmlspecialchars($csrf_token ?? '') ?>';
+    const fila = select.closest('tr');
+    const lblEntrega = fila ? fila.querySelector('.cot-tiempo-entrega-lbl') : null;
+
+    const estilosEntrega = {
+        'pendiente':   { color: '#ca8a04', bg: 'rgba(234,179,8,.15)' },
+        'en_transito': { color: '#2563eb', bg: 'rgba(37,99,235,.15)' },
+        'entregado':   { color: '#16a34a', bg: 'rgba(34,197,94,.15)' }
+    };
+
+    select.disabled = true;
+    select.style.opacity = '0.5';
+
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('estado_entrega', nuevoEstado);
+    formData.append('csrf_token', csrfToken);
+
+    fetch('<?= $basePath ?>?module=cotizaciones&action=cambiar_entrega', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(d => {
+        select.disabled = false;
+        select.style.opacity = '1';
+        if (d.status === 'success') {
+            const conf = estilosEntrega[nuevoEstado] || estilosEntrega['pendiente'];
+            select.style.borderColor = conf.color;
+            select.style.color = conf.color;
+            select.style.background = conf.bg;
+
+            if (lblEntrega) {
+                if (nuevoEstado === 'entregado') {
+                    const diasTxt = d.dias_entrega !== null ? (d.dias_entrega === 1 ? ' (1 día)' : ` (${d.dias_entrega} días)`) : '';
+                    lblEntrega.innerHTML = `<i class="bi bi-check2-all"></i> ${d.fecha_entrega || ''}${diasTxt}`;
+                    lblEntrega.style.color = '#15803d';
+                } else if (nuevoEstado === 'en_transito') {
+                    lblEntrega.innerHTML = `<span style="color:#2563eb;"><i class="bi bi-truck"></i> En camino</span>`;
+                } else {
+                    lblEntrega.innerHTML = `<span style="color:#94a3b8;">Por despachar</span>`;
+                }
+            }
+        } else {
+            alert('Error: ' + (d.message || 'No se pudo actualizar'));
+            window.location.reload();
+        }
+    })
+    .catch(err => {
+        select.disabled = false;
+        select.style.opacity = '1';
+        alert('Error de conexión al actualizar entrega.');
     });
 }
 

@@ -405,6 +405,9 @@ if ($module === 'cotizaciones') {
         case 'cambiar_estado':
             $ctrl->cambiarEstadoComercial();
             break;
+        case 'cambiar_entrega':
+            $ctrl->cambiarEstadoEntrega();
+            break;
         case 'estadisticas':
             require_once __DIR__ . '/app/controllers/EstadisticaController.php';
             require_once __DIR__ . '/app/models/EstadisticaModel.php';

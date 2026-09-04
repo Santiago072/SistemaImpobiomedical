@@ -208,7 +208,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: '#2563eb',
                     borderWidth: 1.5,
                     borderRadius: 5,
-                    maxBarThickness: 38
+                    maxBarThickness: 38,
+                    minBarLength: 5
                 },
                 {
                     type: 'bar',
@@ -218,7 +219,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: '#059669',
                     borderWidth: 1.5,
                     borderRadius: 5,
-                    maxBarThickness: 38
+                    maxBarThickness: 38,
+                    minBarLength: 5
                 }
             ]
         },

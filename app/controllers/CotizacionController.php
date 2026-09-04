@@ -520,9 +520,82 @@ class CotizacionController
         if ($esAjax) {
             header('Content-Type: application/json');
             if ($exito) {
-                echo json_encode(['status' => 'success', 'message' => 'Estado actualizado exitosamente', 'nuevo_estado' => $nuevoEstado]);
+                echo json_encode([
+                    'status' => 'success', 
+                    'message' => 'Estado actualizado exitosamente', 
+                    'nuevo_estado' => $nuevoEstado,
+                    'fecha_cambio' => date('Y-m-d H:i')
+                ]);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'No se pudo actualizar el estado de la cotización']);
+            }
+            exit();
+        }
+
+        header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&updated=1');
+        exit();
+    }
+
+    // ── CAMBIAR ESTADO DE ENTREGA (AJAX con CSRF y Rate Limit) ────────────────
+    public function cambiarEstadoEntrega(): void
+    {
+        verificar_autenticacion();
+        verificar_rate_limit(30, 60, 'cot_cambiar_entrega');
+
+        $esAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+                  strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'Token de seguridad inválido']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=csrf');
+            exit();
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        $nuevoEstado = sanitizar_entrada($_POST['estado_entrega'] ?? '');
+
+        if ($id <= 0 || !in_array($nuevoEstado, ['pendiente', 'en_transito', 'entregado'], true)) {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'Estado de entrega no válido']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=invalido');
+            exit();
+        }
+
+        $exito = $this->model->actualizarEstadoEntrega($id, $nuevoEstado);
+
+        if ($esAjax) {
+            header('Content-Type: application/json');
+            if ($exito) {
+                // Obtener datos frescos de la cotización para calcular días si está entregado
+                $cot = $this->model->buscarPorId($id);
+                $diasEntrega = null;
+                if ($nuevoEstado === 'entregado' && !empty($cot['fecha_entrega'])) {
+                    $fechaBase = !empty($cot['fecha_cambio_estado']) ? $cot['fecha_cambio_estado'] : $cot['fecha_creacion'];
+                    $tBase = strtotime($fechaBase);
+                    $tEntrega = strtotime($cot['fecha_entrega']);
+                    if ($tBase && $tEntrega && $tEntrega >= $tBase) {
+                        $diasEntrega = (int)round(($tEntrega - $tBase) / 86400);
+                    } else {
+                        $diasEntrega = 0;
+                    }
+                }
+                echo json_encode([
+                    'status' => 'success', 
+                    'message' => 'Estado de entrega actualizado', 
+                    'nuevo_estado' => $nuevoEstado,
+                    'fecha_entrega' => $nuevoEstado === 'entregado' ? date('Y-m-d H:i') : null,
+                    'dias_entrega' => $diasEntrega
+                ]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'No se pudo actualizar el estado de entrega']);
             }
             exit();
         }

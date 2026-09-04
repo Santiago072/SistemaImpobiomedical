@@ -415,7 +415,8 @@ class CotizacionModel
     }
 
     /**
-     * Actualiza el estado comercial de una cotización (pendiente, concluida, descartada).
+     * Actualiza el estado comercial de una cotización (pendiente, concluida, descartada)
+     * y guarda la marca de tiempo de cuándo ocurrió el cambio.
      */
     public function actualizarEstadoComercial(int $id, string $nuevoEstado): bool
     {
@@ -425,8 +426,44 @@ class CotizacionModel
         }
 
         $stmt = $this->db->prepare(
-            "UPDATE cotizaciones SET estado_comercial = :estado WHERE id = :id AND estado = 'finalizada'"
+            "UPDATE cotizaciones 
+             SET estado_comercial = :estado,
+                 fecha_cambio_estado = NOW()
+             WHERE id = :id AND estado = 'finalizada'"
         );
+        return $stmt->execute([
+            ':estado' => $nuevoEstado,
+            ':id'     => $id
+        ]);
+    }
+
+    /**
+     * Actualiza el estado de entrega (pendiente, en_transito, entregado).
+     * Si pasa a 'entregado', se registra fecha_entrega = NOW().
+     */
+    public function actualizarEstadoEntrega(int $id, string $nuevoEstado): bool
+    {
+        $estadosPermitidos = ['pendiente', 'en_transito', 'entregado'];
+        if (!in_array($nuevoEstado, $estadosPermitidos, true)) {
+            return false;
+        }
+
+        if ($nuevoEstado === 'entregado') {
+            $stmt = $this->db->prepare(
+                "UPDATE cotizaciones 
+                 SET estado_entrega = :estado,
+                     fecha_entrega = IFNULL(fecha_entrega, NOW())
+                 WHERE id = :id AND estado = 'finalizada'"
+            );
+        } else {
+            $stmt = $this->db->prepare(
+                "UPDATE cotizaciones 
+                 SET estado_entrega = :estado,
+                     fecha_entrega = NULL
+                 WHERE id = :id AND estado = 'finalizada'"
+            );
+        }
+
         return $stmt->execute([
             ':estado' => $nuevoEstado,
             ':id'     => $id

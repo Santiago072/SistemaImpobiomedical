@@ -174,8 +174,8 @@ class ProductoController
         verificar_autenticacion();
         verificar_rate_limit(15, 60, 'exportar_pdf_catalogo');
 
-        @ini_set('memory_limit', '512M');
-        @set_time_limit(180);
+        @ini_set('memory_limit', '1024M');
+        @set_time_limit(300);
 
         $modo = sanitizar_entrada($_POST['modo'] ?? $_GET['modo'] ?? '');
         $idsRaw = $_POST['ids'] ?? $_GET['ids'] ?? '';

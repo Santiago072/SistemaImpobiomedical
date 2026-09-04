@@ -21,9 +21,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     telefono      VARCHAR(20) NULL,
     cargo         VARCHAR(50) NULL,
     rol           ENUM('admin', 'compras', 'usuario') DEFAULT 'usuario',
-    estado        ENUM('activo', 'inactivo') DEFAULT 'activo',
-    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    estado        ENUM('activo', 'inactivo') DEFAULT 'activo'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ── Clientes ────────────────────────────────────────────────
@@ -38,7 +36,6 @@ CREATE TABLE IF NOT EXISTS clientes (
     telefono        VARCHAR(20) NOT NULL,
     correo          VARCHAR(100) NULL,
     estado          ENUM('activo', 'inactivo') DEFAULT 'activo',
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_cliente_nombre (nombre),
     INDEX idx_cliente_nit (nit)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -55,8 +52,6 @@ CREATE TABLE IF NOT EXISTS productos (
     codigo_producto VARCHAR(60) DEFAULT NULL,
     codigo_proveedor VARCHAR(60) DEFAULT NULL,
     estado          ENUM('activo', 'inactivo') DEFAULT 'activo',
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_producto_titulo (titulo)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -87,13 +82,14 @@ CREATE TABLE IF NOT EXISTS cotizaciones (
     observaciones        TEXT NULL,
     estado               ENUM('borrador', 'finalizada') DEFAULT 'borrador',
     estado_comercial     ENUM('pendiente', 'concluida', 'descartada') DEFAULT 'pendiente',
+    fecha_cambio_estado  DATETIME NULL DEFAULT NULL,
+    estado_entrega       ENUM('pendiente', 'en_transito', 'entregado') NOT NULL DEFAULT 'pendiente',
+    fecha_entrega        DATETIME NULL DEFAULT NULL,
     -- es_revision: diferencia borradores normales de clones temporales de modificación.
     -- Cuando el usuario hace "Modificar Cotización", se crea un clon con es_revision = 1.
     -- Esto evita que al re-iniciar sesión o navegar a otro módulo, el sistema recupere
     -- el clon en lugar del borrador real del usuario (es_revision = 0).
     es_revision          TINYINT(1) NOT NULL DEFAULT 0,
-    created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE SET NULL,
     INDEX idx_cotizacion_numero (numero_cotizacion),
@@ -161,8 +157,6 @@ CREATE TABLE IF NOT EXISTS ordenes_compra (
     banco_nombre         VARCHAR(100) DEFAULT NULL,
     banco_cuenta         VARCHAR(100) DEFAULT NULL,
     banco_tipo_cuenta    VARCHAR(100) DEFAULT NULL,
-    created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id) ON DELETE CASCADE,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     INDEX idx_orden_po (numero_po),

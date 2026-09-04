@@ -11,68 +11,94 @@ require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-if (!function_exists('imgBase64')) {
-    function imgBase64(string $ruta, int $maxWidth = 120, int $maxHeight = 120): string {
-        if (!file_exists($ruta) || !is_readable($ruta)) return '';
+$logoDir    = dirname(__DIR__, 3) . '/logo/';
+$uploadsDir = dirname(__DIR__, 3) . '/uploads/';
+$thumbsDir  = $uploadsDir . 'thumbs/';
+
+if (!is_dir($thumbsDir)) {
+    @mkdir($thumbsDir, 0777, true);
+}
+
+if (!function_exists('obtenerThumbnailRuta')) {
+    /**
+     * Retorna la ruta en disco de un thumbnail ultra-ligero (máx 110x110, JPEG 72%).
+     * Si ya fue generado y está en disco, lo retorna de inmediato sin procesar.
+     * Si no existe, lo crea una sola vez y lo guarda en uploads/thumbs/.
+     */
+    function obtenerThumbnailRuta(string $rutaOriginal, string $thumbsDir, int $maxW = 110, int $maxH = 110): string {
+        if (!file_exists($rutaOriginal) || !is_readable($rutaOriginal)) {
+            return '';
+        }
+
+        $baseName = basename($rutaOriginal);
+        $thumbName = 'th_' . pathinfo($baseName, PATHINFO_FILENAME) . '.jpg';
+        $thumbPath = $thumbsDir . $thumbName;
+
+        // Si ya existe el thumbnail en disco y es más reciente que el original, reutilizarlo directamente
+        if (file_exists($thumbPath) && filemtime($thumbPath) >= filemtime($rutaOriginal)) {
+            return $thumbPath;
+        }
+
         try {
-            $info = @getimagesize($ruta);
+            $info = @getimagesize($rutaOriginal);
             if (!$info || empty($info['mime'])) return '';
-            $mime = $info['mime'];
+            $mime  = $info['mime'];
             $origW = $info[0] ?? 0;
             $origH = $info[1] ?? 0;
 
-            // Si GD está disponible, redimensionar imágenes grandes para evitar saturar memoria en Dompdf
-            if (function_exists('imagecreatetruecolor') && $origW > 0 && $origH > 0) {
+            if ($origW <= 0 || $origH <= 0) return '';
+
+            // Si GD está disponible, generar miniatura ligera
+            if (function_exists('imagecreatetruecolor')) {
                 $src = null;
                 if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
-                    $src = @imagecreatefromjpeg($ruta);
+                    $src = @imagecreatefromjpeg($rutaOriginal);
                 } elseif ($mime === 'image/png') {
-                    $src = @imagecreatefrompng($ruta);
+                    $src = @imagecreatefrompng($rutaOriginal);
                 } elseif ($mime === 'image/webp' && function_exists('imagecreatefromwebp')) {
-                    $src = @imagecreatefromwebp($ruta);
+                    $src = @imagecreatefromwebp($rutaOriginal);
                 } elseif ($mime === 'image/gif') {
-                    $src = @imagecreatefromgif($ruta);
+                    $src = @imagecreatefromgif($rutaOriginal);
                 }
 
                 if ($src) {
-                    // Calcular dimensiones proporcionales
-                    $ratio = min($maxWidth / $origW, $maxHeight / $origH, 1.0);
-                    $newW = (int)round($origW * $ratio);
-                    $newH = (int)round($origH * $ratio);
+                    $ratio = min($maxW / $origW, $maxH / $origH, 1.0);
+                    $newW  = max(1, (int)round($origW * $ratio));
+                    $newH  = max(1, (int)round($origH * $ratio));
 
                     $dst = imagecreatetruecolor($newW, $newH);
-                    // Fondo blanco limpio
-                    $bg = imagecolorallocate($dst, 255, 255, 255);
+                    $bg  = imagecolorallocate($dst, 255, 255, 255);
                     imagefilledrectangle($dst, 0, 0, $newW, $newH, $bg);
                     imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
                     imagedestroy($src);
 
-                    ob_start();
-                    imagejpeg($dst, null, 75);
-                    $thumbData = ob_get_clean();
+                    // Guardar como JPEG optimizado en disco (pesa ~5KB)
+                    imagejpeg($dst, $thumbPath, 72);
                     imagedestroy($dst);
 
-                    if ($thumbData) {
-                        return 'data:image/jpeg;base64,' . base64_encode($thumbData);
+                    if (file_exists($thumbPath)) {
+                        return $thumbPath;
                     }
                 }
             }
 
-            if (!in_array($mime, ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'])) {
-                return '';
-            }
-
-            $d = @file_get_contents($ruta);
-            if (!$d) return '';
-            return 'data:' . $mime . ';base64,' . base64_encode($d);
+            // Si no se pudo redimensionar, retornar el original si no es excesivamente grande
+            return filesize($rutaOriginal) < 1000000 ? $rutaOriginal : '';
         } catch (\Throwable $e) {
             return '';
         }
     }
 }
 
-$logoDir    = dirname(__DIR__, 3) . '/logo/';
-$uploadsDir = dirname(__DIR__, 3) . '/uploads/';
+if (!function_exists('imgBase64')) {
+    function imgBase64(string $ruta): string {
+        if (!file_exists($ruta) || !is_readable($ruta)) return '';
+        $info = @getimagesize($ruta);
+        $mime = $info['mime'] ?? 'image/png';
+        $d = @file_get_contents($ruta);
+        return $d ? ('data:' . $mime . ';base64,' . base64_encode($d)) : '';
+    }
+}
 
 $imgLogoPdf = imgBase64($logoDir . 'logopdf.png');
 $imgLogoImp = imgBase64($logoDir . 'logoimp.png');
@@ -257,9 +283,8 @@ td.col-desc {
 <body>
 
 <?php
-$esCatalogoCompleto = isset($modo) && $modo === 'completo';
-$incluirImagenes = !$esCatalogoCompleto;
-$totalCols = $incluirImagenes ? 4 : 3;
+$incluirImagenes = true;
+$totalCols = 4;
 ?>
 
 <!-- ENCABEZADO CORPORATIVO CON LOGOS -->
@@ -345,7 +370,10 @@ $totalCols = $incluirImagenes ? 4 : 3;
             if ($incluirImagenes) {
                 $fotoNombre = $p['foto'] ?? '';
                 if (!empty($fotoNombre) && file_exists($uploadsDir . $fotoNombre)) {
-                    $imgProd = imgBase64($uploadsDir . $fotoNombre, 90, 90);
+                    $thumbRuta = obtenerThumbnailRuta($uploadsDir . $fotoNombre, $thumbsDir, 100, 100);
+                    if ($thumbRuta && file_exists($thumbRuta)) {
+                        $imgProd = imgBase64($thumbRuta);
+                    }
                 }
             }
             $aplicaIva = strtolower($p['iva'] ?? '') === 'si';
