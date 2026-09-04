@@ -73,7 +73,7 @@ class ProductoModel implements RepositoryInterface
         }
 
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-        $sql = "SELECT * FROM productos $whereClause ORDER BY titulo";
+        $sql = "SELECT * FROM productos $whereClause ORDER BY categoria ASC, titulo ASC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);

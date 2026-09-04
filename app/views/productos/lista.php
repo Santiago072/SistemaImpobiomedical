@@ -501,11 +501,13 @@ function manejarExportarPdf(form) {
 }
 
 function exportarPdfHeader() {
-    if (productosSeleccionados.size === 0) {
-        alert('⚠️ Debe seleccionar al menos un producto mediante el círculo de selección antes de generar el catálogo en PDF.');
-        return;
+    if (productosSeleccionados.size > 0) {
+        document.getElementById('form-exportar-seleccionados').submit();
+    } else {
+        if (confirm('¿Deseas exportar el catálogo completo con todos los productos organizados por categoría?')) {
+            window.open('<?= $basePath ?>?module=productos&action=exportarPdf&modo=completo', '_blank');
+        }
     }
-    document.getElementById('form-exportar-seleccionados').submit();
 }
 
 function renderizarProductosAjax(productos, isAdmin) {

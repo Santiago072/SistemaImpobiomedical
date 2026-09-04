@@ -12,26 +12,50 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 
 if (!function_exists('imgBase64')) {
-    function imgBase64(string $ruta): string {
+    function imgBase64(string $ruta, int $maxWidth = 120, int $maxHeight = 120): string {
         if (!file_exists($ruta) || !is_readable($ruta)) return '';
         try {
             $info = @getimagesize($ruta);
             if (!$info || empty($info['mime'])) return '';
             $mime = $info['mime'];
+            $origW = $info[0] ?? 0;
+            $origH = $info[1] ?? 0;
 
-            // Si es WebP, convertir a JPEG para DomPDF
-            if ($mime === 'image/webp' && function_exists('imagecreatefromwebp') && function_exists('imagejpeg')) {
-                $im = @imagecreatefromwebp($ruta);
-                if ($im) {
+            // Si GD está disponible, redimensionar imágenes grandes para evitar saturar memoria en Dompdf
+            if (function_exists('imagecreatetruecolor') && $origW > 0 && $origH > 0) {
+                $src = null;
+                if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+                    $src = @imagecreatefromjpeg($ruta);
+                } elseif ($mime === 'image/png') {
+                    $src = @imagecreatefrompng($ruta);
+                } elseif ($mime === 'image/webp' && function_exists('imagecreatefromwebp')) {
+                    $src = @imagecreatefromwebp($ruta);
+                } elseif ($mime === 'image/gif') {
+                    $src = @imagecreatefromgif($ruta);
+                }
+
+                if ($src) {
+                    // Calcular dimensiones proporcionales
+                    $ratio = min($maxWidth / $origW, $maxHeight / $origH, 1.0);
+                    $newW = (int)round($origW * $ratio);
+                    $newH = (int)round($origH * $ratio);
+
+                    $dst = imagecreatetruecolor($newW, $newH);
+                    // Fondo blanco limpio
+                    $bg = imagecolorallocate($dst, 255, 255, 255);
+                    imagefilledrectangle($dst, 0, 0, $newW, $newH, $bg);
+                    imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
+                    imagedestroy($src);
+
                     ob_start();
-                    imagejpeg($im, null, 80);
-                    $jpegData = ob_get_clean();
-                    imagedestroy($im);
-                    if ($jpegData) {
-                        return 'data:image/jpeg;base64,' . base64_encode($jpegData);
+                    imagejpeg($dst, null, 75);
+                    $thumbData = ob_get_clean();
+                    imagedestroy($dst);
+
+                    if ($thumbData) {
+                        return 'data:image/jpeg;base64,' . base64_encode($thumbData);
                     }
                 }
-                return '';
             }
 
             if (!in_array($mime, ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'])) {
@@ -138,6 +162,19 @@ table.prod-table td {
 
 /* Filas alternas */
 table.prod-table tbody tr:nth-child(even) { background-color: #f8fafc; }
+
+/* Separador de Categoría */
+tr.cat-header-row td {
+    background-color: #e6f4f5 !important;
+    border-top: 1.5px solid #10757e;
+    border-bottom: 1.5px solid #10757e;
+    padding: 6px 10px;
+    font-size: 9.5px;
+    font-weight: bold;
+    color: #0d5c63;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
 
 td.col-codigo {
     font-weight: bold;
@@ -282,11 +319,31 @@ td.col-desc {
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($productos as $p): 
+                <?php 
+                $ultimaCategoria = null;
+                foreach ($productos as $p): 
+                    $catActual = trim($p['categoria'] ?? '');
+                    if ($catActual === '') {
+                        $catActual = 'Sin Categoría';
+                    }
+
+                    // Separador de categoría cuando cambia o inicia un grupo nuevo
+                    if ($catActual !== $ultimaCategoria):
+                        $ultimaCategoria = $catActual;
+                ?>
+                <tr class="cat-header-row">
+                    <td colspan="5">
+                        <span style="display:inline-block; vertical-align:middle;">
+                            &#9656; <?= htmlspecialchars($catActual) ?>
+                        </span>
+                    </td>
+                </tr>
+                <?php endif; ?>
+                <?php 
                     $fotoNombre = $p['foto'] ?? '';
                     $imgProd = '';
                     if (!empty($fotoNombre) && file_exists($uploadsDir . $fotoNombre)) {
-                        $imgProd = imgBase64($uploadsDir . $fotoNombre);
+                        $imgProd = imgBase64($uploadsDir . $fotoNombre, 90, 90);
                     }
                 ?>
                 <tr>

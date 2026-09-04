@@ -177,6 +177,7 @@ class ProductoController
         @ini_set('memory_limit', '512M');
         @set_time_limit(180);
 
+        $modo = sanitizar_entrada($_POST['modo'] ?? $_GET['modo'] ?? '');
         $idsRaw = $_POST['ids'] ?? $_GET['ids'] ?? '';
         $ids = [];
         if (is_array($idsRaw)) {
@@ -185,7 +186,7 @@ class ProductoController
             $ids = array_filter(array_map('intval', explode(',', $idsRaw)));
         }
 
-        if (empty($ids)) {
+        if (empty($ids) && $modo !== 'completo') {
             $_SESSION['flash_error'] = 'Debe seleccionar al menos un producto para exportar el catálogo en PDF.';
             header('Location: ' . BASE_URL . '?module=productos&action=lista');
             exit();
