@@ -347,6 +347,13 @@ $totalCols = 4;
         </tr>
     </thead>
     <tbody>
+        <?php if (empty($productos)): ?>
+        <tr>
+            <td colspan="<?= $totalCols ?>" style="text-align:center; padding: 25px; color:#64748b; font-size:10px;">
+                No se encontraron productos registrados para generar el catálogo.
+            </td>
+        </tr>
+        <?php else: ?>
         <?php 
         $ultimaCategoria = null;
         foreach ($productos as $p): 
@@ -402,6 +409,7 @@ $totalCols = 4;
             <td class="col-desc"><?= nl2br(htmlspecialchars($p['descripcion'] ?? '')) ?></td>
         </tr>
         <?php endforeach; ?>
+        <?php endif; ?>
     </tbody>
 </table>
 
@@ -430,7 +438,6 @@ try {
     $dompdf->render();
 } catch (\Throwable $e) {
     error_log('Error renderizando catalogo PDF: ' . $e->getMessage());
-    // Fallback de seguridad sin imagenes de productos si alguna imagen corrompida falla
     $htmlSinImgProd = preg_replace('/<img[^>]+uploads\/[^>]+>/i', '', $html);
     try {
         $dompdf = new Dompdf($options);
@@ -446,8 +453,10 @@ try {
     }
 }
 
-while (ob_get_level()) ob_end_clean();
+while (ob_get_level() > 0) {
+    ob_end_clean();
+}
 
 $nombreArchivo = 'Catalogo_Productos.pdf';
-$dompdf->stream($nombreArchivo, ['Attachment' => true]);
+$dompdf->stream($nombreArchivo, ['Attachment' => false]);
 exit();

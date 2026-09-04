@@ -323,8 +323,12 @@ function cambiarEstadoComercial(select) {
 
             // Actualizar fecha debajo del select de estado comercial
             const lblFecha = fila ? fila.querySelector('.cot-fecha-cambio-lbl') : null;
-            if (lblFecha && d.fecha_cambio) {
-                lblFecha.innerHTML = `<i class="bi bi-clock-history"></i> ${d.fecha_cambio}`;
+            if (lblFecha) {
+                if (d.fecha_cambio) {
+                    lblFecha.innerHTML = `<i class="bi bi-clock-history"></i> ${d.fecha_cambio}`;
+                } else {
+                    lblFecha.innerHTML = `<span style="color:#94a3b8;">Sin cambio</span>`;
+                }
             }
 
             // Actualizar reactivamente el botón de Orden en la fila

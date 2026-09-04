@@ -425,12 +425,21 @@ class CotizacionModel
             return false;
         }
 
-        $stmt = $this->db->prepare(
-            "UPDATE cotizaciones 
-             SET estado_comercial = :estado,
-                 fecha_cambio_estado = NOW()
-             WHERE id = :id AND estado = 'finalizada'"
-        );
+        if ($nuevoEstado === 'pendiente') {
+            $stmt = $this->db->prepare(
+                "UPDATE cotizaciones 
+                 SET estado_comercial = :estado,
+                     fecha_cambio_estado = NULL
+                 WHERE id = :id AND estado = 'finalizada'"
+            );
+        } else {
+            $stmt = $this->db->prepare(
+                "UPDATE cotizaciones 
+                 SET estado_comercial = :estado,
+                     fecha_cambio_estado = NOW()
+                 WHERE id = :id AND estado = 'finalizada'"
+            );
+        }
         return $stmt->execute([
             ':estado' => $nuevoEstado,
             ':id'     => $id

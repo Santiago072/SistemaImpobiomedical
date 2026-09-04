@@ -524,7 +524,7 @@ class CotizacionController
                     'status' => 'success', 
                     'message' => 'Estado actualizado exitosamente', 
                     'nuevo_estado' => $nuevoEstado,
-                    'fecha_cambio' => date('Y-m-d H:i')
+                    'fecha_cambio' => $nuevoEstado === 'pendiente' ? null : date('Y-m-d H:i')
                 ]);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'No se pudo actualizar el estado de la cotización']);

@@ -328,3 +328,58 @@
 @media (max-width: 900px) {
     .cot-edit-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Selectores de Estado Comercial y Entrega en Tabla ── */
+select.estado-comercial-select,
+select.estado-entrega-select {
+    padding: 6px 12px !important;
+    border-radius: 20px !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    cursor: pointer !important;
+    border: 1.5px solid transparent !important;
+    outline: none !important;
+    transition: all .2s ease !important;
+    display: inline-block !important;
+    text-align: center !important;
+    line-height: normal !important;
+    height: auto !important;
+    width: auto !important;
+    min-width: 110px !important;
+    font-family: inherit !important;
+}
+
+select.estado-comercial-select.badge-gold,
+select.estado-entrega-select.badge-gold {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+    border-color: #fde68a !important;
+}
+
+select.estado-comercial-select.badge-green,
+select.estado-entrega-select.badge-green {
+    background: #dcfce7 !important;
+    color: #166534 !important;
+    border-color: #bbf7d0 !important;
+}
+
+select.estado-comercial-select.badge-red,
+select.estado-entrega-select.badge-red {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    border-color: #fecaca !important;
+}
+
+select.estado-entrega-select.badge-blue {
+    background: #dbeafe !important;
+    color: #1e40af !important;
+    border-color: #bfdbfe !important;
+}
+
+select.estado-comercial-select option,
+select.estado-entrega-select option {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    font-weight: 500 !important;
+    padding: 6px !important;
+}

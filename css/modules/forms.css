@@ -755,7 +755,8 @@
     padding: 10px !important;
 }
 
-.estado-comercial-select {
+.estado-comercial-select,
+.estado-entrega-select {
     padding: 6px 12px;
     border-radius: 20px;
     font-weight: 600;
@@ -767,25 +768,35 @@
     font-family: inherit;
 }
 
-.estado-comercial-select.badge-gold {
+.estado-comercial-select.badge-gold,
+.estado-entrega-select.badge-gold {
     background: #fef3c7;
     color: #b45309;
     border-color: #fde68a;
 }
 
-.estado-comercial-select.badge-green {
+.estado-comercial-select.badge-green,
+.estado-entrega-select.badge-green {
     background: #dcfce7;
     color: #166534;
     border-color: #bbf7d0;
 }
 
-.estado-comercial-select.badge-red {
+.estado-comercial-select.badge-red,
+.estado-entrega-select.badge-red {
     background: #fee2e2;
     color: #991b1b;
     border-color: #fecaca;
 }
 
-.estado-comercial-select option {
+.estado-entrega-select.badge-blue {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #bfdbfe;
+}
+
+.estado-comercial-select option,
+.estado-entrega-select option {
     background: #ffffff;
     color: #1e293b;
     font-weight: 500;
