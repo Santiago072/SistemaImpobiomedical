@@ -482,10 +482,10 @@ class CotizacionController
                        'busquedaNumero', 'busquedaEstado', 'paginaActual', 'totalPaginas', 'rol');
     }
 
-    // ── CAMBIAR ESTADO COMERCIAL (Solo Admin con CSRF y Rate Limit) ───────────
+    // ── CAMBIAR ESTADO COMERCIAL (Usuarios autenticados con CSRF y Rate Limit) ───────────
     public function cambiarEstadoComercial(): void
     {
-        verificar_admin();
+        verificar_autenticacion();
         verificar_rate_limit(30, 60, 'cot_cambiar_estado');
 
         $esAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&

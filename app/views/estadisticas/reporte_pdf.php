@@ -338,7 +338,7 @@ table { width:100%; border-collapse:collapse; }
     <tr>
       <th class="mes-col" style="text-align:left; color:#ffffff;">Mes</th>
       <th>Cotizaciones Totales</th>
-      <th>Cotizaciones Concluidas 🟢</th>
+      <th>Cotizaciones Concluidas</th>
     </tr>
   </thead>
   <tbody>

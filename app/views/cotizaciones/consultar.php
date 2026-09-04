@@ -105,19 +105,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                             <td><?= htmlspecialchars($cot['cliente_nombre'] ?? '') ?></td>
                             <td><?= htmlspecialchars($cot['cliente_ciudad'] ?? '') ?></td>
                             <td class="text-center">
-                                <?php if (($_SESSION['rol'] ?? 'usuario') === 'admin'): ?>
-                                    <select class="estado-comercial-select <?= $badgeClass ?>" 
-                                            data-id="<?= (int)$cot['id'] ?>"
-                                            onchange="cambiarEstadoComercial(this)">
-                                        <option value="pendiente" <?= $estCom === 'pendiente' ? 'selected' : '' ?>>🟡 Pendiente</option>
-                                        <option value="concluida" <?= $estCom === 'concluida' ? 'selected' : '' ?>>🟢 Concluida</option>
-                                        <option value="descartada" <?= $estCom === 'descartada' ? 'selected' : '' ?>>🔴 Descartada</option>
-                                    </select>
-                                <?php else: ?>
-                                    <span class="mod-badge <?= $badgeClass ?>">
-                                        <?= htmlspecialchars($badgeLabel) ?>
-                                    </span>
-                                <?php endif; ?>
+                                <select class="estado-comercial-select <?= $badgeClass ?>" 
+                                        data-id="<?= (int)$cot['id'] ?>"
+                                        onchange="cambiarEstadoComercial(this)">
+                                    <option value="pendiente" <?= $estCom === 'pendiente' ? 'selected' : '' ?>>🟡 Pendiente</option>
+                                    <option value="concluida" <?= $estCom === 'concluida' ? 'selected' : '' ?>>🟢 Concluida</option>
+                                    <option value="descartada" <?= $estCom === 'descartada' ? 'selected' : '' ?>>🔴 Descartada</option>
+                                </select>
                             </td>
                             <td>
                                 <div class="mod-actions">

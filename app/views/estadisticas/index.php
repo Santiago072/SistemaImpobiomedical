@@ -118,7 +118,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
             <!-- Top Clientes por Monto Vendido (Barras Horizontales) -->
             <div class="chart-container">
-                <h2 class="section-title"><i class="bi bi-cash-stack" style="color: #8b5cf6;"></i> Top 5 Clientes (Monto Vendido $$)</h2>
+                <h2 class="section-title"><i class="bi bi-cash-stack" style="color: #8b5cf6;"></i> Top 5 Clientes (Monto Vendido $)</h2>
                 <div class="chart-wrapper chart-wrapper-md">
                     <canvas id="clientesChart"></canvas>
                 </div>
@@ -137,7 +137,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
                     <div>
                         <h2 class="section-title" style="margin: 0; border: none; padding: 0;">
-                            <i class="bi bi-wallet2" style="color: #059669;"></i> Ventas por Cliente por Mes (Monto Real Vendido $$)
+                            <i class="bi bi-wallet2" style="color: #059669;"></i> Ventas por Cliente por Mes (Monto Real Vendido $)
                         </h2>
                         <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b;">
                             Visualiza a qué clientes se les vendió y el valor total facturado en cada período mensual.
@@ -146,6 +146,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <label for="selectMesVentasClientes" style="font-size: 12px; font-weight: 600; color: #4b5563;">Mes:</label>
                         <select id="selectMesVentasClientes" style="padding: 6px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 12.5px; font-weight: 600; color: #0f172a; background: #f8fafc; outline: none; cursor: pointer;">
+                            <option value="todos">Todos los meses (Acumulado)</option>
                             <?php if (!empty($ventasClientesMes['meses'])): ?>
                                 <?php 
                                 // Invertir para que el mes más reciente aparezca primero
@@ -157,8 +158,6 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                 ?>
                                     <option value="<?= htmlspecialchars($m) ?>"><?= htmlspecialchars($nombreMes) ?></option>
                                 <?php endforeach; ?>
-                            <?php else: ?>
-                                <option value="">Sin datos de ventas</option>
                             <?php endif; ?>
                         </select>
                     </div>
@@ -209,17 +208,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: '#2563eb',
                     borderWidth: 1.5,
                     borderRadius: 5,
-                    maxBarThickness: 40
+                    maxBarThickness: 40,
+                    order: 2
                 },
                 {
-                    type: 'bar',
-                    label: 'Cotizaciones Concluidas 🟢',
+                    type: 'line',
+                    label: 'Cotizaciones Concluidas',
                     data: (evolucionGeneral.concluidas && evolucionGeneral.concluidas.length) ? evolucionGeneral.concluidas : [0],
-                    backgroundColor: 'rgba(16, 185, 129, 0.9)', // Verde esmeralda
                     borderColor: '#059669',
-                    borderWidth: 1.5,
-                    borderRadius: 5,
-                    maxBarThickness: 40
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#059669',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    fill: false,
+                    tension: 0.2,
+                    order: 1
                 }
             ]
         },
@@ -434,6 +440,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const selMes = document.getElementById('selectMesVentasClientes');
 
         const obtenerDatosMes = (mes) => {
+            if (!mes || mes === 'todos') {
+                // Acumular ventas de todos los meses por cliente
+                const mapaClientes = {};
+                Object.values(dataVentasMes).forEach(lista => {
+                    lista.forEach(item => {
+                        mapaClientes[item.cliente] = (mapaClientes[item.cliente] || 0) + item.monto;
+                    });
+                });
+                // Ordenar clientes por monto descendente
+                const ordenados = Object.entries(mapaClientes)
+                    .sort((a, b) => b[1] - a[1]);
+                return {
+                    labels: ordenados.map(it => it[0]),
+                    montos: ordenados.map(it => it[1])
+                };
+            }
             const items = dataVentasMes[mes] || [];
             return {
                 labels: items.map(it => it.cliente),
@@ -441,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         };
 
-        const mesInicial = selMes ? selMes.value : '';
+        const mesInicial = selMes ? selMes.value : 'todos';
         const inicial = obtenerDatosMes(mesInicial);
 
         const chartVentasMes = new Chart(ctxVentasMes, {
