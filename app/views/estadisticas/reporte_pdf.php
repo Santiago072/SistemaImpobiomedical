@@ -120,6 +120,12 @@ table { width:100%; border-collapse:collapse; }
 .evo-table tr:nth-child(even) td { background: #f8fafc; }
 .evo-table td.mes-col { text-align: left; font-weight: bold; color: #1e293b; }
 .evo-table th.mes-col { text-align: left; color: #ffffff !important; }
+.evo-badge-total { display:inline-block; background:#3b82f6; color:#ffffff; border-radius:4px; padding:2px 8px; font-weight:bold; }
+.evo-badge-conc  { display:inline-block; background:#10b981; color:#ffffff; border-radius:4px; padding:2px 8px; font-weight:bold; }
+.evo-badge-pct   { display:inline-block; padding:2px 7px; border-radius:4px; font-weight:bold; font-size:7.5px; }
+.evo-badge-pct.green { background:#dcfce7; color:#15803d; }
+.evo-badge-pct.gray  { background:#f1f5f9; color:#64748b; }
+.evo-table tfoot td { background:#f1f5f9; font-weight:bold; color:#0f172a; border-top:1.5px solid #cbd5e1; }
 
 /* ── Layout 2 columnas ── */
 .two-col { width: 100%; margin-bottom: 10px; }
@@ -337,31 +343,62 @@ table { width:100%; border-collapse:collapse; }
   <thead>
     <tr>
       <th class="mes-col" style="text-align:left; color:#ffffff;">Mes</th>
-      <th>Cotizaciones Totales</th>
-      <th>Cotizaciones Concluidas</th>
+      <th style="width:25%;">Cotizaciones Totales</th>
+      <th style="width:25%;">Cotizaciones Concluidas</th>
+      <th style="width:22%;">% Efectividad (Ventas)</th>
     </tr>
   </thead>
   <tbody>
     <?php if (empty($evolucion['meses'])): ?>
-    <tr><td colspan="3" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados en este período</td></tr>
+    <tr><td colspan="4" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados en este período</td></tr>
     <?php else: ?>
-    <?php foreach ($evolucion['meses'] as $i => $mes): ?>
+    <?php 
+      $sumTotalCot = 0;
+      $sumTotalConc = 0;
+      foreach ($evolucion['meses'] as $i => $mes): 
+        $totMes  = (int)($evolucion['cotizaciones'][$i] ?? 0);
+        $concMes = (int)($evolucion['concluidas'][$i] ?? 0);
+        $sumTotalCot += $totMes;
+        $sumTotalConc += $concMes;
+        $pctMes = $totMes > 0 ? round(($concMes / $totMes) * 100, 1) : 0;
+    ?>
     <tr>
       <td class="mes-col"><?= htmlspecialchars($mesesFmt[$i] ?? $mes) ?></td>
       <td>
-        <div style="display:inline-block; background:#3b82f6; color:#ffffff; border-radius:4px; padding:2px 8px; font-weight:bold;">
-          <?= (int)($evolucion['cotizaciones'][$i] ?? 0) ?>
+        <div class="evo-badge-total">
+          <?= number_format($totMes) ?>
         </div>
       </td>
       <td>
-        <div style="display:inline-block; background:#10b981; color:#ffffff; border-radius:4px; padding:2px 8px; font-weight:bold;">
-          <?= (int)($evolucion['concluidas'][$i] ?? 0) ?>
+        <div class="evo-badge-conc">
+          <?= number_format($concMes) ?>
+        </div>
+      </td>
+      <td>
+        <div class="evo-badge-pct <?= $pctMes > 0 ? 'green' : 'gray' ?>">
+          <?= number_format($pctMes, 1) ?>%
         </div>
       </td>
     </tr>
     <?php endforeach; ?>
     <?php endif; ?>
   </tbody>
+  <?php if (!empty($evolucion['meses'])): 
+    $pctGlobal = $sumTotalCot > 0 ? round(($sumTotalConc / $sumTotalCot) * 100, 1) : 0;
+  ?>
+  <tfoot>
+    <tr>
+      <td style="text-align:left;">TOTAL / EFECTIVIDAD GLOBAL</td>
+      <td><?= number_format($sumTotalCot) ?></td>
+      <td><?= number_format($sumTotalConc) ?></td>
+      <td>
+        <div class="evo-badge-pct <?= $pctGlobal > 0 ? 'green' : 'gray' ?>" style="font-size:8px;">
+          <?= number_format($pctGlobal, 1) ?>%
+        </div>
+      </td>
+    </tr>
+  </tfoot>
+  <?php endif; ?>
 </table>
 
 <!-- ══ FOOTER ══ -->

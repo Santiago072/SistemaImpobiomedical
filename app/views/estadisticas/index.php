@@ -208,24 +208,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: '#2563eb',
                     borderWidth: 1.5,
                     borderRadius: 5,
-                    maxBarThickness: 40,
-                    order: 2
+                    maxBarThickness: 38
                 },
                 {
-                    type: 'line',
+                    type: 'bar',
                     label: 'Cotizaciones Concluidas',
                     data: (evolucionGeneral.concluidas && evolucionGeneral.concluidas.length) ? evolucionGeneral.concluidas : [0],
+                    backgroundColor: 'rgba(16, 185, 129, 0.85)', // Verde esmeralda
                     borderColor: '#059669',
-                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#059669',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
-                    fill: false,
-                    tension: 0.2,
-                    order: 1
+                    borderWidth: 1.5,
+                    borderRadius: 5,
+                    maxBarThickness: 38
                 }
             ]
         },
@@ -239,6 +232,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     callbacks: {
                         label: function(context) {
                             return ` ${context.dataset.label}: ${context.raw} cotización(es)`;
+                        },
+                        afterBody: function(tooltipItems) {
+                            if (tooltipItems.length >= 2) {
+                                const total = tooltipItems[0].raw || 0;
+                                const conc = tooltipItems[1].raw || 0;
+                                const pct = total > 0 ? ((conc / total) * 100).toFixed(1) : 0;
+                                return ` Efectividad: ${pct}% de éxito`;
+                            }
+                            return '';
                         }
                     }
                 }
