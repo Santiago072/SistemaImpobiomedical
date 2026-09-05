@@ -42,8 +42,8 @@ El sistema cuenta con dos roles claramente diferenciados:
 * **RF16:** El sistema debe permitir aplicar IVA del 19% o registrar el producto como exento de IVA.
 * **RF17:** El sistema debe calcular el número consecutivo mensual mediante la detección del valor máximo secuencial del mes, asegurando un avance continuo (`01`, `02`, `03`...) precedido por el código del asesor comercial.
 * **RF18:** El sistema debe permitir modificar cotizaciones existentes generando una versión numerada de revisión que preserve el historial comercial original.
-* **RF19:** El sistema debe permitir a los administradores actualizar el estado comercial de las cotizaciones entre pendiente, concluida y descartada en tiempo real.
-* **RF20:** La fecha de entrega/conclusión de la cotización debe ocultarse automáticamente si el estado comercial es pendiente, mostrándose únicamente cuando el estado pase formalmente a concluida o descartada.
+* **RF19:** El sistema debe permitir actualizar el **Estado Comercial** de las cotizaciones entre *Pendiente*, *Concluida* y *Descartada* en tiempo real; mientras permanezca en *Pendiente* mostrará la etiqueta *"Sin cambio"*, y al cambiar a *Concluida* o *Descartada* mostrará la fecha y hora exacta del cambio de estado.
+* **RF20:** El sistema debe permitir gestionar el **Estado de Entrega** de las cotizaciones entre *Pendiente*, *En Tránsito* y *Entregado* en tiempo real; mientras esté *Pendiente* mostrará *"Por despachar"*, al pasar a *En Tránsito* indicará *"En camino"*, y al marcarse como *Entregado* registrará y mostrará la fecha de entrega efectiva junto al tiempo transcurrido en días.
 * **RF21:** El sistema debe generar documentos PDF oficiales para el cliente con diseño corporativo y hojas de respaldo confidencial con costos y proveedores.
 * **RF22:** El sistema debe permitir la exportación de cotizaciones a Excel en un formato estructurado y ultrarrápido sin imágenes para optimizar tiempos en listas extensas.
 
