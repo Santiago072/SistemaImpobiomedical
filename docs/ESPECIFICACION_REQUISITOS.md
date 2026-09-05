@@ -1,6 +1,7 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v2.6.0  
+**Versión del Sistema:** v2.8.0  
+**Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular · DomPDF · PHPUnit 10
 
 Este documento formaliza los requisitos funcionales (RF), requisitos no funcionales (RNF), control de acceso por roles y reglas de negocio del **Sistema Impobiomedical**.
@@ -42,36 +43,37 @@ El sistema cuenta con dos roles claramente diferenciados:
 * **RF17:** El sistema debe calcular el número consecutivo mensual mediante la detección del valor máximo secuencial del mes, asegurando un avance continuo (`01`, `02`, `03`...) precedido por el código del asesor comercial.
 * **RF18:** El sistema debe permitir modificar cotizaciones existentes generando una versión numerada de revisión que preserve el historial comercial original.
 * **RF19:** El sistema debe permitir a los administradores actualizar el estado comercial de las cotizaciones entre pendiente, concluida y descartada en tiempo real.
-* **RF20:** El sistema debe generar documentos PDF oficiales para el cliente con diseño corporativo y hojas de respaldo confidencial con costos y proveedores.
-* **RF21:** El sistema debe permitir la exportación de cotizaciones a Excel en un formato estructurado y ultrarrápido sin imágenes para optimizar tiempos en listas extensas.
+* **RF20:** La fecha de entrega/conclusión de la cotización debe ocultarse automáticamente si el estado comercial es pendiente, mostrándose únicamente cuando el estado pase formalmente a concluida o descartada.
+* **RF21:** El sistema debe generar documentos PDF oficiales para el cliente con diseño corporativo y hojas de respaldo confidencial con costos y proveedores.
+* **RF22:** El sistema debe permitir la exportación de cotizaciones a Excel en un formato estructurado y ultrarrápido sin imágenes para optimizar tiempos en listas extensas.
 
 ### 📦 Órdenes de Compra (P.O. - Purchase Orders)
-* **RF22:** El sistema debe permitir generar órdenes de compra dirigidas a proveedores a partir de cotizaciones en estado pendiente o mediante la creación de Órdenes Directas de mostrador.
-* **RF23:** El sistema debe bloquear la emisión de órdenes de compra para cotizaciones que se encuentren en estado concluida o descartada.
-* **RF24:** El sistema debe permitir parametrizar IVA opcional (0% o 19%) sobre el costo de flete en órdenes de compra.
-* **RF25:** El sistema debe clasificar las órdenes de compra en pestañas de órdenes pendientes y órdenes completadas con contadores en tiempo real.
-* **RF26:** El sistema debe permitir a los administradores actualizar el estado de las órdenes de compra entre pendiente y completada.
-* **RF27:** El sistema debe permitir la selección individual y masiva de órdenes de compra mediante casillas de verificación para su exportación consolidada a PDF y Excel.
-* **RF28:** El sistema debe incluir un visor interactivo de documentos para previsualizar e imprimir la orden de compra directamente.
+* **RF23:** El sistema debe permitir generar órdenes de compra dirigidas a proveedores a partir de cotizaciones en estado pendiente o mediante la creación de Órdenes Directas de mostrador.
+* **RF24:** El sistema debe bloquear la emisión de órdenes de compra para cotizaciones que se encuentren en estado concluida o descartada.
+* **RF25:** El sistema debe permitir parametrizar IVA opcional (0% o 19%) sobre el costo de flete en órdenes de compra.
+* **RF26:** El sistema debe clasificar las órdenes de compra en pestañas de órdenes pendientes y órdenes completadas con contadores en tiempo real.
+* **RF27:** El sistema debe permitir a los administradores actualizar el estado de las órdenes de compra entre pendiente y completada.
+* **RF28:** El sistema debe permitir la selección individual y masiva de órdenes de compra mediante casillas de verificación para su exportación consolidada a PDF y Excel.
+* **RF29:** El sistema debe incluir un visor interactivo de documentos para previsualizar e imprimir la orden de compra directamente.
 
 ### 🩺 Catálogo de Productos Médicos (Solo Administrador)
-* **RF29:** El sistema debe permitir registrar, editar y listar productos médicos organizados en cuadrícula de tarjetas con foto, código, título, categoría (incluyendo *Servicio Calibración*), IVA y estado.
-* **RF30:** El sistema debe permitir filtrar productos en el catálogo en tiempo real mediante búsqueda asíncrona (AJAX) mientras el usuario escribe en el campo de búsqueda sin recargar la página.
-* **RF31:** El sistema debe validar y sanitizar los archivos de imagen subidos al catálogo comprobando tipos MIME reales y extensiones permitidas.
-* **RF32:** El sistema debe permitir exportar el catálogo completo consolidado en formato PDF con fotografías miniatura.
+* **RF30:** El sistema debe permitir registrar, editar y listar productos médicos organizados en cuadrícula de tarjetas con foto, código, título, categoría (incluyendo *Servicio Calibración*), IVA y estado.
+* **RF31:** El sistema debe permitir filtrar productos en el catálogo en tiempo real mediante búsqueda asíncrona (AJAX) mientras el usuario escribe en el campo de búsqueda sin recargar la página.
+* **RF32:** El sistema debe validar y sanitizar los archivos de imagen subidos al catálogo comprobando tipos MIME reales y extensiones permitidas (JPG, PNG, WebP).
+* **RF33:** El sistema debe permitir exportar el catálogo completo consolidado en formato PDF con fotografías miniatura, garantizando compatibilidad multiformato de imágenes WebP mediante un mecanismo de conversión en 3 capas (GD nativo -> Imagick -> ImageMagick CLI) y almacenamiento en caché de thumbnails (`uploads/thumbs/`) para prevenir caídas de memoria en DomPDF.
 
 ### 🏢 Directorio de Clientes y Entidades (Solo Administrador)
-* **RF33:** El sistema debe permitir registrar y administrar clientes con NIT, departamento, municipio, persona de contacto, teléfono y correo electrónico.
-* **RF34:** El sistema debe autocompletar la información del cliente y su ubicación durante el proceso de finalización de una cotización.
+* **RF34:** El sistema debe permitir registrar y administrar clientes con NIT, departamento, municipio, persona de contacto, teléfono y correo electrónico.
+* **RF35:** El sistema debe autocompletar la información del cliente y su ubicación durante el proceso de finalización de una cotización.
 
 ### 👥 Gestión de Usuarios (Solo Administrador)
-* **RF35:** El sistema debe permitir registrar y administrar cuentas de usuario asignando nombre, código único de asesor, documento, cargo, correo, teléfono y rol.
-* **RF36:** El sistema debe permitir restablecer la contraseña de cualquier usuario asignando por defecto su número de documento.
+* **RF36:** El sistema debe permitir registrar y administrar cuentas de usuario asignando nombre, código único de asesor, documento, cargo, correo, teléfono y rol.
+* **RF37:** El sistema debe permitir restablecer la contraseña de cualquier usuario asignando por defecto su número de documento.
 
 ### 📈 Estadísticas y Reportes (Solo Administrador)
-* **RF37:** El sistema debe permitir filtrar el volumen de cotizaciones por rango de fechas, asesor y cliente.
-* **RF38:** El sistema debe presentar un gráfico comparativo mensual de cotizaciones totales frente a cotizaciones concluidas y tops de productos/clientes recurrentes.
-* **RF39:** El sistema debe generar reportes ejecutivos consolidados en formato PDF con métricas y tablas comparativas.
+* **RF38:** El sistema debe permitir filtrar el volumen de cotizaciones y ventas reales por rango de fechas, asesor y cliente.
+* **RF39:** El sistema debe presentar un visor analítico interactivo de **Ventas a Clientes por Mes** con selector de mes y consolidado acumulado, además del gráfico comparativo de evolución mensual y tops de productos y vendedores.
+* **RF40:** El sistema debe generar reportes ejecutivos consolidados en formato PDF que incluyan KPIs gerenciales, Top Clientes con porcentaje de ventas (`%`), sección desglosada de **Ventas a Clientes por Mes** con total facturado mensual y porcentaje de contribución individual, y tabla de efectividad comercial.
 
 ---
 
@@ -80,6 +82,8 @@ El sistema cuenta con dos roles claramente diferenciados:
 * **RNF01:** Todas las transacciones y consultas a la base de datos deben ejecutarse mediante PDO con sentencias preparadas y parámetros enlazados para prevenir ataques de inyección SQL.
 * **RNF02:** Todas las solicitudes que modifiquen el estado del sistema deben validar obligatoriamente un token de seguridad contra ataques de falsificación de petición en sitios cruzados (CSRF).
 * **RNF03:** La interfaz de usuario debe estar estructurada mediante hojas de estilo CSS modulares organizadas por componentes sin incrustar estilos inline en las vistas.
-* **RNF04:** El sistema debe ser compatible para su ejecución en entornos web con PHP 8.2 y servidores de base de datos MySQL 8 o MariaDB, permitiendo despliegues continuos sin pérdida de información ni sobreescritura de datos.
+* **RNF04:** El sistema debe ser compatible para su ejecución en entornos web con PHP 8.2 y servidores de base de datos MySQL 8 o MariaDB, permitiendo despliegues continuos sin pérdida de información ni sobreescritura de datos persistentes montados en volúmenes Docker.
 * **RNF05:** El código fuente debe contar con pruebas unitarias automatizadas para validar la lógica de cálculos comerciales, consecutivos e integridad de seguridad.
 * **RNF06:** La interfaz debe ser adaptable y visualmente consistente para diferentes resoluciones de pantalla en computadores de escritorio y dispositivos móviles.
+* **RNF07:** El subsistema de generación de PDF debe procesar catálogos extensos (más de 180 productos con imágenes) manteniendo el consumo de memoria dentro del umbral operativo (`memory_limit = 256M`), empleando miniaturas ligeras JPEG (72% de compresión) generadas una sola vez y reutilizadas desde disco.
+* **RNF08:** Compatibilidad estricta con PHP 8.2+, evitando el uso de propiedades dinámicas no declaradas en controladores y servicios para mantener limpios los logs de advertencias y errores del servidor.
