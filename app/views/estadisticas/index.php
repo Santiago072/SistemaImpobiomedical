@@ -481,12 +481,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     borderColor: '#059669',
                     borderWidth: 1.5,
                     borderRadius: 6,
-                    maxBarThickness: 42
+                    maxBarThickness: 42,
+                    minBarLength: 6
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
                 layout: {
                     padding: { top: 10, bottom: 10, left: 10, right: 15 }
                 },

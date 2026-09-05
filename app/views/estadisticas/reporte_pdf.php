@@ -327,23 +327,28 @@ table { width:100%; border-collapse:collapse; }
       <th style="width:25px;">#</th>
       <th>Vendedor</th>
       <th>Proporción de ventas</th>
+      <th style="width:45px; text-align:center;">%</th>
       <th style="width:110px; text-align:right;">Monto Vendido</th>
     </tr>
   </thead>
   <tbody>
     <?php if (empty($topVendedores['labels'])): ?>
-    <tr><td colspan="4" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados</td></tr>
+    <tr><td colspan="5" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados</td></tr>
     <?php else: ?>
-    <?php foreach ($topVendedores['labels'] as $i => $label): ?>
+    <?php foreach ($topVendedores['labels'] as $i => $label): 
+        $montoVend = (float)($topVendedores['data'][$i] ?? 0);
+        $pctVend   = $totalVendidoPeriodo > 0 ? round(($montoVend / $totalVendidoPeriodo) * 100, 1) : 0;
+    ?>
     <tr>
       <td style="font-weight:bold; color:#f59e0b;"><?= $i+1 ?></td>
       <td style="font-weight:bold; color:#334155;"><?= htmlspecialchars($label) ?></td>
       <td>
         <div class="bar-outer">
-          <div class="bar-inner amber" style="width:<?= barPct($topVendedores['data'][$i], $maxVendedores) ?>%;"></div>
+          <div class="bar-inner amber" style="width:<?= barPct((int)$montoVend, (int)$maxVendedores) ?>%;"></div>
         </div>
       </td>
-      <td style="text-align:right; font-weight:bold; color:#0f172a;"><?= fmtR($topVendedores['data'][$i]) ?></td>
+      <td style="text-align:center; font-weight:bold; color:#d97706; font-size:7.5px;"><?= number_format($pctVend, 1, ',', '.') ?>%</td>
+      <td style="text-align:right; font-weight:bold; color:#0f172a;"><?= fmtR($montoVend) ?></td>
     </tr>
     <?php endforeach; ?>
     <?php endif; ?>
