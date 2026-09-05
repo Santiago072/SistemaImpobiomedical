@@ -4,6 +4,28 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v2.8.0] - 2026-09-04
+### Añadido
+- **Desglose Mensual de Clientes con % de Participación en Reporte PDF de Estadísticas (`app/views/estadisticas/reporte_pdf.php`):**
+  - Nueva sección detallada *"Ventas a Clientes por Mes (Desglose y % de Participación Mensual)"* que lista cada mes analizado, su total facturado acumulado y los clientes con su monto comprado y porcentaje específico de participación mensual.
+  - Columna de porcentaje (`%`) añadida a la tabla compacta de **Top Clientes (Monto Vendido $)** basada en el total vendido del período.
+- **Sistema de Conversión Resiliente WebP → JPEG en Catálogo PDF (`app/views/productos/pdf.php`):**
+  - Implementación de arquitectura en 3 capas de fallback para procesar imágenes en formato WebP:
+    1. *Capa 1:* GD nativo con `imagecreatefromwebp()`.
+    2. *Capa 2:* Extensión PHP `Imagick` (`class_exists('Imagick')`).
+    3. *Capa 3:* Herramienta de línea de comandos ImageMagick CLI (`exec('convert ...')`).
+  - Cache de thumbnails automáticos en `uploads/thumbs/` (`th_...jpg` al 72% de compresión), evitando re-conversiones costosas y acelerando la generación del PDF de 186+ productos.
+- **Soporte Nativo de WebP en Dockerfile:**
+  - Inclusión de `libwebp-dev` y compilación de la extensión GD con `--with-webp` en el contenedor de producción.
+
+### Corregido
+- **Visibilidad Condicional de Fecha de Conclusión en Cotizaciones (`app/views/cotizaciones/consultar.php`):**
+  - La fecha de entrega/conclusión ahora solo se muestra si el estado comercial actual es estrictamente `concluida` o `descartada`. Si la cotización se encuentra o regresa al estado `pendiente`, la fecha permanece oculta tanto en la vista como en exportaciones.
+- **Compatibilidad con PHP 8.2 en `CotizacionController.php`:**
+  - Declaración explícita de propiedades tipadas privadas `$productoModel` y `$clienteModel`, eliminando advertencias de *deprecated dynamic property creation*.
+
+---
+
 ## [v2.7.0] - 2026-09-02
 ### Añadido
 - **Exportación de Cotizaciones a Excel (Sin Imágenes, Ultrarrápido):**

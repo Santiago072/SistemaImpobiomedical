@@ -109,9 +109,10 @@ Directorio centralizado de instituciones de salud:
 
 ## 9. Estadísticas y Reportes (Solo Admin)
 
-* Gráficos mensuales de cotizaciones y tendencias.
-* Comparativas de rendimiento por asesor comercial.
-* Exportación de Informe Ejecutivo en PDF.
+* **Indicadores Financieros y Operativos:** Monto cotizado consolidado, monto real facturado por órdenes concluidas, total de cotizaciones y órdenes emitidas.
+* **Top Clientes y Ventas Mensuales:** Identificación de clientes líderes por facturación y visor interactivo de ventas mensuales por cliente con filtro por mes y acumulado general.
+* **Métricas de Productos y Asesores:** Productos más cotizados y comparativas de efectividad por asesor comercial.
+* **Exportación de Informe Ejecutivo en PDF:** Documento formal con logos corporativos, KPIs, Top Clientes con porcentaje de compras (`%`), desglose de **Ventas a Clientes por Mes** y tabla de evolución mensual con tasa de efectividad comercial.
 
 ---
 

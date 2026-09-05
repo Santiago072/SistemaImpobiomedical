@@ -5,7 +5,7 @@
 [![PHPUnit](https://img.shields.io/badge/Tests-PHPUnit%2010-37b24d?style=flat-square&logo=php)](phpunit.xml)
 [![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?style=flat-square&logo=githubactions)](.github/workflows/ci.yml)
 [![Licencia](https://img.shields.io/badge/Licencia-Comercial%20Propietaria-e03c3c?style=flat-square)](LICENSE)
-[![Versión](https://img.shields.io/badge/Versión-v2.3.0-10757e?style=flat-square)](docs/CHANGELOG.md)
+[![Versión](https://img.shields.io/badge/Versión-v2.8.0-10757e?style=flat-square)](docs/CHANGELOG.md)
 
 Bienvenido al **Sistema Impobiomedical**. Es una solución web integral de gestión comercial y médica desarrollada para **Impobiomedical — Soluciones y Servicios de Tecnología Biomédica**. Administra el ciclo comercial completo: creación de cotizaciones dinámicas con calculadora de márgenes de ganancia, gestión de estados comerciales (`pendiente`, `concluida`, `descartada`), generación de PDFs oficiales para clientes, catálogo con fotos y búsqueda en tiempo real, hojas internas de respaldo de proveedores, órdenes de compra por proveedor (P.O.) con pestañas interactivas y reportes estadísticos avanzados.
 
@@ -15,7 +15,7 @@ Bienvenido al **Sistema Impobiomedical**. Es una solución web integral de gesti
 |-----------|-------------|
 | 🏗️ [Arquitectura y Componentes](docs/ARQUITECTURA_Y_COMPONENTES.md) | Arquitectura profunda, esquemas de BD, diagramas de flujo y seguridad |
 | 👤 [Manual de Usuario](docs/MANUAL_USUARIO.md) | Guía de uso de la aplicación para usuarios finales y asesores comerciales |
-| 📜 [Registro de Cambios](docs/CHANGELOG.md) | Historial de versiones y modificaciones del sistema (v2.3.0) |
+| 📜 [Registro de Cambios](docs/CHANGELOG.md) | Historial de versiones y modificaciones del sistema (v2.8.0) |
 | 📋 [Plan de Implementación](docs/PLAN_DE_IMPLEMENTACION.md) | Fases del proyecto, stack tecnológico y arquitectura empresarial |
 | 📋 [Especificación de Requisitos](docs/ESPECIFICACION_REQUISITOS.md) | Requisitos funcionales (RF), RNF, calculadora comercial y modelo de datos |
 | 🤝 [Guía para Colaboradores](docs/CONTRIBUTING.md) | Configuración local, uso de PHPUnit, convenciones de commits y checklist de PR |

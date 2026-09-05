@@ -512,6 +512,12 @@ El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de produc
    - Exportación dual: **PDF oficial** y **Excel (.xls)** con sumatoria contable.
 5. **Catálogo Médico con Imágenes (`app/views/productos/pdf.php`)**:
    - Renderizado optimizado de fotografías médicas con reglas `page-break-inside: avoid`, `@ini_set('memory_limit', '256M')` y timeout extendido a 120s.
+   - Procesamiento de imágenes WebP/PNG/JPG con pipeline de 3 capas (GD nativo -> Imagick -> ImageMagick CLI) y almacenamiento en caché de thumbnails (`uploads/thumbs/th_...jpg` al 72% de compresión) que acelera la generación y previene desbordamientos de memoria en DomPDF.
+6. **Informe Ejecutivo y Estadístico en PDF (`app/views/estadisticas/reporte_pdf.php`)**:
+   - Resumen gerencial con KPIs financieros (Monto Cotizado, Monto Vendido Real, Cotizaciones y Órdenes).
+   - Top Clientes por monto con cálculo dinámico del porcentaje de participación (`%`).
+   - Sección dedicada de **Ventas a Clientes por Mes**, detallando cada período con su facturación total, clientes compradores y su porcentaje de contribución mensual individual.
+   - Gráfica de evolución mensual comparando cotizaciones totales emitidas frente a concluidas con índice de efectividad de ventas.
 
 ---
 
