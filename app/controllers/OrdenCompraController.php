@@ -15,12 +15,18 @@ class OrdenCompraController
 {
     private OrdenCompraModel $model;
     private CotizacionModel  $cotizacionModel;
+    private CalculoComercialService $calculoService;
     private int $porPagina = 10;
 
-    public function __construct(\PDO $conexion)
-    {
-        $this->model           = new OrdenCompraModel($conexion);
-        $this->cotizacionModel = new CotizacionModel($conexion);
+    public function __construct(
+        \PDO $conexion, 
+        ?OrdenCompraModel $model = null, 
+        ?CotizacionModel $cotizacionModel = null,
+        ?CalculoComercialService $calculoService = null
+    ) {
+        $this->model           = $model ?? new OrdenCompraModel($conexion);
+        $this->cotizacionModel = $cotizacionModel ?? new CotizacionModel($conexion);
+        $this->calculoService  = $calculoService ?? new CalculoComercialService();
     }
 
     // ── PASO 1: Seleccionar ítems de la cotización ────────────────────────────
@@ -482,22 +488,7 @@ class OrdenCompraController
         foreach ($ordenes as $ord) {
             $ordId = (int)$ord['id'];
             $items = $itemsAgrupados[$ordId] ?? [];
-            $subtotal = 0;
-            $totalIva = 0;
-            foreach ($items as $it) {
-                $pu     = (float)$it['precio_unit'];
-                $qty    = (int)$it['cantidad'];
-                $pct    = (float)($it['porcentaje_iva'] ?? 19);
-                $aplica = strtolower($it['iva']) === 'si';
-                $sub    = $pu * $qty;
-                $subtotal += $sub;
-                $totalIva += $aplica ? $sub * ($pct / 100) : 0;
-            }
-            $descuento = (float)($ord['descuento'] ?? 0);
-            $subtotalNeto = max(0, $subtotal - $descuento);
-            $retencion = $subtotalNeto * ((float)$ord['retencion'] / 100);
-            $flete = (float)($ord['flete'] ?? 0);
-            $valorPagar = $subtotalNeto + $totalIva - $retencion + $flete;
+            $totales = $this->calculoService->calcularTotalesOrdenCompra($ord, $items);
 
             $datos[] = [
                 'proveedor'         => $ord['proveedor'],
@@ -507,13 +498,13 @@ class OrdenCompraController
                 'banco_cuenta'      => $ord['banco_cuenta'] ?? '',
                 'banco_tipo_cuenta' => $ord['banco_tipo_cuenta'] ?? '',
                 'nit'               => $ord['proveedor_nit'],
-                'subtotal'          => $subtotal,
-                'descuento'         => $descuento,
-                'subtotal_neto'     => $subtotalNeto,
-                'iva'               => $totalIva,
-                'retencion'         => $retencion,
-                'flete'             => $flete,
-                'valor_pagar'       => $valorPagar,
+                'subtotal'          => $totales['subtotal'],
+                'descuento'         => $totales['descuento'],
+                'subtotal_neto'     => $totales['subtotal_neto'],
+                'iva'               => $totales['iva'],
+                'retencion'         => $totales['retencion'],
+                'flete'             => $totales['flete'],
+                'valor_pagar'       => $totales['valor_pagar'],
                 'cliente'           => $ord['cliente_nombre'] ?? '',
                 'estado'            => $ord['estado'] ?? 'pendiente',
                 'fecha'             => $ord['fecha'] ?? ''

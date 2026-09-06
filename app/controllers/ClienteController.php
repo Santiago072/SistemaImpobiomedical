@@ -11,9 +11,9 @@ class ClienteController
     private ClienteModel $model;
     private int $porPagina = 10;
 
-    public function __construct(\PDO $conexion)
+    public function __construct(\PDO $conexion, ?ClienteModel $model = null)
     {
-        $this->model = new ClienteModel($conexion);
+        $this->model = $model ?? new ClienteModel($conexion);
     }
 
     public function listar(): array

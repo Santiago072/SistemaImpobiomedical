@@ -1,6 +1,6 @@
 <?php
 /**
- * Menú lateral — partial puro.
+ * Menú lateral — Layout estilo HDMI con identidad visual y paleta corporativa Impobiomedical.
  * Requiere sesión activa con $_SESSION['rol'] y $_SESSION['usuario_nombre'].
  */
 if (!isset($_SESSION['usuario_nombre'])) {
@@ -8,86 +8,138 @@ if (!isset($_SESSION['usuario_nombre'])) {
     header('Location: ' . $base);
     exit();
 }
-$rol      = $_SESSION['rol'];
-$basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
+$rol          = $_SESSION['rol'] ?? 'usuario';
+$basePath     = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
+$currentMod   = $_GET['module'] ?? 'panel';
+$currentAct   = $_GET['action'] ?? '';
+$usuarioNombre = $_SESSION['usuario_nombre'] ?? 'Usuario';
+$usuarioCodigo = $_SESSION['usuario_codigo'] ?? '';
 ?>
-<nav class="menu-principal">
+
+<!-- Backdrop móvil para menú -->
+<div id="sidebar-backdrop" class="sidebar-backdrop is-hidden" onclick="toggleSidebarMenu()"></div>
+
+<nav class="menu-principal" id="mainSidebarNav">
     <div class="menu-lateral" id="menuLateral">
-            <div class="logo-simple-wrap menu-logo-box">
-                <div class="ecg-container-menu ecg-menu-box">
-                    <svg viewBox="0 0 500 100" preserveAspectRatio="none" class="ecg-svg-menu">
-                        <polyline points="0,50 150,50 170,20 190,80 210,10 230,90 250,50 500,50" />
+        
+        <!-- Encabezado del Sidebar: Solo Animación Cardio Viva Ampliada -->
+        <div class="sidebar-header-corp">
+            <a href="<?= $basePath ?>?module=panel" class="sidebar-brand-link" title="Impobiomedical &bull; Panel Principal">
+                <div class="sidebar-cardio-badge">
+                    <svg class="sidebar-ecg-svg" viewBox="0 0 135 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Sensor vertical biomédico con gradiente cyan -->
+                        <line x1="12" y1="4" x2="12" y2="11" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" />
+                        <rect x="8" y="13" width="8" height="15" rx="2" fill="#10757e" />
+                        <line x1="12" y1="28" x2="12" y2="39" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
+                        <!-- Arco medial característico -->
+                        <path d="M 18 12 A 14 14 0 0 1 18 36" stroke="#10757e" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.9" />
+                        <!-- Trazo ECG base tenue -->
+                        <path class="sidebar-ecg-bg-line" d="M 22 24 L 38 24 L 46 14 L 54 34 L 64 5 L 75 39 L 83 14 L 90 28 L 98 24 L 132 24" />
+                        <!-- Trazo ECG con flujo neón vivo y continuo -->
+                        <path class="sidebar-ecg-stream" d="M 22 24 L 38 24 L 46 14 L 54 34 L 64 5 L 75 39 L 83 14 L 90 28 L 98 24 L 132 24" />
                     </svg>
                 </div>
-            </div>
+            </a>
+            <button type="button" class="btn-close-sidebar-mobile" onclick="toggleSidebarMenu()" aria-label="Cerrar Menú">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
 
-        <ul class="lista-menu-lateral">
-            <li>
-                <a href="<?= $basePath ?>?module=panel" title="Panel">
-                    <i class="bi bi-house-door-fill"></i>
+        <!-- Lista de Navegación Principal con Íconos y Etiquetas -->
+        <div class="sidebar-nav-scroll">
+            <div class="sidebar-nav-label">NAVEGACIÓN PRINCIPAL</div>
+            <ul class="lista-menu-lateral">
+                <li>
+                    <a href="<?= $basePath ?>?module=panel" class="<?= $currentMod === 'panel' ? 'active' : '' ?>">
+                        <div class="sidebar-link-inner">
+                            <span class="sidebar-link-icon"><i class="bi bi-speedometer2"></i></span>
+                            <span class="sidebar-link-text">Dashboard</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= $basePath ?>?module=cotizaciones&action=crear" class="<?= ($currentMod === 'cotizaciones' && $currentAct === 'crear') ? 'active' : '' ?>">
+                        <div class="sidebar-link-inner">
+                            <span class="sidebar-link-icon"><i class="bi bi-plus-circle-fill"></i></span>
+                            <span class="sidebar-link-text">Nueva Cotización</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= $basePath ?>?module=cotizaciones&action=consultar" class="<?= ($currentMod === 'cotizaciones' && $currentAct === 'consultar') ? 'active' : '' ?>">
+                        <div class="sidebar-link-inner">
+                            <span class="sidebar-link-icon"><i class="bi bi-search"></i></span>
+                            <span class="sidebar-link-text">Consultar Cotizaciones</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= $basePath ?>?module=ordenes&action=consultar" class="<?= $currentMod === 'ordenes' ? 'active' : '' ?>">
+                        <div class="sidebar-link-inner">
+                            <span class="sidebar-link-icon"><i class="bi bi-cart-check-fill"></i></span>
+                            <span class="sidebar-link-text">Órdenes de Compra</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= $basePath ?>?module=clientes" class="<?= $currentMod === 'clientes' ? 'active' : '' ?>">
+                        <div class="sidebar-link-inner">
+                            <span class="sidebar-link-icon"><i class="bi bi-building"></i></span>
+                            <span class="sidebar-link-text">Directorio Clientes</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= $basePath ?>?module=productos" class="<?= $currentMod === 'productos' ? 'active' : '' ?>">
+                        <div class="sidebar-link-inner">
+                            <span class="sidebar-link-icon"><i class="bi bi-box-seam-fill"></i></span>
+                            <span class="sidebar-link-text">Catálogo Productos</span>
+                        </div>
+                    </a>
+                </li>
+                <?php if ($rol === 'admin'): ?>
+                <li>
+                    <a href="<?= $basePath ?>?module=usuarios" class="<?= $currentMod === 'usuarios' ? 'active' : '' ?>">
+                        <div class="sidebar-link-inner">
+                            <span class="sidebar-link-icon"><i class="bi bi-people-fill"></i></span>
+                            <span class="sidebar-link-text">Gestión Usuarios</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= $basePath ?>?module=estadisticas" class="<?= $currentMod === 'estadisticas' ? 'active' : '' ?>">
+                        <div class="sidebar-link-inner">
+                            <span class="sidebar-link-icon"><i class="bi bi-bar-chart-fill"></i></span>
+                            <span class="sidebar-link-text">Estadísticas</span>
+                        </div>
+                    </a>
+                </li>
+                <?php endif; ?>
+            </ul>
+        </div>
+
+        <!-- Tarjeta de Perfil de Usuario en el Pie del Sidebar -->
+        <div class="sidebar-footer-card">
+            <div class="sidebar-user-box">
+                <div class="sidebar-user-avatar">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <div class="sidebar-user-details">
+                    <span class="sidebar-user-name" title="<?= htmlspecialchars($usuarioNombre) ?>">
+                        <?= htmlspecialchars($usuarioNombre) ?>
+                    </span>
+                    <span class="sidebar-user-role">
+                        <?= strtoupper(htmlspecialchars($rol)) ?> <?= !empty($usuarioCodigo) ? '&bull; ' . htmlspecialchars($usuarioCodigo) : '' ?>
+                    </span>
+                </div>
+                <a href="<?= $basePath ?>?action=logout" class="sidebar-btn-logout" title="Cerrar Sesión">
+                    <i class="bi bi-power"></i>
                 </a>
-            </li>
-            <li class="menu-desplegable" data-panel="gestion" title="Gestión">
-                <a href="#"><i class="bi bi-grid-fill"></i></a>
-            </li>
-            <li class="menu-desplegable" data-panel="cotizaciones" title="Cotizaciones">
-                <a href="#"><i class="bi bi-file-earmark-text-fill"></i></a>
-            </li>
-            <li>
-                <a href="<?= $basePath ?>?action=logout" title="Cerrar sesión">
-                    <i class="bi bi-box-arrow-right"></i>
-                </a>
-            </li>
-        </ul>
+            </div>
+        </div>
+
     </div>
 </nav>
-
-<div class="panel-flotante" id="panel">
-    <ul class="submenu" id="submenu-dinamico"></ul>
-</div>
-
-<script>
-(function () {
-    const panel   = document.getElementById('panel');
-    const submenu = document.getElementById('submenu-dinamico');
-    let   timeout;
-
-    const menus = {
-        gestion: `
-            <h3>Gestión</h3>
-            <?php if ($rol === 'admin'): ?>
-            <li><a href="<?= $basePath ?>?module=usuarios"><i class="bi bi-people-fill"></i> Gestión de Usuarios</a></li>
-            <?php endif; ?>
-            <li><a href="<?= $basePath ?>?module=productos"><i class="bi bi-box-seam-fill"></i> Catálogo de Productos</a></li>
-            <li><a href="<?= $basePath ?>?module=clientes"><i class="bi bi-building-fill"></i> Directorio de Clientes</a></li>
-        `,
-        cotizaciones: `
-            <h3>Cotizaciones</h3>
-            <li><a href="<?= $basePath ?>?module=cotizaciones&action=crear"><i class="bi bi-plus-circle-fill"></i> Nueva Cotización</a></li>
-            <li><a href="<?= $basePath ?>?module=cotizaciones&action=consultar"><i class="bi bi-search"></i> Consultar</a></li>
-            <li><a href="<?= $basePath ?>?module=ordenes&action=consultar"><i class="bi bi-cart-check-fill"></i> Órdenes de Compra</a></li>
-            <?php if ($rol === 'admin'): ?>
-            <li><a href="<?= $basePath ?>?module=estadisticas"><i class="bi bi-bar-chart-fill"></i> Estadísticas y Reportes</a></li>
-            <?php endif; ?>
-        `
-    };
-
-    document.querySelectorAll('.menu-desplegable').forEach(item => {
-        const tipo = item.dataset.panel;
-        item.addEventListener('mouseenter', () => {
-            clearTimeout(timeout);
-            submenu.innerHTML = menus[tipo] || '';
-            panel.classList.add('visible');
-        });
-        item.addEventListener('mouseleave', () => {
-            timeout = setTimeout(() => panel.classList.remove('visible'), 300);
-        });
-    });
-
-    panel.addEventListener('mouseenter', () => clearTimeout(timeout));
-    panel.addEventListener('mouseleave', () => panel.classList.remove('visible'));
-})();
-</script>
 
 <?php if (!empty($_SESSION['mostrar_modal_cambio_pass'])): ?>
 <!-- Modal Cambio de Contraseña (Sugerido al ingresar con documento) -->

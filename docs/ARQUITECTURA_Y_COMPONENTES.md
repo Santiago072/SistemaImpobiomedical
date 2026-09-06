@@ -44,7 +44,7 @@ Centraliza el ciclo comercial completo:
 graph TB
     subgraph CLIENT["💻 Clientes & Navegadores"]
         direction TB
-        UI_LOGIN["🔐 Vista de Login\napp/views/auth/login.php"]
+        UI_LOGIN["🔐 Vista Landing & Login Unificado\napp/views/landingauth/index.php"]
         UI_DASH["📊 Dashboard Principal\napp/views/panel/index.php"]
         UI_COT["📝 Cotizador Dinámico\n(Calculadora de Utilidades & Ganancias)\napp/views/cotizaciones/"]
         UI_ORD["📦 Gestión de Órdenes de Compra (P.O.)\napp/views/ordenes/"]
@@ -393,7 +393,9 @@ erDiagram
 
 ### 6.2 Dashboard Principal (`PanelController.php`)
 - **Métricas:** Conteo dinámico de cotizaciones totales, cotizaciones del mes (por asesor o global para admin), clientes activos y catálogo de productos.
-- **Accesos Directos:** Botones de acción rápida adaptados por rol.
+- **Límites de Visualización Rápida:** Listado optimizado de los últimos **5 productos** agregados y las últimas **5 cotizaciones** recientes (`PanelController::index()`), manteniendo la vista ejecutiva ágil sin sobrecarga de datos.
+- **Accesos Directos:** Botones de acción rápida y bienvenida corporativa adaptados por rol.
+- **Visualización de Gráficos:** Soporte para Chart.js vía CDN (`$extraHead` en `app/views/estadisticas/index.php`) con renderizado automático de tendencias mensuales al disponer de registros históricos activos.
 
 ### 6.3 Cotizador y Negociaciones (`CotizacionController.php`)
 - **Manejo de Borrador Activo:** Sesión `$_SESSION['cotizacion_id']` para construir la cotización paso a paso sin perder datos.
@@ -461,20 +463,32 @@ flowchart TD
 
 ## 8. Arquitectura de Estilos Modularizada (`css/`)
 
-La interfaz gráfica sigue una arquitectura **SMACSS/ITCSS** dividida en 7 submódulos:
+La interfaz gráfica sigue una arquitectura **SMACSS/ITCSS** dividida en submódulos especializados:
 
 ```
 css/
-├── estilos.css               # Maestro (@imports)
+├── estilos.css               # Maestro (@imports con flags de invalidación de caché)
 └── modules/
-    ├── variables.css         # Paleta de colores médica (Teal/Navy/Cyan), tokens y @keyframes
+    ├── variables.css         # Paleta de colores médica (Teal/Navy/Slate), tipografías y tokens globales
     ├── base.css              # Reset CSS, html/body, canvas de partículas y overlays
     ├── layout.css            # Sidebar / Menú lateral, Topbar y Contenedores principales
     ├── components.css        # Tarjetas, Botones, Tablas, Modales, Badges y Calculadora
     ├── forms.css             # Formularios globales, Inputs y Buscadores dinámicos
     ├── auth.css              # Pantalla de Login, Branding y Formularios de autenticación
+    ├── ordenes.css           # Estilos especializados para P.O., tabs y tablas tributarias
+    ├── landing.css           # Estilos exclusivos de la página pública de aterrizaje y catálogo de presentación
     └── responsive.css        # Media queries y adaptabilidad para móviles y tablets
 ```
+
+### 8.1 Sistema Tipográfico y Jerarquía Visual
+- **Tipografías Estándar (Google Fonts):**
+  - **Cuerpo y Contenido General (`--font-sans`):** `Inter`, sans-serif (pesos 300, 400, 500, 600, 700) con suavizado de fuentes (`-webkit-font-smoothing: antialiased`).
+  - **Títulos y Encabezados (`--font-heading`):** `Outfit`, sans-serif (pesos 500, 600, 700, 800) para un diseño corporativo moderno y de alto impacto.
+- **Jerarquía de Encabezados en Módulos:**
+  - Títulos de módulos (`.page-title`, `.mod-title`): Escala controlada a **20px**, peso **700** y color slate de alto contraste (`#0f172a`), garantizando legibilidad sin sobrecargar la vista.
+  - Subtítulos y metadatos (`.page-sub`, `.mod-sub`): Tamaño **13px**, peso **500** y color neutro medio (`#64748b`), evitando problemas de contraste en fondos claros.
+- **Aislamiento de la Landing Page:**
+  - Los estilos de `landing.css` están estrictamente limitados a `body.landing-page-body` y selectores descendientes para evitar cualquier filtración de propiedades tipográficas o de espaciado hacia los módulos internos del panel.
 
 ---
 

@@ -49,9 +49,11 @@
     --shadow-lg: 0 28px 56px rgba(0, 0, 0, 0.6);
     --shadow-gold: 0 0 28px rgba(45, 212, 212, 0.2);
 
-    /* ── Typography ────────────────────────────────────────── */
-    --font-main: 'Inter', sans-serif;
-    --font-display: 'Inter', sans-serif;
+    /* ── Tipografía y Textos (Exacta del Sistema HDMI de la imagen) ── */
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-heading: 'Outfit', sans-serif;
+    --font-main: var(--font-sans);
+    --font-display: var(--font-heading);
 
     /* ── Transitions ───────────────────────────────────────── */
     --ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -60,17 +62,59 @@
     --transition-slow: 0.5s ease;
 }
 
+/* Base idéntica a HDMI base.css */
+html, body {
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
 html {
     scroll-behavior: smooth;
 }
 
 body {
-    font-family: var(--font-main);
     min-height: 100vh;
     overflow-x: hidden;
     background: var(--ink);
     color: var(--white);
-    line-height: 1.65;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: #0f172a;
+}
+
+.page-title, .mod-title {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.015em;
+    margin: 0 0 4px 0;
+}
+
+.page-sub, .mod-sub {
+    color: #64748b !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    margin: 4px 0 0 0 !important;
+}
+
+.page-sub strong, .mod-sub strong {
+    color: #0f172a !important;
+}
+
+.banner-welcome-corp h1,
+.banner-welcome-corp .banner-title-corp,
+.banner-welcome-corp .banner-subtitle-corp {
+    color: #ffffff !important;
+}
+
+input, select, textarea, button, table, th, td {
+    font-family: var(--font-sans);
 }
 
 body.login-page {

@@ -14,9 +14,9 @@ class UsuarioController
     private UsuarioModel $model;
     private int $porPagina = 10;
 
-    public function __construct(\PDO $conexion)
+    public function __construct(\PDO $conexion, ?UsuarioModel $model = null)
     {
-        $this->model = new UsuarioModel($conexion);
+        $this->model = $model ?? new UsuarioModel($conexion);
     }
 
     // ── LISTAR ────────────────────────────────────────────────────────────────

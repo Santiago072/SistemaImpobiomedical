@@ -154,19 +154,13 @@ if ($module === '') {
     extract($data);
 
     // Si envía el formulario por POST o solicita explícitamente login (?action=login)
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' || $action === 'login') {
-        // Si hay error en POST desde el modal, la landing abre el modal con el error;
-        // o si accede por ?action=login directo, muestra la vista clásica de login
-        if ($action === 'login' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
-            include __DIR__ . '/app/views/auth/login.php';
-        } else {
-            include __DIR__ . '/app/views/landing/index.php';
-        }
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' || $action === 'login' || isset($_GET['timeout']) || isset($_GET['login'])) {
+        include __DIR__ . '/app/views/landingauth/index.php';
         exit();
     }
 
     // Por defecto en la raíz: Mostrar Landing Page Institucional
-    include __DIR__ . '/app/views/landing/index.php';
+    include __DIR__ . '/app/views/landingauth/index.php';
     exit();
 }
 

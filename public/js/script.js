@@ -28,27 +28,28 @@ if (loginForm) {
     });
 }
 
-/* ── MENÚ LATERAL (Para el Panel) ── */
-const btnMenu = document.getElementById('btnMenu');
-if(btnMenu) {
-    btnMenu.addEventListener('click', function () {
-        const menuLateral = document.querySelector('.menu-lateral');
-        const contenidoPrincipal = document.querySelector('.contenido-principal');
-        const cabeceraSuperior = document.querySelector('.cabecera-superior');
-        const layoutMain = document.querySelector('.layout-main');
+/* ── MENÚ LATERAL (Estructura HDMI) ── */
+function toggleSidebarMenu() {
+    const sidebar = document.getElementById('menuLateral');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const contenido = document.querySelector('.contenido-principal');
+    const cabecera = document.querySelector('.cabecera-superior');
+    const isMobile = window.innerWidth <= 1024;
 
-        if (menuLateral) menuLateral.classList.toggle('oculto');
-        if (contenidoPrincipal) contenidoPrincipal.classList.toggle('completo');
-        if (cabeceraSuperior) cabeceraSuperior.classList.toggle('completo');
-        if (layoutMain) layoutMain.classList.toggle('menu-oculto');
+    if (isMobile) {
+        if (sidebar) sidebar.classList.toggle('is-open');
+        if (backdrop) backdrop.classList.toggle('is-hidden');
+    } else {
+        if (sidebar) sidebar.classList.toggle('oculto');
+        if (contenido) contenido.classList.toggle('completo');
+        if (cabecera) cabecera.classList.toggle('completo');
         document.body.classList.toggle('menu-oculto');
+    }
+}
 
-        if (menuLateral && menuLateral.classList.contains('oculto')) {
-            this.innerHTML = '<i class="fa-solid fa-bars"></i> Mostrar Menú';
-        } else {
-            this.innerHTML = '<i class="fa-solid fa-bars"></i> Ocultar Menú';
-        }
-    });
+const btnMenu = document.getElementById('btnMenu');
+if (btnMenu) {
+    btnMenu.addEventListener('click', toggleSidebarMenu);
 }
 
 /* ── PROTECCIÓN ANTI-DOBLE ENVÍO GLOBAL EN FORMULARIOS POST ── */

@@ -8,10 +8,12 @@ require_once dirname(__DIR__, 2) . '/config/seguridad.php';
 class PanelController
 {
     private CotizacionModel $model;
+    private ProductoModel   $productoModel;
 
-    public function __construct(\PDO $conexion)
+    public function __construct(\PDO $conexion, ?CotizacionModel $model = null, ?ProductoModel $productoModel = null)
     {
-        $this->model = new CotizacionModel($conexion);
+        $this->model         = $model ?? new CotizacionModel($conexion);
+        $this->productoModel = $productoModel ?? new ProductoModel($conexion);
     }
 
     public function index(): array
@@ -30,8 +32,14 @@ class PanelController
         }
         $totalClientes        = $this->model->contarTotalClientes();
         $totalProductos       = $this->model->contarTotalProductos();
+        
+        // Obtener las cotizaciones más recientes
+        $cotizacionesRecientes = $this->model->buscarConFiltros([], 0, 5, $usuarioId, $rol);
 
-        return compact('totalCotizaciones', 'cotizacionesMes', 'totalClientes', 'totalProductos');
+        // Obtener los productos más recientes del catálogo
+        $ultimosProductos = $this->productoModel->listar(0, 5);
+
+        return compact('totalCotizaciones', 'cotizacionesMes', 'totalClientes', 'totalProductos', 'cotizacionesRecientes', 'ultimosProductos');
     }
 }
 

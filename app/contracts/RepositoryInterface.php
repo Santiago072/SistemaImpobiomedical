@@ -1,12 +1,8 @@
 <?php
 /**
- * RepositoryInterface — Contrato base para los modelos (Principio ISP/SOLID).
- * Los modelos que representen entidades simples implementan esta interfaz.
+ * RepositoryInterface — Contrato compuesto para repositorios completos (ISP y LSP / SOLID).
+ * Extiende interfaces segregadas para mantener alta cohesión y bajo acoplamiento.
  */
-interface RepositoryInterface
+interface RepositoryInterface extends ReadableRepositoryInterface, DeletableRepositoryInterface
 {
-    public function listar(int $offset, int $limite, string $busqueda = ''): array;
-    public function contar(string $busqueda = ''): int;
-    public function buscarPorId(int $id): ?array;
-    public function eliminar(int $id): bool;
 }

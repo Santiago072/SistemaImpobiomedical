@@ -1,7 +1,509 @@
 /* ── COMPONENTES UI (BOTONES, TARJETAS, TABLAS, MODALES, PAGINACIÓN, CALCULADORA) ── */
 /* ════════════════════════════════════════════════════════════
-   TARJETAS DASHBOARD / PANEL PRINCIPAL
+   DASHBOARD ESTILO HDMI (Banner Hero, Tarjetas KPI, Resúmenes)
 ════════════════════════════════════════════════════════════ */
+/* Banner de Bienvenida Hero (Gradiente Teal Corporativo) */
+.banner-welcome-corp {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #0a4f55 0%, #10757e 50%, #159ba7 100%);
+    color: #ffffff;
+    padding: 28px 32px;
+    box-shadow: 0 10px 25px rgba(16, 117, 126, 0.2);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    margin-bottom: 30px;
+}
+
+.banner-welcome-header {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+@media (min-width: 900px) {
+    .banner-welcome-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+.banner-welcome-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #e2f8fa;
+    width: fit-content;
+    margin-bottom: 8px;
+}
+
+.banner-title-corp {
+    font-family: var(--font-display, 'Outfit', 'Inter', sans-serif);
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.25;
+    margin: 0 0 6px 0;
+}
+
+.banner-subtitle-corp {
+    font-size: 13.5px;
+    color: #e0f2fe;
+    max-width: 44rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.banner-subtitle-corp strong {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.banner-actions-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.btn-banner-action-white {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    color: #0a4f55;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all .2s ease;
+}
+
+.btn-banner-action-white:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    background-color: #f0fdfa;
+    color: #10757e;
+}
+
+.btn-banner-action-translucent {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #ffffff;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.btn-banner-action-translucent:hover {
+    background-color: rgba(255, 255, 255, 0.28);
+    transform: translateY(-2px);
+    color: #ffffff;
+}
+
+/* ── Sección de Métricas KPI ── */
+.section-kpis-wrap {
+    margin-bottom: 30px;
+}
+
+.section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.section-title-dash {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.icon-kpi-title {
+    color: var(--color-primary);
+    font-size: 17px;
+}
+
+.txt-kpi-subhead {
+    font-size: 11.5px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* Grilla KPI HDMI */
+.kpi-grid-hdmi {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.kpi-card-hdmi {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: all .25s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.kpi-card-hdmi:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(16, 117, 126, 0.09);
+    border-color: #99f6e4;
+}
+
+.kpi-card-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.kpi-label-hdmi {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #64748b;
+}
+
+.kpi-icon-box-hdmi {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+}
+
+.kpi-box-teal { background-color: #e2f1f2; color: #10757e; }
+.kpi-box-amber { background-color: #fef3c7; color: #d97706; }
+.kpi-box-cyan { background-color: #e0f2fe; color: #0284c7; }
+.kpi-box-blue { background-color: #ede9fe; color: #7c3aed; }
+
+.kpi-value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.kpi-number-hdmi {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.kpi-status-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.badge-teal-status { background-color: #f0fdfa; color: #0d9488; }
+.badge-amber-status { background-color: #fffbeb; color: #b45309; }
+.badge-cyan-status { background-color: #f0f9ff; color: #0284c7; }
+.badge-blue-status { background-color: #f5f3ff; color: #6d28d9; }
+
+.kpi-footer-note {
+    font-size: 11.5px;
+    color: #94a3b8;
+    margin: 8px 0 0 0;
+    line-height: 1.3;
+}
+
+/* ── Grilla Inferior (2 Columnas HDMI) ── */
+.grid-dashboard-bottom-hdmi {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 1024px) {
+    .grid-dashboard-bottom-hdmi {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.card-dash-panel {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.card-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+}
+
+.card-panel-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.icon-card-panel {
+    color: var(--color-primary);
+    font-size: 16px;
+}
+
+.card-panel-subtitle {
+    font-size: 11.5px;
+    color: #64748b;
+    margin: 2px 0 0 0;
+}
+
+.link-view-all {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color .2s ease;
+}
+
+.link-view-all:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+}
+
+/* Grilla Accesos Rápidos HDMI */
+.actions-grid-hdmi {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+}
+
+.action-card-hdmi {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all .25s ease;
+}
+
+.action-icon-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--color-primary);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: transform .2s ease, background-color .2s ease;
+}
+
+.action-card-hdmi:hover {
+    background: #ffffff;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 117, 126, 0.1);
+}
+
+.action-card-hdmi:hover .action-icon-circle {
+    background-color: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+    transform: scale(1.08);
+}
+
+/* Lista de Cotizaciones Recientes */
+.recent-list-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.recent-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background-color: #f8fafc;
+    border: 1px solid #edf2f7;
+    transition: background-color .2s ease;
+}
+
+.recent-list-item:hover {
+    background-color: #f1f8f9;
+}
+
+.recent-prod-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+}
+
+.recent-prod-img-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.recent-prod-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.text-muted-icon {
+    font-size: 18px;
+    color: #94a3b8;
+}
+
+.recent-prod-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.recent-prod-price {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--color-primary);
+    white-space: nowrap;
+}
+
+.recent-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.recent-item-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge-num-po {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color-primary);
+    background-color: #e2f1f2;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.recent-prod-full-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.recent-client-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.35;
+}
+
+.recent-item-meta {
+    font-size: 11px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-item-link {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+    font-size: 18px;
+    text-decoration: none;
+    transition: all .2s ease;
+}
+
+.btn-item-link:hover {
+    background-color: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+}
+
+.empty-list-notice {
+    padding: 30px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.empty-list-notice i {
+    font-size: 28px;
+    margin-bottom: 6px;
+    display: block;
+}
+
 .badge-codigo {
     display: inline-block;
     background: linear-gradient(135deg, #10757e, #0a4f55);
@@ -1852,5 +2354,16 @@ td .estado-no-generado::before {
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+.txt-cats-selected {
+    font-size: 11px;
+    color: #94a3b8;
+}
 
+.form-export-inline {
+    margin: 0;
+    display: inline;
+}
 
+.mod-empty-grid-full {
+    grid-column: 1 / -1;
+}

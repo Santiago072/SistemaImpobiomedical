@@ -31,3 +31,7 @@
 
 /* ── 8. Diseño Adaptativo (Responsive Design) ─────────────── */
 @import url('modules/responsive.css');
+
+/* ── 9. Landing Page Institucional ────────────────────────── */
+@import url('modules/landing.css');
+

@@ -11,10 +11,10 @@ class ProductoController
     private FileUploadService $uploader;
     private int $porPagina = 12;
 
-    public function __construct(\PDO $conexion)
+    public function __construct(\PDO $conexion, ?ProductoModel $model = null, ?FileUploadService $uploader = null)
     {
-        $this->model    = new ProductoModel($conexion);
-        $this->uploader = new FileUploadService(dirname(__DIR__, 2) . '/uploads');
+        $this->model    = $model ?? new ProductoModel($conexion);
+        $this->uploader = $uploader ?? new FileUploadService(dirname(__DIR__, 2) . '/uploads');
     }
 
     public function listar(): array

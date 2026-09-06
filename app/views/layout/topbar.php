@@ -10,49 +10,60 @@ $pageHeading = $pageHeading ?? '';
 $usuario = $usuario ?? null;
 $esDashboard = $esDashboard ?? false;
 ?>
-<div class="cabecera-superior">
-    <button class="boton-menu-ocultar" id="btnMenu">
-        <i class="fas fa-bars"></i> Ocultar Menú
-    </button>
-    <div class="cabecera-bienvenida flex-1 pl-16">
-        <?php if ($esDashboard && $usuario): 
-            $codigoMostrar = !empty($usuario['codigo']) ? $usuario['codigo'] : ($_SESSION['usuario_codigo'] ?? '');
-        ?>
-        <h3 class="topbar-welcome-title">
-            <span>¡Bienvenido, <?= htmlspecialchars($usuario['nombre']) ?>!</span>
-            <?php if (!empty($codigoMostrar)): ?>
-            <span class="badge-codigo">
-                <?= htmlspecialchars($codigoMostrar) ?>
-            </span>
-            <?php endif; ?>
-        </h3>
-        <?php endif; ?>
-        <?php if ($pageHeading): ?>
-        <span class="page-heading">
-            <?= htmlspecialchars($pageHeading) ?>
-        </span>
-        <?php endif; ?>
+<?php
+$meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+$fechaHoy = date('d') . ' de ' . $meses[(int)date('n') - 1] . ' de ' . date('Y');
+$tituloModulo = !empty($pageHeading) ? $pageHeading : 'Sistema Comercial & Equipamiento Biomédico';
+$nombreUsuario = $usuario['nombre'] ?? ($_SESSION['usuario_nombre'] ?? 'Asesor Comercial');
+$rolUsuario = $usuario['rol'] ?? ($_SESSION['rol'] ?? 'usuario');
+$codigoUsuario = $usuario['codigo'] ?? ($_SESSION['usuario_codigo'] ?? '');
+?>
+<header class="cabecera-superior">
+    <!-- Lado Izquierdo: Botón Menú + Título con Pulso Vivo + Información Corporativa -->
+    <div class="topbar-left-zone">
+        <button class="boton-menu-ocultar" id="btnMenu" aria-label="Alternar Menú Lateral">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <div class="topbar-title-block">
+            <div class="topbar-main-title">
+                <span class="topbar-pulse-dot"></span>
+                <span><?= htmlspecialchars($tituloModulo) ?></span>
+            </div>
+            <div class="topbar-subtitle-info">
+                <i class="bi bi-calendar3 icon-calendar-sub"></i>
+                <span><?= $fechaHoy ?> &bull; <strong class="text-corp-brand">Control Comercial &bull; NIT 900.535.843-3</strong></span>
+            </div>
+        </div>
     </div>
-    <div class="header-actions-wrap align-center gap-16">
-        <!-- Botón de Ayuda / Manual de Usuario -->
+
+    <!-- Lado Derecho: Estado Online + Ayuda + Perfil + Salir -->
+    <div class="topbar-right-zone">
+
+        <!-- Botón de Ayuda / Manual -->
         <button type="button" class="btn-help-topbar" onclick="abrirManualUsuario()" title="Ver Manual y Guía de Uso del Sistema">
             <i class="bi bi-question-circle-fill"></i>
             <span>Ayuda</span>
         </button>
 
-        <?php if ($esDashboard && $usuario): ?>
-            <?php if ($usuario['rol'] === 'admin'): ?>
-            <span class="rol-admin">
-                <i class="bi bi-shield-check"></i> Administrador
-            </span>
-            <?php else: ?>
-            <span class="rol-usuario">
-                <i class="bi bi-person"></i> Usuario
-            </span>
-            <?php endif; ?>
-        <?php endif; ?>
+        <div class="topbar-divider-v"></div>
+
+        <!-- Usuario y Botón Salir -->
+        <div class="topbar-user-section">
+            <div class="topbar-user-text">
+                <span class="topbar-user-fullname"><?= htmlspecialchars($nombreUsuario) ?></span>
+                <span class="topbar-user-badge">
+                    @<?= htmlspecialchars(strtolower($rolUsuario)) ?> <?= !empty($codigoUsuario) ? '('.htmlspecialchars($codigoUsuario).')' : '' ?>
+                </span>
+            </div>
+
+            <a href="<?= $basePath ?>?action=logout" class="btn-topbar-logout" title="Cerrar Sesión">
+                <i class="bi bi-power"></i>
+                <span>Salir</span>
+            </a>
+        </div>
     </div>
-</div>
+</header>
 
 <!-- ── MODAL MANUAL DE USUARIO INTERACTIVO (Adaptativo según Rol) ── -->
 <?php $userRolActual = $_SESSION['rol'] ?? 'usuario'; ?>

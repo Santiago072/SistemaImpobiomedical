@@ -143,9 +143,9 @@ include dirname(__DIR__) . '/layout/menu.php';
         <div id="bar-seleccion-productos" class="prod-selection-bar">
             <div class="sel-info">
                 <span class="sel-badge"><span id="txt-cant-seleccionados">0</span> seleccionados</span>
-                <span id="txt-cats-seleccionadas" style="font-size:11px; color:#94a3b8;"></span>
+                <span id="txt-cats-seleccionadas" class="txt-cats-selected"></span>
             </div>
-            <form id="form-exportar-seleccionados" method="POST" action="<?= $basePath ?>?module=productos&action=exportarPdf" target="_blank" style="margin:0; display:inline;" onsubmit="return manejarExportarPdf(this)">
+            <form id="form-exportar-seleccionados" method="POST" action="<?= $basePath ?>?module=productos&action=exportarPdf" target="_blank" class="form-export-inline" onsubmit="return manejarExportarPdf(this)">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <input type="hidden" name="ids" id="inp-ids-seleccionados" value="">
                 <button type="submit" id="btn-exportar-sel-pdf" class="btn-sel-pdf">
@@ -514,7 +514,7 @@ function renderizarProductosAjax(productos, isAdmin) {
     if (!prodGrid) return;
     if (!productos || productos.length === 0) {
         prodGrid.innerHTML = `
-            <div class="mod-empty-card" style="grid-column: 1 / -1;">
+            <div class="mod-empty-card mod-empty-grid-full">
                 <i class="bi bi-search"></i>
                 <p>No se encontraron productos coincidentes.</p>
             </div>

@@ -3,6 +3,7 @@
  * Vista de Estadísticas — Módulo Analítico Avanzado
  */
 $pageTitle = 'Estadísticas del Sistema';
+$extraHead = '<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>';
 include __DIR__ . '/../layout/header.php';
 include __DIR__ . '/../layout/menu.php';
 

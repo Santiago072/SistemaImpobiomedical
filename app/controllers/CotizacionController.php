@@ -18,16 +18,26 @@ class CotizacionController
     private FileUploadService $uploader;
     private ItemCotizacionService $itemService;
     private FinalizarCotizacionService $finalizarService;
+    private CalculoComercialService $calculoService;
     private int $porPagina = 10;
 
-    public function __construct(\PDO $conexion)
-    {
-        $this->model            = new CotizacionModel($conexion);
-        $this->productoModel    = new ProductoModel($conexion);
-        $this->clienteModel     = new ClienteModel($conexion);
-        $this->uploader         = new FileUploadService(dirname(__DIR__, 2) . '/uploads');
-        $this->itemService      = new ItemCotizacionService($this->model, $this->productoModel, $this->uploader);
-        $this->finalizarService = new FinalizarCotizacionService($this->model, $this->clienteModel);
+    public function __construct(
+        \PDO $conexion,
+        ?CotizacionModel $model = null,
+        ?ProductoModel $productoModel = null,
+        ?ClienteModel $clienteModel = null,
+        ?FileUploadService $uploader = null,
+        ?ItemCotizacionService $itemService = null,
+        ?FinalizarCotizacionService $finalizarService = null,
+        ?CalculoComercialService $calculoService = null
+    ) {
+        $this->model            = $model ?? new CotizacionModel($conexion);
+        $this->productoModel    = $productoModel ?? new ProductoModel($conexion);
+        $this->clienteModel     = $clienteModel ?? new ClienteModel($conexion);
+        $this->uploader         = $uploader ?? new FileUploadService(dirname(__DIR__, 2) . '/uploads');
+        $this->itemService      = $itemService ?? new ItemCotizacionService($this->model, $this->productoModel, $this->uploader);
+        $this->finalizarService = $finalizarService ?? new FinalizarCotizacionService($this->model, $this->clienteModel);
+        $this->calculoService   = $calculoService ?? new CalculoComercialService();
     }
 
     // ── CREAR / GESTIONAR ÍTEMS ───────────────────────────────────────────────
