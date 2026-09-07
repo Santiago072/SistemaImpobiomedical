@@ -27,8 +27,8 @@ include dirname(__DIR__) . '/layout/menu.php';
                 ?>
                 <button type="button" id="btn-pdf-header" class="btn-mod-primary btn-pdf-export"
                         onclick="exportarPdfHeader()"
-                        title="Exportar PDF de productos seleccionados">
-                    <i class="bi bi-file-earmark-pdf"></i> PDF
+                        title="<?= !empty($categoriaSel) ? 'Exportar PDF de la categoría ' . htmlspecialchars($categoriaSel) : 'Exportar PDF del catálogo' ?>">
+                    <i class="bi bi-file-earmark-pdf"></i> <?= !empty($categoriaSel) ? 'PDF Categoría' : 'PDF' ?>
                 </button>
                 <button class="btn-mod-primary" onclick="abrirModalCrear()">
                     <i class="bi bi-plus-lg"></i> Nuevo Producto
@@ -504,8 +504,22 @@ function exportarPdfHeader() {
     if (productosSeleccionados.size > 0) {
         document.getElementById('form-exportar-seleccionados').submit();
     } else {
-        if (confirm('¿Deseas exportar el catálogo completo con todos los productos organizados por categoría?')) {
-            window.open('<?= $basePath ?>?module=productos&action=exportarPdf&modo=completo', '_blank');
+        const cat = '<?= addslashes($categoriaSel ?? '') ?>';
+        const busq = '<?= addslashes($busqueda ?? '') ?>';
+        let url = '<?= $basePath ?>?module=productos&action=exportarPdf';
+
+        if (cat) {
+            url += '&categoria=' + encodeURIComponent(cat) + '&modo=categoria';
+            if (busq) url += '&busqueda=' + encodeURIComponent(busq);
+            if (confirm('¿Deseas exportar en PDF todos los productos de la categoría "' + cat + '"?')) {
+                window.open(url, '_blank');
+            }
+        } else {
+            url += '&modo=completo';
+            if (busq) url += '&busqueda=' + encodeURIComponent(busq);
+            if (confirm('¿Deseas exportar el catálogo completo con todos los productos organizados por categoría?')) {
+                window.open(url, '_blank');
+            }
         }
     }
 }

@@ -4,6 +4,18 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.0.1] - 2026-09-07
+### Corregido
+- **Persistencia de Sesión al Modificar Cotizaciones (`index.php`):**
+  - Corregido falso positivo en el detector de abandono de módulo: las consultas asíncronas de proveedores (`module=proveedores&action=ajax_buscar`) ejecutadas durante la adición de ítems en el cotizador ya no invalidan la sesión de modificación ni revierten la pantalla a "Nueva Cotización".
+  - Se mantiene la protección de descarte seguro si el usuario navega deliberadamente a Dashboard, Clientes, Productos, Proveedores u Órdenes.
+- **Exportación Inteligente de Catálogo de Productos a PDF por Categoría (`ProductoController.php`, `productos/lista.php`):**
+  - El botón de exportación PDF superior ahora detecta dinámicamente si el usuario se encuentra dentro de una categoría filtrada (ej. *Insumo Médico Quirúrgico*, *Servicio Calibración*) y ofrece exportar exclusivamente los productos de esa categoría (`modo=categoria`).
+  - Si el usuario se encuentra en la pestaña general "Todos", exporta el catálogo completo multicategría (`modo=completo`).
+  - La selección manual individual mediante checkboxes conserva su prioridad en cualquier contexto.
+
+---
+
 ## [v3.0.0] - 2026-09-06
 ### Añadido
 - **Módulo Integral de Gestión de Proveedores (`app/controllers/ProveedorController.php`, `app/models/ProveedorModel.php`, `app/views/proveedores/lista.php`):**

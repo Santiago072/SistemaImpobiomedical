@@ -186,14 +186,14 @@ class ProductoController
             $ids = array_filter(array_map('intval', explode(',', $idsRaw)));
         }
 
-        if (empty($ids) && $modo !== 'completo') {
-            $_SESSION['flash_error'] = 'Debe seleccionar al menos un producto para exportar el catálogo en PDF.';
+        $busqueda = sanitizar_entrada($_REQUEST['busqueda'] ?? '');
+        $categoriaSel = sanitizar_entrada($_REQUEST['categoria'] ?? '');
+
+        if (empty($ids) && $modo !== 'completo' && $modo !== 'categoria' && empty($categoriaSel)) {
+            $_SESSION['flash_error'] = 'Debe seleccionar al menos un producto o una categoría para exportar en PDF.';
             header('Location: ' . BASE_URL . '?module=productos&action=lista');
             exit();
         }
-
-        $busqueda = sanitizar_entrada($_REQUEST['busqueda'] ?? '');
-        $categoriaSel = sanitizar_entrada($_REQUEST['categoria'] ?? '');
 
         $productos = $this->model->listarParaExportar($busqueda, $categoriaSel, $ids);
 

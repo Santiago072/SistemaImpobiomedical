@@ -208,7 +208,10 @@ header('Expires: Sat, 26 Jul 1997 05:00:00 GMT'); // Fecha en el pasado para ase
 // Si el usuario estaba modificando una cotización y navega a panel, productos, clientes, ordenes,
 // usuarios, estadisticas, o consultar cotizaciones, se descarta el clon temporal y se restaura el borrador.
 if (isset($_SESSION['cotizacion_revision_de'])) {
-    $esFlujoCotizacion = ($module === 'cotizaciones' && in_array($action, ['crear', 'editar_item', 'eliminar_item', 'finalizar', 'ajax_buscar_productos', 'ajax_get_producto', 'ajax_buscar_clientes', 'ajax_get_cliente', 'modificar', 'limpiar_borrador']));
+    $esFlujoCotizacion = (
+        ($module === 'cotizaciones' && in_array($action, ['', 'crear', 'editar_item', 'eliminar_item', 'finalizar', 'ajax_buscar_productos', 'ajax_get_producto', 'ajax_buscar_clientes', 'ajax_get_cliente', 'modificar', 'limpiar_borrador']))
+        || ($module === 'proveedores' && in_array($action, ['ajax_buscar', 'ajax_get']))
+    );
     
     if (!$esFlujoCotizacion) {
         if (isset($_SESSION['cotizacion_id'])) {
