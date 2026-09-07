@@ -44,7 +44,6 @@ $csrf_token   = $csrf_token ?? '';
 
     <!-- Favicon Oficial -->
     <link rel="icon" type="image/svg+xml" href="<?= $base ?>public/favicon.svg?v=<?= time() ?>">
-    <link rel="alternate icon" type="image/png" sizes="32x32" href="<?= $base ?>public/favicon-32x32.png?v=<?= time() ?>">
 </head>
 <body>
 

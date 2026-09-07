@@ -1,8 +1,8 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** 2.7.0  
+**Versión:** v3.0.0  
 **Fecha:** Septiembre 2026  
-**Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS (SMACSS/ITCSS en `css/modules/`) · DomPDF · PHPUnit 10
+**Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
 ---
 
@@ -173,6 +173,7 @@ SistemaImpobiomedical/
 │   │   ├── OrdenCompraController.php
 │   │   ├── PanelController.php
 │   │   ├── ProductoController.php
+│   │   ├── ProveedorController.php
 │   │   └── UsuarioController.php
 │   │
 │   ├── models/                 # Modelos con persistencia PDO y RepositoryInterface
@@ -181,9 +182,11 @@ SistemaImpobiomedical/
 │   │   ├── EstadisticaModel.php
 │   │   ├── OrdenCompraModel.php
 │   │   ├── ProductoModel.php
+│   │   ├── ProveedorModel.php
 │   │   └── UsuarioModel.php
 │   │
 │   ├── services/               # Lógica de negocio y utilidades desacopladas (SOLID SRP)
+│   │   ├── CalculoComercialService.php
 │   │   ├── FileUploadService.php
 │   │   ├── FinalizarCotizacionService.php
 │   │   └── ItemCotizacionService.php
@@ -193,26 +196,32 @@ SistemaImpobiomedical/
 │       ├── clientes/           # Gestión y modales de clientes
 │       ├── cotizaciones/       # Cotizador, finalizar, consultar, respaldo y PDF
 │       ├── estadisticas/       # Métricas y reporte consolidado
+│       ├── landingauth/        # Portal institucional y acceso interactivo
 │       ├── layout/             # Header, menú lateral, topbar, paginación y footer
 │       ├── ordenes/            # Consultar, pestañas, generar P.O. y exportar Excel
 │       ├── panel/              # Dashboard principal
 │       ├── productos/          # Catálogo médico y exportación PDF con imágenes
+│       ├── proveedores/        # Directorio de proveedores y modales reactivos
 │       └── usuarios/           # Gestión de asesores y restablecimiento de claves
 │
 ├── config/
 │   ├── .env.example            # Plantilla de variables de entorno
 │   ├── EnvLoader.php           # Cargador seguro de configuración .env
 │   ├── conexion.php            # Singleton PDO con manejo seguro de excepciones
-│   └── seguridad.php           # Biblioteca central de funciones de seguridad
+│   └── seguridad.php           # Biblioteca central de funciones de seguridad (Rate Limit, CSRF, NIT)
 │
 ├── css/
 │   ├── estilos.css             # Entry point de la arquitectura CSS
-│   └── modules/                # 7 submódulos SMACSS/ITCSS
+│   ├── components/             # Submódulos desacoplados de componentes UI
+│   │   ├── alerts.css, badges.css, buttons.css, cards.css, forms.css, modals.css, tables.css, tabs.css, utilities.css
+│   └── modules/                # SMACSS/ITCSS
 │       ├── auth.css            # Estilos de login
 │       ├── base.css            # Reset, tipografías y canvas
-│       ├── components.css      # Botones, tablas, badges y modales
+│       ├── components.css      # Barrel central de componentes
 │       ├── forms.css           # Formularios, inputs y selects
+│       ├── landing.css         # Portal de bienvenida y presentación
 │       ├── layout.css          # Sidebar, topbar y grillas principales
+│       ├── ordenes.css         # Pestañas y selectores de órdenes de compra
 │       ├── responsive.css      # Media queries adaptables
 │       └── variables.css       # Tokens, paleta de colores y transiciones
 │
@@ -226,8 +235,9 @@ SistemaImpobiomedical/
 │   └── documentacion-tecnica.md
 │
 ├── public/
+│   ├── favicon.svg             # Favicon oficial corporativo vectorial
 │   └── js/
-│       └── script.js           # Toggle de menú, confirmaciones y anti-doble envío
+│       └── script.js           # Toggle de menú, confirmaciones, estrellas rojas y debounce
 │
 ├── tests/
 │   └── Unit/                   # Suite de pruebas unitarias PHPUnit 10
@@ -255,10 +265,24 @@ erDiagram
     usuarios ||--o{ cotizaciones : crea
     usuarios ||--o{ ordenes_compra : emite
     clientes ||--o{ cotizaciones : recibe
+    proveedores ||--o{ cotizacion_items : suministra
+    proveedores ||--o{ ordenes_compra : factura
     cotizaciones ||--|{ cotizacion_items : contiene
     cotizaciones ||--o{ ordenes_compra : origina
     ordenes_compra ||--|{ orden_compra_items : contiene
     productos ||--o{ cotizacion_items : provee
+
+    proveedores {
+        int id PK
+        string nit UK
+        string nombre_proveedor
+        string tipo_contribuyente
+        string nombre_banco
+        string numero_cuenta
+        string tipo_cuenta
+        string estado
+        datetime fecha_creacion
+    }
 
     usuarios {
         int id PK
@@ -420,6 +444,13 @@ erDiagram
 ### 6.7 Gestión de Usuarios (`UsuarioController.php`)
 - **Control de Asesores:** Asigna código de cotización de 2 a 3 letras único por asesor (ej. `EB`).
 - **Reseteo Administrativo:** Restablece contraseñas al número de documento con un solo clic.
+
+### 6.8 Gestión de Proveedores (`ProveedorController.php`)
+- **Directorio Centralizado:** Administración CRUD de proveedores con campos tributarios (`nit`, `tipo_contribuyente`), comerciales (`nombre_proveedor`) y bancarios (`nombre_banco`, `numero_cuenta`, `tipo_cuenta`).
+- **Control de Roles (RBAC):** Restricción de desactivación/eliminación exclusivamente a administradores (`admin`).
+- **Normalización de NIT:** Eliminación de puntos y espacios preservando el dígito de verificación (`normalizar_nit()`).
+- **Búsqueda Predictiva en Vivo:** Endpoint AJAX (`ajaxBuscar`) con Rate Limiting (`60/min`) utilizado transversalmente en cotizaciones y órdenes de compra.
+- **Historial de Proveedores:** Integración con `OrdenCompraModel` para clasificar automáticamente al proveedor en órdenes como `🟡 Nuevo` (primera orden) o `🟢 Registrado` (conteo de órdenes previas).
 
 ---
 

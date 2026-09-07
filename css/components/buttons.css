@@ -1,0 +1,164 @@
+﻿/* BOTONES REUTILIZABLES */
+.boton-primario {
+    background: linear-gradient(135deg, rgba(45, 190, 203, .9), rgba(16, 117, 126, .9));
+    border: none;
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .3), 0 0 0 1px rgba(255, 255, 255, .2) inset;
+}
+
+.boton-primario::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .3) 50%, transparent 65%);
+    transform: translateX(-100%);
+    transition: transform .45s;
+}
+
+.boton-primario:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, .4), 0 0 0 1px rgba(255, 255, 255, .3) inset, 0 0 30px rgba(45, 190, 203, .4);
+}
+
+.boton-primario:hover::before {
+    transform: translateX(100%);
+}
+
+.boton-primario:active {
+    transform: translateY(-1px);
+}
+
+.boton-limpiar,
+.boton-secundario {
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .2);
+    color: rgba(255, 255, 255, .8);
+    padding: 10px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all .3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.boton-limpiar:hover,
+.boton-secundario:hover {
+    background: rgba(231, 76, 60, .15);
+    border-color: rgba(231, 76, 60, .4);
+    color: #fecaca;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(231, 76, 60, .15);
+}
+
+.acciones-tabla {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.boton-editar,
+.boton-generar-pdf {
+    background: rgba(52, 152, 219, .15);
+    border: 1px solid rgba(52, 152, 219, .3);
+    color: #85c1e9;
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all .3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.boton-editar::before,
+.boton-generar-pdf::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent);
+    transition: left .5s;
+}
+
+.boton-editar:hover,
+.boton-generar-pdf:hover {
+    background: rgba(52, 152, 219, .25);
+    border-color: rgba(52, 152, 219, .5);
+    color: #aed6f1;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, .2);
+}
+
+.boton-editar:hover::before,
+.boton-generar-pdf:hover::before {
+    left: 100%;
+}
+
+.boton-eliminar {
+    background: rgba(231, 76, 60, .15);
+    border: 1px solid rgba(231, 76, 60, .3);
+    color: #f5b7b1;
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .5px;
+    transition: all .3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.boton-eliminar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent);
+    transition: left .5s;
+}
+
+.boton-eliminar:hover {
+    background: rgba(231, 76, 60, .25);
+    border-color: rgba(231, 76, 60, .5);
+    color: #fadbd8;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, .2);
+}
+
+.boton-eliminar:hover::before {
+    left: 100%;
+}
+

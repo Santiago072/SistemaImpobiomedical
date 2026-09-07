@@ -47,11 +47,18 @@ class ItemCotizacionService
         $calibracion         = (float)($postData['calibracion'] ?? 0);
         $estampillas         = (float)($postData['estampillas'] ?? 0);
         $proveedor           = mb_substr(sanitizar_entrada($postData['proveedor'] ?? ''), 0, 100);
+        $proveedor_nit_raw   = mb_substr(sanitizar_entrada($postData['proveedor_nit'] ?? ''), 0, 30);
+        $proveedor_nit       = function_exists('normalizar_nit') ? normalizar_nit($proveedor_nit_raw) : str_replace(['.', ' '], '', $proveedor_nit_raw);
+        $proveedor_id        = !empty($postData['proveedor_id']) && is_numeric($postData['proveedor_id']) ? (int)$postData['proveedor_id'] : null;
         $codigo_proveedor    = mb_substr(sanitizar_entrada($postData['codigo_proveedor'] ?? ''), 0, 60);
         
         $calc_ops_raw = $postData['calc_ops'] ?? '{}';
         $calc_ops_decoded = json_decode($calc_ops_raw, true);
         $calc_ops = ($calc_ops_decoded === null) ? '{}' : json_encode($calc_ops_decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        if (empty($proveedor)) {
+            throw new \InvalidArgumentException('El nombre del proveedor es obligatorio.');
+        }
 
         if (!in_array($iva, ['si', 'no'], true)) {
             $iva = 'si';
@@ -79,7 +86,8 @@ class ItemCotizacionService
             $cotizacion_id, $producto_id, $titulo, $foto,
             $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
             $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
-            $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops
+            $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops,
+            $proveedor_id, $proveedor_nit
         );
 
         if (!$inserted) {
@@ -160,11 +168,18 @@ class ItemCotizacionService
         $calibracion         = (float)($postData['calibracion'] ?? 0);
         $estampillas         = (float)($postData['estampillas'] ?? 0);
         $proveedor           = mb_substr(sanitizar_entrada($postData['proveedor'] ?? ''), 0, 100);
+        $proveedor_nit_raw   = mb_substr(sanitizar_entrada($postData['proveedor_nit'] ?? ''), 0, 30);
+        $proveedor_nit       = function_exists('normalizar_nit') ? normalizar_nit($proveedor_nit_raw) : str_replace(['.', ' '], '', $proveedor_nit_raw);
+        $proveedor_id        = !empty($postData['proveedor_id']) && is_numeric($postData['proveedor_id']) ? (int)$postData['proveedor_id'] : null;
         $codigo_proveedor    = mb_substr(sanitizar_entrada($postData['codigo_proveedor'] ?? ''), 0, 60);
         
         $calc_ops_raw = $postData['calc_ops'] ?? '{}';
         $calc_ops_decoded = json_decode($calc_ops_raw, true);
         $calc_ops = ($calc_ops_decoded === null) ? '{}' : json_encode($calc_ops_decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        if (empty($proveedor)) {
+            throw new \InvalidArgumentException('El nombre del proveedor es obligatorio.');
+        }
 
         if (!in_array($iva, ['si', 'no'], true)) {
             throw new \InvalidArgumentException('IVA no válido');
@@ -178,7 +193,8 @@ class ItemCotizacionService
             $itemId, $cotizacion_id, $titulo, $foto,
             $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
             $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
-            $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops
+            $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops,
+            $proveedor_id, $proveedor_nit
         );
     }
 }

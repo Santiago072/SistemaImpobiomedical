@@ -203,11 +203,11 @@ class CotizacionModel
              (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio,
               iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto,
               precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas,
-              proveedor, codigo_proveedor, calc_ops)
+              proveedor_id, proveedor, proveedor_nit, codigo_proveedor, calc_ops)
              SELECT :new_id, producto_id, titulo, foto, descripcion, cantidad, precio,
                     iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto,
                     precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas,
-                    proveedor, codigo_proveedor, calc_ops
+                    proveedor_id, proveedor, proveedor_nit, codigo_proveedor, calc_ops
              FROM cotizacion_items WHERE cotizacion_id = :old_id"
         );
         if (!$stmt->execute([':new_id' => $newId, ':old_id' => $oldId])) {
@@ -507,14 +507,15 @@ class CotizacionModel
                                  float $precioProveedor = 0, float $porcentajeUtilidad = 0,
                                  float $flete = 0, float $calibracion = 0,
                                  float $estampillas = 0, string $proveedor = '',
-                                 string $codigoProveedor = '', string $calcOps = '{}'): bool
+                                 string $codigoProveedor = '', string $calcOps = '{}',
+                                 ?int $proveedorId = null, string $proveedorNit = ''): bool
     {
         $stmt = $this->db->prepare(
             'INSERT INTO cotizacion_items
              (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio, iva, porcentaje_iva, tiempo_entrega,
-              categoria, codigo_producto, precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, proveedor, codigo_proveedor, calc_ops)
+              categoria, codigo_producto, precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, proveedor_id, proveedor, proveedor_nit, codigo_proveedor, calc_ops)
              VALUES (:cid, :pid, :tit, :foto, :desc, :cant, :prec, :iva, :porciva, :tient,
-                     :cat, :codprod, :precprov, :porcutil, :flet, :calib, :estamp, :prov, :codprov, :calc)'
+                     :cat, :codprod, :precprov, :porcutil, :flet, :calib, :estamp, :prov_id, :prov, :prov_nit, :codprov, :calc)'
         );
         $ok = $stmt->execute([
             ':cid'      => $cotizacionId,
@@ -534,7 +535,9 @@ class CotizacionModel
             ':flet'     => $flete,
             ':calib'    => $calibracion,
             ':estamp'   => $estampillas,
+            ':prov_id'  => $proveedorId,
             ':prov'     => $proveedor,
+            ':prov_nit' => $proveedorNit ?: null,
             ':codprov'  => $codigoProveedor,
             ':calc'     => $calcOps,
         ]);
@@ -551,7 +554,8 @@ class CotizacionModel
                                    float $precioProveedor = 0, float $porcentajeUtilidad = 0,
                                    float $flete = 0, float $calibracion = 0,
                                    float $estampillas = 0, string $proveedor = '',
-                                   string $codigoProveedor = '', string $calcOps = '{}'): bool
+                                   string $codigoProveedor = '', string $calcOps = '{}',
+                                   ?int $proveedorId = null, string $proveedorNit = ''): bool
     {
         $stmt = $this->db->prepare(
             'UPDATE cotizacion_items
@@ -560,7 +564,7 @@ class CotizacionModel
                  categoria=:cat, codigo_producto=:codprod,
                  precio_proveedor=:precprov, porcentaje_utilidad=:porcutil,
                  flete=:flet, calibracion=:calib, estampillas=:estamp,
-                 proveedor=:prov, codigo_proveedor=:codprov, calc_ops=:calc
+                 proveedor_id=:prov_id, proveedor=:prov, proveedor_nit=:prov_nit, codigo_proveedor=:codprov, calc_ops=:calc
              WHERE id=:iid AND cotizacion_id=:cid'
         );
         return $stmt->execute([
@@ -579,7 +583,9 @@ class CotizacionModel
             ':flet'     => $flete,
             ':calib'    => $calibracion,
             ':estamp'   => $estampillas,
+            ':prov_id'  => $proveedorId,
             ':prov'     => $proveedor,
+            ':prov_nit' => $proveedorNit ?: null,
             ':codprov'  => $codigoProveedor,
             ':calc'     => $calcOps,
             ':iid'      => $itemId,

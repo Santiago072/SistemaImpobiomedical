@@ -170,6 +170,7 @@ $rutasMap = [
     'estadisticas' => true,
     'usuarios'     => true,
     'clientes'     => true,
+    'proveedores'  => true,
     'productos'    => true,
     'cotizaciones' => true,
     'ordenes'      => true,
@@ -321,6 +322,42 @@ if ($module === 'clientes') {
                      . (!empty($data['busqueda']) ? '&busqueda=' . urlencode($data['busqueda']) : '');
             extract($data);
             include __DIR__ . '/app/views/clientes/lista.php';
+    }
+    exit();
+}
+
+if ($module === 'proveedores') {
+    require_once __DIR__ . '/app/controllers/ProveedorController.php';
+    $ctrl = new ProveedorController($db);
+    switch ($action) {
+        case 'eliminar':
+            $ctrl->eliminar();
+            break;
+        case 'ajax_buscar':
+            $ctrl->ajaxBuscar();
+            break;
+        case 'ajax_get':
+            $ctrl->ajaxGet();
+            break;
+        case 'crear':
+        case 'editar':
+            $dataForm = $action === 'crear' ? $ctrl->crear() : $ctrl->editar();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($dataForm['mensajeError'])) {
+                $dataList = $ctrl->listar();
+                $data = array_merge($dataList, $dataForm);
+                $urlBase = BASE_URL . '?module=proveedores';
+                extract($data);
+                include __DIR__ . '/app/views/proveedores/lista.php';
+            } else {
+                header('Location: ' . BASE_URL . '?module=proveedores');
+            }
+            break;
+        default:
+            $data    = $ctrl->listar();
+            $urlBase = BASE_URL . '?module=proveedores'
+                     . (!empty($data['busqueda']) ? '&busqueda=' . urlencode($data['busqueda']) : '');
+            extract($data);
+            include __DIR__ . '/app/views/proveedores/lista.php';
     }
     exit();
 }

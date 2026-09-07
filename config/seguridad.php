@@ -227,3 +227,14 @@ function regenerar_sesion(): void
 {
     session_regenerate_id(true);
 }
+
+/**
+ * Normaliza un NIT o documento eliminando puntos y espacios en blanco,
+ * conservando el guion del dígito de verificación si lo tiene (ej: 900.535.843-3 -> 900535843-3).
+ */
+function normalizar_nit(string $nit): string
+{
+    // Eliminar puntos y espacios
+    $nitLimpio = trim(str_replace(['.', ' '], '', $nit));
+    return $nitLimpio;
+}

@@ -1,6 +1,6 @@
 # 📚 Manual de Usuario — Sistema Impobiomedical
 
-**Versión del sistema**: v2.4.0 (Edición Comercial y Operativa)  
+**Versión del sistema**: v3.0.0 (Edición Comercial, Proveedores y Operativa)  
 **Autor y Titular**: Santiago Lizcano  
 **Público objetivo**: Asesores comerciales y administradores de Impobiomedical
 
@@ -14,11 +14,12 @@
 4. [Consultar Cotizaciones y Revisiones](#4-consultar-cotizaciones-y-revisiones)
 5. [Órdenes de Compra (P.O.)](#5-órdenes-de-compra-po)
 6. [Gestión de Clientes](#6-gestión-de-clientes)
-7. [Gestión de Productos (Solo Admin)](#7-gestión-de-productos-solo-admin)
-8. [Gestión de Usuarios (Solo Admin)](#8-gestión-de-usuarios-solo-admin)
-9. [Estadísticas y Reportes (Solo Admin)](#9-estadísticas-y-reportes-solo-admin)
-10. [Botón de Ayuda Rápida](#10-botón-de-ayuda-rápida)
-11. [Preguntas Frecuentes](#11-preguntas-frecuentes)
+7. [Gestión de Proveedores](#7-gestión-de-proveedores)
+8. [Gestión de Productos (Solo Admin)](#8-gestión-de-productos-solo-admin)
+9. [Gestión de Usuarios (Solo Admin)](#9-gestión-de-usuarios-solo-admin)
+10. [Estadísticas y Reportes (Solo Admin)](#10-estadísticas-y-reportes-solo-admin)
+11. [Botón de Ayuda Rápida](#11-botón-de-ayuda-rápida)
+12. [Preguntas Frecuentes](#12-preguntas-frecuentes)
 
 ---
 
@@ -92,7 +93,18 @@ Directorio centralizado de instituciones de salud:
 
 ---
 
-## 7. Gestión de Productos (Solo Admin)
+## 7. Gestión de Proveedores
+
+Directorio centralizado de proveedores comerciales y técnicos:
+* **Consulta y Búsqueda en Vivo:** Localice rápidamente proveedores por NIT o Nombre sin necesidad de presionar Enter (búsqueda automática con debounce).
+* **Nuevo Proveedor:** Modal para registrar NIT, Razón Social, Tipo de Contribuyente y datos bancarios (Banco, Tipo de Cuenta y Número).
+* **Edición Rápida:** Actualice información comercial o bancaria desde el botón de lápiz.
+* **Desactivación Segura (Solo Admin):** Los administradores pueden desactivar proveedores obsoletos. Los proveedores desactivados no aparecerán en nuevas cotizaciones u órdenes.
+* **Normalización de NIT:** El sistema limpia automáticamente puntos y espacios al escribir, manteniendo intacto el formato con guion de verificación (ej: `900535843-3`).
+
+---
+
+## 8. Gestión de Productos (Solo Admin)
 
 * Catálogo con fotos sanitizadas, categorías, códigos y porcentajes de IVA.
 * Exportación completa del catálogo a PDF.
@@ -100,14 +112,14 @@ Directorio centralizado de instituciones de salud:
 
 ---
 
-## 8. Gestión de Usuarios (Solo Admin)
+## 9. Gestión de Usuarios (Solo Admin)
 
 * Alta de asesores con su **Código de Cotización** (2 letras, ej: `EB`, `SL`).
 * Reset de contraseñas rápido al número de documento en un solo clic.
 
 ---
 
-## 9. Estadísticas y Reportes (Solo Admin)
+## 10. Estadísticas y Reportes (Solo Admin)
 
 * **Indicadores Financieros y Operativos:** Monto cotizado consolidado, monto real facturado por órdenes concluidas, total de cotizaciones y órdenes emitidas.
 * **Top Clientes y Ventas Mensuales:** Identificación de clientes líderes por facturación y visor interactivo de ventas mensuales por cliente con filtro por mes y acumulado general.
@@ -116,13 +128,13 @@ Directorio centralizado de instituciones de salud:
 
 ---
 
-## 10. Botón de Ayuda Rápida
+## 11. Botón de Ayuda Rápida
 
 En la barra superior de todas las pantallas del sistema se encuentra el botón **`[ ? Ayuda ]`**, el cual despliega este manual en un modal con pestañas adaptado automáticamente a los permisos del usuario activo.
 
 ---
 
-## 11. Preguntas Frecuentes
+## 12. Preguntas Frecuentes
 
 ### ¿La hoja de respaldo la ve el cliente?
 **No.** Es un documento interno confidencial que detalla los costos de proveedor y utilidades.

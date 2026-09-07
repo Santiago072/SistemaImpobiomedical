@@ -112,13 +112,26 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <div class="cot-edit-right">
                         <!-- Fila de Precios del Proveedor -->
                         <div class="imo-form-row">
-                            <div class="imo-form-group">
-                                <label>Proveedor</label>
-                                <input type="text" name="proveedor" id="inpProveedor" value="<?= htmlspecialchars($datos['proveedor'] ?? '') ?>" placeholder="Ej: ALENO SAS">
+                            <div class="imo-form-group search-live" style="position: relative;">
+                                <label>Proveedor <span class="required-star">*</span></label>
+                                <input type="text" name="proveedor" id="inpProveedor" required value="<?= htmlspecialchars($datos['proveedor'] ?? '') ?>" placeholder="Ej: ALENO SAS" autocomplete="off">
+                                <input type="hidden" name="proveedor_id" id="hdnProveedorId" value="<?= htmlspecialchars($datos['proveedor_id'] ?? '') ?>">
+                                <input type="hidden" name="proveedor_nit" id="hdnProveedorNit" value="<?= htmlspecialchars($datos['proveedor_nit'] ?? '') ?>">
+                                <div id="listaProveedores" class="lista-sugerencias" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:1050; background:#ffffff; border:1.5px solid #0d9488; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:220px; overflow-y:auto;"></div>
                             </div>
                             <div class="imo-form-group">
                                 <label>Código Proveedor</label>
                                 <input type="text" name="codigo_proveedor" id="inpCodigoProveedor" value="<?= htmlspecialchars($datos['codigo_proveedor'] ?? '') ?>" placeholder="Ej: PROV-001">
+                            </div>
+                        </div>
+
+                        <div class="imo-form-row mb-12">
+                            <div class="imo-form-group">
+                                <label>NIT del Proveedor</label>
+                                <input type="text" id="dispProveedorNit" readonly class="form-control-plaintext"
+                                       value="<?= htmlspecialchars($datos['proveedor_nit'] ?? '') ?>"
+                                       placeholder="Se asigna automáticamente al seleccionar"
+                                       style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:7px 12px; font-family:monospace; font-weight:700; color:#0f766e;">
                             </div>
                         </div>
 
@@ -309,8 +322,76 @@ function toggleIva(val) {
 toggleIva(document.getElementById('inpIva').value);
 renderCalculadoraInputs();
 
-// Serializar calcState antes de enviar
-document.querySelector('form').addEventListener('submit', function() {
+// ── Búsqueda en vivo de Proveedores (Autocompletado) ───────────────────
+const BASE_URL_APP = '<?= $basePath ?>';
+const inpProvEdit = document.getElementById('inpProveedor');
+const listaProvEdit = document.getElementById('listaProveedores');
+let timerProvEdit = null;
+
+if (inpProvEdit && listaProvEdit) {
+    inpProvEdit.addEventListener('input', function() {
+        clearTimeout(timerProvEdit);
+        const term = this.value.trim();
+        if (term.length < 2) {
+            listaProvEdit.style.display = 'none';
+            listaProvEdit.innerHTML = '';
+            return;
+        }
+
+        timerProvEdit = setTimeout(() => {
+            fetch(BASE_URL_APP + '?module=proveedores&action=ajax_buscar&term=' + encodeURIComponent(term))
+                .then(r => r.json())
+                .then(data => {
+                    listaProvEdit.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        listaProvEdit.innerHTML = '<div class="prov-search-empty"><i class="bi bi-info-circle"></i> No se encontró proveedor registrado con ese NIT o nombre.</div>';
+                    } else {
+                        data.forEach(p => {
+                            const item = document.createElement('div');
+                            item.className = 'prov-search-item';
+                            item.innerHTML = `
+                                <div>
+                                    <strong class="nit-text">${p.nit}</strong>
+                                    <div style="font-size:12.5px; color:#1e293b; font-weight:600; margin-top:2px;">${p.nombre_proveedor}</div>
+                                    ${p.nombre_banco ? `<div class="sub-text"><i class="bi bi-bank"></i> ${p.nombre_banco} ${p.tipo_cuenta || ''}</div>` : ''}
+                                </div>
+                                <span class="mod-badge badge-green">Seleccionar</span>
+                            `;
+                            item.addEventListener('click', () => {
+                                inpProvEdit.value = p.nombre_proveedor;
+                                document.getElementById('hdnProveedorId').value = p.id;
+                                document.getElementById('hdnProveedorNit').value = p.nit;
+                                const dNit = document.getElementById('dispProveedorNit');
+                                if (dNit) dNit.value = p.nit;
+                                listaProvEdit.style.display = 'none';
+                            });
+                            listaProvEdit.appendChild(item);
+                        });
+                    }
+                    listaProvEdit.style.display = 'block';
+                })
+                .catch(err => {
+                    console.error('Error buscando proveedores:', err);
+                });
+        }, 250);
+    });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.search-live')) {
+            listaProvEdit.style.display = 'none';
+        }
+    });
+}
+
+// Serializar calcState antes de enviar y validar proveedor obligatorio
+document.querySelector('form').addEventListener('submit', function(e) {
+    const inp = document.getElementById('inpProveedor');
+    if (!inp || !inp.value.trim()) {
+        e.preventDefault();
+        inp.focus();
+        inp.reportValidity();
+        return false;
+    }
     document.getElementById('hdnCalcOps').value = JSON.stringify(calcState);
 });
 </script>

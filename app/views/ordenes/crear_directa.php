@@ -606,6 +606,24 @@ include dirname(__DIR__) . '/layout/menu.php';
         });
     }
 
+    const inputNit = document.getElementById('inputProveedorNit');
+    if (inputNit) {
+        inputNit.addEventListener('input', function() {
+            clearTimeout(timerBusqueda);
+            const valAnt = this.value;
+            const valLimpio = valAnt.replace(/[\.\s]/g, '');
+            if (valAnt !== valLimpio) {
+                const cursor = this.selectionStart;
+                this.value = valLimpio;
+                const diff = valAnt.length - valLimpio.length;
+                this.setSelectionRange(Math.max(0, cursor - diff), Math.max(0, cursor - diff));
+            }
+            if (valLimpio.trim().length >= 3) {
+                timerBusqueda = setTimeout(() => verificarProveedor(valLimpio.trim()), 350);
+            }
+        });
+    }
+
     form.addEventListener('submit', function(e) {
         const filas = tbody.querySelectorAll('tr');
         if (filas.length === 0) {

@@ -169,15 +169,48 @@
 .resumen-seleccion-box {
     margin-top: 14px;
     padding: 16px 20px;
-    background: rgba(45,190,203,.08);
-    border: 1px solid rgba(45,190,203,.2);
+    background: #f0fdfa;
+    border: 1.5px solid #99f6e4;
     border-radius: 10px;
-    font-size: 13px;
+    font-size: 13.5px;
+    color: #0f172a;
+    box-shadow: 0 2px 8px rgba(16, 117, 126, 0.05);
+}
+
+.resumen-seleccion-box span {
+    color: #334155;
+    font-weight: 500;
+}
+
+.resumen-seleccion-box strong {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.resumen-seleccion-box .text-danger,
+.resumen-seleccion-box .text-danger strong {
+    color: #dc2626 !important;
+}
+
+.resumen-seleccion-box .text-warning-gold,
+.resumen-seleccion-box .text-warning-gold strong {
+    color: #b45309 !important;
+}
+
+.resumen-seleccion-box .text-info,
+.resumen-seleccion-box .text-info strong {
+    color: #0284c7 !important;
+}
+
+.resumen-seleccion-box .text-total-wrap {
+    color: #0f172a;
+    font-size: 14px;
 }
 
 .resumen-total-text {
-    color: var(--amber);
-    font-size: 15px;
+    color: #0f766e !important;
+    font-size: 16px;
+    font-weight: 800;
 }
 
 .estado-orden-select {

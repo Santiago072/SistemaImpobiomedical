@@ -79,4 +79,28 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    // ── RESALTAR ASTERISCOS (*) OBLIGATORIOS EN ROJO GLOBALMENTE ──
+    function resaltarAsteriscosObligatorios(contexto) {
+        (contexto || document).querySelectorAll('label, .oc-label, .cot-date-label').forEach(function (lbl) {
+            if (lbl.querySelector('.required-star')) return;
+            if (lbl.innerHTML.includes('*')) {
+                lbl.innerHTML = lbl.innerHTML.replace(/\s*\*/g, ' <span class="required-star">*</span>');
+            }
+        });
+    }
+
+    resaltarAsteriscosObligatorios(document);
+
+    // Observar inserciones dinámicas de modales o contenido para aplicar el estilo
+    const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            mutation.addedNodes.forEach(function (node) {
+                if (node.nodeType === 1) {
+                    resaltarAsteriscosObligatorios(node);
+                }
+            });
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
 });

@@ -1,8 +1,8 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v2.8.0  
+**Versión del Sistema:** v3.0.0  
 **Fecha:** Septiembre 2026  
-**Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular · DomPDF · PHPUnit 10
+**Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
 Este documento formaliza los requisitos funcionales (RF), requisitos no funcionales (RNF), control de acceso por roles y reglas de negocio del **Sistema Impobiomedical**.
 
@@ -12,8 +12,8 @@ Este documento formaliza los requisitos funcionales (RF), requisitos no funciona
 
 El sistema cuenta con dos roles claramente diferenciados:
 
-* **Administrador (`admin`):** Acceso total al sistema. Dispone del menú de **Administración** (Gestión de Usuarios, Gestión de Productos y Gestión de Clientes), menú de **Cotizaciones** (Nueva Cotización, Consultar, Órdenes de Compra y Estadísticas/Reportes), y cambio de estados comerciales de cotizaciones y órdenes de compra.
-* **Usuario / Asesor Comercial (`usuario`):** Acceso enfocado exclusivamente a su operación comercial. Dispone del menú **Cotizaciones** con los submódulos de **Nueva Cotización**, **Consultar** (sus propias cotizaciones con indicadores visuales de estado) y **Órdenes de Compra**. No tiene acceso a los módulos de administración ni a estadísticas generales.
+* **Administrador (`admin`):** Acceso total al sistema. Dispone del menú de **Administración** (Gestión de Usuarios, Gestión de Productos, Gestión de Clientes y Gestión de Proveedores con potestad exclusiva para su eliminación/desactivación), menú de **Cotizaciones** (Nueva Cotización, Consultar, Órdenes de Compra y Estadísticas/Reportes), y cambio de estados comerciales de cotizaciones y órdenes de compra.
+* **Usuario / Asesor Comercial (`usuario`):** Acceso enfocado a su operación comercial. Dispone del menú **Cotizaciones** con los submódulos de **Nueva Cotización**, **Consultar** (sus propias cotizaciones con indicadores visuales de estado), **Órdenes de Compra**, y acceso de consulta, creación y edición en el directorio de **Proveedores** (sin permisos de eliminación/desactivación). No tiene acceso a los módulos de administración de usuarios ni a estadísticas generales.
 
 ---
 
@@ -70,10 +70,24 @@ El sistema cuenta con dos roles claramente diferenciados:
 * **RF36:** El sistema debe permitir registrar y administrar cuentas de usuario asignando nombre, código único de asesor, documento, cargo, correo, teléfono y rol.
 * **RF37:** El sistema debe permitir restablecer la contraseña de cualquier usuario asignando por defecto su número de documento.
 
-### 📈 Estadísticas y Reportes (Solo Administrador)
-* **RF38:** El sistema debe permitir filtrar el volumen de cotizaciones y ventas reales por rango de fechas, asesor y cliente.
-* **RF39:** El sistema debe presentar un visor analítico interactivo de **Ventas a Clientes por Mes** con selector de mes y consolidado acumulado, además del gráfico comparativo de evolución mensual y tops de productos y vendedores.
-* **RF40:** El sistema debe generar reportes ejecutivos consolidados en formato PDF que incluyan KPIs gerenciales, Top Clientes con porcentaje de ventas (`%`), sección desglosada de **Ventas a Clientes por Mes** con total facturado mensual y porcentaje de contribución individual, y tabla de efectividad comercial.
+### 📈 Estadísticas, Métricas y Reportes Ejecutivos (Solo Administrador)
+* **RF38:** El sistema debe generar métricas analíticas e indicadores financieros consolidados: monto total cotizado, facturación real por órdenes concluidas, total de cotizaciones y órdenes emitidas, ticket promedio y tasa de efectividad comercial.
+* **RF39:** El sistema debe presentar rankings interactivos de clientes líderes (Top Clientes por facturación y número de pedidos), desglose de ventas por cliente mensualizado y comparativas de desempeño por asesor comercial.
+* **RF40:** El sistema debe permitir exportar informes ejecutivos formales en formato PDF con diseño institucional, KPIs financieros, Top Clientes con porcentaje de participación (`%`) y tabla de evolución mensual.
+
+### 🚚 Gestión de Proveedores
+* **RF41:** El sistema debe disponer de un directorio centralizado de proveedores con campos de NIT, Razón Social, Tipo de Contribuyente, Entidad Bancaria, Número de Cuenta, Tipo de Cuenta y Estado.
+* **RF42:** El sistema debe permitir la búsqueda en vivo con debounce (400ms) de proveedores por NIT o Nombre comercial sin necesidad de presionar teclas de envío.
+* **RF43:** El sistema debe restringir la acción de desactivación o eliminación de proveedores exclusivamente a usuarios con rol `admin`; los usuarios estándar solo podrán consultar, crear y editar.
+* **RF44:** El sistema debe autocompletar predictivamente los datos del proveedor (NIT, Razón Social, cuenta y banco) al momento de cotizar productos o emitir órdenes de compra.
+* **RF45:** El sistema debe detectar automáticamente en las órdenes de compra si un proveedor es `Nuevo` (primera orden emitida) o `Registrado` (con historial previo de órdenes o presente en el directorio oficial).
+
+### 🎨 Interfaz, Accesibilidad y Ayuda en Línea
+* **RF46:** El sistema debe destacar visualmente todos los campos y etiquetas de entrada obligatorios con asterisco en color rojo vivo contrastado (`.required-star`, `#ef4444 !important`) tanto en renderizado estático como en formularios dinámicos.
+* **RF47:** El sistema debe incluir un botón de ayuda rápida (`[ ? Ayuda ]`) accesible en el encabezado global para consultar el manual operativo adaptado a los permisos del usuario activo.
+* **RF48:** El sistema debe actualizar reactivamente en el cliente los badges y colores de estado (comercial y de entrega) sin requerir recarga total de la pantalla.
+* **RF49:** El sistema debe incorporar un favicon unificado oficial en formato vectorial (`favicon.svg`) en todas las interfaces públicas y privadas.
+* **RF50:** El sistema debe preservar los datos de proveedor digitados en la calculadora dinámica de cotización al seleccionar o reutilizar ítems del catálogo médico.
 
 ---
 
@@ -81,9 +95,11 @@ El sistema cuenta con dos roles claramente diferenciados:
 
 * **RNF01:** Todas las transacciones y consultas a la base de datos deben ejecutarse mediante PDO con sentencias preparadas y parámetros enlazados para prevenir ataques de inyección SQL.
 * **RNF02:** Todas las solicitudes que modifiquen el estado del sistema deben validar obligatoriamente un token de seguridad contra ataques de falsificación de petición en sitios cruzados (CSRF).
-* **RNF03:** La interfaz de usuario debe estar estructurada mediante hojas de estilo CSS modulares organizadas por componentes sin incrustar estilos inline en las vistas.
+* **RNF03:** La interfaz de usuario debe estar estructurada mediante hojas de estilo CSS modulares organizadas por componentes (`css/components/`) sin incrustar estilos inline en las vistas.
 * **RNF04:** El sistema debe ser compatible para su ejecución en entornos web con PHP 8.2 y servidores de base de datos MySQL 8 o MariaDB, permitiendo despliegues continuos sin pérdida de información ni sobreescritura de datos persistentes montados en volúmenes Docker.
 * **RNF05:** El código fuente debe contar con pruebas unitarias automatizadas para validar la lógica de cálculos comerciales, consecutivos e integridad de seguridad.
 * **RNF06:** La interfaz debe ser adaptable y visualmente consistente para diferentes resoluciones de pantalla en computadores de escritorio y dispositivos móviles.
 * **RNF07:** El subsistema de generación de PDF debe procesar catálogos extensos (más de 180 productos con imágenes) manteniendo el consumo de memoria dentro del umbral operativo (`memory_limit = 256M`), empleando miniaturas ligeras JPEG (72% de compresión) generadas una sola vez y reutilizadas desde disco.
 * **RNF08:** Compatibilidad estricta con PHP 8.2+, evitando el uso de propiedades dinámicas no declaradas en controladores y servicios para mantener limpios los logs de advertencias y errores del servidor.
+* **RNF09:** El sistema debe aplicar normalización automatizada en los campos de identificación tributaria (NIT) mediante algoritmos que remuevan puntos y espacios preservando el guion del dígito de verificación (`normalizar_nit()`).
+* **RNF10:** El sistema debe aplicar protección contra sobrecarga y ataques de fuerza bruta mediante Rate Limiting por IP en todos los endpoints de modificación y búsqueda asíncrona (`verificar_rate_limit()`).

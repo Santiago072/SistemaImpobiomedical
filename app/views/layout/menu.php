@@ -90,6 +90,14 @@ $usuarioCodigo = $_SESSION['usuario_codigo'] ?? '';
                     </a>
                 </li>
                 <li>
+                    <a href="<?= $basePath ?>?module=proveedores" class="<?= $currentMod === 'proveedores' ? 'active' : '' ?>">
+                        <div class="sidebar-link-inner">
+                            <span class="sidebar-link-icon"><i class="bi bi-truck"></i></span>
+                            <span class="sidebar-link-text">Proveedores</span>
+                        </div>
+                    </a>
+                </li>
+                <li>
                     <a href="<?= $basePath ?>?module=productos" class="<?= $currentMod === 'productos' ? 'active' : '' ?>">
                         <div class="sidebar-link-inner">
                             <span class="sidebar-link-icon"><i class="bi bi-box-seam-fill"></i></span>

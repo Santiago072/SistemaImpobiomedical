@@ -23,7 +23,6 @@ $extraHead = $extraHead ?? '';
     <link rel="stylesheet" href="<?= $basePath ?>css/estilos.css?v=<?= time() ?>">
     <!-- Favicon Oficial -->
     <link rel="icon" type="image/svg+xml" href="<?= $basePath ?>public/favicon.svg?v=<?= time() ?>">
-    <link rel="alternate icon" type="image/png" sizes="32x32" href="<?= $basePath ?>public/favicon-32x32.png?v=<?= time() ?>">
     <title><?= htmlspecialchars($pageTitle) ?> — Impobiomedical</title>
     <?= $extraHead ?>
 </head>

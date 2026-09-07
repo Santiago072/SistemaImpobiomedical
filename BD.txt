@@ -40,6 +40,22 @@ CREATE TABLE IF NOT EXISTS clientes (
     INDEX idx_cliente_nit (nit)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ── Proveedores ──────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS proveedores (
+    id                  INT AUTO_INCREMENT PRIMARY KEY,
+    nit                 VARCHAR(30) NOT NULL UNIQUE,
+    nombre_proveedor    VARCHAR(200) NOT NULL,
+    tipo_contribuyente  VARCHAR(100) DEFAULT 'PERSONA JURÍDICA',
+    nombre_banco        VARCHAR(100) DEFAULT NULL,
+    numero_cuenta       VARCHAR(100) DEFAULT NULL,
+    tipo_cuenta         VARCHAR(50)  DEFAULT NULL,
+    estado              ENUM('activo', 'inactivo') NOT NULL DEFAULT 'activo',
+    fecha_creacion      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_prov_nit (nit),
+    INDEX idx_prov_nombre (nombre_proveedor),
+    INDEX idx_prov_estado (estado)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ── Catálogo de productos ───────────────────────────────────
 CREATE TABLE IF NOT EXISTS productos (
     id              INT AUTO_INCREMENT PRIMARY KEY,
@@ -120,12 +136,15 @@ CREATE TABLE IF NOT EXISTS cotizacion_items (
     flete               DECIMAL(20,2) DEFAULT 0.00,
     calibracion         DECIMAL(20,2) DEFAULT 0.00,
     estampillas         DECIMAL(20,2) DEFAULT 0.00,
+    proveedor_id        INT NULL DEFAULT NULL,
     proveedor           VARCHAR(100)  DEFAULT NULL,
+    proveedor_nit       VARCHAR(30)   DEFAULT NULL,
     codigo_proveedor    VARCHAR(60)   DEFAULT NULL,
     -- JSON con historial de operaciones de cálculo (Opción A)
     calc_ops            JSON DEFAULT '{}',
     FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(id) ON DELETE CASCADE,
-    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE SET NULL
+    FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE SET NULL,
+    FOREIGN KEY (proveedor_id) REFERENCES proveedores(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

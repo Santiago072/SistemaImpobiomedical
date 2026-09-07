@@ -103,8 +103,9 @@ include dirname(__DIR__) . '/layout/menu.php';
                                     $ivaV  = $aplica ? $sub * ($pct/100) : 0;
                                     $total = $sub + $ivaV;
                                     $prov  = $it['proveedor'] ?? '';
+                                    $nit   = $it['proveedor_nit'] ?? '';
                                 ?>
-                                <tr class="item-row" data-proveedor="<?= htmlspecialchars($prov) ?>">
+                                <tr class="item-row" data-proveedor="<?= htmlspecialchars($prov) ?>" data-nit="<?= htmlspecialchars($nit) ?>">
                                     <td class="text-center">
                                         <input type="checkbox" name="items_seleccionados[]"
                                                value="<?= (int)$it['id'] ?>"
@@ -602,11 +603,12 @@ NOTA:
             if (this.checked) {
                 const row  = this.closest('tr');
                 const prov = row.dataset.proveedor;
-                if (prov) {
+                const nit  = row.dataset.nit;
+                if (prov || nit) {
                     const inp = document.getElementById('inputProveedor');
                     if (inp && !inp.value.trim()) {
                         inp.value = prov;
-                        verificarProveedor(prov);
+                        verificarProveedor(nit || prov);
                     }
                 }
             }
@@ -718,6 +720,24 @@ NOTA:
                 if (hdnEstado) hdnEstado.value = 'nuevo';
             } else {
                 timerBusqueda = setTimeout(() => verificarProveedor(val), 300);
+            }
+        });
+    }
+
+    const inputNit = document.getElementById('inputProveedorNit');
+    if (inputNit) {
+        inputNit.addEventListener('input', function() {
+            clearTimeout(timerBusqueda);
+            const valAnt = this.value;
+            const valLimpio = valAnt.replace(/[\.\s]/g, '');
+            if (valAnt !== valLimpio) {
+                const cursor = this.selectionStart;
+                this.value = valLimpio;
+                const diff = valAnt.length - valLimpio.length;
+                this.setSelectionRange(Math.max(0, cursor - diff), Math.max(0, cursor - diff));
+            }
+            if (valLimpio.trim().length >= 3) {
+                timerBusqueda = setTimeout(() => verificarProveedor(valLimpio.trim()), 350);
             }
         });
     }

@@ -4,6 +4,41 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.0.0] - 2026-09-06
+### Añadido
+- **Módulo Integral de Gestión de Proveedores (`app/controllers/ProveedorController.php`, `app/models/ProveedorModel.php`, `app/views/proveedores/lista.php`):**
+  - Directorio oficial de proveedores con campos de `nit`, `nombre_proveedor`, `tipo_contribuyente`, `nombre_banco`, `numero_cuenta`, `tipo_cuenta` y `estado`.
+  - Búsqueda en vivo (debounce 400ms) por NIT o Nombre comercial y paginación reactiva.
+  - Modales con diseño corporativo: Registro de nuevo proveedor, Edición y Desactivación con confirmación.
+  - Control de acceso por roles (RBAC): Sólo los usuarios con rol `admin` tienen permiso para eliminar o desactivar proveedores; todos los usuarios autenticados pueden consultar, crear y editar.
+  - Rate limiting específico por IP en creación (`15/min`), edición (`20/min`), eliminación (`10/min`) y búsquedas AJAX predictivas (`60/min`).
+- **Autocompletado Predictivo en Vivo de Proveedores en Cotizaciones:**
+  - En `app/views/cotizaciones/crear.php` y `app/views/cotizaciones/editar_item.php`: desplegable de sugerencias con NIT, Razón Social y datos bancarios al escribir en el campo Proveedor.
+  - Bloqueo y validación estricta de campo obligatorio para Proveedor tanto en Frontend (con apertura automática del panel colapsable y foco) como en Backend (`ItemCotizacionService.php`).
+  - Preservación inteligente del `codigo_proveedor` ingresado en la calculadora al reutilizar o seleccionar un producto del catálogo.
+- **Normalización Automatizada de NIT (`normalizar_nit()` en `config/seguridad.php`):**
+  - Algoritmo que remueve automáticamente puntos y espacios manteniendo el guion del dígito de verificación (ej: `900.535.843-3` → `900535843-3`).
+  - Auto-formateo en tiempo real sin perder la posición del cursor en inputs de formulario.
+- **Detección Histórica de Proveedores en Órdenes de Compra (P.O.):**
+  - Consulta multi-criterio en base de datos (`buscarHistorialProveedor` en `OrdenCompraModel.php`) que verifica si el proveedor ya cuenta con órdenes previas o si está registrado en el nuevo directorio.
+  - Badge visual dinámico: primera orden como `🟡 Nuevo` y órdenes subsiguientes como `🟢 Registrado (N órdenes)`.
+  - Preparación de consultas PDO seguras con parámetros nombrados unívocos compatibles con sentencias preparadas nativas de MySQL (`ATTR_EMULATE_PREPARES => false`).
+- **Modularización de Componentes CSS (`css/components/`):**
+  - Desacoplamiento de `css/modules/components.css` en submódulos especializados: `alerts.css`, `badges.css`, `buttons.css`, `cards.css`, `forms.css`, `modals.css`, `tables.css`, `tabs.css` y `utilities.css`.
+- **Estandarización de Asteriscos Obligatorios en Rojo:**
+  - Definición centralizada de `.required-star` (`#ef4444 !important`, `font-weight: 800`).
+  - Script global (`public/js/script.js`) con `MutationObserver` que envuelve automáticamente cualquier asterisco dentro de etiquetas de formulario.
+
+### Corregido
+- **Sobrescritura de Código de Proveedor en Calculadora:**
+  - Corregido fallo donde al seleccionar o reutilizar un producto existente del catálogo se borraba el `codigo_proveedor` digitado previamente en el paso 1 de la calculadora.
+- **Reactividad de Badges en Estados de Cotizaciones (`app/views/cotizaciones/consultar.php`):**
+  - Corrección de selector y actualización inmediata de colores y estilos en cambios de estado comercial (`pendiente`, `concluida`, `descartada`) y estado de entrega (`pendiente`, `en_transito`, `entregado`).
+- **Limpieza de Favicon:**
+  - Consolidación en un único favicon vectorial oficial de alta definición `public/favicon.svg`, eliminando archivos PNG redundantes.
+
+---
+
 ## [v2.8.0] - 2026-09-04
 ### Añadido
 - **Desglose Mensual de Clientes con % de Participación en Reporte PDF de Estadísticas (`app/views/estadisticas/reporte_pdf.php`):**

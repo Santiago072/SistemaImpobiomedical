@@ -102,12 +102,22 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                         <input type="number" name="precio_proveedor" id="inpPrecioProveedor"
                                                min="0" step="0.01" placeholder="0.00" oninput="calcularTotales()">
                                     </div>
-                                    <div class="imo-form-group">
-                                        <label>Proveedor</label>
-                                        <input type="text" name="proveedor" id="inpProveedor" maxlength="100" placeholder="Ej: ALENO SAS">
+                                    <div class="imo-form-group search-live" style="position: relative;">
+                                        <label>Proveedor (Buscar por NIT o Nombre) <span class="required-star">*</span></label>
+                                        <input type="text" name="proveedor" id="inpProveedor" maxlength="100"
+                                               required placeholder="Escribe NIT o Nombre..." autocomplete="off">
+                                        <input type="hidden" name="proveedor_id" id="hdnProveedorId" value="">
+                                        <input type="hidden" name="proveedor_nit" id="hdnProveedorNit" value="">
+                                        <div id="listaProveedores" class="lista-sugerencias" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:1050; background:#ffffff; border:1.5px solid #0d9488; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:220px; overflow-y:auto;"></div>
                                     </div>
                                 </div>
                                 <div class="imo-form-row">
+                                    <div class="imo-form-group">
+                                        <label>NIT del Proveedor</label>
+                                        <input type="text" id="dispProveedorNit" readonly class="form-control-plaintext"
+                                               placeholder="Se asigna automáticamente al seleccionar"
+                                               style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:7px 12px; font-family:monospace; font-weight:700; color:#0f766e;">
+                                    </div>
                                     <div class="imo-form-group">
                                         <label>Código Producto Proveedor</label>
                                         <input type="text" name="codigo_proveedor" id="inpCodigoProveedor" maxlength="60" placeholder="Ej: PROV-001">
@@ -388,7 +398,13 @@ function autocompletar(p) {
     // Auto-fill new fields
     document.getElementById('inpCategoria').value      = p.categoria || '';
     document.getElementById('inpCodigoProducto').value = p.codigo_producto || '';
-    document.getElementById('inpCodigoProveedor').value= p.codigo_proveedor || '';
+    // Preservar código de proveedor si el usuario ya lo escribió en la calculadora
+    const inpCodProv = document.getElementById('inpCodigoProveedor');
+    if (inpCodProv) {
+        if (p.codigo_proveedor) {
+            inpCodProv.value = p.codigo_proveedor;
+        }
+    }
     
     document.getElementById('badgeAuto').style.display = 'inline';
     document.getElementById('listaProductos').style.display = 'none';
@@ -559,6 +575,10 @@ function limpiarFormulario() {
     
     document.getElementById('inpPrecioProveedor').value = '';
     document.getElementById('inpProveedor').value = '';
+    document.getElementById('hdnProveedorId').value = '';
+    document.getElementById('hdnProveedorNit').value = '';
+    const dispNit = document.getElementById('dispProveedorNit');
+    if (dispNit) dispNit.value = '';
     document.getElementById('inpCodigoProveedor').value = '';
 
     // Resetear calculadora
@@ -570,6 +590,60 @@ function limpiarFormulario() {
     };
     renderCalculadoraInputs();
     toggleIva('si');
+}
+
+// ── Búsqueda Predictiva de Proveedores por NIT o Nombre ─────────────────────
+const inpProv = document.getElementById('inpProveedor');
+const listaProv = document.getElementById('listaProveedores');
+let timerProv = null;
+
+if (inpProv && listaProv) {
+    inpProv.addEventListener('input', function() {
+        clearTimeout(timerProv);
+        const term = this.value.trim();
+        if (term.length < 2) {
+            listaProv.style.display = 'none';
+            listaProv.innerHTML = '';
+            return;
+        }
+
+        timerProv = setTimeout(() => {
+            fetch(BASE + '?module=proveedores&action=ajax_buscar&term=' + encodeURIComponent(term))
+                .then(r => r.json())
+                .then(data => {
+                    listaProv.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        listaProv.innerHTML = '<div class="prov-search-empty"><i class="bi bi-info-circle"></i> No se encontró proveedor registrado con ese NIT o nombre.</div>';
+                    } else {
+                        data.forEach(p => {
+                            const item = document.createElement('div');
+                            item.className = 'prov-search-item';
+                            item.innerHTML = `
+                                <div>
+                                    <strong class="nit-text">${p.nit}</strong>
+                                    <div style="font-size:12.5px; color:#1e293b; font-weight:600; margin-top:2px;">${p.nombre_proveedor}</div>
+                                    ${p.nombre_banco ? `<div class="sub-text"><i class="bi bi-bank"></i> ${p.nombre_banco} ${p.tipo_cuenta || ''}</div>` : ''}
+                                </div>
+                                <span class="mod-badge badge-green">Seleccionar</span>
+                            `;
+                            item.addEventListener('click', () => {
+                                inpProv.value = p.nombre_proveedor;
+                                document.getElementById('hdnProveedorId').value = p.id;
+                                document.getElementById('hdnProveedorNit').value = p.nit;
+                                const dNit = document.getElementById('dispProveedorNit');
+                                if (dNit) dNit.value = p.nit;
+                                listaProv.style.display = 'none';
+                            });
+                            listaProv.appendChild(item);
+                        });
+                    }
+                    listaProv.style.display = 'block';
+                })
+                .catch(err => {
+                    console.error('Error buscando proveedores:', err);
+                });
+        }, 250);
+    });
 }
 
 // ── Eliminar ítem ─────────────────────────────────────────────────────────────
@@ -584,14 +658,33 @@ function eliminarItem(id) {
     }).then(r => r.json()).then(j => { if (j.status === 'success') location.reload(); });
 }
 
-// Cerrar lista al hacer clic fuera
+// Cerrar listas sugerencias al hacer clic fuera
 document.addEventListener('click', e => {
-    if (!e.target.closest('.search-live'))
-        document.getElementById('listaProductos').style.display = 'none';
+    if (!e.target.closest('.search-live')) {
+        const lp = document.getElementById('listaProductos');
+        if (lp) lp.style.display = 'none';
+        const lprov = document.getElementById('listaProveedores');
+        if (lprov) lprov.style.display = 'none';
+    }
 });
 
-// Serializar calcState en hidden antes de enviar el formulario
-document.getElementById('formItem').addEventListener('submit', function() {
+// Serializar calcState en hidden y validar campo obligatorio de Proveedor antes de enviar el formulario
+document.getElementById('formItem').addEventListener('submit', function(e) {
+    const inpProv = document.getElementById('inpProveedor');
+    if (!inpProv || !inpProv.value.trim()) {
+        e.preventDefault();
+        const panel = document.getElementById('panelGanancias');
+        const icon = document.getElementById('iconGanancias');
+        if (panel && panel.style.display === 'none') {
+            panel.style.display = 'block';
+            if (icon) icon.className = 'bi bi-chevron-up';
+        }
+        if (inpProv) {
+            inpProv.focus();
+            inpProv.reportValidity();
+        }
+        return false;
+    }
     document.getElementById('hdnCalcOps').value = JSON.stringify(calcState);
 });
 

@@ -114,22 +114,76 @@ class OrdenCompraModel
         }
 
         try {
-            // 1. Contar total de órdenes previas de este proveedor (coincidencia flexible)
+            $termRaw = $termino;
+            $termNitNorm = function_exists('normalizar_nit') ? normalizar_nit($termino) : str_replace(['.', ' '], '', $termino);
+
+            // 1. Primero buscar en la tabla oficial de proveedores (por NIT normalizado, NIT crudo o nombre)
+            $stmtProv = $this->db->prepare(
+                "SELECT id, nit, nombre_proveedor, tipo_contribuyente,
+                        nombre_banco, numero_cuenta, tipo_cuenta, estado
+                 FROM proveedores
+                 WHERE REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :p_nitnorm
+                    OR TRIM(nit) = :p_nit
+                    OR LOWER(TRIM(nombre_proveedor)) = LOWER(:p_exact)
+                    OR LOWER(TRIM(nombre_proveedor)) LIKE LOWER(:p_like)
+                 ORDER BY (REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :p_nitnorm_exact) DESC, id DESC
+                 LIMIT 1"
+            );
+            $stmtProv->execute([
+                ':p_nitnorm'       => $termNitNorm,
+                ':p_nit'           => $termRaw,
+                ':p_exact'         => $termRaw,
+                ':p_like'          => '%' . $termRaw . '%',
+                ':p_nitnorm_exact' => $termNitNorm
+            ]);
+            $provOficial = $stmtProv->fetch();
+
+            // Contar total de órdenes previas de este proveedor (por NIT o nombre)
+            $nitOficialNorm = ($provOficial && !empty($provOficial['nit'])) 
+                ? (function_exists('normalizar_nit') ? normalizar_nit($provOficial['nit']) : str_replace(['.', ' '], '', $provOficial['nit'])) 
+                : '';
+            $nombreOficial = $provOficial ? trim($provOficial['nombre_proveedor']) : '';
+
             $stmtCount = $this->db->prepare(
                 "SELECT COUNT(*) AS total
                  FROM ordenes_compra
-                 WHERE LOWER(TRIM(proveedor)) = LOWER(:termExact)
-                    OR LOWER(TRIM(proveedor)) LIKE LOWER(:termLike)
-                    OR (proveedor_nit != '' AND TRIM(proveedor_nit) = :termNit)"
+                 WHERE LOWER(TRIM(proveedor)) = LOWER(:c_exact)
+                    OR LOWER(TRIM(proveedor)) LIKE LOWER(:c_like)
+                    OR (:c_nom_oficial != '' AND LOWER(TRIM(proveedor)) = LOWER(:c_nom_oficial2))
+                    OR (proveedor_nit != '' AND (
+                        REPLACE(REPLACE(TRIM(proveedor_nit), '.', ''), ' ', '') = :c_nitnorm
+                        OR (:c_nit_oficial != '' AND REPLACE(REPLACE(TRIM(proveedor_nit), '.', ''), ' ', '') = :c_nit_oficial2)
+                    ))"
             );
             $stmtCount->execute([
-                ':termExact' => $termino,
-                ':termLike'  => '%' . $termino . '%',
-                ':termNit'   => $termino
+                ':c_exact'        => $termRaw,
+                ':c_like'         => '%' . $termRaw . '%',
+                ':c_nom_oficial'  => $nombreOficial,
+                ':c_nom_oficial2' => $nombreOficial,
+                ':c_nitnorm'      => $termNitNorm,
+                ':c_nit_oficial'  => $nitOficialNorm,
+                ':c_nit_oficial2' => $nitOficialNorm
             ]);
             $totalOrdenes = (int)$stmtCount->fetchColumn();
 
-            // 2. Si tiene al menos 1 orden previa, es un proveedor registrado
+            // Si se encuentra en proveedores oficial:
+            if ($provOficial) {
+                return [
+                    'registrado' => true,
+                    'ordenes'    => $totalOrdenes,
+                    'datos'      => [
+                        'proveedor'          => $provOficial['nombre_proveedor'],
+                        'proveedor_nit'      => $provOficial['nit'],
+                        'tipo_contribuyente' => $provOficial['tipo_contribuyente'] ?: 'PERSONA JURÍDICA',
+                        'condiciones_pago'   => 'Según acuerdo',
+                        'banco_nombre'       => $provOficial['nombre_banco'] ?: '',
+                        'banco_cuenta'       => $provOficial['numero_cuenta'] ?: '',
+                        'banco_tipo_cuenta'  => $provOficial['tipo_cuenta'] ?: '',
+                    ]
+                ];
+            }
+
+            // 2. Fallback: Si no está en proveedores pero tiene órdenes previas
             if ($totalOrdenes > 0) {
                 $stmt = $this->db->prepare(
                     "SELECT proveedor, proveedor_nit, tipo_contribuyente, condiciones_pago,

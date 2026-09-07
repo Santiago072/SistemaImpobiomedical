@@ -120,7 +120,8 @@ class OrdenCompraController
 
         // Datos del proveedor y orden
         $proveedor          = mb_substr(sanitizar_entrada($_POST['proveedor'] ?? ''), 0, 200);
-        $proveedorNit       = mb_substr(sanitizar_entrada($_POST['proveedor_nit'] ?? ''), 0, 30);
+        $proveedorNitRaw    = mb_substr(sanitizar_entrada($_POST['proveedor_nit'] ?? ''), 0, 30);
+        $proveedorNit       = function_exists('normalizar_nit') ? normalizar_nit($proveedorNitRaw) : str_replace(['.', ' '], '', $proveedorNitRaw);
         $tipoContribuyente  = mb_substr(sanitizar_entrada($_POST['tipo_contribuyente'] ?? ''), 0, 100);
         $condicionesPago    = mb_substr(sanitizar_entrada($_POST['condiciones_pago'] ?? 'Según acuerdo'), 0, 100);
         $iva                = mb_substr(sanitizar_entrada($_POST['iva'] ?? '19%'), 0, 20);
@@ -133,9 +134,12 @@ class OrdenCompraController
         $bancoCuenta        = mb_substr(sanitizar_entrada($_POST['banco_cuenta'] ?? ''), 0, 100);
         $bancoTipoCuenta    = mb_substr(sanitizar_entrada($_POST['banco_tipo_cuenta'] ?? ''), 0, 100);
 
-        // Verificar estado de proveedor directamente contra la base de datos (seguro y automático)
-        $historialProv = $this->model->buscarHistorialProveedor($proveedor);
-        $estadoProveedor = (!empty($historialProv['registrado']) && (int)$historialProv['ordenes'] > 0) ? 'registrado' : 'nuevo';
+        // Verificar estado de proveedor directamente contra la base de datos (por nombre o NIT normalizado)
+        $historialProv = $this->model->buscarHistorialProveedor(!empty($proveedorNit) ? $proveedorNit : $proveedor);
+        if (empty($historialProv['registrado'])) {
+            $historialProv = $this->model->buscarHistorialProveedor($proveedor);
+        }
+        $estadoProveedor = !empty($historialProv['registrado']) ? 'registrado' : 'nuevo';
 
         $flete              = max(0, (float)($_POST['flete'] ?? 0));
         $fleteIva           = in_array($_POST['flete_iva'] ?? '', ['si', 'no'], true) ? $_POST['flete_iva'] : 'no';
@@ -260,7 +264,8 @@ class OrdenCompraController
             exit();
         }
 
-        $proveedorNit       = mb_substr(sanitizar_entrada($_POST['proveedor_nit'] ?? ''), 0, 30);
+        $proveedorNitRaw    = mb_substr(sanitizar_entrada($_POST['proveedor_nit'] ?? ''), 0, 30);
+        $proveedorNit       = function_exists('normalizar_nit') ? normalizar_nit($proveedorNitRaw) : str_replace(['.', ' '], '', $proveedorNitRaw);
         $tipoContribuyente  = mb_substr(sanitizar_entrada($_POST['tipo_contribuyente'] ?? ''), 0, 100);
         $condicionesPago    = mb_substr(sanitizar_entrada($_POST['condiciones_pago'] ?? 'Según acuerdo'), 0, 100);
         $iva                = mb_substr(sanitizar_entrada($_POST['iva'] ?? '19%'), 0, 20);
@@ -273,9 +278,12 @@ class OrdenCompraController
         $bancoCuenta        = mb_substr(sanitizar_entrada($_POST['banco_cuenta'] ?? ''), 0, 100);
         $bancoTipoCuenta    = mb_substr(sanitizar_entrada($_POST['banco_tipo_cuenta'] ?? ''), 0, 100);
 
-        // Estado del proveedor calculado contra la BD
-        $historialProv = $this->model->buscarHistorialProveedor($proveedor);
-        $estadoProveedor = (!empty($historialProv['registrado']) && (int)$historialProv['ordenes'] > 0) ? 'registrado' : 'nuevo';
+        // Estado del proveedor calculado contra la BD (por NIT o Nombre)
+        $historialProv = $this->model->buscarHistorialProveedor(!empty($proveedorNit) ? $proveedorNit : $proveedor);
+        if (empty($historialProv['registrado'])) {
+            $historialProv = $this->model->buscarHistorialProveedor($proveedor);
+        }
+        $estadoProveedor = !empty($historialProv['registrado']) ? 'registrado' : 'nuevo';
 
         $flete              = max(0, (float)($_POST['flete'] ?? 0));
         $fleteIva           = in_array($_POST['flete_iva'] ?? '', ['si', 'no'], true) ? $_POST['flete_iva'] : 'no';
@@ -519,6 +527,7 @@ class OrdenCompraController
     public function consultarProveedor(): void
     {
         verificar_autenticacion();
+        verificar_rate_limit(60, 60, 'orden_prov_historial');
         header('Content-Type: application/json; charset=utf-8');
 
         $termino = sanitizar_entrada($_GET['term'] ?? '');

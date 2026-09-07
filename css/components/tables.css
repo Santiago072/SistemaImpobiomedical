@@ -1,0 +1,198 @@
+﻿/* TABLAS */
+.tabla-contenedor {
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.tabla-datos {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-datos thead {
+    background: rgba(45, 190, 203, .1);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.tabla-datos th {
+    padding: 20px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--gold-light);
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.tabla-datos tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, .05);
+    transition: background .22s;
+}
+
+.tabla-datos tbody tr:hover {
+    background: rgba(45, 190, 203, .05);
+}
+
+.tabla-datos td {
+    padding: 18px;
+    color: rgb(255, 255, 255);
+}
+
+/* PANEL USUARIO TAREAS */
+.servicios-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 16px;
+    animation: fadeIn .8s ease both;
+}
+
+.svc-tarea {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 16px;
+    background: var(--glass-bg-light);
+    border: 1px solid var(--glass-border-strong);
+    transition: all var(--transition-normal);
+}
+
+.svc-tarea:hover {
+    background: var(--glass-bg-medium);
+    border-color: var(--gold);
+    box-shadow: var(--shadow-sm), var(--shadow-gold);
+}
+
+.svc-tarea-contenido {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+}
+
+.svc-tarea .svc-icon {
+    background: rgba(45, 190, 203, .15);
+    color: var(--gold);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.svc-tarea .svc-text {
+    min-width: 0;
+    flex: 1;
+}
+
+.svc-tarea .svc-text strong {
+    color: var(--gold-light);
+    font-family: var(--font-display);
+    letter-spacing: .5px;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+}
+
+.svc-tarea .svc-text span {
+    color: var(--white);
+    font-size: .8rem;
+    opacity: .9;
+    display: block;
+}
+
+.svc-tarea .boton-primario {
+    padding: 8px 14px;
+    font-size: 11px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.tareas-vacias {
+    background: rgba(45, 190, 203, .05);
+    border: 1px dashed var(--gold);
+    color: var(--gold-light);
+    padding: 30px 20px;
+    text-align: center;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.tareas-vacias i {
+    font-size: 2rem;
+    opacity: .6;
+}
+
+.tareas-vacias p {
+    font-size: .95rem;
+    letter-spacing: 1px;
+}
+
+.panel-dos-columnas {
+    display: grid;
+    grid-template-columns: 55% 45%;
+    gap: 30px;
+    margin-top: 0;
+    align-items: start;
+}
+
+.columna-izquierda {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    min-width: 0;
+}
+
+.columna-derecha {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: visible;
+}
+
+.columna-derecha .contenedor-usuario {
+    overflow: visible;
+}
+
+.columna-derecha .usuario-principal {
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid var(--glass-border-medium);
+    border-radius: 24px;
+    padding: 24px;
+    overflow: visible;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.columna-derecha .usuario-principal-nombre h3 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--white), var(--gold-light));
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.columna-derecha .login-sub {
+    text-align: left;
+    margin-top: 0;
+    font-size: 12px;
+}
+
+
+

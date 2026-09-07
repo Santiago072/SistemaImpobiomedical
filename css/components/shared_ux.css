@@ -1,0 +1,348 @@
+﻿/* ------------------------------------------------------------
+   ESTILOS COMPARTIDOS PARA TABLAS, FILTROS Y MODALES (UX)
+------------------------------------------------------------ */
+.tabla-datos tbody tr:hover {
+    background-color: #f0f9ff !important;
+}
+
+/* -- 2. Mejoras en Paneles de Búsqueda y Filtros -- */
+.filter-panel, .panel-filtros {
+    background: #ffffff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.filter-input {
+    border: 1px solid #cbd5e1 !important;
+    background: #f8fafc !important;
+    border-radius: 20px !important;
+    padding: 10px 20px 10px 40px !important; /* Espacio para el icono de lupa */
+    transition: all 0.3s ease !important;
+}
+.filter-input:focus {
+    background: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(16, 117, 126, 0.1) !important;
+    border-color: #10757e !important;
+}
+
+/* -- 3. Estados Vacios (Empty States) Universales -- */
+.empty-state-global {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    margin: 20px 0;
+}
+.empty-state-global i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: #cbd5e1;
+}
+
+/* -- 4. Badges y Estados -- */
+.badge-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.badge-activo { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.badge-inactivo { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.badge-info { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
+
+/* -- 5. Tarjetas de Usuario / Cuadricula (.grid-cards) -- */
+.grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+.card-item {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03) !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+}
+.card-item:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08) !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* ------------------------------------------------------------
+   ESTILOS COMPARTIDOS PARA MODALES Y HEADERS (NUEVO DISEÑO UX)
+------------------------------------------------------------ */
+
+/* -- Módulo layout ------------------- */
+.mod-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+.mod-title { font-size: 22px; font-weight: 700; color: #0f172a; margin: 0; }
+.mod-sub { font-size: 13px; color: #64748b; margin: 4px 0 0; }
+.btn-mod-primary { display: inline-flex; align-items: center; gap: 8px; background: #10757e; color: #fff; border: none; padding: 11px 22px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; text-decoration: none; }
+.btn-mod-primary:hover { background: #0a4f55; transform: translateY(-1px); color: #fff; }
+
+.mod-alert { padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; font-size: 14px; font-weight: 500; }
+.mod-alert-ok { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.mod-alert-err { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+.mod-search-bar { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 24px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+.mod-search-form { display: flex; align-items: center; gap: 12px; width: 100%; position: relative; }
+.mod-search-icon { color: #10757e; font-size: 18px; display: flex; align-items: center; }
+.mod-search-input { flex: 1; border: 1.5px solid #cbd5e1 !important; border-radius: 10px !important; padding: 10px 16px !important; font-size: 14px !important; color: #1e293b !important; background: #f8fafc !important; outline: none; transition: border-color .2s, box-shadow .2s, background .2s; }
+.mod-search-input:focus { border-color: #10757e !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(16,117,126,0.1) !important; }
+.mod-btn-clear { color: #9ca3af; text-decoration: none; font-size: 16px; transition: color .2s; padding: 4px; display: flex; align-items: center; }
+.mod-btn-clear:hover { color: #ef4444; }
+
+/* Botones de búsqueda y acciones de cabecera/filtros */
+.orden-search-btn { height: 40px; padding: 0 18px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.filter-input-field { display: inline-flex; align-items: center; gap: 8px; }
+.filter-label-text { font-size: 12px; font-weight: 600; color: #4b5563; text-transform: uppercase; }
+
+/* -- Modales (imo-modal) ----------------------- */
+.imo-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 9000; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
+.imo-modal-bg.open { display: flex; }
+.imo-modal { background: #fff; border-radius: 18px; width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,.2); animation: modalIn .25s ease; }
+.imo-modal-sm { max-width: 440px; }
+@keyframes modalIn { from { opacity: 0; transform: scale(.96) translateY(-10px) } to { opacity: 1; transform: scale(1) translateY(0) } }
+
+.imo-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 22px 28px 18px; border-bottom: 1px solid #e5e7eb; }
+.imo-modal-header h3 { margin: 0; font-size: 17px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+.imo-modal-header.danger h3 { color: #dc2626; }
+.imo-modal-close { background: none; border: none; font-size: 22px; color: #9ca3af; cursor: pointer; line-height: 1; padding: 4px; }
+.imo-modal-close:hover { color: #374151; }
+
+.imo-modal-body { padding: 24px 28px; }
+.imo-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.imo-form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; text-align: left; }
+.imo-form-group label { font-size: 12px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: .4px; }
+.imo-form-group input, .imo-form-group select, .imo-form-group textarea { padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 14px; color: #1f2937; transition: border-color .2s, box-shadow .2s; outline: none; background: #fff; width: 100%; box-sizing: border-box; font-family: inherit; }
+.imo-form-group textarea { resize: vertical; min-height: 80px; }
+.imo-form-group input:focus, .imo-form-group select:focus, .imo-form-group textarea:focus { border-color: #10757e; box-shadow: 0 0 0 3px rgba(16,117,126,.1); }
+
+.imo-modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 28px 24px 28px; border-top: 1px solid #f1f5f9; margin-top: 8px; }
+.mod-actions { display: flex; gap: 6px; }
+.mod-actions-center { display: flex; gap: 6px; justify-content: center; }
+.col-actions { text-align: center; width: 100px; }
+.nit-text { color: #0f766e; font-family: monospace; font-size: 13.5px; font-weight: 700; }
+.mono-text { font-family: monospace; }
+.sub-text { font-size: 12px; color: #64748b; }
+.mod-btn-edit, .mod-btn-del { width: 34px; height: 34px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; transition: all .2s; }
+.mod-btn-edit { background: #e0f2fe; color: #0284c7; }
+.mod-btn-edit:hover { background: #0284c7; color: #fff; }
+.mod-btn-del { background: #fee2e2; color: #dc2626; }
+.mod-btn-del:hover { background: #dc2626; color: #fff; }
+
+/* Items del buscador predictivo de proveedores */
+.prov-search-item { padding: 9px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s; }
+.prov-search-item:hover { background: #f0fdfa; }
+.prov-search-empty { padding: 10px 14px; font-size: 12.5px; color: #64748b; }
+
+.imo-btn-cancel { padding: 10px 20px; border: 1.5px solid #e5e7eb; background: #fff; color: #374151; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; }
+.imo-btn-cancel:hover { background: #f9fafb; }
+.imo-btn-save { padding: 10px 22px; background: #10757e; color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
+.imo-btn-save:hover { background: #0a4f55; }
+.imo-btn-danger { padding: 10px 22px; background: #dc2626; color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+.imo-modal-desc { color: #4b5563; }
+.form-inline-action { display: inline; }
+
+.mod-pag { display: flex; gap: 6px; justify-content: center; margin-top: 24px; }
+.mod-pag-link { padding: 8px 14px; border-radius: 8px; border: 1px solid #e5e7eb; color: #374151; text-decoration: none; font-size: 13px; transition: all .2s; }
+.mod-pag-link:hover, .mod-pag-link.active { background: #10757e; color: #fff; border-color: #10757e; }
+
+/* -- Tablas (mod-table) ----------------------- */
+.mod-table-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04); margin-bottom: 24px; }
+.mod-table { width: 100%; border-collapse: collapse; text-align: left; }
+.mod-table thead tr { background: #e2f1f2; }
+.mod-table th { padding: 14px 18px; font-size: 11px; font-weight: 700; color: #10757e; text-transform: uppercase; letter-spacing: .5px; border-bottom: 2px solid #bce2e4; white-space: nowrap; }
+.mod-table td { padding: 15px 18px; font-size: 14px; color: #374151; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.mod-table tbody tr:last-child td { border-bottom: none; }
+.mod-table tbody tr:hover td { background: #f0f9ff; }
+.mod-empty { text-align: center; padding: 60px 20px !important; color: #94a3b8; }
+.mod-empty i { font-size: 40px; display: block; margin-bottom: 12px; }
+.mod-empty p { margin: 0; font-size: 14px; }
+
+/* -- Badges y Acciones ----------------------- */
+.mod-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+.badge-green { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.badge-red { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+.mod-actions { display: flex; gap: 6px; }
+.mod-btn-edit, .mod-btn-del { width: 34px; height: 34px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; transition: all .2s; }
+.mod-btn-edit { background: #e0f2fe; color: #0284c7; }
+.mod-btn-edit:hover { background: #0284c7; color: #fff; }
+.mod-btn-del { background: #fee2e2; color: #dc2626; }
+.mod-btn-del:hover { background: #dc2626; color: #fff; }
+
+
+/* -- Categorias y Productos (Catálogo) ----------------------- */
+.header-actions-wrap { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-pdf-export { background: #ef4444; border: none; text-decoration: none; }
+.btn-pdf-export:hover { background: #dc2626; color: #fff; }
+.categories-filter-bar { margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+.mod-btn-category { padding: 7px 14px; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 20px; font-size: 13px; font-weight: 600; color: #475569; text-decoration: none; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
+.mod-btn-category:hover { background: #f8fafc; border-color: #cbd5e1; color: #0f172a; }
+.mod-btn-category.active { background: #10757e; border-color: #10757e; color: #fff; box-shadow: 0 2px 4px rgba(16,117,126,.2); }
+.cat-count { font-size: 11px; opacity: 0.8; }
+
+.mod-alert-warn { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
+.prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-bottom: 30px; }
+.prod-card { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 16px; overflow: hidden; transition: all .25s ease; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,.04); position: relative; }
+.prod-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(16,117,126,.12); border-color: #cbd5e1; }
+.prod-card.is-selected { border-color: #10757e; box-shadow: 0 0 0 2px rgba(16,117,126,.25); background: #f0fdfa; }
+
+/* Círculo de selección en la esquina superior */
+.prod-select-circle {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 10;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.prod-select-circle input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 26px;
+    height: 26px;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: grid;
+    place-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.prod-select-circle input[type="checkbox"]:hover {
+    border-color: #10757e;
+    transform: scale(1.08);
+}
+.prod-select-circle input[type="checkbox"]:checked {
+    background: #10757e;
+    border-color: #10757e;
+}
+.prod-select-circle input[type="checkbox"]::before {
+    content: "\F26E";
+    font-family: "bootstrap-icons";
+    font-size: 14px;
+    color: #ffffff;
+    transform: scale(0);
+    transition: 0.15s transform ease-in-out;
+}
+.prod-select-circle input[type="checkbox"]:checked::before {
+    transform: scale(1);
+}
+
+/* Barra flotante de selección de productos para exportar */
+.prod-selection-bar {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    background: #1e293b;
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 50px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    align-items: center;
+    gap: 16px;
+    animation: slideUpBar 0.25s ease-out;
+}
+@keyframes slideUpBar {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+.prod-selection-bar .sel-info {
+    font-size: 13.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.prod-selection-bar .sel-badge {
+    background: #10757e;
+    color: #ffffff;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+.prod-selection-bar .btn-sel-pdf {
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+.prod-selection-bar .btn-sel-pdf:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+.prod-selection-bar .btn-sel-clear {
+    background: transparent;
+    color: #94a3b8;
+    border: none;
+    cursor: pointer;
+    font-size: 12.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s;
+}
+.prod-selection-bar .btn-sel-clear:hover {
+    color: #ffffff;
+}
+
+.prod-img { width: 100%; height: 200px; object-fit: contain; background: #ffffff; padding: 16px; border-bottom: 1px solid #f1f5f9; }
+.prod-icon-fallback { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; background: #f8fafc; font-size: 52px; color: #cbd5e1; border-bottom: 1px solid #f1f5f9; }
+.prod-body { padding: 18px 20px; display: flex; flex-direction: column; flex: 1; }
+.prod-price { font-size: 20px; font-weight: 800; color: #10757e; margin-bottom: 4px; }
+.prod-name { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 10px; line-height: 1.4; min-height: 42px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.prod-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.prod-meta-spacing { margin-bottom: 8px; }
+.prod-tag { font-size: 11px; padding: 4px 10px; border-radius: 12px; background: #f1f5f9; color: #475569; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+.tag-code { background: #e0f2fe; color: #0284c7; }
+.tag-inactive { background: #fee2e2; color: #991b1b; }
+.tag-iva { background: #dcfce7; color: #166534; }
+.tag-noiva { background: #fee2e2; color: #991b1b; }
+.prod-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 14px; border-top: 1px solid #f1f5f9; }
+.prod-edit-layout { display: grid; grid-template-columns: 1fr 200px; gap: 20px; }
+.prod-edit-left { display: flex; flex-direction: column; }
+.prod-edit-right { display: flex; flex-direction: column; gap: 8px; }
+.prod-label-upload { font-size: 12px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: .4px; }
+.prod-file-input { margin-top: 8px; font-size: 13px; }
+.prod-file-hint { color: #9ca3af; font-size: 12px; }
+.prod-preview-box { width: 100%; aspect-ratio: 1; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-size: 32px; overflow: hidden; }
+.prod-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+.prod-preview-box span { font-size: 12px; margin-top: 6px; }
+
+/* -- Tarjetas Vacias (Empty States) ----------------------- */
+.mod-empty-card { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px; padding: 60px; text-align: center; color: #94a3b8; grid-column: 1 / -1; width: 100%; margin: 20px 0; }
+.mod-empty-card i { font-size: 40px; display: block; margin-bottom: 12px; }
+

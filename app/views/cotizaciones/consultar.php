@@ -316,10 +316,20 @@ function cambiarEstadoComercial(select) {
         select.disabled = false;
         select.style.opacity = '1';
         if (d.status === 'success') {
+            // Actualizar clases de badge
+            select.classList.remove('badge-gold', 'badge-green', 'badge-red');
+            if (nuevoEstado === 'concluida') {
+                select.classList.add('badge-green');
+            } else if (nuevoEstado === 'descartada') {
+                select.classList.add('badge-red');
+            } else {
+                select.classList.add('badge-gold');
+            }
+
             const conf = estilos[nuevoEstado] || estilos['pendiente'];
-            select.style.borderColor = conf.color;
-            select.style.color = conf.color;
-            select.style.background = conf.bg;
+            select.style.setProperty('border-color', conf.color, 'important');
+            select.style.setProperty('color', conf.color, 'important');
+            select.style.setProperty('background', conf.bg, 'important');
 
             // Actualizar fecha debajo del select de estado comercial
             const lblFecha = fila ? fila.querySelector('.cot-fecha-cambio-lbl') : null;
@@ -404,10 +414,20 @@ function cambiarEstadoEntrega(select) {
         select.disabled = false;
         select.style.opacity = '1';
         if (d.status === 'success') {
+            // Actualizar clases de badge
+            select.classList.remove('badge-gold', 'badge-blue', 'badge-green');
+            if (nuevoEstado === 'en_transito') {
+                select.classList.add('badge-blue');
+            } else if (nuevoEstado === 'entregado') {
+                select.classList.add('badge-green');
+            } else {
+                select.classList.add('badge-gold');
+            }
+
             const conf = estilosEntrega[nuevoEstado] || estilosEntrega['pendiente'];
-            select.style.borderColor = conf.color;
-            select.style.color = conf.color;
-            select.style.background = conf.bg;
+            select.style.setProperty('border-color', conf.color, 'important');
+            select.style.setProperty('color', conf.color, 'important');
+            select.style.setProperty('background', conf.bg, 'important');
 
             if (lblEntrega) {
                 if (nuevoEstado === 'entregado') {
