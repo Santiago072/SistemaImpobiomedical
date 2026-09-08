@@ -79,9 +79,9 @@ Al iniciar sesión llegará al **Panel Principal**, que muestra:
 
 ## 5. Órdenes de Compra (P.O.)
 
-* **Emisión:** Desde consultar cotizaciones, haga clic en 🛒 **Orden** en propuestas pendientes. Seleccione únicamente los ítems a comprar al proveedor y complete los datos bancarios y tributarios.
-* **Gestión:** Controle órdenes pendientes y completadas con contadores en tiempo real.
-* **Exportación:** Casillas de selección múltiple para exportar consolidado en **PDF** o descargar a **Excel (.xls)** con tablas de pago estructuradas.
+* **Emisión:** Desde consultar cotizaciones, haga clic en 🛒 **Orden** en propuestas pendientes. Seleccione únicamente los ítems a comprar al proveedor y complete los datos bancarios y tributarios (se autocompletan predictivamente desde el directorio oficial si el proveedor ya existe).
+* **Gestión y Clasificación:** Controle órdenes pendientes y completadas con contadores en tiempo real. Cada orden clasifica cronológicamente al proveedor como `🟡 Nuevo` si corresponde a su primera compra emitida o `🟢 Registrado` a partir de su segunda orden.
+* **Selección y Exportación Multipágina:** Casillas de selección múltiple con persistencia automática a través de la paginación (puede seleccionar órdenes de la página 1, navegar a la página 2 y continuar marcando). Barra superior interactiva con contador consolidado, botón para limpiar selección y exportación masiva a **PDF** o **Excel (.xls)**.
 
 ---
 

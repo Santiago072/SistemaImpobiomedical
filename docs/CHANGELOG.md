@@ -4,6 +4,19 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.1.0] - 2026-09-08
+### Añadido
+- **Permisos de Compras en Cotizaciones (`CotizacionController.php`, `CotizacionModel.php`, `consultar.php`):**
+  - El rol `compras` ahora tiene visibilidad global de las cotizaciones emitidas por todos los asesores comerciales y la potestad de eliminar cotizaciones obsoletas.
+- **Persistencia de Selección de Órdenes de Compra Multipágina (`ordenes/consultar.php`):**
+  - Sistema de almacenamiento en sesión (`sessionStorage`) que preserva los checkboxes de órdenes seleccionadas al navegar entre páginas de la paginación.
+  - Contador global reactivo con opción de limpiar selección y exportación consolidada a PDF y Excel con todas las órdenes marcadas independientemente de la página en que se encuentren.
+- **Detección Cronológica Dinámica de Estado de Proveedores (`OrdenCompraModel.php`):**
+  - Cálculo en tiempo real (`id < o.id`) en consultas de listado para determinar con exactitud histórica si el proveedor es `🟡 Nuevo` (primera orden histórica emitida) o `🟢 Registrado` (segunda orden en adelante).
+  - Preservación íntegra del autocompletado de datos bancarios y tributarios desde el directorio oficial de proveedores.
+
+---
+
 ## [v3.0.1] - 2026-09-07
 ### Corregido
 - **Persistencia de Sesión al Modificar Cotizaciones (`index.php`):**

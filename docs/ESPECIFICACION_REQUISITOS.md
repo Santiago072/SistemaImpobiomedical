@@ -10,9 +10,10 @@ Este documento formaliza los requisitos funcionales (RF), requisitos no funciona
 
 ## 1. Control de Acceso y Visibilidad por Roles
 
-El sistema cuenta con dos roles claramente diferenciados:
+El sistema cuenta con tres roles claramente estructurados:
 
-* **Administrador (`admin`):** Acceso total al sistema. Dispone del menú de **Administración** (Gestión de Usuarios, Gestión de Productos, Gestión de Clientes y Gestión de Proveedores con potestad exclusiva para su eliminación/desactivación), menú de **Cotizaciones** (Nueva Cotización, Consultar, Órdenes de Compra y Estadísticas/Reportes), y cambio de estados comerciales de cotizaciones y órdenes de compra.
+* **Administrador (`admin`):** Acceso total al sistema. Dispone del menú de **Administración** (Gestión de Usuarios, Gestión de Productos, Gestión de Clientes y Gestión de Proveedores con potestad exclusiva para su eliminación/desactivación), menú de **Cotizaciones** (Nueva Cotización, Consultar, Órdenes de Compra y Estadísticas/Reportes), potestad para eliminar cotizaciones y órdenes, y cambio de estados comerciales de cotizaciones y órdenes de compra.
+* **Encargado de Compras (`compras`):** Acceso enfocado a la gestión de aprovisionamiento y compras. Puede visualizar la totalidad de cotizaciones de todos los usuarios, eliminar cotizaciones, gestionar y eliminar órdenes de compra, y acceder al directorio de **Proveedores**.
 * **Usuario / Asesor Comercial (`usuario`):** Acceso enfocado a su operación comercial. Dispone del menú **Cotizaciones** con los submódulos de **Nueva Cotización**, **Consultar** (sus propias cotizaciones con indicadores visuales de estado), **Órdenes de Compra**, y acceso de consulta, creación y edición en el directorio de **Proveedores** (sin permisos de eliminación/desactivación). No tiene acceso a los módulos de administración de usuarios ni a estadísticas generales.
 
 ---
@@ -46,6 +47,7 @@ El sistema cuenta con dos roles claramente diferenciados:
 * **RF20:** El sistema debe permitir gestionar el **Estado de Entrega** de las cotizaciones entre *Pendiente*, *En Tránsito* y *Entregado* en tiempo real; mientras esté *Pendiente* mostrará *"Por despachar"*, al pasar a *En Tránsito* indicará *"En camino"*, y al marcarse como *Entregado* registrará y mostrará la fecha de entrega efectiva junto al tiempo transcurrido en días.
 * **RF21:** El sistema debe generar documentos PDF oficiales para el cliente con diseño corporativo y hojas de respaldo confidencial con costos y proveedores.
 * **RF22:** El sistema debe permitir la exportación de cotizaciones a Excel en un formato estructurado y ultrarrápido sin imágenes para optimizar tiempos en listas extensas.
+* **RF22.1:** El sistema debe permitir a los roles `admin` y `compras` consultar las cotizaciones emitidas por todos los usuarios del sistema, así como eliminar cotizaciones obsoletas con verificación CSRF.
 
 ### 📦 Órdenes de Compra (P.O. - Purchase Orders)
 * **RF23:** El sistema debe permitir generar órdenes de compra dirigidas a proveedores a partir de cotizaciones en estado pendiente o mediante la creación de Órdenes Directas de mostrador.
@@ -53,7 +55,7 @@ El sistema cuenta con dos roles claramente diferenciados:
 * **RF25:** El sistema debe permitir parametrizar IVA opcional (0% o 19%) sobre el costo de flete en órdenes de compra.
 * **RF26:** El sistema debe clasificar las órdenes de compra en pestañas de órdenes pendientes y órdenes completadas con contadores en tiempo real.
 * **RF27:** El sistema debe permitir a los administradores actualizar el estado de las órdenes de compra entre pendiente y completada.
-* **RF28:** El sistema debe permitir la selección individual y masiva de órdenes de compra mediante casillas de verificación para su exportación consolidada a PDF y Excel.
+* **RF28:** El sistema debe permitir la selección individual y masiva de órdenes de compra mediante casillas de verificación persistentes a través de la paginación (`sessionStorage`) para su exportación consolidada a PDF y Excel.
 * **RF29:** El sistema debe incluir un visor interactivo de documentos para previsualizar e imprimir la orden de compra directamente.
 
 ### 🩺 Catálogo de Productos Médicos (Solo Administrador)
@@ -80,7 +82,7 @@ El sistema cuenta con dos roles claramente diferenciados:
 * **RF42:** El sistema debe permitir la búsqueda en vivo con debounce (400ms) de proveedores por NIT o Nombre comercial sin necesidad de presionar teclas de envío.
 * **RF43:** El sistema debe restringir la acción de desactivación o eliminación de proveedores exclusivamente a usuarios con rol `admin`; los usuarios estándar solo podrán consultar, crear y editar.
 * **RF44:** El sistema debe autocompletar predictivamente los datos del proveedor (NIT, Razón Social, cuenta y banco) al momento de cotizar productos o emitir órdenes de compra.
-* **RF45:** El sistema debe detectar automáticamente en las órdenes de compra si un proveedor es `Nuevo` (primera orden emitida) o `Registrado` (con historial previo de órdenes o presente en el directorio oficial).
+* **RF45:** El sistema debe clasificar cronológicamente a los proveedores en las órdenes de compra como `Nuevo` (cuando se trata de la primera orden emitida para dicho proveedor) o `Registrado` (cuando ya cuenta con una o más órdenes previas emitidas en el historial), preservando el autocompletado de datos desde el directorio centralizado.
 
 ### 🎨 Interfaz, Accesibilidad y Ayuda en Línea
 * **RF46:** El sistema debe destacar visualmente todos los campos y etiquetas de entrada obligatorios con asterisco en color rojo vivo contrastado (`.required-star`, `#ef4444 !important`) tanto en renderizado estático como en formularios dinámicos.
