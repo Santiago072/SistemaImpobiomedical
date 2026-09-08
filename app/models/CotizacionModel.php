@@ -380,7 +380,7 @@ class CotizacionModel
         $condiciones = ["c.estado = 'finalizada'"];
         $params      = [];
 
-        if ($rol !== 'admin' && $usuarioId > 0) {
+        if ($rol !== 'admin' && $rol !== 'compras' && $usuarioId > 0) {
             $condiciones[] = 'c.usuario_id = :uid';
             $params[':uid'] = $usuarioId;
         }

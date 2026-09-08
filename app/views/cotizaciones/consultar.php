@@ -186,14 +186,14 @@ include dirname(__DIR__) . '/layout/menu.php';
                                          title="No disponible: la cotización está <?= htmlspecialchars($estCom) ?>">
                                          <i class="bi bi-cart-x"></i> Orden
                                      </button>
+                                     <?php if (in_array($_SESSION['rol'] ?? '', ['admin', 'compras'], true)): ?>
+                                     <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=eliminar" class="form-inline-action" onsubmit="return confirm('¿Eliminar la cotización <?= htmlspecialchars($cot['numero_cotizacion']) ?>?')">
+                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                                         <input type="hidden" name="id" value="<?= (int)$cot['id'] ?>">
+                                         <button type="submit" class="mod-btn-del" title="Eliminar"><i class="bi bi-trash3-fill"></i></button>
+                                     </form>
                                      <?php endif; ?>
-                                    <?php if ($_SESSION['rol'] === 'admin'): ?>
-                                    <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=eliminar" class="form-inline-action" onsubmit="return confirm('¿Eliminar la cotización <?= htmlspecialchars($cot['numero_cotizacion']) ?>?')">
-                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
-                                        <input type="hidden" name="id" value="<?= (int)$cot['id'] ?>">
-                                        <button type="submit" class="mod-btn-del" title="Eliminar"><i class="bi bi-trash3-fill"></i></button>
-                                    </form>
-                                    <?php endif; ?>
+                                     <?php endif; ?>
                                     <?php else: ?>
                                     <span class="mod-badge badge-red">No generado</span>
                                     <?php endif; ?>

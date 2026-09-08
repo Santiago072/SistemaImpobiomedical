@@ -97,6 +97,9 @@ $tabActual = $tabActual ?? 'pendientes';
             <div class="export-count-text">
                 <i class="bi bi-check-all"></i>
                 <span id="seleccionados-conteo">0</span> órdenes seleccionadas
+                <button type="button" id="btn-limpiar-seleccion" onclick="limpiarSeleccionOrdenes()" style="display:none; margin-left: 10px; background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; text-decoration: underline;">
+                    <i class="bi bi-x-circle"></i> Limpiar selección
+                </button>
             </div>
             <div class="header-actions-wrap">
                 <button type="button" onclick="exportarSeleccionadas('pdf')" class="btn-export-pdf">
@@ -139,7 +142,7 @@ $tabActual = $tabActual ?? 'pendientes';
                         ?>
                         <tr>
                             <td class="text-center">
-                                <input type="checkbox" class="check-orden" value="<?= (int)$ord['id'] ?>" onchange="actualizarConteoSeleccion()">
+                                <input type="checkbox" class="check-orden" value="<?= (int)$ord['id'] ?>" onchange="toggleCheckOrden(this)">
                             </td>
                             <td><strong><?= (int)$ord['numero_po'] ?></strong></td>
                             <td><?= htmlspecialchars($ord['fecha'] ?? '') ?></td>
@@ -245,26 +248,87 @@ $tabActual = $tabActual ?? 'pendientes';
 </div>
 
 <script>
-function toggleCheckAll(master) {
+const SS_KEY_ORDENES = 'ordenes_sel_ids';
+
+// Cargar IDs persistidos desde sessionStorage
+const ordenesSeleccionadas = new Set(
+    (sessionStorage.getItem(SS_KEY_ORDENES) || '').split(',').filter(Boolean).map(Number)
+);
+
+// Sincronizar checkboxes del DOM actual con los IDs guardados
+function sincronizarCheckboxesDOM() {
     const checks = document.querySelectorAll('.check-orden');
-    checks.forEach(c => c.checked = master.checked);
-    actualizarConteoSeleccion();
+    checks.forEach(c => {
+        const id = parseInt(c.value, 10);
+        c.checked = ordenesSeleccionadas.has(id);
+    });
+    actualizarVistaSeleccion();
 }
 
-function actualizarConteoSeleccion() {
-    const marcados = document.querySelectorAll('.check-orden:checked').length;
-    document.getElementById('seleccionados-conteo').textContent = marcados;
-    
-    const todos = document.querySelectorAll('.check-orden').length;
+function persistirSeleccionOrdenes() {
+    sessionStorage.setItem(SS_KEY_ORDENES, Array.from(ordenesSeleccionadas).join(','));
+}
+
+function toggleCheckOrden(chk) {
+    const id = parseInt(chk.value, 10);
+    if (chk.checked) {
+        ordenesSeleccionadas.add(id);
+    } else {
+        ordenesSeleccionadas.delete(id);
+    }
+    persistirSeleccionOrdenes();
+    actualizarVistaSeleccion();
+}
+
+function toggleCheckAll(master) {
+    const checks = document.querySelectorAll('.check-orden');
+    checks.forEach(c => {
+        c.checked = master.checked;
+        const id = parseInt(c.value, 10);
+        if (master.checked) {
+            ordenesSeleccionadas.add(id);
+        } else {
+            ordenesSeleccionadas.delete(id);
+        }
+    });
+    persistirSeleccionOrdenes();
+    actualizarVistaSeleccion();
+}
+
+function limpiarSeleccionOrdenes() {
+    ordenesSeleccionadas.clear();
+    sessionStorage.removeItem(SS_KEY_ORDENES);
+    const checks = document.querySelectorAll('.check-orden');
+    checks.forEach(c => c.checked = false);
     const master = document.getElementById('check-all');
-    if (master) {
-        master.checked = todos > 0 && marcados === todos;
+    if (master) master.checked = false;
+    actualizarVistaSeleccion();
+}
+
+function actualizarVistaSeleccion() {
+    const count = ordenesSeleccionadas.size;
+    const txtConteo = document.getElementById('seleccionados-conteo');
+    if (txtConteo) txtConteo.textContent = count;
+
+    const btnLimpiar = document.getElementById('btn-limpiar-seleccion');
+    if (btnLimpiar) {
+        btnLimpiar.style.display = count > 0 ? 'inline-flex' : 'none';
+    }
+
+    const checksPagina = document.querySelectorAll('.check-orden');
+    const master = document.getElementById('check-all');
+    if (master && checksPagina.length > 0) {
+        const marcadosEnPagina = Array.from(checksPagina).filter(c => c.checked).length;
+        master.checked = marcadosEnPagina === checksPagina.length;
     }
 }
 
+// Ejecutar sincronización inicial al cargar el DOM
+document.addEventListener('DOMContentLoaded', sincronizarCheckboxesDOM);
+
 function exportarSeleccionadas(tipo) {
-    const marcados = Array.from(document.querySelectorAll('.check-orden:checked')).map(c => c.value);
-    if (marcados.length === 0) {
+    const ids = Array.from(ordenesSeleccionadas);
+    if (ids.length === 0) {
         alert('⚠️ Debe seleccionar al menos una orden de compra mediante las casillas para generar el reporte.');
         return;
     }
@@ -273,7 +337,7 @@ function exportarSeleccionadas(tipo) {
     const container = document.getElementById('contenedor-ids-exportar');
     container.innerHTML = '';
 
-    marcados.forEach(id => {
+    ids.forEach(id => {
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = 'ids[]';

@@ -274,7 +274,13 @@ class CotizacionController
     // ── ELIMINAR COTIZACIÓN (Solo Admin) ─────────────────────────────────────────
     public function eliminar(): void
     {
-        verificar_admin();
+        verificar_autenticacion();
+        $rol = $_SESSION['rol'] ?? 'usuario';
+        if (!in_array($rol, ['admin', 'compras'], true)) {
+            $_SESSION['flash_error'] = 'No tienes permisos para eliminar cotizaciones.';
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
         verificar_rate_limit(10, 60, 'cotizacion_eliminar');
 
         $token = $_POST['csrf_token'] ?? '';

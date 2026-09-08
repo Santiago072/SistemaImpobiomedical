@@ -166,10 +166,12 @@ class OrdenCompraModel
             ]);
             $totalOrdenes = (int)$stmtCount->fetchColumn();
 
+            $esRegistrado = ($totalOrdenes >= 1);
+
             // Si se encuentra en proveedores oficial:
             if ($provOficial) {
                 return [
-                    'registrado' => true,
+                    'registrado' => $esRegistrado,
                     'ordenes'    => $totalOrdenes,
                     'datos'      => [
                         'proveedor'          => $provOficial['nombre_proveedor'],
@@ -203,7 +205,7 @@ class OrdenCompraModel
                 $row = $stmt->fetch();
 
                 return [
-                    'registrado' => true,
+                    'registrado' => $esRegistrado,
                     'ordenes'    => $totalOrdenes,
                     'datos'      => [
                         'proveedor'          => $row['proveedor'] ?? $termino,
@@ -318,7 +320,21 @@ class OrdenCompraModel
     public function listarConFiltros(array $filtros, int $offset, int $limite, int $usuarioId, string $rol): array
     {
         [$where, $params] = $this->construirWhere($filtros, $usuarioId, $rol);
-        $sql = "SELECT o.*, u.nombre AS nombre_usuario, c.cliente_nombre
+        $sql = "SELECT o.*, 
+                       CASE 
+                           WHEN (
+                               SELECT COUNT(*) 
+                               FROM ordenes_compra o2 
+                               WHERE o2.id < o.id 
+                                 AND (
+                                     (o.proveedor != '' AND LOWER(TRIM(o2.proveedor)) = LOWER(TRIM(o.proveedor)))
+                                     OR 
+                                     (o.proveedor_nit != '' AND REPLACE(REPLACE(TRIM(o2.proveedor_nit), '.', ''), ' ', '') = REPLACE(REPLACE(TRIM(o.proveedor_nit), '.', ''), ' ', ''))
+                                 )
+                           ) >= 1 THEN 'registrado'
+                           ELSE 'nuevo'
+                       END AS estado_proveedor,
+                       u.nombre AS nombre_usuario, c.cliente_nombre
                 FROM ordenes_compra o
                 LEFT JOIN usuarios u ON o.usuario_id = u.id
                 LEFT JOIN cotizaciones c ON o.cotizacion_id = c.id"
@@ -338,7 +354,21 @@ class OrdenCompraModel
     public function listarParaExcel(array $filtros, int $usuarioId, string $rol): array
     {
         [$where, $params] = $this->construirWhere($filtros, $usuarioId, $rol);
-        $sql = "SELECT o.*, u.nombre AS nombre_usuario, c.cliente_nombre
+        $sql = "SELECT o.*, 
+                       CASE 
+                           WHEN (
+                               SELECT COUNT(*) 
+                               FROM ordenes_compra o2 
+                               WHERE o2.id < o.id 
+                                 AND (
+                                     (o.proveedor != '' AND LOWER(TRIM(o2.proveedor)) = LOWER(TRIM(o.proveedor)))
+                                     OR 
+                                     (o.proveedor_nit != '' AND REPLACE(REPLACE(TRIM(o2.proveedor_nit), '.', ''), ' ', '') = REPLACE(REPLACE(TRIM(o.proveedor_nit), '.', ''), ' ', ''))
+                                 )
+                           ) >= 1 THEN 'registrado'
+                           ELSE 'nuevo'
+                       END AS estado_proveedor,
+                       u.nombre AS nombre_usuario, c.cliente_nombre
                 FROM ordenes_compra o
                 LEFT JOIN usuarios u ON o.usuario_id = u.id
                 LEFT JOIN cotizaciones c ON o.cotizacion_id = c.id"
@@ -372,7 +402,21 @@ class OrdenCompraModel
         }
 
         $placeholders = implode(',', array_fill(0, count($cleanIds), '?'));
-        $sql = "SELECT o.*, u.nombre AS nombre_usuario, c.cliente_nombre
+        $sql = "SELECT o.*, 
+                       CASE 
+                           WHEN (
+                               SELECT COUNT(*) 
+                               FROM ordenes_compra o2 
+                               WHERE o2.id < o.id 
+                                 AND (
+                                     (o.proveedor != '' AND LOWER(TRIM(o2.proveedor)) = LOWER(TRIM(o.proveedor)))
+                                     OR 
+                                     (o.proveedor_nit != '' AND REPLACE(REPLACE(TRIM(o2.proveedor_nit), '.', ''), ' ', '') = REPLACE(REPLACE(TRIM(o.proveedor_nit), '.', ''), ' ', ''))
+                                 )
+                           ) >= 1 THEN 'registrado'
+                           ELSE 'nuevo'
+                       END AS estado_proveedor,
+                       u.nombre AS nombre_usuario, c.cliente_nombre
                 FROM ordenes_compra o
                 LEFT JOIN usuarios u ON o.usuario_id = u.id
                 LEFT JOIN cotizaciones c ON o.cotizacion_id = c.id

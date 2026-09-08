@@ -545,39 +545,38 @@ include dirname(__DIR__) . '/layout/menu.php';
         fetch('<?= $basePath ?>?module=ordenes&action=ajax_consultar_proveedor&term=' + encodeURIComponent(nombre.trim()))
             .then(res => res.json())
             .then(res => {
+                const d = res.datos;
                 if (res.registrado) {
                     if (badgeProv) {
                         badgeProv.className = 'mod-badge badge-green';
                         badgeProv.innerHTML = '<i class="bi bi-check-circle-fill"></i> Proveedor Registrado (' + res.ordenes + ' orden' + (res.ordenes > 1 ? 'es' : '') + ')';
                     }
                     if (hdnEstado) hdnEstado.value = 'registrado';
-
-                    const d = res.datos;
-                    if (d) {
-                        const nitInp   = document.getElementById('inputProveedorNit');
-                        const tcontInp = document.getElementById('inputTipoContribuyente');
-                        const condInp  = document.getElementById('inputCondicionesPago');
-                        const bnomInp  = document.getElementById('inputBancoNombre');
-                        const bctaInp  = document.getElementById('inputBancoCuenta');
-                        const btipoInp = document.getElementById('inputBancoTipoCuenta');
-
-                        if (nitInp) nitInp.value = d.proveedor_nit || '';
-                        if (tcontInp) tcontInp.value = d.tipo_contribuyente || '';
-                        if (condInp) condInp.value = d.condiciones_pago || 'Según acuerdo';
-                        if (bnomInp) bnomInp.value = d.banco_nombre || '';
-                        if (bctaInp) bctaInp.value = d.banco_cuenta || '';
-                        if (btipoInp) btipoInp.value = d.banco_tipo_cuenta || '';
-                        ultimoProvAutocompletado = nombre.trim();
-                    }
                 } else {
                     if (badgeProv) {
                         badgeProv.className = 'mod-badge badge-gold';
                         badgeProv.innerHTML = '<i class="bi bi-plus-circle"></i> Proveedor Nuevo';
                     }
                     if (hdnEstado) hdnEstado.value = 'nuevo';
-                    if (ultimoProvAutocompletado && ultimoProvAutocompletado !== nombre.trim()) {
-                        limpiarCamposProveedor();
-                    }
+                }
+
+                if (d) {
+                    const nitInp   = document.getElementById('inputProveedorNit');
+                    const tcontInp = document.getElementById('inputTipoContribuyente');
+                    const condInp  = document.getElementById('inputCondicionesPago');
+                    const bnomInp  = document.getElementById('inputBancoNombre');
+                    const bctaInp  = document.getElementById('inputBancoCuenta');
+                    const btipoInp = document.getElementById('inputBancoTipoCuenta');
+
+                    if (nitInp) nitInp.value = d.proveedor_nit || '';
+                    if (tcontInp) tcontInp.value = d.tipo_contribuyente || '';
+                    if (condInp) condInp.value = d.condiciones_pago || 'Según acuerdo';
+                    if (bnomInp) bnomInp.value = d.banco_nombre || '';
+                    if (bctaInp) bctaInp.value = d.banco_cuenta || '';
+                    if (btipoInp) btipoInp.value = d.banco_tipo_cuenta || '';
+                    ultimoProvAutocompletado = nombre.trim();
+                } else if (ultimoProvAutocompletado && ultimoProvAutocompletado !== nombre.trim()) {
+                    limpiarCamposProveedor();
                 }
             })
             .catch(() => {
