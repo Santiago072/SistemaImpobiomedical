@@ -14,7 +14,10 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
     <main class="contenido-principal">
         <div class="page-header">
-            <?php if(isset($_SESSION['cotizacion_revision_de'])): ?>
+            <?php if(isset($_SESSION['cotizacion_ajustando_id'])): ?>
+            <h1 class="page-title"><i class="bi bi-wrench-adjustable-circle-fill"></i> Ajustando Cotización: <?= htmlspecialchars($_SESSION['cotizacion_ajustando_numero'] ?? '') ?></h1>
+            <p class="text-warning-gold mb-10"><i class="bi bi-info-circle-fill"></i> Corrección directa. Se conservará el <strong>mismo número de cotización (<?= htmlspecialchars($_SESSION['cotizacion_ajustando_numero'] ?? '') ?>)</strong> sin generar una nueva versión.</p>
+            <?php elseif(isset($_SESSION['cotizacion_revision_de'])): ?>
             <h1 class="page-title"><i class="bi bi-pencil-square"></i> Modificando Cotización: <?= htmlspecialchars($_SESSION['cotizacion_revision_de']) ?></h1>
             <p class="text-warning-gold mb-10"><i class="bi bi-info-circle-fill"></i> Puedes editar, eliminar o agregar productos. El nuevo PDF tendrá un número derivado al finalizar.</p>
             <?php else: ?>
@@ -24,10 +27,14 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 <p class="page-sub m-0">Ítems agregados: <strong><?= $totalItems ?></strong></p>
                 <?php if ($totalItems > 0): ?>
                 <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary btn-sm-action">
-                    <i class="bi bi-arrow-right-circle-fill"></i> Continuar → Datos Cliente y PDF
+                    <i class="bi bi-arrow-right-circle-fill"></i> Continuar → <?= isset($_SESSION['cotizacion_ajustando_id']) ? 'Revisar Datos y Guardar Ajuste' : 'Datos Cliente y PDF' ?>
                 </a>
                 <?php endif; ?>
-                <?php if (isset($_SESSION['cotizacion_revision_de'])): ?>
+                <?php if (isset($_SESSION['cotizacion_ajustando_id'])): ?>
+                <a href="<?= $basePath ?>?module=cotizaciones&action=cancelar_ajuste" class="btn-discard-draft" onclick="return confirm('¿Seguro que deseas cancelar el ajuste? La cotización mantendrá su estado finalizado anterior.');">
+                    <i class="bi bi-x-circle-fill"></i> Cancelar Ajuste
+                </a>
+                <?php elseif (isset($_SESSION['cotizacion_revision_de'])): ?>
                 <a href="<?= $basePath ?>?module=cotizaciones&action=limpiar_borrador" class="btn-discard-draft" onclick="return confirm('¿Seguro que deseas cancelar la modificación y empezar una nueva cotización en blanco?');">
                     <i class="bi bi-x-circle-fill"></i> Cancelar Modificación y Empezar una Nueva
                 </a>

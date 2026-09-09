@@ -4,6 +4,31 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.2.0] - 2026-09-08
+### Añadido
+- **Modal de Opciones "Ajustar Cotización" vs "Nueva Versión / Revisión" (`consultar.php`, `cotizaciones.css`, `CotizacionController.php`):**
+  - Al pulsar el botón **"Modificar"**, se presenta un modal corporativo interactivo que permite al usuario escoger entre:
+    1. **Ajustar Cotización (Mismo número):** Corrección directa sobre la cotización original manteniendo su identificador (ej: `EB01`) sin alterar el consecutivo mensual ni generar sufijos de versión.
+    2. **Nueva Versión / Revisión:** Flujo tradicional que deja la original intacta en el histórico comercial y genera una copia derivada (`_01`, `_02`).
+  - Detección en Frontend y Backend: Inhabilitación automática de la opción de crear una nueva versión sobre cotizaciones que ya son revisiones (evita generar subversiones anidadas como `EB01_01_01`), permitiendo únicamente el ajuste directo sobre ellas.
+- **Flujo de Ajuste Persistente y Seguro (`CotizacionController.php`, `FinalizarCotizacionService.php`, `CotizacionModel.php`):**
+  - Nuevas acciones `action=ajustar` y `action=cancelar_ajuste`.
+  - El modo de ajuste se preserva de manera estable al agregar/eliminar productos, editar ítems y navegar entre el paso 1 (ítems) y el paso 2 (datos del cliente).
+  - Banner distintivo en `crear.php` con aviso dorado que identifica la cotización en proceso de ajuste y ofrece el botón seguro **"Cancelar Ajuste"**.
+  - En `finalizar.php`, precarga la fecha de creación original y actualiza el botón de envío a **"Guardar Ajuste y Generar PDF"**.
+- **Desacoplamiento del Botón "Eliminar" en Cotizaciones (`consultar.php`):**
+  - El botón y formulario de eliminación ahora se renderiza de forma independiente al estado comercial (`pendiente`, `concluida`, `descartada`), permitiendo a usuarios autorizados (`admin` o `compras`) descartar o purgar cotizaciones en cualquier estado.
+
+### Seguridad y Arquitectura
+- **Control de Propiedad (Ownership Check):**
+  - Verificación rigurosa en `modificar()` y `ajustar()`: los usuarios estándar únicamente pueden ajustar o modificar cotizaciones creadas por ellos mismos. Los roles `admin` y `compras` conservan permisos globales de administración.
+- **Protección ante Abandono de Flujo (`index.php`):**
+  - Si un usuario tiene un ajuste o modificación activa y navega hacia otro módulo (Dashboard, Clientes, Productos, Proveedores, etc.), el sistema restaura de forma automática e inmediata la cotización original a estado `'finalizada'` y restituye el borrador previo del usuario sin pérdida de datos.
+- **Eliminación de Estilos Inline:**
+  - Migración completa de directivas inline (`style="..."`) en tablas y modales de consulta hacia clases CSS modulares (`.pdf-viewer-frame`, `.cot-fecha-cambio-lbl`, `.cot-tiempo-entrega-lbl`, `.cot-entrega-camino`, `.cot-entrega-pendiente`, `.modal-hidden`, `.modal-active`, `.card-disabled`).
+
+---
+
 ## [v3.1.0] - 2026-09-08
 ### Añadido
 - **Permisos de Compras en Cotizaciones (`CotizacionController.php`, `CotizacionModel.php`, `consultar.php`):**

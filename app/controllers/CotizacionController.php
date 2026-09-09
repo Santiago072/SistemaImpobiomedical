@@ -319,6 +319,14 @@ class CotizacionController
             exit();
         }
 
+        // Verificar permisos: admin y compras pueden modificar cualquiera; otros usuarios solo las suyas
+        $rolUsuario   = $_SESSION['rol'] ?? 'usuario';
+        $usuarioIdSes = (int)($_SESSION['usuario_id'] ?? 0);
+        if ($rolUsuario !== 'admin' && $rolUsuario !== 'compras' && (int)$cotizacionOriginal['usuario_id'] !== $usuarioIdSes) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=sin_permiso');
+            exit();
+        }
+
         // Prevenir modificar una revisión (solo se puede modificar la original)
         if (strpos($cotizacionOriginal['numero_cotizacion'], '_') !== false) {
             $original = explode('_', $cotizacionOriginal['numero_cotizacion'])[0];
@@ -363,6 +371,82 @@ class CotizacionController
         $_SESSION['_modificar_recien_activado'] = true;
 
         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
+        exit();
+    }
+    // ── AJUSTAR COTIZACIÓN (Corrección directa, mismo número) ────────────────────
+    public function ajustar(): void
+    {
+        verificar_autenticacion();
+        $id = (int)($_GET['id'] ?? 0);
+        $cotizacionOriginal = null;
+        if ($id > 0) {
+            $cotizacionOriginal = $this->model->buscarPorId($id);
+        } else {
+            $numero = sanitizar_entrada($_GET['numero'] ?? '');
+            if (!empty($numero)) {
+                $cotizacionOriginal = $this->model->buscarPorNumero($numero);
+            }
+        }
+
+        if (!$cotizacionOriginal) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
+
+        // Solo se pueden ajustar cotizaciones ya finalizadas
+        if ($cotizacionOriginal['estado'] !== 'finalizada') {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=no_finalizada');
+            exit();
+        }
+
+        // Verificar permisos: admin y compras pueden ajustar cualquiera; otros usuarios solo las suyas
+        $rolUsuario   = $_SESSION['rol'] ?? 'usuario';
+        $usuarioIdSes = (int)($_SESSION['usuario_id'] ?? 0);
+        if ($rolUsuario !== 'admin' && $rolUsuario !== 'compras' && (int)$cotizacionOriginal['usuario_id'] !== $usuarioIdSes) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=sin_permiso');
+            exit();
+        }
+
+        // Guardar el borrador actual del usuario antes de sobreescribir la sesión
+        if (isset($_SESSION['cotizacion_id'])) {
+            $borradorActual = $this->model->buscarPorId((int)$_SESSION['cotizacion_id']);
+            // Solo guardar como previo si es un borrador normal (no un clon de modificación)
+            if ($borradorActual && (int)($borradorActual['es_revision'] ?? 0) === 0
+                && $borradorActual['estado'] === 'borrador') {
+                $_SESSION['borrador_previo_id'] = (int)$_SESSION['cotizacion_id'];
+            }
+        }
+
+        // Poner la cotización en modo borrador temporalmente para poder editarla
+        $this->model->reabrirParaAjuste((int)$cotizacionOriginal['id']);
+
+        // Establecer en sesión la cotización original como la activa
+        $_SESSION['cotizacion_id']         = (int)$cotizacionOriginal['id'];
+        $_SESSION['cotizacion_ajustando_id']     = (int)$cotizacionOriginal['id'];
+        $_SESSION['cotizacion_ajustando_numero'] = $cotizacionOriginal['numero_cotizacion'];
+
+        header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
+        exit();
+    }
+
+    // ── CANCELAR AJUSTE ──────────────────────────────────────────────────────────
+    public function cancelarAjuste(): void
+    {
+        verificar_autenticacion();
+        if (isset($_SESSION['cotizacion_ajustando_id'])) {
+            $id = (int)$_SESSION['cotizacion_ajustando_id'];
+            $this->model->restaurarEstadoFinalizada($id);
+            unset($_SESSION['cotizacion_ajustando_id'], $_SESSION['cotizacion_ajustando_numero']);
+        }
+
+        if (isset($_SESSION['borrador_previo_id'])) {
+            $_SESSION['cotizacion_id'] = (int)$_SESSION['borrador_previo_id'];
+            unset($_SESSION['borrador_previo_id']);
+        } else {
+            unset($_SESSION['cotizacion_id']);
+        }
+
+        header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
         exit();
     }
 
@@ -427,9 +511,25 @@ class CotizacionController
         }
 
         try {
-            $revisionDe = $_SESSION['cotizacion_revision_de'] ?? null;
-            $numeroCotizacion = $this->finalizarService->procesarFinalizacion($cotizacion_id, $_POST, $_SESSION, $revisionDe);
+            $modoAjuste  = isset($_SESSION['cotizacion_ajustando_id']) &&
+                           (int)$_SESSION['cotizacion_ajustando_id'] === $cotizacion_id;
+            $revisionDe  = $modoAjuste ? null : ($_SESSION['cotizacion_revision_de'] ?? null);
+            $numeroFijo  = $modoAjuste ? ($_SESSION['cotizacion_ajustando_numero'] ?? null) : null;
+
+            $numeroCotizacion = $this->finalizarService->procesarFinalizacion(
+                $cotizacion_id, $_POST, $_SESSION, $revisionDe, $numeroFijo
+            );
+
+            // Limpiar sesión
             unset($_SESSION['cotizacion_id'], $_SESSION['cotizacion_revision_de']);
+            if ($modoAjuste) {
+                unset($_SESSION['cotizacion_ajustando_id'], $_SESSION['cotizacion_ajustando_numero']);
+                // Restaurar el borrador previo si existía
+                if (isset($_SESSION['borrador_previo_id'])) {
+                    $_SESSION['cotizacion_id'] = (int)$_SESSION['borrador_previo_id'];
+                    unset($_SESSION['borrador_previo_id']);
+                }
+            }
 
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=generar_pdf&ver=' . urlencode($numeroCotizacion));
             exit();
@@ -445,9 +545,15 @@ class CotizacionController
     {
         verificar_autenticacion();
         $mensajeError = '';
-        if (isset($_GET['error']) && $_GET['error'] === 'ya_modificada') {
-            $orig = sanitizar_entrada($_GET['original'] ?? '');
-            $mensajeError = "No se puede modificar una revisión. Debe modificar la cotización original " . ($orig ? "($orig)" : "") . " para crear una nueva versión.";
+        if (isset($_GET['error'])) {
+            if ($_GET['error'] === 'ya_modificada') {
+                $orig = sanitizar_entrada($_GET['original'] ?? '');
+                $mensajeError = "No se puede modificar una revisión. Debe modificar la cotización original " . ($orig ? "($orig)" : "") . " para crear una nueva versión.";
+            } elseif ($_GET['error'] === 'sin_permiso') {
+                $mensajeError = 'No tienes permisos para editar o ajustar esta cotización.';
+            } elseif ($_GET['error'] === 'no_finalizada') {
+                $mensajeError = 'Solo se pueden ajustar cotizaciones que ya hayan sido finalizadas.';
+            }
         }
         $csrf_token   = generar_token_csrf();
         $cotizaciones = [];

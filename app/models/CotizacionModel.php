@@ -219,6 +219,8 @@ class CotizacionModel
      * Genera el número de cotización: CODIGO_USUARIO + consecutivo mensual de 2 dígitos.
      * Ejemplo: EB01, EB02, ..., EB99
      * Usa transacción PDO para evitar colisiones concurrentes.
+     *
+     * @param string|null $numeroFijo Si se proporciona, se usa directamente como número (modo ajuste).
      */
     public function finalizarCotizacion(
         int    $id,
@@ -237,10 +239,48 @@ class CotizacionModel
         string $asesorNombre = '',
         string $asesorCargo = '',
         string $usuarioCodigo = '',
-        ?string $revisionDe = null
+        ?string $revisionDe = null,
+        ?string $numeroFijo = null
     ): string {
         $this->db->beginTransaction();
         try {
+            // ── Modo ajuste: conservar exactamente el mismo número de cotización ──────
+            if (!empty($numeroFijo)) {
+                $fechaValidez = date('Y-m-d', strtotime($fechaCreacion . " + $diasValidez days"));
+                $stmtUpd = $this->db->prepare(
+                    "UPDATE cotizaciones
+                     SET numero_cotizacion=:num, estado='finalizada',
+                         fecha_creacion=:fech, dias_validez=:dval, fecha_validez=:fval,
+                         condiciones_pago=:condpago, observaciones=:obs,
+                         cliente_nombre=:cnombre, cliente_nit=:cnit, cliente_direccion=:cdir,
+                         cliente_telefono=:ctel, cliente_correo=:ccorreo, cliente_contacto=:ccont,
+                         cliente_ciudad=:ccity, cliente_id=:cid,
+                         asesor_nombre=:anom, asesor_cargo=:acargo
+                     WHERE id=:id"
+                );
+                $stmtUpd->execute([
+                    ':num'     => $numeroFijo,
+                    ':fech'    => $fechaCreacion,
+                    ':dval'    => $diasValidez,
+                    ':fval'    => $fechaValidez,
+                    ':condpago'=> $condicionesPago,
+                    ':obs'     => $observaciones,
+                    ':cnombre' => $clienteNombre,
+                    ':cnit'    => $clienteNit,
+                    ':cdir'    => $clienteDireccion,
+                    ':ctel'    => $clienteTelefono,
+                    ':ccorreo' => $clienteCorreo,
+                    ':ccont'   => $clienteContacto,
+                    ':ccity'   => $clienteCiudad,
+                    ':cid'     => $clienteId,
+                    ':anom'    => $asesorNombre,
+                    ':acargo'  => $asesorCargo,
+                    ':id'      => $id,
+                ]);
+                $this->db->commit();
+                return $numeroFijo;
+            }
+
             // Utilizar el código del usuario actual si se proporcionó, si no, buscar en la bd
             if (!empty($usuarioCodigo)) {
                 $codigo = $usuarioCodigo;
@@ -629,5 +669,30 @@ class CotizacionModel
             "DELETE FROM cotizaciones WHERE usuario_id = :uid AND estado = 'borrador'"
         );
         return $stmtCot->execute([':uid' => $usuarioId]);
+    }
+
+    /**
+     * Pone temporalmente una cotización finalizada en estado borrador para que
+     * el flujo de ajuste pueda agregar/quitar/modificar ítems con normalidad.
+     * El estado se restaura a 'finalizada' al llamar a finalizarCotizacion() con $numeroFijo.
+     */
+    public function reabrirParaAjuste(int $id): void
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE cotizaciones SET estado = 'borrador', es_revision = 0 WHERE id = :id"
+        );
+        $stmt->execute([':id' => $id]);
+    }
+
+    /**
+     * Restaura el estado de una cotización ajustada a 'finalizada' si el usuario
+     * cancela el proceso de ajuste.
+     */
+    public function restaurarEstadoFinalizada(int $id): void
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE cotizaciones SET estado = 'finalizada' WHERE id = :id"
+        );
+        $stmt->execute([':id' => $id]);
     }
 }

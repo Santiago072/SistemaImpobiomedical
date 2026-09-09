@@ -22,9 +22,11 @@ class FinalizarCotizacionService
      * @param int $cotizacion_id ID de la cotización en borrador.
      * @param array $postData Datos enviados en el formulario.
      * @param array $sessionData Datos de la sesión actual (usuario, rol, etc).
+     * @param string|null $revisionDe Número base para crear una revisión (ej: _01, _02).
+     * @param string|null $numeroFijo Si se pasa, la cotización finaliza con exactamente este número (modo ajuste).
      * @return string El número de cotización generado.
      */
-    public function procesarFinalizacion(int $cotizacion_id, array $postData, array $sessionData, ?string $revisionDe = null): string
+    public function procesarFinalizacion(int $cotizacion_id, array $postData, array $sessionData, ?string $revisionDe = null, ?string $numeroFijo = null): string
     {
         $fechaCreacion    = mb_substr(sanitizar_entrada($postData['fecha_creacion'] ?? date('Y-m-d')), 0, 10);
         $diasValidez      = max(1, (int)($postData['dias_validez'] ?? 30));
@@ -94,7 +96,8 @@ class FinalizarCotizacionService
             $sessionData['usuario_nombre'] ?? '',
             $sessionData['usuario_cargo'] ?? '',
             $sessionData['usuario_codigo'] ?? '',
-            $revisionDe
+            $revisionDe,
+            $numeroFijo
         );
 
         return $numeroCotizacion;

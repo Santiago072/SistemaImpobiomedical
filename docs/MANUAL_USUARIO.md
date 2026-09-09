@@ -72,8 +72,11 @@ Al iniciar sesión llegará al **Panel Principal**, que muestra:
 * **Ver PDF:** Abre el PDF formal para el cliente en un visor emergente interactivo con opción de descarga de PDF.
 * **Descargar Excel:** Botón verde `[ 📊 Excel ]` para descargar la cotización en una hoja de cálculo estructurada de forma inmediata (sin imágenes para máxima velocidad con muchos productos).
 * **Hoja de Respaldo:** Consulta interna confidencial con los costos de proveedor y márgenes para auditoría.
-* **Modificar / Revisión:** Genera una nueva versión (ej: `EB 01_01`) sin sobreescribir la cotización original.
+* **Modificar (Ajustar vs. Nueva Versión):** Al hacer clic en ✏️ **Modificar**, se abre un diálogo que permite escoger:
+  * **Ajustar Cotización (Mismo número):** Permite corregir productos, precios o condiciones directamente sobre la cotización original conservando su mismo número (ej: `EB01`), sin crear registros duplicados ni aumentar el consecutivo mensual.
+  * **Nueva Versión / Revisión:** Deja la original intacta y crea una cotización derivada (`_01`, `_02`...) para auditoría de cambios comerciales.
 * **Emitir Orden:** Botón directo para pasar los ítems cotizados a una Orden de Compra formal.
+* **Eliminar Cotización:** Disponible para usuarios con rol `admin` o `compras` independientemente del estado de la cotización.
 
 ---
 

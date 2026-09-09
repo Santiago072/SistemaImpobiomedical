@@ -130,11 +130,11 @@ include dirname(__DIR__) . '/layout/menu.php';
                                     <option value="concluida" <?= $estCom === 'concluida' ? 'selected' : '' ?>>🟢 Concluida</option>
                                     <option value="descartada" <?= $estCom === 'descartada' ? 'selected' : '' ?>>🔴 Descartada</option>
                                 </select>
-                                <div class="cot-fecha-cambio-lbl" style="font-size:10px; color:#64748b; margin-top:4px; font-weight:500;">
+                                <div class="cot-fecha-cambio-lbl">
                                     <?php if (!empty($cot['fecha_cambio_estado']) && $estCom !== 'pendiente'): ?>
                                         <i class="bi bi-clock-history"></i> <?= date('d/m/Y H:i', strtotime($cot['fecha_cambio_estado'])) ?>
                                     <?php else: ?>
-                                        <span style="color:#94a3b8;">Sin cambio</span>
+                                        <span class="cot-entrega-pendiente">Sin cambio</span>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -146,13 +146,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                                     <option value="en_transito" <?= $estEnt === 'en_transito' ? 'selected' : '' ?>>🔵 En Tránsito</option>
                                     <option value="entregado" <?= $estEnt === 'entregado' ? 'selected' : '' ?>>🟢 Entregado</option>
                                 </select>
-                                <div class="cot-tiempo-entrega-lbl" style="font-size:10px; color:#15803d; margin-top:4px; font-weight:600;">
+                                <div class="cot-tiempo-entrega-lbl">
                                     <?php if ($estEnt === 'entregado' && !empty($cot['fecha_entrega'])): ?>
                                         <i class="bi bi-check2-all"></i> <?= date('d/m/Y', strtotime($cot['fecha_entrega'])) ?><?= $diasEntregaTxt ?>
                                     <?php elseif ($estEnt === 'en_transito'): ?>
-                                        <span style="color:#2563eb;"><i class="bi bi-truck"></i> En camino</span>
+                                        <span class="cot-entrega-camino"><i class="bi bi-truck"></i> En camino</span>
                                     <?php else: ?>
-                                        <span style="color:#94a3b8;">Por despachar</span>
+                                        <span class="cot-entrega-pendiente">Por despachar</span>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -171,8 +171,11 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=ver_respaldo&id=<?= (int)$cot['id'] ?>&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Hoja de Respaldo Proveedores">
                                         <i class="bi bi-file-earmark-spreadsheet"></i> Respaldo
                                     </button>
+                                    <?php 
+                                    $esRevision = (strpos($cot['numero_cotizacion'], '_') !== false);
+                                    ?>
                                     <button type="button" class="btn-modificar-cot"
-                                        onclick="window.location.href='<?= $basePath ?>?module=cotizaciones&action=modificar&id=<?= (int)$cot['id'] ?>&numero=<?= urlencode($cot['numero_cotizacion']) ?>'" title="Crear nueva versión / Modificar Cotización">
+                                        onclick="abrirModalEdicion(<?= (int)$cot['id'] ?>, '<?= htmlspecialchars(addslashes($cot['numero_cotizacion'])) ?>', <?= $esRevision ? 'true' : 'false' ?>)" title="Ajustar o crear nueva versión">
                                         <i class="bi bi-pencil-square"></i> Modificar
                                     </button>
                                      <?php if ($estCom === 'pendiente'): ?>
@@ -186,13 +189,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                                          title="No disponible: la cotización está <?= htmlspecialchars($estCom) ?>">
                                          <i class="bi bi-cart-x"></i> Orden
                                      </button>
+                                     <?php endif; ?>
                                      <?php if (in_array($_SESSION['rol'] ?? '', ['admin', 'compras'], true)): ?>
                                      <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=eliminar" class="form-inline-action" onsubmit="return confirm('¿Eliminar la cotización <?= htmlspecialchars($cot['numero_cotizacion']) ?>?')">
                                          <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                                          <input type="hidden" name="id" value="<?= (int)$cot['id'] ?>">
                                          <button type="submit" class="mod-btn-del" title="Eliminar"><i class="bi bi-trash3-fill"></i></button>
                                      </form>
-                                     <?php endif; ?>
                                      <?php endif; ?>
                                     <?php else: ?>
                                     <span class="mod-badge badge-red">No generado</span>
@@ -247,12 +250,62 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
         </div>
         <div class="pdf-container mt-10">
-            <iframe id="pdf-frame" class="iframe-frame" src="" style="width:100%; height:75vh; border:none;"></iframe>
+            <iframe id="pdf-frame" class="iframe-frame pdf-viewer-frame" src=""></iframe>
             <div id="pdf-error" class="pdf-error d-none">
                 <i class="bi bi-exclamation-triangle-fill"></i>
                 <h4>No se pudo cargar el PDF</h4>
                 <p>El archivo no está disponible o ha sido movido.</p>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Opciones: Ajustar vs Modificar -->
+<div id="modal-opciones-modificar" class="modal-opciones-edicion modal-hidden">
+    <div class="modal-opciones-contenido">
+        <div class="modal-opciones-header">
+            <div class="modal-opciones-icon-wrap">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+            <div>
+                <h3 class="modal-opciones-titulo">¿Qué deseas hacer con la cotización?</h3>
+                <p class="modal-opciones-sub">Cotización: <strong id="modal-edit-numero"></strong></p>
+            </div>
+            <button type="button" class="modal-opciones-cerrar" onclick="cerrarModalEdicion()" title="Cerrar">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="modal-opciones-body">
+            <div class="modal-opcion-card" id="card-ajustar" onclick="irAjustar()">
+                <div class="modal-opcion-icono modal-opcion-ajustar">
+                    <i class="bi bi-wrench-adjustable"></i>
+                </div>
+                <div class="modal-opcion-info">
+                    <h4>Ajustar Cotización</h4>
+                    <p>Corrige errores directamente en esta cotización <strong>manteniendo el mismo número</strong>. Ideal para corregir precios, cantidades o datos del cliente.</p>
+                </div>
+                <div class="modal-opcion-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+            </div>
+            <div class="modal-opcion-divider"><span>ó</span></div>
+            <div class="modal-opcion-card" id="card-modificar" onclick="irModificar()">
+                <div class="modal-opcion-icono modal-opcion-modificar">
+                    <i class="bi bi-files"></i>
+                </div>
+                <div class="modal-opcion-info">
+                    <h4>Nueva Versión / Revisión</h4>
+                    <p>Crea una cotización derivada (ej: <strong>_01</strong>, <strong>_02</strong>) conservando la original intacta en el historial comercial.</p>
+                </div>
+                <div class="modal-opcion-arrow">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+        <div class="modal-opciones-footer">
+            <button type="button" class="btn-opciones-cancelar" onclick="cerrarModalEdicion()">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </button>
         </div>
     </div>
 </div>
@@ -452,8 +505,68 @@ function cambiarEstadoEntrega(select) {
     });
 }
 
-window.onclick = e => { if (e.target === document.getElementById('modal-pdf-viewer')) cerrarPDF(); };
-document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarPDF(); });
+// ── Modal Opciones: Ajustar vs Modificar ─────────────────────────────────────
+let _editId = null;
+let _editNumero = null;
+let _esRevision = false;
+const _basePath = '<?= $basePath ?>';
+
+function abrirModalEdicion(id, numero, esRevision = false) {
+    _editId     = id;
+    _editNumero = numero;
+    _esRevision = Boolean(esRevision);
+    
+    document.getElementById('modal-edit-numero').textContent = numero;
+    const modal = document.getElementById('modal-opciones-modificar');
+    const cardModificar = document.getElementById('card-modificar');
+
+    if (cardModificar) {
+        if (_esRevision) {
+            cardModificar.classList.add('card-disabled');
+            cardModificar.setAttribute('title', 'Esta cotización ya es una revisión. Para una nueva versión modifique la original o use Ajustar.');
+        } else {
+            cardModificar.classList.remove('card-disabled');
+            cardModificar.removeAttribute('title');
+        }
+    }
+
+    modal.classList.remove('modal-hidden');
+    modal.classList.add('modal-active');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModalEdicion() {
+    const modal = document.getElementById('modal-opciones-modificar');
+    if (modal) {
+        modal.classList.remove('modal-active');
+        modal.classList.add('modal-hidden');
+    }
+    document.body.style.overflow = 'auto';
+    _editId = null;
+    _editNumero = null;
+    _esRevision = false;
+}
+
+function irAjustar() {
+    if (_editId === null) return;
+    window.location.href = _basePath + '?module=cotizaciones&action=ajustar&id=' + _editId + '&numero=' + encodeURIComponent(_editNumero);
+}
+
+function irModificar() {
+    if (_editId === null || _esRevision) return;
+    window.location.href = _basePath + '?module=cotizaciones&action=modificar&id=' + _editId + '&numero=' + encodeURIComponent(_editNumero);
+}
+
+window.onclick = e => {
+    if (e.target === document.getElementById('modal-pdf-viewer')) cerrarPDF();
+    if (e.target === document.getElementById('modal-opciones-modificar')) cerrarModalEdicion();
+};
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        cerrarPDF();
+        cerrarModalEdicion();
+    }
+});
 </script>
 
 <?php include dirname(__DIR__) . '/layout/footer.php'; ?>

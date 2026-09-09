@@ -383,3 +383,295 @@ select.estado-entrega-select option {
     font-weight: 500 !important;
     padding: 6px !important;
 }
+
+/* ── Modal Opciones: Ajustar vs Modificar ── */
+.modal-opciones-edicion {
+    position: fixed;
+    inset: 0;
+    z-index: 10100;
+    background: rgba(0, 0, 0, .80);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-opciones-contenido {
+    background: linear-gradient(145deg, #1e2a3a 0%, #15202e 100%);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 22px;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 40px 90px rgba(0, 0, 0, .6);
+    overflow: hidden;
+    animation: modalSlideIn .25s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-20px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.modal-opciones-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+.modal-opciones-icon-wrap {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: rgba(251, 191, 36, .15);
+    border: 1.5px solid rgba(251, 191, 36, .3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #fbbf24;
+}
+
+.modal-opciones-titulo {
+    font-size: 17px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0 0 4px;
+    line-height: 1.3;
+}
+
+.modal-opciones-sub {
+    font-size: 13px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.modal-opciones-sub strong {
+    color: #fbbf24;
+}
+
+.modal-opciones-cerrar {
+    margin-left: auto;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .1);
+    color: #94a3b8;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all .2s;
+}
+
+.modal-opciones-cerrar:hover {
+    background: rgba(239, 68, 68, .2);
+    border-color: rgba(239, 68, 68, .4);
+    color: #ef4444;
+}
+
+.modal-opciones-body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.modal-opcion-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(255, 255, 255, .08);
+    background: rgba(255, 255, 255, .04);
+    cursor: pointer;
+    transition: all .2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-opcion-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 60%, rgba(255,255,255,.03));
+    pointer-events: none;
+}
+
+.modal-opcion-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .3);
+}
+
+.modal-opcion-card#card-ajustar:hover {
+    border-color: rgba(16, 185, 129, .5);
+    background: rgba(16, 185, 129, .08);
+}
+
+.modal-opcion-card#card-modificar:hover {
+    border-color: rgba(99, 102, 241, .5);
+    background: rgba(99, 102, 241, .08);
+}
+
+.modal-opcion-icono {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.modal-opcion-ajustar {
+    background: rgba(16, 185, 129, .15);
+    border: 1.5px solid rgba(16, 185, 129, .3);
+    color: #10b981;
+}
+
+.modal-opcion-modificar {
+    background: rgba(99, 102, 241, .15);
+    border: 1.5px solid rgba(99, 102, 241, .3);
+    color: #6366f1;
+}
+
+.modal-opcion-info {
+    flex: 1;
+}
+
+.modal-opcion-info h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0 0 6px;
+}
+
+.modal-opcion-info p {
+    font-size: 12.5px;
+    color: #94a3b8;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.modal-opcion-info p strong {
+    color: #cbd5e1;
+}
+
+.modal-opcion-arrow {
+    flex-shrink: 0;
+    font-size: 16px;
+    color: rgba(255, 255, 255, .3);
+    transition: all .2s;
+}
+
+.modal-opcion-card:hover .modal-opcion-arrow {
+    color: rgba(255, 255, 255, .7);
+    transform: translateX(4px);
+}
+
+.modal-opcion-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.modal-opcion-divider::before,
+.modal-opcion-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, .06);
+}
+
+.modal-opcion-divider span {
+    padding: 0 6px;
+}
+
+.modal-opciones-footer {
+    padding: 14px 24px 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.btn-opciones-cancelar {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, .12);
+    color: #64748b;
+    padding: 9px 22px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .2s;
+    font-family: inherit;
+}
+
+.btn-opciones-cancelar:hover {
+    background: rgba(255, 255, 255, .05);
+    border-color: rgba(255, 255, 255, .2);
+    color: #94a3b8;
+}
+
+/* Clases de control de visibilidad para modal de opciones (sin inline styles) */
+.modal-opciones-edicion.modal-hidden {
+    display: none !important;
+}
+
+.modal-opciones-edicion.modal-active {
+    display: flex !important;
+}
+
+/* Visor PDF iframe sin inline styles */
+.pdf-viewer-frame {
+    width: 100%;
+    height: 75vh;
+    border: none;
+}
+
+/* Indicadores de tiempo y entrega en tabla consultar */
+.cot-fecha-cambio-lbl {
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.cot-tiempo-entrega-lbl {
+    font-size: 10px;
+    color: #15803d;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.cot-entrega-camino {
+    color: #2563eb;
+}
+
+.cot-entrega-pendiente {
+    color: #94a3b8;
+}
+
+/* Estado inhabilitado para opciones no aplicables (ej: modificar una revisión existente) */
+.modal-opcion-card.card-disabled {
+    opacity: 0.45;
+    cursor: not-allowed !important;
+    filter: grayscale(0.8);
+    pointer-events: none;
+}

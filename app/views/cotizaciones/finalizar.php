@@ -14,8 +14,13 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
     <main class="contenido-principal">
         <div class="page-header">
+            <?php if (isset($_SESSION['cotizacion_ajustando_id'])): ?>
+            <h1 class="page-title"><i class="bi bi-wrench-adjustable-circle-fill"></i> Confirmar Ajuste: <?= htmlspecialchars($_SESSION['cotizacion_ajustando_numero'] ?? '') ?></h1>
+            <p class="page-sub">Paso 2 de 2: Verifica los datos del cliente y confirma para actualizar la cotización original con el mismo número</p>
+            <?php else: ?>
             <h1 class="page-title"><i class="bi bi-person-lines-fill"></i> Completar Datos de la Cotización</h1>
             <p class="page-sub">Paso 2 de 2: datos del cliente y condiciones</p>
+            <?php endif; ?>
         </div>
 
         <?php if (!empty($mensajeError)): ?>
@@ -92,11 +97,16 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <div class="imo-form-row">
                             <div class="imo-form-group">
                                 <label>Fecha de Cotización *</label>
-                                <input type="date" name="fecha_creacion" required value="<?= date('Y-m-d') ?>">
+                                <?php
+                                $fechaDefecto = !empty($cotizacion['fecha_creacion'])
+                                    ? date('Y-m-d', strtotime($cotizacion['fecha_creacion']))
+                                    : date('Y-m-d');
+                                ?>
+                                <input type="date" name="fecha_creacion" required value="<?= htmlspecialchars($fechaDefecto) ?>">
                             </div>
                             <div class="imo-form-group">
                                 <label>Días de Validez *</label>
-                                <input type="number" name="dias_validez" min="1" max="365" value="30" required>
+                                <input type="number" name="dias_validez" min="1" max="365" value="<?= htmlspecialchars((string)($cotizacion['dias_validez'] ?? 30)) ?>" required>
                             </div>
                         </div>
 
@@ -110,7 +120,11 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                 <i class="bi bi-arrow-left"></i> Volver a ítems
                             </a>
                             <button type="submit" class="btn-mod-primary">
+                                <?php if (isset($_SESSION['cotizacion_ajustando_id'])): ?>
+                                <i class="bi bi-check2-circle"></i> Guardar Ajuste y Generar PDF
+                                <?php else: ?>
                                 <i class="bi bi-file-earmark-pdf-fill"></i> Generar PDF
+                                <?php endif; ?>
                             </button>
                         </div>
                     </form>
