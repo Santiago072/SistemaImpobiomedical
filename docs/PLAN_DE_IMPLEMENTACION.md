@@ -47,3 +47,10 @@ graph LR
 
 ### Fase 6: Documentación Integral para Transferencia y Operación
 * Creación de la suite completa de documentos en `docs/`: Arquitectura, Despliegue, Guía de Colaboradores, Requisitos y Manuales de Usuario.
+
+### Fase 7: Evolución Operativa Comercial (Ajuste vs Modificación & RBAC Global)
+* **Modal de Opciones "Ajustar vs Modificar":** Permite corrección directa de cotizaciones preservando exactamente el número oficial original (sin sufijo de revisión) o generar clones de revisión controlada (`_01`, `_02`).
+* **Desacoplamiento de Eliminación:** Independencia del botón eliminar frente a los estados comerciales para roles autorizados (`admin` y `compras`).
+* **Blindaje de Propiedad (Ownership Check):** Validación estricta que impide que usuarios modifiquen cotizaciones ajenas.
+* **Persistencia y Liveness de Ajuste:** Respaldo y restauración automática del borrador activo y del estado finalizado en caso de cancelación o navegación cruzada.
+* **Cero Estilos Inline:** Refactorización de vistas con clases CSS modulares dedicadas.

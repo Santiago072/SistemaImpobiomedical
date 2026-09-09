@@ -1,6 +1,6 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** v3.0.0  
+**Versión:** v3.2.0  
 **Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -423,8 +423,13 @@ erDiagram
 
 ### 6.3 Cotizador y Negociaciones (`CotizacionController.php`)
 - **Manejo de Borrador Activo:** Sesión `$_SESSION['cotizacion_id']` para construir la cotización paso a paso sin perder datos.
-- **Revisiones Numéricas:** Si se modifica una cotización existente, el sistema genera sufijos automáticos (`_01`, `_02`) conservando el historial.
-- **Actualización de Estado Comercial:** Endpoint `cambiar_estado` protegido con `verificar_admin()`, token CSRF y rate limit con respuesta JSON asíncrona y reactividad inmediata en el botón de órdenes.
+- **Modal de Selección Ajustar vs. Modificar:** Diálogo interactivo al pulsar Modificar que permite elegir entre:
+  - **Ajustar Cotización (`action=ajustar`):** Abre la cotización original finalizada en modo de edición temporal, conservando intacto su mismo número (ej: `EB01`) sin incrementar el contador mensual y actualizando directamente los datos y el PDF.
+  - **Nueva Versión / Revisión (`action=modificar`):** Genera una copia clonada con sufijo secuencial (`_01`, `_02`) conservando el historial comercial anterior.
+- **Validación de Propiedad y Permisos (Ownership Check):** Los usuarios estándar solo pueden ajustar o modificar cotizaciones de su autoría; los roles `admin` y `compras` tienen permisos globales de edición y eliminación.
+- **Protección de Abandono de Flujo:** Restauración automática a estado `'finalizada'` si el usuario navega fuera del módulo o cancela el ajuste (`action=cancelar_ajuste`).
+- **Actualización de Estado Comercial:** Endpoint `cambiar_estado` protegido con token CSRF y rate limit con respuesta JSON asíncrona y reactividad inmediata en el botón de órdenes.
+- **Eliminación Desacoplada:** El botón de eliminar se encuentra desacoplado del estado comercial, permitiendo a administradores y encargados de compras purgar cotizaciones en cualquier estado.
 
 ### 6.4 Catálogo de Productos (`ProductoController.php`)
 - **Carga de Fotografías:** Integrado con `FileUploadService` para validación de tipo MIME real (`finfo`), generación de nombres únicos (`bin2hex(random_bytes(16))`) y control de tamaño.
@@ -574,10 +579,13 @@ El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de produc
 | `$_SESSION['usuario_nombre']` | `string` | Nombre completo del usuario |
 | `$_SESSION['usuario_codigo']` | `string` | Código de asesor (ej. `EB`, `HM`) |
 | `$_SESSION['usuario_cargo']` | `string` | Cargo del usuario |
-| `$_SESSION['rol']` | `string` | Nivel de permisos (`admin` o `usuario`) |
+| `$_SESSION['rol']` | `string` | Nivel de permisos (`admin`, `compras` o `usuario`) |
 | `$_SESSION['csrf_token']` | `string` | Token de seguridad activo |
-| `$_SESSION['cotizacion_id']` | `int` | ID de la cotización en borrador en construcción |
+| `$_SESSION['cotizacion_id']` | `int` | ID de la cotización en borrador/ajuste en construcción |
+| `$_SESSION['cotizacion_ajustando_id']` | `int` | ID de la cotización original finalizada en proceso de ajuste directo |
+| `$_SESSION['cotizacion_ajustando_numero']` | `string` | Número oficial de la cotización en proceso de ajuste directo |
 | `$_SESSION['cotizacion_revision_de']` | `string` | Número base de cotización que se está modificando |
+| `$_SESSION['borrador_previo_id']` | `int` | ID del borrador del asesor respaldado antes de iniciar un ajuste o modificación |
 | `$_SESSION['orden_tab']` | `string` | Pestaña activa en órdenes de compra (`pendientes` o `completadas`) |
 | `$_SESSION['LAST_ACTIVITY']` | `int` | Timestamp de última interacción para expiración automática |
 

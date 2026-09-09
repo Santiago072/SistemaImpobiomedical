@@ -1,6 +1,6 @@
 # 📚 Manual de Usuario — Sistema Impobiomedical
 
-**Versión del sistema**: v3.0.0 (Edición Comercial, Proveedores y Operativa)  
+**Versión del sistema**: v3.2.0 (Edición Comercial, Proveedores y Operativa)  
 **Autor y Titular**: Santiago Lizcano  
 **Público objetivo**: Asesores comerciales y administradores de Impobiomedical
 

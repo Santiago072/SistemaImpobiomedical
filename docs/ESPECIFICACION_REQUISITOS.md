@@ -1,6 +1,6 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v3.0.0  
+**Versión del Sistema:** v3.2.0  
 **Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -12,9 +12,9 @@ Este documento formaliza los requisitos funcionales (RF), requisitos no funciona
 
 El sistema cuenta con tres roles claramente estructurados:
 
-* **Administrador (`admin`):** Acceso total al sistema. Dispone del menú de **Administración** (Gestión de Usuarios, Gestión de Productos, Gestión de Clientes y Gestión de Proveedores con potestad exclusiva para su eliminación/desactivación), menú de **Cotizaciones** (Nueva Cotización, Consultar, Órdenes de Compra y Estadísticas/Reportes), potestad para eliminar cotizaciones y órdenes, y cambio de estados comerciales de cotizaciones y órdenes de compra.
-* **Encargado de Compras (`compras`):** Acceso enfocado a la gestión de aprovisionamiento y compras. Puede visualizar la totalidad de cotizaciones de todos los usuarios, eliminar cotizaciones, gestionar y eliminar órdenes de compra, y acceder al directorio de **Proveedores**.
-* **Usuario / Asesor Comercial (`usuario`):** Acceso enfocado a su operación comercial. Dispone del menú **Cotizaciones** con los submódulos de **Nueva Cotización**, **Consultar** (sus propias cotizaciones con indicadores visuales de estado), **Órdenes de Compra**, y acceso de consulta, creación y edición en el directorio de **Proveedores** (sin permisos de eliminación/desactivación). No tiene acceso a los módulos de administración de usuarios ni a estadísticas generales.
+* **Administrador (`admin`):** Acceso total al sistema. Dispone del menú de **Administración** (Gestión de Usuarios, Gestión de Productos, Gestión de Clientes y Gestión de Proveedores con potestad exclusiva para su eliminación/desactivación), menú de **Cotizaciones** (Nueva Cotización, Consultar, Órdenes de Compra y Estadísticas/Reportes), potestad para eliminar cualquier cotización u orden en cualquier estado comercial, y ajuste/modificación de cualquier cotización.
+* **Encargado de Compras (`compras`):** Acceso enfocado a la gestión de aprovisionamiento y compras. Puede visualizar la totalidad de cotizaciones de todos los usuarios, eliminar cotizaciones en cualquier estado comercial, ajustar/modificar cotizaciones globales, gestionar y eliminar órdenes de compra, y acceder al directorio de **Proveedores**.
+* **Usuario / Asesor Comercial (`usuario`):** Acceso enfocado a su operación comercial. Dispone del menú **Cotizaciones** con los submódulos de **Nueva Cotización**, **Consultar** (sus propias cotizaciones con indicadores visuales de estado), **Órdenes de Compra**, y acceso de consulta, creación y edición en el directorio de **Proveedores** (sin permisos de eliminación/desactivación). Únicamente puede ajustar o modificar cotizaciones de su propia autoría. No tiene acceso a los módulos de administración de usuarios ni a estadísticas generales.
 
 ---
 
@@ -42,12 +42,17 @@ El sistema cuenta con tres roles claramente estructurados:
 * **RF15:** El sistema debe mantener los productos agregados en la lista temporal de la cotización mientras el usuario navega entre diferentes módulos del sistema.
 * **RF16:** El sistema debe permitir aplicar IVA del 19% o registrar el producto como exento de IVA.
 * **RF17:** El sistema debe calcular el número consecutivo mensual mediante la detección del valor máximo secuencial del mes, asegurando un avance continuo (`01`, `02`, `03`...) precedido por el código del asesor comercial.
-* **RF18:** El sistema debe permitir modificar cotizaciones existentes generando una versión numerada de revisión que preserve el historial comercial original.
+* **RF18:** El sistema debe presentar al hacer clic en Modificar un diálogo con dos alternativas:
+  * **Ajustar Cotización:** Corrección directa de la cotización finalizada conservando el mismo número de cotización sin alterar el consecutivo mensual ni emitir sufijos de versión.
+  * **Nueva Versión / Revisión:** Generación de un clon derivado (`_01`, `_02`...) que preserve intacta la cotización original en el histórico comercial.
+* **RF18.1:** El sistema debe inhabilitar la opción de crear revisiones derivadas sobre cotizaciones que ya son revisiones (evitando generar anidamientos como `EB01_01_01`), admitiendo exclusivamente el ajuste directo sobre las mismas o la edición de la cotización original base.
+* **RF18.2:** El sistema debe restringir el ajuste y modificación de cotizaciones a sus autores originales, a excepción de los roles `admin` y `compras` que pueden ajustar o modificar cualquier cotización.
+* **RF18.3:** El sistema debe restituir automáticamente a estado finalizada cualquier cotización en modo ajuste si el usuario decide cancelar o si navega hacia otro módulo del aplicativo.
 * **RF19:** El sistema debe permitir actualizar el **Estado Comercial** de las cotizaciones entre *Pendiente*, *Concluida* y *Descartada* en tiempo real; mientras permanezca en *Pendiente* mostrará la etiqueta *"Sin cambio"*, y al cambiar a *Concluida* o *Descartada* mostrará la fecha y hora exacta del cambio de estado.
 * **RF20:** El sistema debe permitir gestionar el **Estado de Entrega** de las cotizaciones entre *Pendiente*, *En Tránsito* y *Entregado* en tiempo real; mientras esté *Pendiente* mostrará *"Por despachar"*, al pasar a *En Tránsito* indicará *"En camino"*, y al marcarse como *Entregado* registrará y mostrará la fecha de entrega efectiva junto al tiempo transcurrido en días.
 * **RF21:** El sistema debe generar documentos PDF oficiales para el cliente con diseño corporativo y hojas de respaldo confidencial con costos y proveedores.
 * **RF22:** El sistema debe permitir la exportación de cotizaciones a Excel en un formato estructurado y ultrarrápido sin imágenes para optimizar tiempos en listas extensas.
-* **RF22.1:** El sistema debe permitir a los roles `admin` y `compras` consultar las cotizaciones emitidas por todos los usuarios del sistema, así como eliminar cotizaciones obsoletas con verificación CSRF.
+* **RF22.1:** El sistema debe permitir a los roles `admin` y `compras` consultar las cotizaciones emitidas por todos los usuarios del sistema, así como eliminar cotizaciones obsoletas en cualquier estado comercial (`pendiente`, `concluida`, `descartada`) con verificación CSRF.
 
 ### 📦 Órdenes de Compra (P.O. - Purchase Orders)
 * **RF23:** El sistema debe permitir generar órdenes de compra dirigidas a proveedores a partir de cotizaciones en estado pendiente o mediante la creación de Órdenes Directas de mostrador.
