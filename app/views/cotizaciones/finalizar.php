@@ -227,6 +227,4 @@ document.addEventListener('click', e => {
 });
 </script>
 
-<script src="<?= $basePath ?>public/js/script.js"></script>
-</body>
-</html>
+<?php include dirname(__DIR__) . '/layout/footer.php'; ?>

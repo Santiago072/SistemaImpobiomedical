@@ -72,12 +72,31 @@ document.addEventListener('DOMContentLoaded', function () {
                     submitBtn.style.opacity = '0.7';
                     submitBtn.style.cursor = 'not-allowed';
                     if (submitBtn.tagName === 'BUTTON' && !esBotonIcono) {
-                        submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+                        if (!submitBtn.dataset.originalHtml) {
+                            submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+                        }
                         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
                     }
                 }, 20);
             }
         });
+    });
+
+    // Restaurar botones de envío si el usuario regresa con el botón Atrás del navegador (Bfcache)
+    function restaurarBotonesEnvio() {
+        document.querySelectorAll('form button[type="submit"], form input[type="submit"]').forEach(function (btn) {
+            if (btn.dataset.originalHtml) {
+                btn.innerHTML = btn.dataset.originalHtml;
+                delete btn.dataset.originalHtml;
+            }
+            btn.disabled = false;
+            btn.style.opacity = '';
+            btn.style.cursor = '';
+        });
+    }
+
+    window.addEventListener('pageshow', function (event) {
+        restaurarBotonesEnvio();
     });
 
     // ── RESALTAR ASTERISCOS (*) OBLIGATORIOS EN ROJO GLOBALMENTE ──
