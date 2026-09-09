@@ -384,13 +384,13 @@ select.estado-entrega-select option {
     padding: 6px !important;
 }
 
-/* ── Modal Opciones: Ajustar vs Modificar ── */
+/* ── Modal Opciones: Ajustar vs Modificar (Tema Claro / Corporativo Impobiomedical) ── */
 .modal-opciones-edicion {
     position: fixed;
     inset: 0;
     z-index: 10100;
-    background: rgba(0, 0, 0, .80);
-    backdrop-filter: blur(10px);
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -398,18 +398,18 @@ select.estado-entrega-select option {
 }
 
 .modal-opciones-contenido {
-    background: linear-gradient(145deg, #1e2a3a 0%, #15202e 100%);
-    border: 1px solid rgba(255, 255, 255, .12);
-    border-radius: 22px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
     width: 100%;
     max-width: 560px;
-    box-shadow: 0 40px 90px rgba(0, 0, 0, .6);
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
     overflow: hidden;
-    animation: modalSlideIn .25s ease-out;
+    animation: modalSlideIn .25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes modalSlideIn {
-    from { opacity: 0; transform: translateY(-20px) scale(.97); }
+    from { opacity: 0; transform: translateY(-16px) scale(.98); }
     to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 
@@ -417,130 +417,136 @@ select.estado-entrega-select option {
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    padding: 22px 24px 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, .08);
+    padding: 22px 26px 18px;
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .modal-opciones-icon-wrap {
     flex-shrink: 0;
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
-    background: rgba(251, 191, 36, .15);
-    border: 1.5px solid rgba(251, 191, 36, .3);
+    background: #e0f2fe;
+    border: 1.5px solid #bae6fd;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    color: #fbbf24;
+    font-size: 20px;
+    color: #0284c7;
 }
 
 .modal-opciones-titulo {
-    font-size: 17px;
+    font-family: var(--font-heading, 'Outfit', sans-serif);
+    font-size: 18px;
     font-weight: 700;
-    color: #f1f5f9;
+    color: #0f172a;
     margin: 0 0 4px;
     line-height: 1.3;
 }
 
 .modal-opciones-sub {
     font-size: 13px;
-    color: #94a3b8;
+    color: #64748b;
     margin: 0;
+    font-weight: 500;
 }
 
 .modal-opciones-sub strong {
-    color: #fbbf24;
+    color: #0f766e;
+    background: #f0fdfa;
+    padding: 2px 7px;
+    border-radius: 6px;
+    border: 1px solid #ccfbf1;
 }
 
 .modal-opciones-cerrar {
     margin-left: auto;
     flex-shrink: 0;
-    background: rgba(255, 255, 255, .05);
-    border: 1px solid rgba(255, 255, 255, .1);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     color: #94a3b8;
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     border-radius: 8px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 13px;
     transition: all .2s;
 }
 
 .modal-opciones-cerrar:hover {
-    background: rgba(239, 68, 68, .2);
-    border-color: rgba(239, 68, 68, .4);
-    color: #ef4444;
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #dc2626;
 }
 
 .modal-opciones-body {
-    padding: 20px 24px;
+    padding: 22px 26px;
     display: flex;
     flex-direction: column;
     gap: 0;
+    background: #ffffff;
 }
 
 .modal-opcion-card {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 18px 20px;
+    padding: 16px 18px;
     border-radius: 14px;
-    border: 1.5px solid rgba(255, 255, 255, .08);
-    background: rgba(255, 255, 255, .04);
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc;
     cursor: pointer;
-    transition: all .2s ease;
+    transition: all .22s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
-    overflow: hidden;
-}
-
-.modal-opcion-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, transparent 60%, rgba(255,255,255,.03));
-    pointer-events: none;
 }
 
 .modal-opcion-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, .3);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
 }
 
 .modal-opcion-card#card-ajustar:hover {
-    border-color: rgba(16, 185, 129, .5);
-    background: rgba(16, 185, 129, .08);
+    border-color: #0d9488;
+    background: #f0fdfa;
+    box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.15);
 }
 
 .modal-opcion-card#card-modificar:hover {
-    border-color: rgba(99, 102, 241, .5);
-    background: rgba(99, 102, 241, .08);
+    border-color: #2563eb;
+    background: #eff6ff;
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.15);
 }
 
 .modal-opcion-icono {
     flex-shrink: 0;
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 22px;
+    transition: transform .2s ease;
+}
+
+.modal-opcion-card:hover .modal-opcion-icono {
+    transform: scale(1.06);
 }
 
 .modal-opcion-ajustar {
-    background: rgba(16, 185, 129, .15);
-    border: 1.5px solid rgba(16, 185, 129, .3);
-    color: #10b981;
+    background: #ccfbf1;
+    border: 1.5px solid #99f6e4;
+    color: #0f766e;
 }
 
 .modal-opcion-modificar {
-    background: rgba(99, 102, 241, .15);
-    border: 1.5px solid rgba(99, 102, 241, .3);
-    color: #6366f1;
+    background: #dbeafe;
+    border: 1.5px solid #bfdbfe;
+    color: #2563eb;
 }
 
 .modal-opcion-info {
@@ -550,30 +556,39 @@ select.estado-entrega-select option {
 .modal-opcion-info h4 {
     font-size: 15px;
     font-weight: 700;
-    color: #f1f5f9;
-    margin: 0 0 6px;
+    color: #1e293b;
+    margin: 0 0 4px;
+}
+
+.modal-opcion-card#card-ajustar:hover .modal-opcion-info h4 {
+    color: #0f766e;
+}
+
+.modal-opcion-card#card-modificar:hover .modal-opcion-info h4 {
+    color: #1d4ed8;
 }
 
 .modal-opcion-info p {
-    font-size: 12.5px;
-    color: #94a3b8;
+    font-size: 13px;
+    color: #64748b;
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.45;
 }
 
 .modal-opcion-info p strong {
-    color: #cbd5e1;
+    color: #334155;
+    font-weight: 600;
 }
 
 .modal-opcion-arrow {
     flex-shrink: 0;
     font-size: 16px;
-    color: rgba(255, 255, 255, .3);
+    color: #94a3b8;
     transition: all .2s;
 }
 
 .modal-opcion-card:hover .modal-opcion-arrow {
-    color: rgba(255, 255, 255, .7);
+    color: #0f172a;
     transform: translateX(4px);
 }
 
@@ -582,9 +597,9 @@ select.estado-entrega-select option {
     align-items: center;
     gap: 12px;
     padding: 10px 0;
-    color: #475569;
+    color: #94a3b8;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -594,27 +609,30 @@ select.estado-entrega-select option {
     content: '';
     flex: 1;
     height: 1px;
-    background: rgba(255, 255, 255, .06);
+    background: #e2e8f0;
 }
 
 .modal-opcion-divider span {
-    padding: 0 6px;
+    padding: 0 8px;
+    background: #ffffff;
 }
 
 .modal-opciones-footer {
-    padding: 14px 24px 20px;
+    padding: 14px 26px 20px;
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
 }
 
 .btn-opciones-cancelar {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, .12);
-    color: #64748b;
-    padding: 9px 22px;
-    border-radius: 10px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    padding: 9px 20px;
+    border-radius: 9px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 13.5px;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
@@ -624,9 +642,9 @@ select.estado-entrega-select option {
 }
 
 .btn-opciones-cancelar:hover {
-    background: rgba(255, 255, 255, .05);
-    border-color: rgba(255, 255, 255, .2);
-    color: #94a3b8;
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #1e293b;
 }
 
 /* Clases de control de visibilidad para modal de opciones (sin inline styles) */
