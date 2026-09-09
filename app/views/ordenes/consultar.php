@@ -196,6 +196,11 @@ $tabActual = $tabActual ?? 'pendientes';
                                         onclick="verOrdenPDF(<?= (int)$ord['id'] ?>, <?= (int)$ord['numero_po'] ?>)">
                                         <i class="bi bi-eye"></i> Ver P.O.
                                     </button>
+                                    <?php if (in_array($rol, ['admin', 'compras'], true) || (int)($ord['usuario_id'] ?? 0) === (int)($_SESSION['usuario_id'] ?? 0)): ?>
+                                    <a href="<?= $basePath ?>?module=ordenes&action=ajustar&id=<?= (int)$ord['id'] ?>" class="btn-orden-ajustar" title="Ajustar esta Orden de Compra">
+                                        <i class="bi bi-pencil-square"></i> Ajustar
+                                    </a>
+                                    <?php endif; ?>
                                     <?php if (in_array($rol, ['admin', 'compras'], true)): ?>
                                     <form method="POST" action="<?= $basePath ?>?module=ordenes&action=eliminar" class="form-inline-action" onsubmit="return confirm('¿Eliminar la P.O. <?= (int)$ord['numero_po'] ?>?')">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
@@ -425,6 +430,18 @@ window.addEventListener('click', e => {
     if (e.target === document.getElementById('modal-orden-viewer')) cerrarOrden();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarOrden(); });
+
+// Si se acaba de guardar o ajustar una orden, abrir el visor modal automáticamente
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const verPoId = urlParams.get('ver_po');
+    if (verPoId) {
+        verOrdenPDF(verPoId, 'Orden de Compra');
+        // Limpiar el parámetro de la URL sin recargar para no reabrir en F5
+        const newUrl = window.location.pathname + window.location.search.replace(/&?ver_po=\d+/, '').replace(/\?$/, '');
+        window.history.replaceState({}, document.title, newUrl || window.location.pathname);
+    }
+});
 </script>
 
 <?php include dirname(__DIR__) . '/layout/footer.php'; ?>

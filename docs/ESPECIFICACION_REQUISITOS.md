@@ -1,6 +1,6 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v3.2.0  
+**Versión del Sistema:** v3.3.0  
 **Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -12,9 +12,9 @@ Este documento formaliza los requisitos funcionales (RF), requisitos no funciona
 
 El sistema cuenta con tres roles claramente estructurados:
 
-* **Administrador (`admin`):** Acceso total al sistema. Dispone del menú de **Administración** (Gestión de Usuarios, Gestión de Productos, Gestión de Clientes y Gestión de Proveedores con potestad exclusiva para su eliminación/desactivación), menú de **Cotizaciones** (Nueva Cotización, Consultar, Órdenes de Compra y Estadísticas/Reportes), potestad para eliminar cualquier cotización u orden en cualquier estado comercial, y ajuste/modificación de cualquier cotización.
-* **Encargado de Compras (`compras`):** Acceso enfocado a la gestión de aprovisionamiento y compras. Puede visualizar la totalidad de cotizaciones de todos los usuarios, eliminar cotizaciones en cualquier estado comercial, ajustar/modificar cotizaciones globales, gestionar y eliminar órdenes de compra, y acceder al directorio de **Proveedores**.
-* **Usuario / Asesor Comercial (`usuario`):** Acceso enfocado a su operación comercial. Dispone del menú **Cotizaciones** con los submódulos de **Nueva Cotización**, **Consultar** (sus propias cotizaciones con indicadores visuales de estado), **Órdenes de Compra**, y acceso de consulta, creación y edición en el directorio de **Proveedores** (sin permisos de eliminación/desactivación). Únicamente puede ajustar o modificar cotizaciones de su propia autoría. No tiene acceso a los módulos de administración de usuarios ni a estadísticas generales.
+* **Administrador (`admin`):** Acceso total al sistema. Dispone del menú de **Administración** (Gestión de Usuarios, Gestión de Productos, Gestión de Clientes y Gestión de Proveedores con potestad exclusiva para su eliminación/desactivación), menú de **Cotizaciones** (Nueva Cotización, Consultar, Órdenes de Compra y Estadísticas/Reportes), potestad para eliminar cualquier cotización u orden en cualquier estado comercial, y ajuste/modificación de cualquier cotización u orden de compra.
+* **Encargado de Compras (`compras`):** Acceso enfocado a la gestión de aprovisionamiento y compras. Puede visualizar la totalidad de cotizaciones de todos los usuarios, eliminar cotizaciones en cualquier estado comercial, ajustar/modificar cotizaciones globales, gestionar, ajustar y eliminar órdenes de compra, y acceder al directorio de **Proveedores**.
+* **Usuario / Asesor Comercial (`usuario`):** Acceso enfocado a su operación comercial. Dispone del menú **Cotizaciones** con los submódulos de **Nueva Cotización**, **Consultar** (sus propias cotizaciones con indicadores visuales de estado), **Órdenes de Compra** (con potestad para ajustar órdenes de su autoría), y acceso de consulta, creación y edición en el directorio de **Proveedores** (sin permisos de eliminación/desactivación). Únicamente puede ajustar o modificar cotizaciones de su propia autoría. No tiene acceso a los módulos de administración de usuarios ni a estadísticas generales.
 
 ---
 
@@ -57,11 +57,14 @@ El sistema cuenta con tres roles claramente estructurados:
 ### 📦 Órdenes de Compra (P.O. - Purchase Orders)
 * **RF23:** El sistema debe permitir generar órdenes de compra dirigidas a proveedores a partir de cotizaciones en estado pendiente o mediante la creación de Órdenes Directas de mostrador.
 * **RF24:** El sistema debe bloquear la emisión de órdenes de compra para cotizaciones que se encuentren en estado concluida o descartada.
-* **RF25:** El sistema debe permitir parametrizar IVA opcional (0% o 19%) sobre el costo de flete en órdenes de compra.
+* **RF25:** El sistema debe permitir parametrizar IVA opcional (0% o 19%) sobre el costo de flete en órdenes de compra y persistir esta configuración en la base de datos (`flete_iva` y `flete_porcentaje_iva`).
 * **RF26:** El sistema debe clasificar las órdenes de compra en pestañas de órdenes pendientes y órdenes completadas con contadores en tiempo real.
 * **RF27:** El sistema debe permitir a los administradores actualizar el estado de las órdenes de compra entre pendiente y completada.
 * **RF28:** El sistema debe permitir la selección individual y masiva de órdenes de compra mediante casillas de verificación persistentes a través de la paginación (`sessionStorage`) para su exportación consolidada a PDF y Excel.
 * **RF29:** El sistema debe incluir un visor interactivo de documentos para previsualizar e imprimir la orden de compra directamente.
+* **RF29.1:** El sistema debe permitir ajustar directamente cualquier orden de compra conservando estrictamente su número consecutivo P.O. original, precargando los ítems, cantidades, proveedor y valores financieros para su corrección atómica transaccional.
+* **RF29.2:** El sistema debe restringir el ajuste de órdenes de compra al usuario creador de la misma o a roles con privilegio superior (`admin` y `compras`).
+* **RF29.3:** El sistema debe redirigir tras el guardado o ajuste de una orden de compra directamente a la vista de consulta de órdenes con apertura automática del visor modal del PDF, de modo que al navegar hacia atrás o cerrar el documento el usuario permanezca en la tabla completa de órdenes.
 
 ### 🩺 Catálogo de Productos Médicos (Solo Administrador)
 * **RF30:** El sistema debe permitir registrar, editar y listar productos médicos organizados en cuadrícula de tarjetas con foto, código, título, categoría (incluyendo *Servicio Calibración*), IVA y estado.

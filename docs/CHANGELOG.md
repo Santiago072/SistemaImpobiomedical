@@ -4,6 +4,26 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.3.0] - 2026-09-09
+### Añadido
+- **Módulo de Ajuste Directo de Órdenes de Compra (`OrdenCompraController.php`, `OrdenCompraModel.php`, `consultar.php`, `ordenes.css`):**
+  - Acción corporativa **"Ajustar"** por cada orden en el listado de consulta (`action=ajustar`).
+  - Permite la corrección integral de ítems, cantidades, proveedor, datos tributarios, flete, retenciones y descuentos, **conservando de forma exacta el número consecutivo de P.O. original** (sin generar saltos ni duplicaciones de P.O.).
+  - Soporte bidireccional: funciona tanto para órdenes originadas de cotizaciones (`seleccionar_items`) como para órdenes directas de mostrador (`crear_directa`).
+  - Método atómico transaccional `actualizarOrden(...)` en `OrdenCompraModel`: actualiza metadatos de cabecera y reemplaza de forma íntegra los ítems vinculados mediante rollback en caso de fallo.
+  - Indicador visual corporativo con banner informativo dorado en los formularios y botón seguro **"Cancelar Ajuste"** (`action=cancelar_ajuste`).
+- **Flujo Optimizado de Redirección y Visor Modal Post-Guardado:**
+  - Al crear o guardar el ajuste de una orden, el sistema redirige directamente a la lista completa de órdenes (`?module=ordenes&action=consultar&ver_po={id}`) y despliega automáticamente el visor modal con la orden ajustada.
+  - Al cerrar el visor o navegar hacia atrás, el usuario visualiza siempre la tabla completa de órdenes sin quedar atrapado en el formulario o en el visor directo de PDF.
+- **Actualización de Identidad Visual en Cotizaciones Oficiales (`app/views/cotizaciones/generar_pdf.php`):**
+  - Sustitución de logo corporativo intermedio por la versión oficial `logo/logoimpdf.png` en el encabezado de cotizaciones PDF para clientes.
+
+### Base de Datos y Persistencia
+- **Ampliación de Esquema en `ordenes_compra`:**
+  - Incorporación de columnas `flete_iva` (`enum('si','no')`) y `flete_porcentaje_iva` (`decimal(5,2)`) para persistir la configuración tributaria de flete en ajustes y nuevas órdenes.
+
+---
+
 ## [v3.2.0] - 2026-09-08
 ### Añadido
 - **Modal de Opciones "Ajustar Cotización" vs "Nueva Versión / Revisión" (`consultar.php`, `cotizaciones.css`, `CotizacionController.php`):**

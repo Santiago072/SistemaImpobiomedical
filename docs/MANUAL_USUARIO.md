@@ -1,6 +1,6 @@
 # 📚 Manual de Usuario — Sistema Impobiomedical
 
-**Versión del sistema**: v3.2.0 (Edición Comercial, Proveedores y Operativa)  
+**Versión del sistema**: v3.3.0 (Edición Comercial, Proveedores y Operativa)  
 **Autor y Titular**: Santiago Lizcano  
 **Público objetivo**: Asesores comerciales y administradores de Impobiomedical
 
@@ -83,6 +83,10 @@ Al iniciar sesión llegará al **Panel Principal**, que muestra:
 ## 5. Órdenes de Compra (P.O.)
 
 * **Emisión:** Desde consultar cotizaciones, haga clic en 🛒 **Orden** en propuestas pendientes. Seleccione únicamente los ítems a comprar al proveedor y complete los datos bancarios y tributarios (se autocompletan predictivamente desde el directorio oficial si el proveedor ya existe).
+* **Órdenes de Mostrador (Directas):** Permite emitir compras a proveedores sin necesidad de una cotización previa pulsando **"+ Nueva Orden Mostrador"**.
+* **Ajustar Orden de Compra:** En la tabla de consulta de órdenes, pulse el botón 🛠️ **Ajustar** en la fila de la orden correspondiente. El sistema reabrirá la orden permitiendo modificar ítems, cantidades, datos tributarios, flete, retenciones o descuentos, **conservando intacto el mismo consecutivo P.O.** tras guardar.
+* **Cancelación de Ajuste:** Si decide no realizar modificaciones, el botón **"Cancelar Ajuste"** restablece la orden original sin aplicar ningún cambio.
+* **Visor Automático:** Al guardar o ajustar una orden, el sistema lo llevará directamente a la tabla de órdenes abriendo automáticamente el visor del PDF en un modal interactivo para descargar o imprimir.
 * **Gestión y Clasificación:** Controle órdenes pendientes y completadas con contadores en tiempo real. Cada orden clasifica cronológicamente al proveedor como `🟡 Nuevo` si corresponde a su primera compra emitida o `🟢 Registrado` a partir de su segunda orden.
 * **Selección y Exportación Multipágina:** Casillas de selección múltiple con persistencia automática a través de la paginación (puede seleccionar órdenes de la página 1, navegar a la página 2 y continuar marcando). Barra superior interactiva con contador consolidado, botón para limpiar selección y exportación masiva a **PDF** o **Excel (.xls)**.
 

@@ -54,3 +54,9 @@ graph LR
 * **Blindaje de Propiedad (Ownership Check):** Validación estricta que impide que usuarios modifiquen cotizaciones ajenas.
 * **Persistencia y Liveness de Ajuste:** Respaldo y restauración automática del borrador activo y del estado finalizado en caso de cancelación o navegación cruzada.
 * **Cero Estilos Inline:** Refactorización de vistas con clases CSS modulares dedicadas.
+
+### Fase 8: Ajuste Directo de Órdenes de Compra (P.O.) e Identidad Visual Oficial
+* **Ajuste de Órdenes Preservando Consecutivo P.O.:** Implementación integral de la corrección directa de órdenes de compra (cotización y mostrador) manteniendo el consecutivo P.O. original mediante transacciones seguras en `OrdenCompraModel::actualizarOrden()`.
+* **Redirección Optimizada con Modal Automático:** Desacoplamiento de la redirección directa al stream de DomPDF en bruto; retorno fluido a la tabla de órdenes (`consultar`) con apertura automática del visor modal para evitar bloqueos en el historial de navegación al presionar el botón "Atrás".
+* **Ampliación de Esquema en Base de Datos:** Incorporación de persistencia para el IVA de flete (`flete_iva`, `flete_porcentaje_iva`) en `ordenes_compra`.
+* **Actualización de Identidad Visual Corporativa:** Sustitución de logo corporativo intermedio en el encabezado de cotizaciones PDF por `logo/logoimpdf.png`.

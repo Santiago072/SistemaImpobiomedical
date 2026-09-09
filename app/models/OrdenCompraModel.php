@@ -102,6 +102,88 @@ class OrdenCompraModel
         }
     }
 
+    public function actualizarOrden(
+        int    $ordenId,
+        string $proveedor,
+        string $proveedorNit,
+        string $tipoContribuyente,
+        string $condicionesPago,
+        string $iva,
+        string $departamentoCompras,
+        string $nota,
+        float  $retencion,
+        string $fecha,
+        string $bancoNombre = '',
+        string $bancoCuenta = '',
+        string $bancoTipoCuenta = '',
+        string $estadoProveedor = 'nuevo',
+        float  $flete = 0.00,
+        string $tipoDescuento = 'monto',
+        float  $descuentoValor = 0.00,
+        float  $descuento = 0.00,
+        string $fleteIva = 'no',
+        float  $fletePorcentajeIva = 19.00
+    ): bool {
+        $this->db->beginTransaction();
+        try {
+            $stmt = $this->db->prepare(
+                "UPDATE ordenes_compra SET
+                    proveedor = :prov,
+                    proveedor_nit = :pnit,
+                    estado_proveedor = :eprov,
+                    tipo_contribuyente = :tcont,
+                    condiciones_pago = :condpago,
+                    iva = :iva,
+                    departamento_compras = :depto,
+                    nota = :nota,
+                    retencion = :ret,
+                    flete = :flete,
+                    flete_iva = :fiva,
+                    flete_porcentaje_iva = :fpctiva,
+                    tipo_descuento = :tdesc,
+                    descuento_valor = :dval,
+                    descuento = :desc,
+                    fecha = :fecha,
+                    banco_nombre = :bnom,
+                    banco_cuenta = :bcuenta,
+                    banco_tipo_cuenta = :btipo
+                 WHERE id = :oid"
+            );
+            $stmt->execute([
+                ':oid'     => $ordenId,
+                ':prov'    => $proveedor,
+                ':pnit'    => $proveedorNit,
+                ':eprov'   => $estadoProveedor,
+                ':tcont'   => $tipoContribuyente,
+                ':condpago'=> $condicionesPago,
+                ':iva'     => $iva,
+                ':depto'   => $departamentoCompras,
+                ':nota'    => $nota,
+                ':ret'     => $retencion,
+                ':flete'   => $flete,
+                ':fiva'    => $fleteIva,
+                ':fpctiva' => $fletePorcentajeIva,
+                ':tdesc'   => $tipoDescuento,
+                ':dval'    => $descuentoValor,
+                ':desc'    => $descuento,
+                ':fecha'   => $fecha,
+                ':bnom'    => $bancoNombre,
+                ':bcuenta' => $bancoCuenta,
+                ':btipo'   => $bancoTipoCuenta,
+            ]);
+
+            // Eliminar items existentes para reemplazarlos con los actualizados
+            $stmtDel = $this->db->prepare("DELETE FROM orden_compra_items WHERE orden_id = :oid");
+            $stmtDel->execute([':oid' => $ordenId]);
+
+            $this->db->commit();
+            return true;
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
     /**
      * Consulta el historial de un proveedor exclusivamente en base a órdenes de compra emitidas.
      * Retorna registrado = true únicamente si ya tiene al menos una orden previa (>= 1).

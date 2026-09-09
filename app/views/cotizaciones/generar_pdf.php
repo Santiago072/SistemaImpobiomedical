@@ -81,7 +81,7 @@ function imgBase64(string $ruta): string {
 
 $logoDir      = dirname(__DIR__, 3) . '/logo/';
 $imgLogoPdf   = imgBase64($logoDir . 'logopdf.png');      // IMPOBIOMEDICAL (logo grande derecha)
-$imgLogoMin   = imgBase64($logoDir . 'logoimp.png');      // IMPOMIN (logo pequeño medio)
+$imgLogoMin   = imgBase64($logoDir . 'logoimpdf.png');    // IMPOMIN (logo pequeño medio)
 
 // ── Cálculos ──────────────────────────────────────────────────────────────────
 $valorBase  = 0;

@@ -1,6 +1,6 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** v3.2.0  
+**Versión:** v3.3.0  
 **Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -437,10 +437,12 @@ erDiagram
 
 ### 6.5 Órdenes de Compra (`OrdenCompraController.php`)
 - **Aislamiento por Proveedor:** Agrupa los ítems cotizados y permite generar la Orden de Compra (P.O.) únicamente con los productos del proveedor seleccionado.
+- **Ajuste Directo de Órdenes (`action=ajustar` y `action=cancelar_ajuste`):** Permite reabrir y corregir una orden de compra generada (tanto proveniente de cotización como de mostrador directo), preservando exactamente el número secuencial `numero_po` mediante el método atómico `actualizarOrden(...)` de `OrdenCompraModel` con reemplazo transaccional de ítems.
+- **Redirección Optimizada con Modal Automático:** Tras crear o guardar el ajuste, el controlador redirige a `?module=ordenes&action=consultar&ver_po={id}`, donde la vista despliega automáticamente el modal de previsualización del PDF. Al cerrar el visor o dar "Atrás", el usuario queda situado directamente en la tabla completa de órdenes.
 - **Bloqueo Inteligente:** Deshabilita tanto en frontend como en backend la generación de órdenes sobre cotizaciones que hayan sido marcadas como `concluida` o `descartada`.
 - **Pestañas de Estado y AJAX:** Pestañas visuales para 🟡 *Pendientes* y 🟢 *Completadas* con endpoint reactivo `cambiar_estado` protegido con CSRF y Rate Limit.
 - **Selección Granular y Reportes:** Selección por casillas de verificación individuales y globales para exportación selectiva a **PDF** y **Excel tabular (.xls)** con sumatorias automáticas y optimización de consultas SQL en bloque.
-- **Cálculo de Retenciones:** Aplica retención en la fuente y discriminación de IVA para contabilidad.
+- **Cálculo de Retenciones e IVA en Flete:** Aplica retención en la fuente, descuentos comerciales y discriminación de IVA general y opcional sobre flete persistido en BD.
 
 ### 6.6 Directorio de Clientes (`ClienteController.php`)
 - **Autocompletado en Vivo:** Endpoint AJAX para búsqueda instantánea por NIT o Razón Social.
@@ -586,6 +588,8 @@ El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de produc
 | `$_SESSION['cotizacion_ajustando_numero']` | `string` | Número oficial de la cotización en proceso de ajuste directo |
 | `$_SESSION['cotizacion_revision_de']` | `string` | Número base de cotización que se está modificando |
 | `$_SESSION['borrador_previo_id']` | `int` | ID del borrador del asesor respaldado antes de iniciar un ajuste o modificación |
+| `$_SESSION['orden_ajustando_id']` | `int` | ID de la orden de compra en proceso de ajuste directo |
+| `$_SESSION['orden_ajustando_po']` | `int` | Número consecutivo P.O. de la orden en proceso de ajuste directo |
 | `$_SESSION['orden_tab']` | `string` | Pestaña activa en órdenes de compra (`pendientes` o `completadas`) |
 | `$_SESSION['LAST_ACTIVITY']` | `int` | Timestamp de última interacción para expiración automática |
 

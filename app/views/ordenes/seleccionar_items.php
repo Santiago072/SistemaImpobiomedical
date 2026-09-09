@@ -9,6 +9,11 @@ include dirname(__DIR__) . '/layout/header.php';
 include dirname(__DIR__) . '/layout/menu.php';
 ?>
 
+<?php
+$esAjuste = !empty($_SESSION['orden_ajustando_id']) && !empty($ordenAjustando);
+$poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
+?>
+
 <div class="layout-main">
     <?php include dirname(__DIR__) . '/layout/topbar.php'; ?>
 
@@ -16,16 +21,30 @@ include dirname(__DIR__) . '/layout/menu.php';
 
         <div class="mod-header">
             <div>
+                <?php if ($esAjuste): ?>
+                <h1 class="mod-title"><i class="bi bi-wrench-adjustable-circle-fill"></i> Ajustando Orden de Compra: P.O. <?= $poAjuste ?></h1>
+                <p class="mod-sub text-warning-gold"><i class="bi bi-info-circle-fill"></i> Corrección directa sobre la cotización <strong><?= htmlspecialchars($cotizacion['numero_cotizacion']) ?></strong>. Se conservará el <strong>mismo consecutivo P.O. (<?= $poAjuste ?>)</strong>.</p>
+                <?php else: ?>
                 <h1 class="mod-title"><i class="bi bi-cart-plus-fill"></i> Nueva Orden de Compra</h1>
                 <p class="mod-sub">
                     Cotización: <strong><?= htmlspecialchars($cotizacion['numero_cotizacion']) ?></strong>
                     &nbsp;|&nbsp; Cliente: <strong><?= htmlspecialchars($cotizacion['cliente_nombre']) ?></strong>
                 </p>
+                <?php endif; ?>
             </div>
-            <a href="<?= $basePath ?>?module=cotizaciones&action=consultar"
-               class="btn-mod-primary btn-secondary-custom">
-                <i class="bi bi-arrow-left"></i> Volver
-            </a>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <?php if ($esAjuste): ?>
+                <a href="<?= $basePath ?>?module=ordenes&action=cancelar_ajuste"
+                   class="btn-discard-draft" onclick="return confirm('¿Desea cancelar el ajuste de esta orden de compra? No se guardará ningún cambio.');">
+                    <i class="bi bi-x-circle-fill"></i> Cancelar Ajuste
+                </a>
+                <?php else: ?>
+                <a href="<?= $basePath ?>?module=cotizaciones&action=consultar"
+                   class="btn-mod-primary btn-secondary-custom">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+                <?php endif; ?>
+            </div>
         </div>
 
         <?php if (!empty($_SESSION['flash_error'])): ?>
@@ -95,8 +114,13 @@ include dirname(__DIR__) . '/layout/menu.php';
                             <tr><td colspan="8" class="mod-empty">Esta cotización no tiene ítems.</td></tr>
                             <?php else: ?>
                                 <?php foreach ($items as $it):
-                                    $qty   = (int)$it['cantidad'];
-                                    $pu    = (float)($it['precio_proveedor'] ?? 0);  // Precio del proveedor, no del cliente
+                                    $itId = (int)$it['id'];
+                                    $estaEnOrden = isset($itemsOrdenAjustando[$itId]);
+                                    $itemAjuste = $estaEnOrden ? $itemsOrdenAjustando[$itId] : null;
+
+                                    $qty   = $itemAjuste ? (int)$itemAjuste['cantidad'] : (int)$it['cantidad'];
+                                    $pu    = $itemAjuste ? (float)$itemAjuste['precio_unit'] : (float)($it['precio_proveedor'] ?? 0);
+                                    $codProvVal = $itemAjuste ? ($itemAjuste['codigo_proveedor'] ?? '') : ($it['codigo_proveedor'] ?? '');
                                     $pct   = (float)($it['porcentaje_iva'] ?? 19);
                                     $aplica= strtolower($it['iva']) === 'si';
                                     $sub   = $pu * $qty;
@@ -104,13 +128,15 @@ include dirname(__DIR__) . '/layout/menu.php';
                                     $total = $sub + $ivaV;
                                     $prov  = $it['proveedor'] ?? '';
                                     $nit   = $it['proveedor_nit'] ?? '';
+                                    $estaChecked = $esAjuste ? $estaEnOrden : false;
                                 ?>
                                 <tr class="item-row" data-proveedor="<?= htmlspecialchars($prov) ?>" data-nit="<?= htmlspecialchars($nit) ?>">
                                     <td class="text-center">
                                         <input type="checkbox" name="items_seleccionados[]"
                                                value="<?= (int)$it['id'] ?>"
                                                class="item-check"
-                                               data-id="<?= (int)$it['id'] ?>">
+                                               data-id="<?= (int)$it['id'] ?>"
+                                               <?= $estaChecked ? 'checked' : '' ?>>
                                         <!-- Datos del ítem como hidden (se envían junto al checkbox) -->
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][titulo]"
                                                value="<?= htmlspecialchars($it['titulo']) ?>">
@@ -126,7 +152,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                                value="<?= $pct ?>">
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][codigo_proveedor]"
                                                id="cod-prov-hidden-<?= (int)$it['id'] ?>"
-                                               value="<?= htmlspecialchars($it['codigo_proveedor'] ?? '') ?>">
+                                               value="<?= htmlspecialchars($codProvVal) ?>">
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][proveedor]"
                                                value="<?= htmlspecialchars($prov) ?>">
                                     </td>
@@ -134,7 +160,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <input type="text"
                                                class="oc-cod-input"
                                                placeholder="Código"
-                                               value="<?= htmlspecialchars($it['codigo_proveedor'] ?? '') ?>"
+                                               value="<?= htmlspecialchars($codProvVal) ?>"
                                                maxlength="60"
                                                oninput="document.getElementById('cod-prov-hidden-<?= (int)$it['id'] ?>').value=this.value">
                                     </td>
@@ -142,7 +168,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                         <strong class="item-title"><?= htmlspecialchars(mb_strimwidth($it['titulo'], 0, 55, '…')) ?></strong>
                                         <?php if (!empty($it['descripcion'])): ?>
                                         <br><span class="item-desc">
-                                            <?= htmlspecialchars(mb_strimwidth($it['descripcion'], 0, 80, '…')) ?>
+                                             <?= htmlspecialchars(mb_strimwidth($it['descripcion'], 0, 80, '…')) ?>
                                         </span>
                                         <?php endif; ?>
                                     </td>
@@ -230,80 +256,86 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <label class="oc-label"><i class="bi bi-building"></i> Proveedor (TO:) <span class="required-star">*</span></label>
                         <input type="text" name="proveedor" id="inputProveedor" class="oc-input" required
                                placeholder="Nombre del proveedor" maxlength="200"
-                               value="<?= htmlspecialchars($proveedores[0] ?? '') ?>" autocomplete="off">
-                        <input type="hidden" name="estado_proveedor" id="inputEstadoProveedor" value="<?= $isRegistradoIni ? 'registrado' : 'nuevo' ?>">
+                               value="<?= htmlspecialchars($ordenAjustando['proveedor'] ?? ($proveedores[0] ?? '')) ?>" autocomplete="off">
+                        <input type="hidden" name="estado_proveedor" id="inputEstadoProveedor" value="<?= htmlspecialchars($ordenAjustando['estado_proveedor'] ?? ($isRegistradoIni ? 'registrado' : 'nuevo')) ?>">
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-hash"></i> NIT del Proveedor</label>
                         <input type="text" name="proveedor_nit" id="inputProveedorNit" class="oc-input"
                                placeholder="Ej: 79625307-6" maxlength="30"
-                               value="<?= htmlspecialchars($datosProvIni['proveedor_nit'] ?? '') ?>">
+                               value="<?= htmlspecialchars($ordenAjustando['proveedor_nit'] ?? ($datosProvIni['proveedor_nit'] ?? '')) ?>">
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-person-badge"></i> Tipo de Contribuyente</label>
                         <input type="text" name="tipo_contribuyente" id="inputTipoContribuyente" class="oc-input"
                                placeholder="Ej: PERSON NATURAL O SUCCESION LIQUIDA" maxlength="100"
-                               value="<?= htmlspecialchars($datosProvIni['tipo_contribuyente'] ?? '') ?>">
+                               value="<?= htmlspecialchars($ordenAjustando['tipo_contribuyente'] ?? ($datosProvIni['tipo_contribuyente'] ?? '')) ?>">
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-calendar-date"></i> Fecha</label>
                         <input type="date" name="fecha" class="oc-input"
-                               value="<?= date('Y-m-d') ?>">
+                               value="<?= htmlspecialchars($ordenAjustando['fecha'] ?? date('Y-m-d')) ?>">
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-credit-card"></i> Condiciones de Pago</label>
                         <input type="text" name="condiciones_pago" id="inputCondicionesPago" class="oc-input"
                                placeholder="Ej: Según acuerdo" maxlength="100"
-                               value="Según acuerdo">
+                               value="<?= htmlspecialchars($ordenAjustando['condiciones_pago'] ?? 'Según acuerdo') ?>">
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-percent"></i> IVA</label>
                         <input type="text" name="iva" class="oc-input"
-                               placeholder="Ej: 19%" maxlength="20" value="19%">
+                               placeholder="Ej: 19%" maxlength="20"
+                               value="<?= htmlspecialchars($ordenAjustando['iva'] ?? '19%') ?>">
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-person-lines-fill"></i> Departamento de Compras (Responsable)</label>
                         <input type="text" name="departamento_compras" class="oc-input"
                                placeholder="Nombre del responsable" maxlength="100"
-                               value="<?= htmlspecialchars($_SESSION['usuario_nombre'] ?? '') ?>">
+                               value="<?= htmlspecialchars($ordenAjustando['departamento_compras'] ?? ($_SESSION['usuario_nombre'] ?? '')) ?>">
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-calculator"></i> Retención (%) — Se aplica sobre subtotal</label>
                         <input type="number" name="retencion" class="oc-input" id="inputRetencion"
-                               placeholder="Ej: 2.5" min="0" max="100" step="0.01" value="2.5">
+                               placeholder="Ej: 2.5" min="0" max="100" step="0.01"
+                               value="<?= isset($ordenAjustando['retencion']) ? (float)$ordenAjustando['retencion'] : 2.5 ?>">
                     </div>
 
                     <!-- NUEVOS CAMPOS: DESCUENTO Y FLETE -->
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-tag-fill"></i> Descuento</label>
+                        <?php $tdesc = $ordenAjustando['tipo_descuento'] ?? 'monto'; ?>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <select name="tipo_descuento" id="inputTipoDescuento" class="oc-input" style="width: 95px; min-width: 95px; flex-shrink: 0; padding: 10px 8px; font-weight: 600; text-align: center;">
-                                <option value="monto" selected>$ COP</option>
-                                <option value="porcentaje">% Porc.</option>
+                                <option value="monto" <?= $tdesc === 'monto' ? 'selected' : '' ?>>$ COP</option>
+                                <option value="porcentaje" <?= $tdesc === 'porcentaje' ? 'selected' : '' ?>>% Porc.</option>
                             </select>
                             <input type="number" name="descuento_valor" id="inputDescuentoValor" class="oc-input"
-                                   placeholder="0" min="0" step="0.01" value="0" style="flex: 1;">
+                                   placeholder="0" min="0" step="0.01"
+                                   value="<?= isset($ordenAjustando['descuento_valor']) ? (float)$ordenAjustando['descuento_valor'] : 0 ?>" style="flex: 1;">
                         </div>
-                        <input type="hidden" name="descuento" id="inputDescuentoCalculado" value="0">
+                        <input type="hidden" name="descuento" id="inputDescuentoCalculado" value="<?= isset($ordenAjustando['descuento']) ? (float)$ordenAjustando['descuento'] : 0 ?>">
                     </div>
 
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-truck"></i> Valor de Flete ($)</label>
+                        <?php $fIva = $ordenAjustando['flete_iva'] ?? 'no'; ?>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <input type="number" name="flete" id="inputFlete" class="oc-input"
-                                   placeholder="0" min="0" step="0.01" value="0" style="flex: 1;">
+                                   placeholder="0" min="0" step="0.01"
+                                   value="<?= isset($ordenAjustando['flete']) ? (float)$ordenAjustando['flete'] : 0 ?>" style="flex: 1;">
                             <select name="flete_iva" id="inputFleteIva" class="oc-input" style="width: 105px; min-width: 105px; flex-shrink: 0; padding: 10px 8px; font-weight: 600; text-align: center;">
-                                <option value="no" selected>Sin IVA</option>
-                                <option value="si">+ 19% IVA</option>
+                                <option value="no" <?= $fIva === 'no' ? 'selected' : '' ?>>Sin IVA</option>
+                                <option value="si" <?= $fIva === 'si' ? 'selected' : '' ?>>+ 19% IVA</option>
                             </select>
-                            <input type="hidden" name="flete_porcentaje_iva" id="inputFletePorcentajeIva" value="19">
+                            <input type="hidden" name="flete_porcentaje_iva" id="inputFletePorcentajeIva" value="<?= isset($ordenAjustando['flete_porcentaje_iva']) ? (float)$ordenAjustando['flete_porcentaje_iva'] : 19 ?>">
                         </div>
                     </div>
 
@@ -318,17 +350,17 @@ include dirname(__DIR__) . '/layout/menu.php';
                             <label class="oc-label">Nombre del Banco</label>
                             <input type="text" name="banco_nombre" id="inputBancoNombre" class="oc-input"
                                    placeholder="Ej: Bancolombia" maxlength="100"
-                                   value="<?= htmlspecialchars($datosProvIni['banco_nombre'] ?? '') ?>">
+                                   value="<?= htmlspecialchars($ordenAjustando['banco_nombre'] ?? ($datosProvIni['banco_nombre'] ?? '')) ?>">
                         </div>
                         <div class="oc-field-group">
                             <label class="oc-label">Número de Cuenta</label>
                             <input type="text" name="banco_cuenta" id="inputBancoCuenta" class="oc-input"
                                    placeholder="Ej: 123456789" maxlength="100"
-                                   value="<?= htmlspecialchars($datosProvIni['banco_cuenta'] ?? '') ?>">
+                                   value="<?= htmlspecialchars($ordenAjustando['banco_cuenta'] ?? ($datosProvIni['banco_cuenta'] ?? '')) ?>">
                         </div>
                         <div class="oc-field-group">
                             <label class="oc-label">Tipo de Cuenta</label>
-                            <?php $tipoCtaIni = $datosProvIni['banco_tipo_cuenta'] ?? ''; ?>
+                            <?php $tipoCtaIni = $ordenAjustando['banco_tipo_cuenta'] ?? ($datosProvIni['banco_tipo_cuenta'] ?? ''); ?>
                             <select name="banco_tipo_cuenta" id="inputBancoTipoCuenta" class="oc-input">
                                 <option value="">Seleccione...</option>
                                 <option value="Ahorros" <?= $tipoCtaIni === 'Ahorros' ? 'selected' : '' ?>>Ahorros</option>
@@ -342,16 +374,19 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <label class="oc-label"><i class="bi bi-chat-left-text"></i> Nota / Descripción (izquierda del PDF)</label>
                     <textarea name="nota" class="oc-input oc-textarea-note" rows="4"
                               placeholder="Ej:&#10;THANK YOU FOR YOUR BUSINESS !!&#10;NOTA:&#10;1. Compartir factura&#10;2. Compartir Guía de despacho"
-                              maxlength="1000">THANK YOU FOR YOUR BUSINESS !!
-
-NOTA:
-1. Compartir factura
-2. Compartir Guía de despacho
-3. Carta de garantía
-4. Fichas técnicas</textarea>
+                              maxlength="1000"><?= htmlspecialchars($ordenAjustando['nota'] ?? "THANK YOU FOR YOUR BUSINESS !!\n\nNOTA:\n1. Compartir factura\n2. Compartir Guía de despacho\n3. Carta de garantía\n4. Fichas técnicas") ?></textarea>
                 </div>
 
                 <div class="order-submit-actions">
+                    <?php if ($esAjuste): ?>
+                    <a href="<?= $basePath ?>?module=ordenes&action=cancelar_ajuste"
+                       class="btn-mod-primary btn-secondary-custom">
+                        <i class="bi bi-x-circle"></i> Cancelar Ajuste
+                    </a>
+                    <button type="submit" class="imo-btn-save" id="btnGenerarOrden">
+                        <i class="bi bi-check-circle-fill"></i> Guardar Ajuste P.O. <?= $poAjuste ?>
+                    </button>
+                    <?php else: ?>
                     <a href="<?= $basePath ?>?module=cotizaciones&action=consultar"
                        class="btn-mod-primary btn-secondary-custom">
                         <i class="bi bi-x-circle"></i> Cancelar
@@ -359,6 +394,7 @@ NOTA:
                     <button type="submit" class="imo-btn-save" id="btnGenerarOrden" disabled>
                         <i class="bi bi-file-earmark-arrow-down-fill"></i> Generar Orden de Compra
                     </button>
+                    <?php endif; ?>
                 </div>
             </div>
         </form>

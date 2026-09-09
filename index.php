@@ -532,6 +532,12 @@ if ($module === 'ordenes') {
         case 'ajax_consultar_proveedor':
             $ctrl->consultarProveedor();
             break;
+        case 'ajustar':
+            $ctrl->ajustar();
+            break;
+        case 'cancelar_ajuste':
+            $ctrl->cancelarAjuste();
+            break;
         case 'eliminar':
             $ctrl->eliminar();
             break;

@@ -62,6 +62,21 @@ class OrdenCompraController
 
         $items = $this->cotizacionModel->obtenerItems((int)$cotizacion['id']);
 
+        // Si se está ajustando una orden existente, precargar los datos e ítems de esa orden
+        $ordenAjustando = null;
+        $itemsOrdenAjustando = [];
+        if (!empty($_SESSION['orden_ajustando_id'])) {
+            $ordenAjustando = $this->model->buscarPorId((int)$_SESSION['orden_ajustando_id']);
+            if ($ordenAjustando) {
+                $rawItemsOrd = $this->model->obtenerItems((int)$ordenAjustando['id']);
+                foreach ($rawItemsOrd as $rio) {
+                    if (!empty($rio['cotizacion_item_id'])) {
+                        $itemsOrdenAjustando[(int)$rio['cotizacion_item_id']] = $rio;
+                    }
+                }
+            }
+        }
+
         // Agrupar proveedores únicos para mostrar info
         $proveedores = [];
         foreach ($items as $it) {
@@ -71,10 +86,10 @@ class OrdenCompraController
             }
         }
 
-        $proveedorInicial = $proveedores[0] ?? '';
+        $proveedorInicial = $ordenAjustando['proveedor'] ?? ($proveedores[0] ?? '');
         $infoProveedorInicial = !empty($proveedorInicial) ? $this->model->buscarHistorialProveedor($proveedorInicial) : null;
 
-        return compact('cotizacion', 'items', 'proveedores', 'csrf_token', 'infoProveedorInicial');
+        return compact('cotizacion', 'items', 'proveedores', 'csrf_token', 'infoProveedorInicial', 'ordenAjustando', 'itemsOrdenAjustando');
     }
 
     // ── PASO 2: Guardar orden + redirigir al PDF ──────────────────────────────
@@ -113,7 +128,7 @@ class OrdenCompraController
 
         $estCom = $cotizacion['estado_comercial'] ?? 'pendiente';
         if ($estCom !== 'pendiente') {
-            $_SESSION['flash_error'] = 'No es posible generar una orden de compra para una cotización ' . $estCom . '.';
+            $_SESSION['flash_error'] = 'No es posible generar o ajustar una orden de compra para una cotización que está ' . $estCom . '.';
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
             exit();
         }
@@ -177,17 +192,35 @@ class OrdenCompraController
             exit();
         }
 
+        $idAjuste = !empty($_SESSION['orden_ajustando_id']) ? (int)$_SESSION['orden_ajustando_id'] : 0;
+
         try {
-            // Crear la orden
-            $ordenId = $this->model->crearOrden(
-                $cotizacionId, $cotizacionNumero, $usuarioId,
-                $proveedor, $proveedorNit, $tipoContribuyente,
-                $condicionesPago, $iva, $departamentoCompras,
-                $nota, $retencion, $fecha,
-                $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
-                $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
-                $fleteIva, $fletePorcentajeIva
-            );
+            if ($idAjuste > 0) {
+                // Modo AJUSTE: actualizar preservando número de P.O.
+                $this->model->actualizarOrden(
+                    $idAjuste,
+                    $proveedor, $proveedorNit, $tipoContribuyente,
+                    $condicionesPago, $iva, $departamentoCompras,
+                    $nota, $retencion, $fecha,
+                    $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
+                    $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
+                    $fleteIva, $fletePorcentajeIva
+                );
+                $ordenId = $idAjuste;
+                unset($_SESSION['orden_ajustando_id'], $_SESSION['orden_ajustando_po']);
+                $_SESSION['flash_success'] = 'Orden de compra ajustada correctamente conservando su número P.O.';
+            } else {
+                // Modo CREACIÓN normal
+                $ordenId = $this->model->crearOrden(
+                    $cotizacionId, $cotizacionNumero, $usuarioId,
+                    $proveedor, $proveedorNit, $tipoContribuyente,
+                    $condicionesPago, $iva, $departamentoCompras,
+                    $nota, $retencion, $fecha,
+                    $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
+                    $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
+                    $fleteIva, $fletePorcentajeIva
+                );
+            }
 
             // Insertar los ítems seleccionados
             foreach ($itemsIds as $itemId) {
@@ -209,12 +242,12 @@ class OrdenCompraController
                 );
             }
 
-            // Redirigir al PDF
-            header('Location: ' . BASE_URL . '?module=ordenes&action=generar_pdf&id=' . $ordenId);
+            // Redirigir a la lista de órdenes y abrir el visor modal de la orden creada/ajustada
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar&ver_po=' . $ordenId);
             exit();
         } catch (\Throwable $e) {
-            error_log('Error creando orden de compra: ' . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error al generar la orden: ' . $e->getMessage();
+            error_log('Error creando o ajustando orden de compra: ' . $e->getMessage());
+            $_SESSION['flash_error'] = 'Error al guardar la orden: ' . $e->getMessage();
             header('Location: ' . BASE_URL . '?module=ordenes&action=seleccionar_items&cotizacion=' . urlencode($cotizacionNumero));
             exit();
         }
@@ -228,7 +261,16 @@ class OrdenCompraController
         $csrf_token = generar_token_csrf();
         $fechaActual = date('Y-m-d');
 
-        return compact('csrf_token', 'fechaActual');
+        $ordenAjustando = null;
+        $itemsAjustando = [];
+        if (!empty($_SESSION['orden_ajustando_id'])) {
+            $ordenAjustando = $this->model->buscarPorId((int)$_SESSION['orden_ajustando_id']);
+            if ($ordenAjustando) {
+                $itemsAjustando = $this->model->obtenerItems((int)$ordenAjustando['id']);
+            }
+        }
+
+        return compact('csrf_token', 'fechaActual', 'ordenAjustando', 'itemsAjustando');
     }
 
     public function crearDirectaGuardar(): void
@@ -292,16 +334,34 @@ class OrdenCompraController
         $descuentoValor     = max(0, (float)($_POST['descuento_valor'] ?? 0));
         $descuentoCalculado = max(0, (float)($_POST['descuento'] ?? 0));
 
-        // Crear la orden con cotizacion_id NULL y cotizacion_numero MOSTRADOR
-        $ordenId = $this->model->crearOrden(
-            null, 'MOSTRADOR', $usuarioId,
-            $proveedor, $proveedorNit, $tipoContribuyente,
-            $condicionesPago, $iva, $departamentoCompras,
-            $nota, $retencion, $fecha,
-            $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
-            $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
-            $fleteIva, $fletePorcentajeIva
-        );
+        $idAjuste = !empty($_SESSION['orden_ajustando_id']) ? (int)$_SESSION['orden_ajustando_id'] : 0;
+
+        if ($idAjuste > 0) {
+            // Actualizar orden existente
+            $this->model->actualizarOrden(
+                $idAjuste,
+                $proveedor, $proveedorNit, $tipoContribuyente,
+                $condicionesPago, $iva, $departamentoCompras,
+                $nota, $retencion, $fecha,
+                $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
+                $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
+                $fleteIva, $fletePorcentajeIva
+            );
+            $ordenId = $idAjuste;
+            unset($_SESSION['orden_ajustando_id'], $_SESSION['orden_ajustando_po']);
+            $_SESSION['flash_success'] = 'Orden de mostrador ajustada correctamente conservando su número P.O.';
+        } else {
+            // Crear la orden con cotizacion_id NULL y cotizacion_numero MOSTRADOR
+            $ordenId = $this->model->crearOrden(
+                null, 'MOSTRADOR', $usuarioId,
+                $proveedor, $proveedorNit, $tipoContribuyente,
+                $condicionesPago, $iva, $departamentoCompras,
+                $nota, $retencion, $fecha,
+                $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
+                $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
+                $fleteIva, $fletePorcentajeIva
+            );
+        }
 
         // Insertar los ítems
         foreach ($itemsRaw as $it) {
@@ -322,8 +382,8 @@ class OrdenCompraController
             );
         }
 
-        // Redirigir al PDF
-        header('Location: ' . BASE_URL . '?module=ordenes&action=generar_pdf&id=' . $ordenId);
+        // Redirigir a la lista de órdenes y abrir el visor modal de la orden creada/ajustada
+        header('Location: ' . BASE_URL . '?module=ordenes&action=consultar&ver_po=' . $ordenId);
         exit();
     }
 
@@ -604,6 +664,56 @@ class OrdenCompraController
             $_SESSION['flash_error'] = 'No se pudo eliminar la orden de compra en la base de datos.';
         }
 
+        header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+        exit();
+    }
+
+    // ── AJUSTAR ORDEN DE COMPRA (Corrección directa conservando P.O.) ───────────
+
+    public function ajustar(): void
+    {
+        verificar_autenticacion();
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            exit();
+        }
+
+        $orden = $this->model->buscarPorId($id);
+        if (!$orden) {
+            $_SESSION['flash_error'] = 'La orden de compra solicitada no existe.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            exit();
+        }
+
+        // Permisos: admin, compras o creador de la orden
+        $rol       = $_SESSION['rol'] ?? 'usuario';
+        $usuarioId = (int)$_SESSION['usuario_id'];
+        if (!in_array($rol, ['admin', 'compras'], true) && (int)$orden['usuario_id'] !== $usuarioId) {
+            $_SESSION['flash_error'] = 'No tienes permisos para ajustar esta orden de compra.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            exit();
+        }
+
+        // Guardar sesión de ajuste
+        $_SESSION['orden_ajustando_id'] = (int)$orden['id'];
+        $_SESSION['orden_ajustando_po'] = (int)$orden['numero_po'];
+
+        // Si la orden viene de cotización o es mostrador
+        $esCotizacion = (!empty($orden['cotizacion_id']) && (int)$orden['cotizacion_id'] > 0);
+        if ($esCotizacion) {
+            header('Location: ' . BASE_URL . '?module=ordenes&action=seleccionar_items&id=' . (int)$orden['cotizacion_id']);
+        } else {
+            header('Location: ' . BASE_URL . '?module=ordenes&action=crear_directa');
+        }
+        exit();
+    }
+
+    public function cancelarAjuste(): void
+    {
+        verificar_autenticacion();
+        unset($_SESSION['orden_ajustando_id'], $_SESSION['orden_ajustando_po']);
+        $_SESSION['flash_info'] = 'Se canceló el ajuste de la orden de compra. La orden original se mantiene sin cambios.';
         header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
         exit();
     }
