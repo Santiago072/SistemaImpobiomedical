@@ -34,9 +34,41 @@ include dirname(__DIR__) . '/layout/menu.php';
         <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($mensajeError) ?></div>
         <?php endif; ?>
 
+        <!-- Pestañas (Tabs) de Estado Comercial -->
+        <div class="cot-tabs-container">
+            <a href="<?= $basePath ?>?module=cotizaciones&action=consultar&tab=pendientes" 
+               class="cot-tab-btn <?= ($tabActual ?? 'pendientes') === 'pendientes' ? 'cot-tab-active-pend' : 'cot-tab-inactive' ?>">
+                <i class="bi bi-clock-history"></i> Cotizaciones Pendientes
+                <span class="cot-tab-badge cot-badge-pend" id="badge-pend">
+                    <?= (int)($conteoPendientes ?? 0) ?>
+                </span>
+            </a>
+            <a href="<?= $basePath ?>?module=cotizaciones&action=consultar&tab=concluidas" 
+               class="cot-tab-btn <?= ($tabActual ?? '') === 'concluidas' ? 'cot-tab-active-conc' : 'cot-tab-inactive' ?>">
+                <i class="bi bi-check-circle-fill"></i> Cotizaciones Concluidas
+                <span class="cot-tab-badge cot-badge-conc" id="badge-conc">
+                    <?= (int)($conteoConcluidas ?? 0) ?>
+                </span>
+            </a>
+            <a href="<?= $basePath ?>?module=cotizaciones&action=consultar&tab=descartadas" 
+               class="cot-tab-btn <?= ($tabActual ?? '') === 'descartadas' ? 'cot-tab-active-desc' : 'cot-tab-inactive' ?>">
+                <i class="bi bi-x-circle-fill"></i> Cotizaciones Descartadas
+                <span class="cot-tab-badge cot-badge-desc" id="badge-desc">
+                    <?= (int)($conteoDescartadas ?? 0) ?>
+                </span>
+            </a>
+            <a href="<?= $basePath ?>?module=cotizaciones&action=consultar&tab=todas" 
+               class="cot-tab-btn <?= ($tabActual ?? '') === 'todas' ? 'cot-tab-active-all' : 'cot-tab-inactive' ?>">
+                <i class="bi bi-collection-fill"></i> Todas las Cotizaciones
+                <span class="cot-tab-badge cot-badge-all" id="badge-all">
+                    <?= (int)($conteoTodas ?? 0) ?>
+                </span>
+            </a>
+        </div>
+
         <!-- Filtros de búsqueda estilo Panel -->
         <div class="mod-search-bar">
-            <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=consultar" class="mod-search-form orden-search-form">
+            <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=consultar&tab=<?= urlencode($tabActual ?? 'pendientes') ?>" class="mod-search-form orden-search-form">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                 <span class="mod-search-icon"><i class="bi bi-funnel"></i></span>
                 <label class="cot-date-label">Desde</label>
@@ -45,26 +77,20 @@ include dirname(__DIR__) . '/layout/menu.php';
                 <input type="date" name="fecha_hasta" value="<?= htmlspecialchars($busquedaFechaHasta ?? '') ?>" class="mod-search-input cot-filter-date" title="Fecha hasta" onchange="this.form.submit()">
                 <input type="text" name="nombre_cliente" value="<?= htmlspecialchars($busquedaCliente) ?>" placeholder="Buscar por cliente..." maxlength="60" class="mod-search-input cot-filter-client">
                 <input type="text" name="numero_cotizacion" value="<?= htmlspecialchars($busquedaNumero) ?>" placeholder="Número cotización..." maxlength="20" class="mod-search-input cot-filter-num">
-                <select name="estado_comercial" class="mod-search-input cot-filter-select" onchange="this.form.submit()">
-                    <option value="">Todos los estados</option>
-                    <option value="pendiente" <?= ($busquedaEstado ?? '') === 'pendiente' ? 'selected' : '' ?>>🟡 Pendientes</option>
-                    <option value="concluida" <?= ($busquedaEstado ?? '') === 'concluida' ? 'selected' : '' ?>>🟢 Concluidas</option>
-                    <option value="descartada" <?= ($busquedaEstado ?? '') === 'descartada' ? 'selected' : '' ?>>🔴 Descartadas</option>
-                </select>
                 
                 <button type="submit" class="imo-btn-save orden-search-btn"><i class="bi bi-search"></i> Buscar</button>
                 <?php 
-                $hayFiltros = (!empty($busquedaFechaDesde) || !empty($busquedaFechaHasta) || !empty($busquedaFecha) || !empty($busquedaCliente) || !empty($busquedaNumero) || !empty($busquedaEstado));
+                $hayFiltros = (!empty($busquedaFechaDesde) || !empty($busquedaFechaHasta) || !empty($busquedaFecha) || !empty($busquedaCliente) || !empty($busquedaNumero));
                 if ($hayFiltros): ?>
-                <a href="<?= $basePath ?>?module=cotizaciones&action=consultar&limpiar=1" class="mod-btn-clear" title="Limpiar filtros">
+                <a href="<?= $basePath ?>?module=cotizaciones&action=consultar&tab=<?= urlencode($tabActual ?? 'pendientes') ?>&limpiar=1" class="mod-btn-clear" title="Limpiar filtros">
                     <i class="bi bi-x-lg"></i>
                 </a>
                 <?php endif; ?>
             </form>
         </div>
         <?php if (($busquedaFechaDesde ?? '') || ($busquedaFechaHasta ?? '')): ?>
-        <div style="font-size:12.5px; color:#475569; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
-            <i class="bi bi-calendar-range" style="color:#10757e;"></i>
+        <div class="cot-date-range-notice">
+            <i class="bi bi-calendar-range cot-date-range-icon"></i>
             <span>Mostrando cotizaciones
                 <?= $busquedaFechaDesde ? 'desde <strong>' . htmlspecialchars($busquedaFechaDesde) . '</strong>' : '' ?>
                 <?= $busquedaFechaHasta ? ' hasta <strong>' . htmlspecialchars($busquedaFechaHasta) . '</strong>' : '' ?>
@@ -224,7 +250,7 @@ include dirname(__DIR__) . '/layout/menu.php';
         </div>
 
         <?php 
-        $pagBaseUrl = $basePath . '?module=cotizaciones&action=consultar';
+        $pagBaseUrl = $basePath . '?module=cotizaciones&action=consultar&tab=' . urlencode($tabActual ?? 'pendientes');
         if (!empty($_GET['buscando'])) $pagBaseUrl .= '&buscando=1';
         if (!empty($_GET['busqueda_cliente'])) $pagBaseUrl .= '&busqueda_cliente=' . urlencode($_GET['busqueda_cliente']);
         if (!empty($_GET['fecha_inicio'])) $pagBaseUrl .= '&fecha_inicio=' . urlencode($_GET['fecha_inicio']);
@@ -369,7 +395,51 @@ function cambiarEstadoComercial(select) {
         select.disabled = false;
         select.style.opacity = '1';
         if (d.status === 'success') {
-            // Actualizar clases de badge
+            // Actualizar contadores de los badges si vienen en la respuesta
+            if (d.conteo_pendientes !== undefined) {
+                const bPend = document.getElementById('badge-pend');
+                const bConc = document.getElementById('badge-conc');
+                const bDesc = document.getElementById('badge-desc');
+                const bAll  = document.getElementById('badge-all');
+                if (bPend) bPend.textContent = d.conteo_pendientes;
+                if (bConc) bConc.textContent = d.conteo_concluidas;
+                if (bDesc) bDesc.textContent = d.conteo_descartadas;
+                if (bAll)  bAll.textContent  = d.conteo_todas;
+            }
+
+            const tabActual = '<?= htmlspecialchars($tabActual ?? 'pendientes') ?>';
+            const mapEstadoTab = {
+                'pendientes':  'pendiente',
+                'concluidas':  'concluida',
+                'descartadas': 'descartada'
+            };
+
+            // Si el tab actual es específico y el nuevo estado difiere de la categoría del tab:
+            if (mapEstadoTab[tabActual] && mapEstadoTab[tabActual] !== nuevoEstado && fila) {
+                fila.classList.add('row-fade-leave');
+                setTimeout(() => {
+                    const tbody = fila.closest('tbody');
+                    fila.remove();
+                    if (tbody && tbody.querySelectorAll('tr').length === 0) {
+                        const nombresTab = {
+                            'pendientes': 'pendientes',
+                            'concluidas': 'concluidas',
+                            'descartadas': 'descartadas'
+                        };
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="7" class="mod-empty">
+                                    <i class="bi bi-inbox"></i>
+                                    <p>No hay cotizaciones ${nombresTab[tabActual] || ''} en este momento.</p>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                }, 320);
+                return;
+            }
+
+            // Si se mantiene en la vista (ej. tab 'todas'), actualizar clases de badge en la fila
             select.classList.remove('badge-gold', 'badge-green', 'badge-red');
             if (nuevoEstado === 'concluida') {
                 select.classList.add('badge-green');

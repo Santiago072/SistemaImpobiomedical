@@ -128,17 +128,31 @@ class ProveedorModel
      */
     public function nitExiste(string $nit, int $excluirId = 0): bool
     {
-        $nitNorm = function_exists('normalizar_nit') ? normalizar_nit($nit) : str_replace(['.', ' '], '', $nit);
-        $stmt = $this->db->prepare(
-            "SELECT COUNT(*) FROM proveedores 
-             WHERE (TRIM(nit) = :nit OR REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :nitNorm) 
-               AND id != :id"
-        );
-        $stmt->execute([
-            ':nit'     => trim($nit),
+        $nitLimpio = trim($nit);
+        if ($nitLimpio === '') return false;
+
+        $nitNorm    = function_exists('normalizar_nit') ? normalizar_nit($nitLimpio) : str_replace(['.', ' '], '', $nitLimpio);
+        $nitDigitos = preg_replace('/\D/', '', $nitLimpio);
+
+        $sql = "SELECT COUNT(*) FROM proveedores 
+                WHERE (
+                    TRIM(nit) = :nit 
+                    OR REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :nitNorm";
+        $params = [
+            ':nit'     => $nitLimpio,
             ':nitNorm' => $nitNorm,
-            ':id'      => $excluirId
-        ]);
+            ':id'      => $excluirId,
+        ];
+
+        if (strlen($nitDigitos) >= 6) {
+            $sql .= " OR REPLACE(REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', ''), '-', '') = :nitDigitos";
+            $params[':nitDigitos'] = $nitDigitos;
+        }
+
+        $sql .= ") AND id != :id";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return (int)$stmt->fetchColumn() > 0;
     }
 

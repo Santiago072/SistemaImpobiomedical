@@ -307,6 +307,9 @@ if ($module === 'clientes') {
         case 'eliminar':
             $ctrl->eliminar();
             break;
+        case 'verificar_nit':
+            $ctrl->verificarNit();
+            break;
         case 'ajax_buscar':
             $ctrl->ajaxBuscar();
             break;
@@ -342,6 +345,9 @@ if ($module === 'proveedores') {
     switch ($action) {
         case 'eliminar':
             $ctrl->eliminar();
+            break;
+        case 'verificar_nit':
+            $ctrl->verificarNit();
             break;
         case 'ajax_buscar':
             $ctrl->ajaxBuscar();

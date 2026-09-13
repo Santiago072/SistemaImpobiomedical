@@ -23,7 +23,7 @@ class PanelController
         $usuarioId  = (int)$_SESSION['usuario_id'];
         $rol        = $_SESSION['rol'] ?? 'usuario';
 
-        if ($rol === 'admin') {
+        if ($rol === 'admin' || $rol === 'compras') {
             $totalCotizaciones    = $this->model->contarTotal();
             $cotizacionesMes      = $this->model->contarDelMes();
         } else {

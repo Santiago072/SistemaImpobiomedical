@@ -88,11 +88,32 @@ class ClienteModel implements RepositoryInterface
 
     public function existeNit(string $nit, int $excluirId = 0): bool
     {
-        $stmt = $this->db->prepare(
-            'SELECT id FROM clientes WHERE nit = :nit AND id != :excluir LIMIT 1'
-        );
-        $stmt->execute([':nit' => $nit, ':excluir' => $excluirId]);
-        return (bool)$stmt->fetch();
+        $nitLimpio = trim($nit);
+        if ($nitLimpio === '') return false;
+
+        $nitNorm    = function_exists('normalizar_nit') ? normalizar_nit($nitLimpio) : str_replace(['.', ' '], '', $nitLimpio);
+        $nitDigitos = preg_replace('/\D/', '', $nitLimpio);
+
+        $sql = "SELECT COUNT(*) FROM clientes 
+                WHERE (
+                    TRIM(nit) = :nit 
+                    OR REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :nitNorm";
+        $params = [
+            ':nit'     => $nitLimpio,
+            ':nitNorm' => $nitNorm,
+            ':excluir' => $excluirId,
+        ];
+
+        if (strlen($nitDigitos) >= 6) {
+            $sql .= " OR REPLACE(REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', ''), '-', '') = :nitDigitos";
+            $params[':nitDigitos'] = $nitDigitos;
+        }
+
+        $sql .= ") AND id != :excluir";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn() > 0;
     }
 
     public function crear(string $nombre, string $nit, string $departamento, string $municipio,

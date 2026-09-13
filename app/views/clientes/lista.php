@@ -129,7 +129,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 </div>
                 <div class="imo-form-group">
                     <label>NIT / CC</label>
-                    <input type="text" name="nit" maxlength="25" placeholder="900.123.456-7">
+                    <input type="text" id="c_nit" name="nit" maxlength="25" placeholder="900.123.456-7" autocomplete="off">
+                    <small id="c_nit_feedback" class="nit-feedback-msg"></small>
                 </div>
             </div>
             <div class="imo-form-row">
@@ -162,7 +163,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             </div>
             <div class="imo-modal-footer">
                 <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-crear')">Cancelar</button>
-                <button type="submit" class="imo-btn-save"><i class="bi bi-save-fill"></i> Guardar Cliente</button>
+                <button type="submit" id="btn_guardar_crear" class="imo-btn-save"><i class="bi bi-save-fill"></i> Guardar Cliente</button>
             </div>
         </form>
     </div>
@@ -187,7 +188,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 </div>
                 <div class="imo-form-group">
                     <label>NIT / CC</label>
-                    <input type="text" id="e_nit" name="nit" maxlength="25">
+                    <input type="text" id="e_nit" name="nit" maxlength="25" autocomplete="off">
+                    <small id="e_nit_feedback" class="nit-feedback-msg"></small>
                 </div>
             </div>
             <div class="imo-form-row">
@@ -229,7 +231,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             </div>
             <div class="imo-modal-footer">
                 <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-editar')">Cancelar</button>
-                <button type="submit" class="imo-btn-save"><i class="bi bi-save-fill"></i> Guardar Cambios</button>
+                <button type="submit" id="btn_guardar_editar" class="imo-btn-save"><i class="bi bi-save-fill"></i> Guardar Cambios</button>
             </div>
         </form>
     </div>
@@ -243,10 +245,11 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <button onclick="cerrarModal('modal-eliminar')" class="imo-modal-close">&times;</button>
         </div>
         <div class="imo-modal-body">
-            <p class="imo-modal-desc">¿Estás seguro de eliminar a <strong id="nombre-eliminar"></strong>? Esta acción no se puede deshacer.</p>
+            <p>¿Está seguro de que desea eliminar al cliente <strong id="nombre-eliminar"></strong>?</p>
+            <p class="imo-muted-sm">Esta acción no se puede deshacer.</p>
         </div>
         <div class="imo-modal-footer">
-            <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
+            <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
             <form id="form-eliminar-cliente" method="POST" action="" class="form-inline-action">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
@@ -255,18 +258,104 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     </div>
 </div>
 
-
-
 <script>
 const BASE = '<?= $basePath ?>';
 const CSRF = '<?= htmlspecialchars($csrf_token ?? '') ?>';
 
+let timerValidarCrear = null;
+let timerValidarEditar = null;
+let clienteIdEditarActual = 0;
+
+function validarNitClienteEnVivo(inputElem, feedbackElem, submitBtn, idExcluir = 0) {
+    const nit = (inputElem.value || '').trim();
+    if (!nit) {
+        inputElem.classList.remove('input-is-valid', 'input-is-invalid');
+        feedbackElem.className = 'nit-feedback-msg';
+        feedbackElem.innerHTML = '';
+        if (submitBtn) {
+            submitBtn.disabled = false;
+        }
+        return;
+    }
+
+    feedbackElem.className = 'nit-feedback-msg nit-feedback-loading';
+    feedbackElem.innerHTML = '<i class="bi bi-hourglass-split"></i> Verificando NIT...';
+
+    fetch(BASE + '?module=clientes&action=verificar_nit&nit=' + encodeURIComponent(nit) + '&id=' + idExcluir)
+        .then(r => r.json())
+        .then(d => {
+            if (d.disponible === false) {
+                inputElem.classList.remove('input-is-valid');
+                inputElem.classList.add('input-is-invalid');
+                feedbackElem.className = 'nit-feedback-msg nit-feedback-error';
+                feedbackElem.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> ' + (d.mensaje || 'NIT ya registrado');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                }
+            } else {
+                inputElem.classList.remove('input-is-invalid');
+                inputElem.classList.add('input-is-valid');
+                feedbackElem.className = 'nit-feedback-msg nit-feedback-success';
+                feedbackElem.innerHTML = '<i class="bi bi-check-circle-fill"></i> NIT disponible';
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                }
+            }
+        })
+        .catch(() => {
+            feedbackElem.className = 'nit-feedback-msg';
+            feedbackElem.innerHTML = '';
+        });
+}
+
+// Listeners en input de crear cliente
+const inputNitCrear = document.getElementById('c_nit');
+const feedbackNitCrear = document.getElementById('c_nit_feedback');
+const btnGuardarCrear = document.getElementById('btn_guardar_crear');
+if (inputNitCrear) {
+    ['input', 'paste', 'change'].forEach(evt => {
+        inputNitCrear.addEventListener(evt, function() {
+            clearTimeout(timerValidarCrear);
+            timerValidarCrear = setTimeout(() => {
+                validarNitClienteEnVivo(inputNitCrear, feedbackNitCrear, btnGuardarCrear, 0);
+            }, evt === 'input' ? 300 : 50);
+        });
+    });
+}
+
+// Listeners en input de editar cliente
+const inputNitEditar = document.getElementById('e_nit');
+const feedbackNitEditar = document.getElementById('e_nit_feedback');
+const btnGuardarEditar = document.getElementById('btn_guardar_editar');
+if (inputNitEditar) {
+    ['input', 'paste', 'change'].forEach(evt => {
+        inputNitEditar.addEventListener(evt, function() {
+            clearTimeout(timerValidarEditar);
+            timerValidarEditar = setTimeout(() => {
+                validarNitClienteEnVivo(inputNitEditar, feedbackNitEditar, btnGuardarEditar, clienteIdEditarActual);
+            }, evt === 'input' ? 300 : 50);
+        });
+    });
+}
+
 function abrirModalCrear() {
+    if (inputNitCrear) {
+        inputNitCrear.value = '';
+        inputNitCrear.classList.remove('input-is-valid', 'input-is-invalid');
+    }
+    if (feedbackNitCrear) {
+        feedbackNitCrear.className = 'nit-feedback-msg';
+        feedbackNitCrear.innerHTML = '';
+    }
+    if (btnGuardarCrear) {
+        btnGuardarCrear.disabled = false;
+    }
     document.getElementById('modal-crear').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
 
 function abrirModalEditar(data) {
+    clienteIdEditarActual = data.id || 0;
     document.getElementById('e_nombre').value          = data.nombre || '';
     document.getElementById('e_nit').value             = data.nit || '';
     document.getElementById('e_departamento').value    = data.departamento || '';
@@ -276,6 +365,18 @@ function abrirModalEditar(data) {
     document.getElementById('e_telefono').value        = data.telefono || '';
     document.getElementById('e_correo').value          = data.correo || '';
     document.getElementById('e_estado').value          = data.estado || 'activo';
+    
+    if (inputNitEditar) {
+        inputNitEditar.classList.remove('input-is-valid', 'input-is-invalid');
+    }
+    if (feedbackNitEditar) {
+        feedbackNitEditar.className = 'nit-feedback-msg';
+        feedbackNitEditar.innerHTML = '';
+    }
+    if (btnGuardarEditar) {
+        btnGuardarEditar.disabled = false;
+    }
+
     document.getElementById('form-editar-cliente').action = BASE + '?module=clientes&action=editar&id=' + data.id;
     document.getElementById('modal-editar').classList.add('open');
     document.body.style.overflow = 'hidden';

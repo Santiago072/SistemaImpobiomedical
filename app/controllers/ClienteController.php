@@ -59,7 +59,9 @@ class ClienteController
         }
 
         $nombre          = mb_substr(sanitizar_entrada($_POST['nombre'] ?? ''), 0, 100);
-        $nit             = mb_substr(sanitizar_entrada($_POST['nit'] ?? ''), 0, 25);
+        $nitRaw          = sanitizar_entrada($_POST['nit'] ?? '');
+        $nit             = function_exists('normalizar_nit') ? normalizar_nit($nitRaw) : str_replace(['.', ' '], '', $nitRaw);
+        $nit             = mb_substr($nit, 0, 25);
         $departamento    = mb_substr(sanitizar_entrada($_POST['departamento'] ?? ''), 0, 60);
         $municipio       = mb_substr(sanitizar_entrada($_POST['municipio'] ?? ''), 0, 60);
         $direccion       = mb_substr(sanitizar_entrada($_POST['direccion'] ?? ''), 0, 100);
@@ -74,7 +76,7 @@ class ClienteController
         }
 
         if ($mensajeError === '' && !empty($nit) && $this->model->existeNit($nit)) {
-            $mensajeError = 'El NIT/CC ya está registrado';
+            $mensajeError = 'El NIT/CC ya está registrado para otro cliente';
         }
 
         if ($mensajeError !== '') {
@@ -121,7 +123,9 @@ class ClienteController
         }
 
         $nombre          = mb_substr(sanitizar_entrada($_POST['nombre'] ?? ''), 0, 100);
-        $nit             = mb_substr(sanitizar_entrada($_POST['nit'] ?? ''), 0, 25);
+        $nitRaw          = sanitizar_entrada($_POST['nit'] ?? '');
+        $nit             = function_exists('normalizar_nit') ? normalizar_nit($nitRaw) : str_replace(['.', ' '], '', $nitRaw);
+        $nit             = mb_substr($nit, 0, 25);
         $departamento    = mb_substr(sanitizar_entrada($_POST['departamento'] ?? ''), 0, 60);
         $municipio       = mb_substr(sanitizar_entrada($_POST['municipio'] ?? ''), 0, 60);
         $direccion       = mb_substr(sanitizar_entrada($_POST['direccion'] ?? ''), 0, 100);
@@ -199,6 +203,35 @@ class ClienteController
         echo json_encode($cliente
             ? ['status' => 'success', 'data' => $cliente]
             : ['status' => 'error', 'message' => 'Cliente no encontrado']);
+        exit();
+    }
+
+    public function verificarNit(): void
+    {
+        verificar_autenticacion();
+        header('Content-Type: application/json');
+
+        $nitRaw = sanitizar_entrada($_GET['nit'] ?? $_POST['nit'] ?? '');
+        $nit    = function_exists('normalizar_nit') ? normalizar_nit($nitRaw) : str_replace(['.', ' '], '', $nitRaw);
+        $id     = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
+
+        if (empty($nit)) {
+            echo json_encode(['disponible' => true]);
+            exit();
+        }
+
+        $existe = $this->model->existeNit($nit, $id > 0 ? $id : 0);
+        if ($existe) {
+            echo json_encode([
+                'disponible' => false,
+                'mensaje'    => "El NIT/CC {$nit} ya se encuentra registrado para otro cliente."
+            ]);
+        } else {
+            echo json_encode([
+                'disponible' => true,
+                'mensaje'    => "NIT disponible"
+            ]);
+        }
         exit();
     }
 

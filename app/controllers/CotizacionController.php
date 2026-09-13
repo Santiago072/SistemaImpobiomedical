@@ -569,6 +569,13 @@ class CotizacionController
         $usuarioId = (int)$_SESSION['usuario_id'];
         $rol       = $_SESSION['rol'] ?? 'usuario';
 
+        // Gestión de Tabs de Estado Comercial
+        $tabsPermitidos = ['pendientes', 'concluidas', 'descartadas', 'todas'];
+        if (isset($_GET['tab']) && in_array($_GET['tab'], $tabsPermitidos, true)) {
+            $_SESSION['cotizacion_tab_actual'] = $_GET['tab'];
+        }
+        $tabActual = $_SESSION['cotizacion_tab_actual'] ?? 'pendientes';
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $filtros = [];
             if (!empty($_POST['fecha_desde']))       $filtros['fecha_desde']       = sanitizar_entrada($_POST['fecha_desde']);
@@ -576,16 +583,24 @@ class CotizacionController
             if (!empty($_POST['fecha']))             $filtros['fecha']             = sanitizar_entrada($_POST['fecha']);
             if (!empty($_POST['nombre_cliente']))    $filtros['nombre_cliente']    = sanitizar_entrada($_POST['nombre_cliente']);
             if (!empty($_POST['numero_cotizacion'])) $filtros['numero_cotizacion'] = sanitizar_entrada($_POST['numero_cotizacion']);
-            if (!empty($_POST['estado_comercial']))  $filtros['estado_comercial']  = sanitizar_entrada($_POST['estado_comercial']);
+            if (!empty($_POST['estado_comercial'])) {
+                $filtros['estado_comercial']  = sanitizar_entrada($_POST['estado_comercial']);
+                // Sincronizar tab con el filtro si se seleccionó en el formulario
+                if (in_array($filtros['estado_comercial'], ['pendiente', 'concluida', 'descartada'], true)) {
+                    $mapTabs = ['pendiente' => 'pendientes', 'concluida' => 'concluidas', 'descartada' => 'descartadas'];
+                    $tabActual = $mapTabs[$filtros['estado_comercial']] ?? $tabActual;
+                    $_SESSION['cotizacion_tab_actual'] = $tabActual;
+                }
+            }
 
             $_SESSION['cotizacion_filtros'] = $filtros;
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&tab=' . urlencode($tabActual));
             exit();
         }
 
         if (isset($_GET['limpiar'])) {
             unset($_SESSION['cotizacion_filtros']);
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&tab=' . urlencode($tabActual));
             exit();
         }
 
@@ -595,7 +610,25 @@ class CotizacionController
         $busquedaFecha   = $filtros['fecha'] ?? '';
         $busquedaCliente = $filtros['nombre_cliente'] ?? '';
         $busquedaNumero  = $filtros['numero_cotizacion'] ?? '';
+        
+        // Aplicar el filtro del tab a las cotizaciones si el tab no es 'todas'
+        if ($tabActual === 'pendientes') {
+            $filtros['estado_comercial'] = 'pendiente';
+        } elseif ($tabActual === 'concluidas') {
+            $filtros['estado_comercial'] = 'concluida';
+        } elseif ($tabActual === 'descartadas') {
+            $filtros['estado_comercial'] = 'descartada';
+        } else {
+            // Tab 'todas'
+            unset($filtros['estado_comercial']);
+        }
         $busquedaEstado  = $filtros['estado_comercial'] ?? '';
+
+        // Conteos dinámicos para los badges de cada pestaña
+        $conteoPendientes  = $this->model->contarPorEstadoComercial('pendiente', $usuarioId, $rol);
+        $conteoConcluidas   = $this->model->contarPorEstadoComercial('concluida', $usuarioId, $rol);
+        $conteoDescartadas  = $this->model->contarPorEstadoComercial('descartada', $usuarioId, $rol);
+        $conteoTodas        = $this->model->contarTotalFinalizadas($usuarioId, $rol);
 
         $total        = $this->model->contarConFiltros($filtros, $usuarioId, $rol);
         $totalPaginas = (int)ceil($total / $this->porPagina);
@@ -603,7 +636,8 @@ class CotizacionController
 
         return compact('cotizaciones', 'csrf_token', 'mensajeError', 'busquedaFecha', 'busquedaFechaDesde',
                        'busquedaFechaHasta', 'busquedaCliente',
-                       'busquedaNumero', 'busquedaEstado', 'paginaActual', 'totalPaginas', 'rol');
+                       'busquedaNumero', 'busquedaEstado', 'paginaActual', 'totalPaginas', 'rol',
+                       'tabActual', 'conteoPendientes', 'conteoConcluidas', 'conteoDescartadas', 'conteoTodas');
     }
 
     // ── CAMBIAR ESTADO COMERCIAL (Usuarios autenticados con CSRF y Rate Limit) ───────────
@@ -639,16 +673,53 @@ class CotizacionController
             exit();
         }
 
+        $usuarioId = (int)$_SESSION['usuario_id'];
+        $rol       = $_SESSION['rol'] ?? 'usuario';
+
+        $cot = $this->model->buscarPorId($id);
+        if (!$cot || $cot['estado'] !== 'finalizada') {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'Cotización no encontrada o no finalizada']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=no_encontrada');
+            exit();
+        }
+
+        // Si no es admin ni compras, solo puede gestionar sus propias cotizaciones
+        if ($rol !== 'admin' && $rol !== 'compras' && (int)$cot['usuario_id'] !== $usuarioId) {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'No tiene permisos para modificar esta cotización']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=sin_permiso');
+            exit();
+        }
+
         $exito = $this->model->actualizarEstadoComercial($id, $nuevoEstado);
 
         if ($esAjax) {
             header('Content-Type: application/json');
             if ($exito) {
+                $usuarioId = (int)$_SESSION['usuario_id'];
+                $rol       = $_SESSION['rol'] ?? 'usuario';
+                
+                $conteoPendientes = $this->model->contarPorEstadoComercial('pendiente', $usuarioId, $rol);
+                $conteoConcluidas  = $this->model->contarPorEstadoComercial('concluida', $usuarioId, $rol);
+                $conteoDescartadas = $this->model->contarPorEstadoComercial('descartada', $usuarioId, $rol);
+                $conteoTodas       = $this->model->contarTotalFinalizadas($usuarioId, $rol);
+
                 echo json_encode([
-                    'status' => 'success', 
-                    'message' => 'Estado actualizado exitosamente', 
-                    'nuevo_estado' => $nuevoEstado,
-                    'fecha_cambio' => $nuevoEstado === 'pendiente' ? null : date('Y-m-d H:i')
+                    'status'             => 'success', 
+                    'message'            => 'Estado actualizado exitosamente', 
+                    'nuevo_estado'       => $nuevoEstado,
+                    'fecha_cambio'       => $nuevoEstado === 'pendiente' ? null : date('Y-m-d H:i'),
+                    'conteo_pendientes'  => $conteoPendientes,
+                    'conteo_concluidas'  => $conteoConcluidas,
+                    'conteo_descartadas' => $conteoDescartadas,
+                    'conteo_todas'       => $conteoTodas
                 ]);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'No se pudo actualizar el estado de la cotización']);
@@ -690,6 +761,31 @@ class CotizacionController
                 exit();
             }
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=invalido');
+            exit();
+        }
+
+        $usuarioId = (int)$_SESSION['usuario_id'];
+        $rol       = $_SESSION['rol'] ?? 'usuario';
+
+        $cot = $this->model->buscarPorId($id);
+        if (!$cot || $cot['estado'] !== 'finalizada') {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'Cotización no encontrada o no finalizada']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=no_encontrada');
+            exit();
+        }
+
+        // Si no es admin ni compras, solo puede gestionar sus propias cotizaciones
+        if ($rol !== 'admin' && $rol !== 'compras' && (int)$cot['usuario_id'] !== $usuarioId) {
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => 'No tiene permisos para modificar esta cotización']);
+                exit();
+            }
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=sin_permiso');
             exit();
         }
 

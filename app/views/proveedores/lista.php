@@ -131,7 +131,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 <div class="imo-form-row">
                     <div class="imo-form-group">
                         <label>NIT / Identificación <span class="required-star">*</span></label>
-                        <input type="text" name="nit" required placeholder="Ej: 900535843-3" maxlength="30" autocomplete="off">
+                        <input type="text" name="nit" id="crear_nit" required placeholder="Ej: 900535843-3" maxlength="30" autocomplete="off">
+                        <small id="crear_nit_feedback" class="nit-feedback-msg"></small>
                     </div>
                     <div class="imo-form-group">
                         <label>Tipo de Contribuyente</label>
@@ -174,7 +175,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             </div>
             <div class="imo-modal-footer">
                 <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-crear')">Cancelar</button>
-                <button type="submit" class="imo-btn-save"><i class="bi bi-check-lg"></i> Guardar Proveedor</button>
+                <button type="submit" id="btn_guardar_crear_prov" class="imo-btn-save"><i class="bi bi-check-lg"></i> Guardar Proveedor</button>
             </div>
         </form>
     </div>
@@ -196,7 +197,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 <div class="imo-form-row">
                     <div class="imo-form-group">
                         <label>NIT / Identificación <span class="required-star">*</span></label>
-                        <input type="text" name="nit" id="edit_nit" required maxlength="30">
+                        <input type="text" name="nit" id="edit_nit" required maxlength="30" autocomplete="off">
+                        <small id="edit_nit_feedback" class="nit-feedback-msg"></small>
                     </div>
                     <div class="imo-form-group">
                         <label>Tipo de Contribuyente</label>
@@ -239,42 +241,133 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             </div>
             <div class="imo-modal-footer">
                 <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-editar')">Cancelar</button>
-                <button type="submit" class="imo-btn-save"><i class="bi bi-check-lg"></i> Actualizar Proveedor</button>
+                <button type="submit" id="btn_guardar_editar_prov" class="imo-btn-save"><i class="bi bi-save-fill"></i> Guardar Cambios</button>
             </div>
         </form>
     </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
-     MODAL CONFIRMAR DESACTIVAR PROVEEDOR
+     MODAL CONFIRMAR ELIMINAR
 ══════════════════════════════════════════════════════════ -->
 <div id="modal-eliminar" class="imo-modal-bg" onclick="cerrarModal('modal-eliminar', event)">
     <div class="imo-modal imo-modal-sm">
         <div class="imo-modal-header danger">
-            <h3><i class="bi bi-exclamation-triangle-fill"></i> Desactivar Proveedor</h3>
+            <h3><i class="bi bi-exclamation-triangle-fill"></i> Confirmar Eliminación</h3>
             <button type="button" class="imo-modal-close" onclick="cerrarModal('modal-eliminar')">&times;</button>
         </div>
         <div class="imo-modal-body">
-            <p class="imo-modal-desc">¿Estás seguro de desactivar al proveedor <strong id="nombre-eliminar"></strong>? Ya no aparecerá disponible para nuevas cotizaciones.</p>
+            <p>¿Está seguro de que desea eliminar al proveedor <strong id="nombre-eliminar"></strong>?</p>
+            <p class="imo-muted-sm">Esta acción cambiará el estado a inactivo si tiene órdenes asociadas.</p>
         </div>
         <div class="imo-modal-footer">
             <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
-            <form id="form-eliminar-prov" method="POST" action="<?= $basePath ?>?module=proveedores&action=eliminar" class="form-inline-action">
+            <form method="POST" action="<?= $basePath ?>?module=proveedores&action=eliminar" class="form-inline-action">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                 <input type="hidden" name="id" id="eliminar_id">
-                <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Desactivar</button>
+                <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
             </form>
         </div>
     </div>
 </div>
 
 <script>
+const BASE_PROV = '<?= $basePath ?>';
+
+let timerValidarProvCrear = null;
+let timerValidarProvEditar = null;
+let provIdEditarActual = 0;
+
+function validarNitProveedorEnVivo(inputElem, feedbackElem, submitBtn, idExcluir = 0) {
+    const nit = (inputElem.value || '').trim();
+    if (!nit) {
+        inputElem.classList.remove('input-is-valid', 'input-is-invalid');
+        feedbackElem.className = 'nit-feedback-msg';
+        feedbackElem.innerHTML = '';
+        if (submitBtn) {
+            submitBtn.disabled = false;
+        }
+        return;
+    }
+
+    feedbackElem.className = 'nit-feedback-msg nit-feedback-loading';
+    feedbackElem.innerHTML = '<i class="bi bi-hourglass-split"></i> Verificando NIT...';
+
+    fetch(BASE_PROV + '?module=proveedores&action=verificar_nit&nit=' + encodeURIComponent(nit) + '&id=' + idExcluir)
+        .then(r => r.json())
+        .then(d => {
+            if (d.disponible === false) {
+                inputElem.classList.remove('input-is-valid');
+                inputElem.classList.add('input-is-invalid');
+                feedbackElem.className = 'nit-feedback-msg nit-feedback-error';
+                feedbackElem.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> ' + (d.mensaje || 'NIT ya registrado');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                }
+            } else {
+                inputElem.classList.remove('input-is-invalid');
+                inputElem.classList.add('input-is-valid');
+                feedbackElem.className = 'nit-feedback-msg nit-feedback-success';
+                feedbackElem.innerHTML = '<i class="bi bi-check-circle-fill"></i> NIT disponible';
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                }
+            }
+        })
+        .catch(() => {
+            feedbackElem.className = 'nit-feedback-msg';
+            feedbackElem.innerHTML = '';
+        });
+}
+
+// Listeners en input crear proveedor
+const inputNitProvCrear = document.getElementById('crear_nit');
+const feedbackNitProvCrear = document.getElementById('crear_nit_feedback');
+const btnGuardarProvCrear = document.getElementById('btn_guardar_crear_prov');
+if (inputNitProvCrear) {
+    ['input', 'paste', 'change'].forEach(evt => {
+        inputNitProvCrear.addEventListener(evt, function() {
+            clearTimeout(timerValidarProvCrear);
+            timerValidarProvCrear = setTimeout(() => {
+                validarNitProveedorEnVivo(inputNitProvCrear, feedbackNitProvCrear, btnGuardarProvCrear, 0);
+            }, evt === 'input' ? 300 : 50);
+        });
+    });
+}
+
+// Listeners en input editar proveedor
+const inputNitProvEditar = document.getElementById('edit_nit');
+const feedbackNitProvEditar = document.getElementById('edit_nit_feedback');
+const btnGuardarProvEditar = document.getElementById('btn_guardar_editar_prov');
+if (inputNitProvEditar) {
+    ['input', 'paste', 'change'].forEach(evt => {
+        inputNitProvEditar.addEventListener(evt, function() {
+            clearTimeout(timerValidarProvEditar);
+            timerValidarProvEditar = setTimeout(() => {
+                validarNitProveedorEnVivo(inputNitProvEditar, feedbackNitProvEditar, btnGuardarProvEditar, provIdEditarActual);
+            }, evt === 'input' ? 300 : 50);
+        });
+    });
+}
+
 function abrirModalCrear() {
+    if (inputNitProvCrear) {
+        inputNitProvCrear.value = '';
+        inputNitProvCrear.classList.remove('input-is-valid', 'input-is-invalid');
+    }
+    if (feedbackNitProvCrear) {
+        feedbackNitProvCrear.className = 'nit-feedback-msg';
+        feedbackNitProvCrear.innerHTML = '';
+    }
+    if (btnGuardarProvCrear) {
+        btnGuardarProvCrear.disabled = false;
+    }
     document.getElementById('modal-crear').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
 
 function abrirModalEditar(prov) {
+    provIdEditarActual = prov.id || 0;
     document.getElementById('edit_id').value                 = prov.id;
     document.getElementById('edit_nit').value                = prov.nit || '';
     document.getElementById('edit_nombre_proveedor').value   = prov.nombre_proveedor || '';
@@ -283,6 +376,18 @@ function abrirModalEditar(prov) {
     document.getElementById('edit_numero_cuenta').value      = prov.numero_cuenta || '';
     document.getElementById('edit_tipo_cuenta').value        = prov.tipo_cuenta || '';
     document.getElementById('edit_estado').value             = prov.estado || 'activo';
+    
+    if (inputNitProvEditar) {
+        inputNitProvEditar.classList.remove('input-is-valid', 'input-is-invalid');
+    }
+    if (feedbackNitProvEditar) {
+        feedbackNitProvEditar.className = 'nit-feedback-msg';
+        feedbackNitProvEditar.innerHTML = '';
+    }
+    if (btnGuardarProvEditar) {
+        btnGuardarProvEditar.disabled = false;
+    }
+
     document.getElementById('modal-editar').classList.add('open');
     document.body.style.overflow = 'hidden';
 }

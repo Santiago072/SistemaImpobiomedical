@@ -1,4 +1,4 @@
-﻿/* ------------------------------------------------------------
+/* ------------------------------------------------------------
    ESTILOS COMPARTIDOS PARA TABLAS, FILTROS Y MODALES (UX)
 ------------------------------------------------------------ */
 .tabla-datos tbody tr:hover {
@@ -131,6 +131,18 @@
 .imo-form-group input, .imo-form-group select, .imo-form-group textarea { padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 9px; font-size: 14px; color: #1f2937; transition: border-color .2s, box-shadow .2s; outline: none; background: #fff; width: 100%; box-sizing: border-box; font-family: inherit; }
 .imo-form-group textarea { resize: vertical; min-height: 80px; }
 .imo-form-group input:focus, .imo-form-group select:focus, .imo-form-group textarea:focus { border-color: #10757e; box-shadow: 0 0 0 3px rgba(16,117,126,.1); }
+
+/* Feedback reactivo de validación en modales */
+.nit-feedback-msg { display: block; min-height: 18px; font-size: 11.5px; margin-top: 4px; font-weight: 500; transition: color .2s; }
+.nit-feedback-loading { color: #64748b; }
+.nit-feedback-error   { color: #dc2626; }
+.nit-feedback-success { color: #16a34a; }
+.input-is-invalid     { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12) !important; }
+.input-is-valid       { border-color: #22c55e !important; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12) !important; }
+
+/* Aviso de rango de fechas en filtros */
+.cot-date-range-notice { font-size: 12.5px; color: #475569; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.cot-date-range-icon   { color: #10757e; font-size: 14px; }
 
 .imo-modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 28px 24px 28px; border-top: 1px solid #f1f5f9; margin-top: 8px; }
 .mod-actions { display: flex; gap: 6px; }

@@ -415,6 +415,43 @@ class CotizacionModel
         return (int)$stmt->fetchColumn();
     }
 
+    /**
+     * Cuenta cotizaciones finalizadas según su estado comercial (pendiente, concluida, descartada).
+     * Los roles admin y compras ven el total global; otros usuarios solo las suyas.
+     */
+    public function contarPorEstadoComercial(string $estado, int $usuarioId = 0, string $rol = 'usuario'): int
+    {
+        $sql = "SELECT COUNT(*) AS total FROM cotizaciones c WHERE c.estado = 'finalizada' AND c.estado_comercial = :est";
+        $params = [':est' => $estado];
+
+        if ($rol !== 'admin' && $rol !== 'compras' && $usuarioId > 0) {
+            $sql .= ' AND c.usuario_id = :uid';
+            $params[':uid'] = $usuarioId;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * Cuenta todas las cotizaciones finalizadas.
+     */
+    public function contarTotalFinalizadas(int $usuarioId = 0, string $rol = 'usuario'): int
+    {
+        $sql = "SELECT COUNT(*) AS total FROM cotizaciones c WHERE c.estado = 'finalizada'";
+        $params = [];
+
+        if ($rol !== 'admin' && $rol !== 'compras' && $usuarioId > 0) {
+            $sql .= ' AND c.usuario_id = :uid';
+            $params[':uid'] = $usuarioId;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
+    }
+
     private function construirWhere(array $filtros, int $usuarioId = 0, string $rol = 'usuario'): array
     {
         $condiciones = ["c.estado = 'finalizada'"];

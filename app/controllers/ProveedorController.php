@@ -222,4 +222,35 @@ class ProveedorController
         exit();
     }
 
+    /**
+     * Endpoint AJAX: Verificar disponibilidad del NIT en tiempo real.
+     */
+    public function verificarNit(): void
+    {
+        verificar_autenticacion();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $nitRaw = sanitizar_entrada($_GET['nit'] ?? $_POST['nit'] ?? '');
+        $nit    = function_exists('normalizar_nit') ? normalizar_nit($nitRaw) : str_replace(['.', ' '], '', $nitRaw);
+        $id     = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
+
+        if (empty($nit)) {
+            echo json_encode(['disponible' => true]);
+            exit();
+        }
+
+        $existe = $this->model->nitExiste($nit, $id > 0 ? $id : 0);
+        if ($existe) {
+            echo json_encode([
+                'disponible' => false,
+                'mensaje'    => "El NIT {$nit} ya se encuentra registrado para otro proveedor."
+            ]);
+        } else {
+            echo json_encode([
+                'disponible' => true,
+                'mensaje'    => "NIT disponible"
+            ]);
+        }
+        exit();
+    }
 }
