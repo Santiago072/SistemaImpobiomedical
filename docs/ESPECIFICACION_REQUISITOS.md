@@ -1,6 +1,6 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v3.3.0  
+**Versión del Sistema:** v3.4.1  
 **Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -53,6 +53,7 @@ El sistema cuenta con tres roles claramente estructurados:
 * **RF21:** El sistema debe generar documentos PDF oficiales para el cliente con diseño corporativo y hojas de respaldo confidencial con costos y proveedores.
 * **RF22:** El sistema debe permitir la exportación de cotizaciones a Excel en un formato estructurado y ultrarrápido sin imágenes para optimizar tiempos en listas extensas.
 * **RF22.1:** El sistema debe permitir a los roles `admin` y `compras` consultar las cotizaciones emitidas por todos los usuarios del sistema, así como eliminar cotizaciones obsoletas en cualquier estado comercial (`pendiente`, `concluida`, `descartada`) con verificación CSRF.
+* **RF22.2:** El sistema debe implementar un filtro de búsqueda por número de cotización con coincidencia exacta de código de asesor: al buscar un código sin espacio (ej. `EB`), el sistema retorna únicamente cotizaciones con ese código exacto (`EB 01`, `EB 02`) sin incluir códigos que lo contengan como subcadena (`EB-HM 01`, `EB-KD 03`). Al buscar con espacio (ej. `EB 01`), el sistema también incluye revisiones derivadas (`EB 01_01`).
 
 ### 📦 Órdenes de Compra (P.O. - Purchase Orders)
 * **RF23:** El sistema debe permitir generar órdenes de compra dirigidas a proveedores a partir de cotizaciones en estado pendiente o mediante la creación de Órdenes Directas de mostrador.
@@ -91,6 +92,7 @@ El sistema cuenta con tres roles claramente estructurados:
 * **RF43:** El sistema debe restringir la acción de desactivación o eliminación de proveedores exclusivamente a usuarios con rol `admin`; los usuarios estándar solo podrán consultar, crear y editar.
 * **RF44:** El sistema debe autocompletar predictivamente los datos del proveedor (NIT, Razón Social, cuenta y banco) al momento de cotizar productos o emitir órdenes de compra.
 * **RF45:** El sistema debe clasificar cronológicamente a los proveedores en las órdenes de compra como `Nuevo` (cuando se trata de la primera orden emitida para dicho proveedor) o `Registrado` (cuando ya cuenta con una o más órdenes previas emitidas en el historial), preservando el autocompletado de datos desde el directorio centralizado.
+* **RF45.1:** El sistema debe presentar la lista de proveedores con mejoras de UX: acciones contextuales claras, badges de estado visual y layout de lista optimizado para navegación rápida.
 
 ### 🎨 Interfaz, Accesibilidad y Ayuda en Línea
 * **RF46:** El sistema debe destacar visualmente todos los campos y etiquetas de entrada obligatorios con asterisco en color rojo vivo contrastado (`.required-star`, `#ef4444 !important`) tanto en renderizado estático como en formularios dinámicos.

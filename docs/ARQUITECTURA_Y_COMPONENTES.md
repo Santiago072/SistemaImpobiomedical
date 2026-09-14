@@ -1,6 +1,6 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** v3.3.0  
+**Versión:** v3.4.1  
 **Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -153,6 +153,7 @@ graph TB
 | [ItemCotizacionService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/ItemCotizacionService.php) | Servicio | **SRP** | Algoritmo de cálculo dinámico de utilidades, fletes, calibración, estampillas e IVA. |
 | [OrdenCompraController.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/controllers/OrdenCompraController.php) | Controlador | **SRP** | Emisión y control de órdenes, navegación por pestañas y exportación selectiva a PDF/Excel. |
 | [FileUploadService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/FileUploadService.php) | Servicio | **SRP** | Validación de tipos MIME reales, tamaños máximos y nombres únicos de archivos. |
+| [CotizacionModel.php — `construirWhere()`](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/models/CotizacionModel.php) | Persistencia | **SRP** | Filtro de búsqueda con coincidencia exacta de prefijo de código (`LIKE 'EB %'`), evitando que códigos similares como `EB-HM` contaminen los resultados de búsqueda por `EB`. |
 | [Modelos PDO](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/models/) | Persistencia | **ISP / DIP** | Acceso a datos con parámetros nombrados, eliminando cualquier vector de SQL Injection e implementando `RepositoryInterface`. |
 
 ---

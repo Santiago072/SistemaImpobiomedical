@@ -4,6 +4,32 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.4.1] - 2026-09-13
+### Corregido
+- **Filtro de número de cotización por código de asesor (`CotizacionModel.php` — `construirWhere`):**
+  - Se corrigió un bug crítico de búsqueda en la vista **Consultar Cotizaciones**: al ingresar el código de un asesor (ej. `EB`) en el campo de número de cotización, el sistema devolvía también cotizaciones de otros asesores cuyos códigos contienen el mismo prefijo (`EB-HM`, `EB-KD`, `EB-LP`, etc.), porque el filtro usaba `LIKE '%EB%'`.
+  - La búsqueda ahora aplica **coincidencia exacta de prefijo + espacio** (`LIKE 'EB %'`) que garantiza que buscar `EB` retorne únicamente `EB 01`, `EB 02`, etc., y no códigos similares como `EB-HM 01`.
+  - Cuando el término de búsqueda ya incluye un espacio (ej. `EB 01`), se hace coincidencia por prefijo completo (`LIKE 'EB 01%'`), capturando también revisiones derivadas como `EB 01_01`.
+  - Se cubre el caso de revisiones (`_01`, `_02`) mediante un segundo patrón `LIKE :ncot_rev` con el literal `' %_%'`.
+
+---
+
+## [v3.4.0] - 2026-09-13
+### Añadido
+- **Mejoras al módulo de Cotizaciones (`CotizacionController.php`, `CotizacionModel.php`, `consultar.php`, `cotizaciones.css`):**
+  - Funcionalidades extendidas en la vista de consulta de cotizaciones con nuevas capacidades de visualización, filtrado y gestión de estados.
+  - Actualización de estilos CSS en `cotizaciones.css` y componentes compartidos `shared_ux.css`.
+- **Mejoras al módulo de Clientes (`ClienteController.php`, `ClienteModel.php`, `clientes/lista.php`):**
+  - Funcionalidades ampliadas en el directorio de entidades de salud con mejoras de UX en la vista de lista.
+- **Mejoras al módulo de Proveedores (`ProveedorController.php`, `ProveedorModel.php`, `proveedores/lista.php`):**
+  - Funcionalidades ampliadas en el directorio de proveedores con mejoras de UX en la vista de lista.
+- **Actualización del Router Principal (`index.php`):**
+  - Nuevas rutas y acciones registradas para soporte de las funcionalidades extendidas en los módulos de cotizaciones, clientes y proveedores.
+- **Mejoras de UX transversales (`css/components/shared_ux.css`):**
+  - Ajustes de estilos compartidos que impactan positivamente la experiencia visual en múltiples módulos.
+
+---
+
 ## [v3.3.0] - 2026-09-09
 ### Añadido
 - **Módulo de Ajuste Directo de Órdenes de Compra (`OrdenCompraController.php`, `OrdenCompraModel.php`, `consultar.php`, `ordenes.css`):**
