@@ -480,8 +480,23 @@ class CotizacionModel
             $params[':nombre'] = '%' . $filtros['nombre_cliente'] . '%';
         }
         if (!empty($filtros['numero_cotizacion'])) {
-            $condiciones[] = 'c.numero_cotizacion LIKE :ncot';
-            $params[':ncot'] = '%' . $filtros['numero_cotizacion'] . '%';
+            $busqueda = trim($filtros['numero_cotizacion']);
+            // Si el término de búsqueda ya contiene un espacio (ej: "EB 01", "EB-HM 03"),
+            // se hace búsqueda por prefijo exacto incluyendo el espacio.
+            // Si no tiene espacio (ej: "EB", "EB-HM"), se añade el espacio para forzar
+            // que coincida exactamente el código y no uno que lo contenga (ej: "EB" no devuelve "EB-HM").
+            if (strpos($busqueda, ' ') !== false) {
+                // Tiene espacio: puede ser número completo "EB 01" → LIKE 'EB 01%'
+                $condiciones[] = 'c.numero_cotizacion LIKE :ncot';
+                $params[':ncot'] = $busqueda . '%';
+            } else {
+                // Solo código sin espacio: añadir espacio para match exacto de prefijo
+                // "EB" → LIKE 'EB %' (coincide EB 01, EB 02... pero NO EB-HM 01)
+                // También incluir revisiones: "EB 01_01" (no tienen espacio al final del base)
+                $condiciones[] = '(c.numero_cotizacion LIKE :ncot_sp OR c.numero_cotizacion LIKE :ncot_rev)';
+                $params[':ncot_sp']  = $busqueda . ' %';
+                $params[':ncot_rev'] = $busqueda . ' %_%';
+            }
         }
         if (!empty($filtros['estado_comercial'])) {
             $condiciones[] = 'c.estado_comercial = :est_com';
