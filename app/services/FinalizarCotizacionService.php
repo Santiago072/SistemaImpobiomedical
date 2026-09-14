@@ -28,7 +28,7 @@ class FinalizarCotizacionService
      */
     public function procesarFinalizacion(int $cotizacion_id, array $postData, array $sessionData, ?string $revisionDe = null, ?string $numeroFijo = null): string
     {
-        $fechaCreacion    = mb_substr(sanitizar_entrada($postData['fecha_creacion'] ?? date('Y-m-d')), 0, 10);
+        $fechaCreacion    = mb_substr(sanitizar_entrada($postData['fecha_creacion'] ?? (new DateTime('now', new DateTimeZone('America/Bogota')))->format('Y-m-d')), 0, 10);
         $diasValidez      = max(1, (int)($postData['dias_validez'] ?? 30));
         $condicionesPago  = mb_substr(sanitizar_entrada($postData['condiciones_pago'] ?? 'CONTADO'), 0, 100);
         $observaciones    = mb_substr(sanitizar_entrada($postData['observaciones'] ?? ''), 0, 1000);

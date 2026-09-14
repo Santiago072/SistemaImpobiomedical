@@ -98,9 +98,23 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             <div class="imo-form-group">
                                 <label>Fecha de Cotización *</label>
                                 <?php
-                                $fechaDefecto = !empty($cotizacion['fecha_creacion'])
-                                    ? date('Y-m-d', strtotime($cotizacion['fecha_creacion']))
-                                    : date('Y-m-d');
+                                // ── Fecha de Bogotá (UTC-5) ────────────────────────────────
+                                // Siempre muestra la fecha actual de Colombia como predeterminada
+                                // para cotizaciones nuevas o borradores, independientemente de
+                                // cuándo se crearon los ítems.
+                                // Solo en modo AJUSTE se precarga la fecha original de la cotización.
+                                $tzBogota   = new DateTimeZone('America/Bogota');
+                                $hoyBogota  = (new DateTime('now', $tzBogota))->format('Y-m-d');
+
+                                $esModoAjuste = isset($_SESSION['cotizacion_ajustando_id']);
+
+                                if ($esModoAjuste && !empty($cotizacion['fecha_creacion'])) {
+                                    // Modo ajuste: precargar fecha original de la cotización
+                                    $fechaDefecto = date('Y-m-d', strtotime($cotizacion['fecha_creacion']));
+                                } else {
+                                    // Cotización nueva o borrador: siempre mostrar HOY en Bogotá
+                                    $fechaDefecto = $hoyBogota;
+                                }
                                 ?>
                                 <input type="date" name="fecha_creacion" required value="<?= htmlspecialchars($fechaDefecto) ?>">
                             </div>

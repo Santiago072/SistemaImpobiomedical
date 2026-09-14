@@ -155,7 +155,7 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-calendar-date"></i> Fecha</label>
                         <input type="date" name="fecha" class="oc-input"
-                               value="<?= htmlspecialchars($ordenAjustando['fecha'] ?? date('Y-m-d')) ?>" required>
+                               value="<?= htmlspecialchars($ordenAjustando['fecha'] ?? (new DateTime('now', new DateTimeZone('America/Bogota')))->format('Y-m-d')) ?>" required>
                     </div>
 
                     <div class="oc-field-group">
