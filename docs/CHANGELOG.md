@@ -4,6 +4,28 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.5.0] - 2026-09-16
+### Añadido
+- **Auto-registro inteligente de proveedores en órdenes de compra (`OrdenCompraController.php`):**
+  - Al guardar órdenes directas de mostrador o derivadas de cotizaciones, los proveedores no registrados son detectados y guardados automáticamente en la tabla oficial de `proveedores`, garantizando la integridad referencial y facilitando su reutilización sin duplicidades.
+- **Búsqueda y sugerencia dual (Nombre / NIT) en órdenes directas (`crear_directa.php`, `ProveedorModel.php`):**
+  - Se habilitó la búsqueda predictiva tanto en el campo **Proveedor (TO:)** como en **NIT del Proveedor**.
+  - Si existen múltiples registros comerciales con el mismo NIT o similar, el usuario puede desplegar las opciones y hacer clic en **"Seleccionar"**.
+  - Las tarjetas de sugerencia se simplificaron para mostrar únicamente **Nombre del Proveedor** y **NIT**, ofreciendo una interfaz limpia y libre de saturación.
+- **Rediseño avanzado del monitor cardiológico del menú lateral (`menu.php`, `layout.css`):**
+  - Nueva animación SVG médica de alta fidelidad simulando un trazado real de electrocardiograma (**P-Q-R-S-T**) con retícula clínica translúcida (ECG paper grid).
+  - Efecto dinámico de neón continuo con gradiente cyan (`#0284c7` a `#38bdf8`) y punto de pulso cardiológico móvil (`sidebar-ecg-heart-ping`) que recorre las crestas del trazado.
+  - Eliminación del recuadro rígido con borde para una integración limpia, minimalista y de mayor escala (hasta 220px de ancho y 64px de alto) en la cabecera del menú.
+
+### Corregido
+- **Limpieza reactiva de datos al modificar o borrar el NIT (`crear_directa.php`):**
+  - Se corrigió el comportamiento donde al borrar o modificar dígitos del NIT se mantenían precargados los datos bancarios y tipo de contribuyente de un proveedor previo.
+  - Ahora, en cuanto el documento no coincide exactamente con un proveedor registrado, los campos bancarios y tributarios se restablecen de forma automática y el badge vuelve a marcar **"Proveedor Nuevo"**.
+- **Búsqueda estricta por NIT numérico en el modelo (`OrdenCompraModel.php`):**
+  - Se previnieron falsos positivos en `buscarHistorialProveedor`: cuando el término ingresado es numérico/NIT, se ejecuta una búsqueda exacta por documento (con o sin guión) evitando coincidencias parciales (`LIKE`) accidentales sobre nombres de proveedores.
+
+---
+
 ## [v3.4.1] - 2026-09-13
 ### Corregido
 - **Filtro de número de cotización por código de asesor (`CotizacionModel.php` — `construirWhere`):**

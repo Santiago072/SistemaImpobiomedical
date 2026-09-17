@@ -130,19 +130,21 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
 
                 <div class="grid-form-fields">
 
-                    <div class="oc-field-group">
+                    <div class="oc-field-group search-live" style="position: relative;">
                         <label class="oc-label"><i class="bi bi-building"></i> Proveedor (TO:) <span class="required-star">*</span></label>
                         <input type="text" name="proveedor" id="inputProveedor" class="oc-input" required
-                               placeholder="Escriba el nombre del proveedor..." maxlength="200" autocomplete="off"
+                               placeholder="Escriba el nombre o NIT del proveedor..." maxlength="200" autocomplete="off"
                                value="<?= htmlspecialchars($ordenAjustando['proveedor'] ?? '') ?>">
                         <input type="hidden" name="estado_proveedor" id="inputEstadoProveedor" value="<?= htmlspecialchars($ordenAjustando['estado_proveedor'] ?? 'nuevo') ?>">
+                        <div id="listaProveedoresDirecta" class="lista-sugerencias" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:1050; background:#ffffff; border:1.5px solid #0d9488; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:220px; overflow-y:auto;"></div>
                     </div>
 
-                    <div class="oc-field-group">
+                    <div class="oc-field-group search-live" style="position: relative;">
                         <label class="oc-label"><i class="bi bi-hash"></i> NIT del Proveedor</label>
                         <input type="text" name="proveedor_nit" id="inputProveedorNit" class="oc-input"
-                               placeholder="Ej: 79625307-6" maxlength="30"
+                               placeholder="Ej: 79625307-6" maxlength="30" autocomplete="off"
                                value="<?= htmlspecialchars($ordenAjustando['proveedor_nit'] ?? '') ?>">
+                        <div id="listaProveedoresNit" class="lista-sugerencias" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:1050; background:#ffffff; border:1.5px solid #0d9488; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:220px; overflow-y:auto;"></div>
                     </div>
 
                     <div class="oc-field-group">
@@ -565,7 +567,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
     let timerBusqueda = null;
     let ultimoProvAutocompletado = '';
 
-    function limpiarCamposProveedor() {
+    function limpiarCamposProveedor(limpiarNit = true, limpiarNombre = false) {
+        const provInp  = document.getElementById('inputProveedor');
         const nitInp   = document.getElementById('inputProveedorNit');
         const tcontInp = document.getElementById('inputTipoContribuyente');
         const condInp  = document.getElementById('inputCondicionesPago');
@@ -573,7 +576,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         const bctaInp  = document.getElementById('inputBancoCuenta');
         const btipoInp = document.getElementById('inputBancoTipoCuenta');
 
-        if (nitInp) nitInp.value = '';
+        if (limpiarNombre && provInp) provInp.value = '';
+        if (limpiarNit && nitInp) nitInp.value = '';
         if (tcontInp) tcontInp.value = '';
         if (condInp) condInp.value = 'Según acuerdo';
         if (bnomInp) bnomInp.value = '';
@@ -589,7 +593,6 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                 badgeProv.innerHTML = '<i class="bi bi-plus-circle"></i> Proveedor Nuevo';
             }
             if (hdnEstado) hdnEstado.value = 'nuevo';
-            limpiarCamposProveedor();
             return;
         }
 
@@ -602,37 +605,33 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
             .then(res => res.json())
             .then(res => {
                 const d = res.datos;
-                if (res.registrado) {
+                if (res.registrado && d) {
                     if (badgeProv) {
                         badgeProv.className = 'mod-badge badge-green';
                         badgeProv.innerHTML = '<i class="bi bi-check-circle-fill"></i> Proveedor Registrado (' + res.ordenes + ' orden' + (res.ordenes > 1 ? 'es' : '') + ')';
                     }
                     if (hdnEstado) hdnEstado.value = 'registrado';
-                } else {
-                    if (badgeProv) {
-                        badgeProv.className = 'mod-badge badge-gold';
-                        badgeProv.innerHTML = '<i class="bi bi-plus-circle"></i> Proveedor Nuevo';
-                    }
-                    if (hdnEstado) hdnEstado.value = 'nuevo';
-                }
 
-                if (d) {
-                    const nitInp   = document.getElementById('inputProveedorNit');
                     const tcontInp = document.getElementById('inputTipoContribuyente');
                     const condInp  = document.getElementById('inputCondicionesPago');
                     const bnomInp  = document.getElementById('inputBancoNombre');
                     const bctaInp  = document.getElementById('inputBancoCuenta');
                     const btipoInp = document.getElementById('inputBancoTipoCuenta');
 
-                    if (nitInp) nitInp.value = d.proveedor_nit || '';
                     if (tcontInp) tcontInp.value = d.tipo_contribuyente || '';
-                    if (condInp) condInp.value = d.condiciones_pago || 'Según acuerdo';
-                    if (bnomInp) bnomInp.value = d.banco_nombre || '';
-                    if (bctaInp) bctaInp.value = d.banco_cuenta || '';
+                    if (condInp)  condInp.value = d.condiciones_pago || 'Según acuerdo';
+                    if (bnomInp)  bnomInp.value = d.banco_nombre || '';
+                    if (bctaInp)  bctaInp.value = d.banco_cuenta || '';
                     if (btipoInp) btipoInp.value = d.banco_tipo_cuenta || '';
-                    ultimoProvAutocompletado = nombre.trim();
-                } else if (ultimoProvAutocompletado && ultimoProvAutocompletado !== nombre.trim()) {
-                    limpiarCamposProveedor();
+                    ultimoProvAutocompletado = (d.proveedor || nombre).trim();
+                } else {
+                    if (badgeProv) {
+                        badgeProv.className = 'mod-badge badge-gold';
+                        badgeProv.innerHTML = '<i class="bi bi-plus-circle"></i> Proveedor Nuevo';
+                    }
+                    if (hdnEstado) hdnEstado.value = 'nuevo';
+                    // Si no está registrado o ya no coincide, vaciar datos bancarios y tipo de contribuyente
+                    limpiarCamposProveedor(false, false);
                 }
             })
             .catch(() => {
@@ -641,6 +640,95 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                     badgeProv.innerHTML = '<i class="bi bi-info-circle"></i> Proveedor Nuevo';
                 }
                 if (hdnEstado) hdnEstado.value = 'nuevo';
+                limpiarCamposProveedor(false, false);
+            });
+    }
+
+    const listaProvDirecta = document.getElementById('listaProveedoresDirecta');
+    const listaProvNit     = document.getElementById('listaProveedoresNit');
+
+    function ocultarListasSugerencias() {
+        if (listaProvDirecta) {
+            listaProvDirecta.style.display = 'none';
+            listaProvDirecta.innerHTML = '';
+        }
+        if (listaProvNit) {
+            listaProvNit.style.display = 'none';
+            listaProvNit.innerHTML = '';
+        }
+    }
+
+    function seleccionarProveedorSugerido(p) {
+        if (!p) return;
+        inputProv.value = p.nombre_proveedor || '';
+        
+        const nitInp   = document.getElementById('inputProveedorNit');
+        const tcontInp = document.getElementById('inputTipoContribuyente');
+        const bnomInp  = document.getElementById('inputBancoNombre');
+        const bctaInp  = document.getElementById('inputBancoCuenta');
+        const btipoInp = document.getElementById('inputBancoTipoCuenta');
+
+        if (nitInp) nitInp.value = p.nit || '';
+        if (tcontInp) tcontInp.value = p.tipo_contribuyente || 'PERSONA JURÍDICA';
+        if (bnomInp) bnomInp.value = p.nombre_banco || '';
+        if (bctaInp) bctaInp.value = p.numero_cuenta || '';
+        if (btipoInp) btipoInp.value = p.tipo_cuenta || '';
+
+        ultimoProvAutocompletado = (p.nombre_proveedor || '').trim();
+
+        ocultarListasSugerencias();
+        verificarProveedor(p.nit || p.nombre_proveedor);
+    }
+
+    function renderizarSugerencias(contenedor, proveedores) {
+        contenedor.innerHTML = '';
+        if (!proveedores || proveedores.length === 0) {
+            contenedor.style.display = 'none';
+            return;
+        }
+
+        proveedores.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'sugerencia-item';
+            item.style.cssText = 'padding: 9px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s; font-size: 13px;';
+            item.onmouseenter = () => item.style.background = '#f0fdfa';
+            item.onmouseleave = () => item.style.background = '#ffffff';
+
+            item.innerHTML = `
+                <div>
+                    <div style="font-weight: 600; color: #0f172a;">${p.nombre_proveedor}</div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 1px;">
+                        NIT: <strong style="color: #0d9488;">${p.nit}</strong>
+                    </div>
+                </div>
+                <span class="mod-badge badge-teal" style="font-size: 10.5px; padding: 2px 8px; flex-shrink: 0;">Seleccionar</span>
+            `;
+
+            item.addEventListener('click', () => {
+                seleccionarProveedorSugerido(p);
+            });
+
+            contenedor.appendChild(item);
+        });
+
+        contenedor.style.display = 'block';
+    }
+
+    function buscarSugerenciasProveedores(q, contenedor) {
+        if (!contenedor) return;
+        if (!q || q.trim().length < 2) {
+            contenedor.style.display = 'none';
+            contenedor.innerHTML = '';
+            return;
+        }
+
+        fetch('<?= $basePath ?>?module=proveedores&action=ajax_buscar&term=' + encodeURIComponent(q.trim()))
+            .then(res => res.json())
+            .then(proveedores => {
+                renderizarSugerencias(contenedor, proveedores);
+            })
+            .catch(() => {
+                contenedor.style.display = 'none';
             });
     }
 
@@ -648,15 +736,26 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         inputProv.addEventListener('input', function() {
             clearTimeout(timerBusqueda);
             const val = this.value;
+            if (listaProvNit) {
+                listaProvNit.style.display = 'none';
+                listaProvNit.innerHTML = '';
+            }
             if (!val.trim()) {
-                limpiarCamposProveedor();
+                limpiarCamposProveedor(true, false);
                 if (badgeProv) {
                     badgeProv.className = 'mod-badge badge-gold';
                     badgeProv.innerHTML = '<i class="bi bi-plus-circle"></i> Proveedor Nuevo';
                 }
                 if (hdnEstado) hdnEstado.value = 'nuevo';
+                if (listaProvDirecta) {
+                    listaProvDirecta.style.display = 'none';
+                    listaProvDirecta.innerHTML = '';
+                }
             } else {
-                timerBusqueda = setTimeout(() => verificarProveedor(val), 300);
+                timerBusqueda = setTimeout(() => {
+                    buscarSugerenciasProveedores(val, listaProvDirecta);
+                    verificarProveedor(val);
+                }, 250);
             }
         });
     }
@@ -665,19 +764,38 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
     if (inputNit) {
         inputNit.addEventListener('input', function() {
             clearTimeout(timerBusqueda);
-            const valAnt = this.value;
-            const valLimpio = valAnt.replace(/[\.\s]/g, '');
-            if (valAnt !== valLimpio) {
-                const cursor = this.selectionStart;
-                this.value = valLimpio;
-                const diff = valAnt.length - valLimpio.length;
-                this.setSelectionRange(Math.max(0, cursor - diff), Math.max(0, cursor - diff));
+            const val = this.value.trim();
+            if (listaProvDirecta) {
+                listaProvDirecta.style.display = 'none';
+                listaProvDirecta.innerHTML = '';
             }
-            if (valLimpio.trim().length >= 3) {
-                timerBusqueda = setTimeout(() => verificarProveedor(valLimpio.trim()), 350);
+            if (!val) {
+                if (listaProvNit) {
+                    listaProvNit.style.display = 'none';
+                    listaProvNit.innerHTML = '';
+                }
+                // Al borrar el NIT, limpiamos los campos asociados (banco, cuenta, etc.)
+                limpiarCamposProveedor(false, false);
+                if (badgeProv) {
+                    badgeProv.className = 'mod-badge badge-gold';
+                    badgeProv.innerHTML = '<i class="bi bi-plus-circle"></i> Proveedor Nuevo';
+                }
+                if (hdnEstado) hdnEstado.value = 'nuevo';
+            } else if (val.length >= 2) {
+                timerBusqueda = setTimeout(() => {
+                    buscarSugerenciasProveedores(val, listaProvNit);
+                    verificarProveedor(val);
+                }, 250);
             }
         });
     }
+
+    // Ocultar sugerencias al hacer clic afuera
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-live')) {
+            ocultarListasSugerencias();
+        }
+    });
 
     form.addEventListener('submit', function(e) {
         const filas = tbody.querySelectorAll('tr');

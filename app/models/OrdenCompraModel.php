@@ -199,25 +199,48 @@ class OrdenCompraModel
             $termRaw = $termino;
             $termNitNorm = function_exists('normalizar_nit') ? normalizar_nit($termino) : str_replace(['.', ' '], '', $termino);
 
-            // 1. Primero buscar en la tabla oficial de proveedores (por NIT normalizado, NIT crudo o nombre)
-            $stmtProv = $this->db->prepare(
-                "SELECT id, nit, nombre_proveedor, tipo_contribuyente,
-                        nombre_banco, numero_cuenta, tipo_cuenta, estado
-                 FROM proveedores
-                 WHERE REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :p_nitnorm
-                    OR TRIM(nit) = :p_nit
-                    OR LOWER(TRIM(nombre_proveedor)) = LOWER(:p_exact)
-                    OR LOWER(TRIM(nombre_proveedor)) LIKE LOWER(:p_like)
-                 ORDER BY (REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :p_nitnorm_exact) DESC, id DESC
-                 LIMIT 1"
-            );
-            $stmtProv->execute([
-                ':p_nitnorm'       => $termNitNorm,
-                ':p_nit'           => $termRaw,
-                ':p_exact'         => $termRaw,
-                ':p_like'          => '%' . $termRaw . '%',
-                ':p_nitnorm_exact' => $termNitNorm
-            ]);
+            // 1. Primero buscar en la tabla oficial de proveedores
+            // Si el término es principalmente numérico (parece NIT), buscar estrictamente por NIT normalizado o con guion.
+            $esTerminoNumerico = preg_match('/^[0-9\.\-\s]+$/', $termino) && strlen(preg_replace('/\D/', '', $termino)) >= 4;
+
+            if ($esTerminoNumerico) {
+                $termSoloDig = preg_replace('/\D/', '', $termino);
+                $stmtProv = $this->db->prepare(
+                    "SELECT id, nit, nombre_proveedor, tipo_contribuyente,
+                            nombre_banco, numero_cuenta, tipo_cuenta, estado
+                     FROM proveedores
+                     WHERE REPLACE(REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', ''), '-', '') = :p_digitos
+                        OR REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :p_nitnorm
+                        OR TRIM(nit) = :p_nit
+                     ORDER BY (REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :p_nitnorm_exact) DESC, id DESC
+                     LIMIT 1"
+                );
+                $stmtProv->execute([
+                    ':p_digitos'       => $termSoloDig,
+                    ':p_nitnorm'       => $termNitNorm,
+                    ':p_nit'           => $termRaw,
+                    ':p_nitnorm_exact' => $termNitNorm
+                ]);
+            } else {
+                $stmtProv = $this->db->prepare(
+                    "SELECT id, nit, nombre_proveedor, tipo_contribuyente,
+                            nombre_banco, numero_cuenta, tipo_cuenta, estado
+                     FROM proveedores
+                     WHERE REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :p_nitnorm
+                        OR TRIM(nit) = :p_nit
+                        OR LOWER(TRIM(nombre_proveedor)) = LOWER(:p_exact)
+                        OR LOWER(TRIM(nombre_proveedor)) LIKE LOWER(:p_like)
+                     ORDER BY (LOWER(TRIM(nombre_proveedor)) = LOWER(:p_exact2)) DESC, id DESC
+                     LIMIT 1"
+                );
+                $stmtProv->execute([
+                    ':p_nitnorm'       => $termNitNorm,
+                    ':p_nit'           => $termRaw,
+                    ':p_exact'         => $termRaw,
+                    ':p_like'          => '%' . $termRaw . '%',
+                    ':p_exact2'        => $termRaw
+                ]);
+            }
             $provOficial = $stmtProv->fetch();
 
             // Contar total de órdenes previas de este proveedor (por NIT o nombre)

@@ -26,17 +26,51 @@ $usuarioCodigo = $_SESSION['usuario_codigo'] ?? '';
         <div class="sidebar-header-corp">
             <a href="<?= $basePath ?>?module=panel" class="sidebar-brand-link" title="Impobiomedical &bull; Panel Principal">
                 <div class="sidebar-cardio-badge">
-                    <svg class="sidebar-ecg-svg" viewBox="0 0 135 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Sensor vertical biomédico con gradiente cyan -->
-                        <line x1="12" y1="4" x2="12" y2="11" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" />
-                        <rect x="8" y="13" width="8" height="15" rx="2" fill="#10757e" />
-                        <line x1="12" y1="28" x2="12" y2="39" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
-                        <!-- Arco medial característico -->
-                        <path d="M 18 12 A 14 14 0 0 1 18 36" stroke="#10757e" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.9" />
-                        <!-- Trazo ECG base tenue -->
-                        <path class="sidebar-ecg-bg-line" d="M 22 24 L 38 24 L 46 14 L 54 34 L 64 5 L 75 39 L 83 14 L 90 28 L 98 24 L 132 24" />
-                        <!-- Trazo ECG con flujo neón vivo y continuo -->
-                        <path class="sidebar-ecg-stream" d="M 22 24 L 38 24 L 46 14 L 54 34 L 64 5 L 75 39 L 83 14 L 90 28 L 98 24 L 132 24" />
+                    <svg class="sidebar-ecg-svg" viewBox="0 0 170 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <!-- Gradiente brillante del pulso ECG -->
+                            <linearGradient id="cardioGlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#0284c7" stop-opacity="0.2" />
+                                <stop offset="40%" stop-color="#0284c7" />
+                                <stop offset="75%" stop-color="#22d3ee" />
+                                <stop offset="100%" stop-color="#38bdf8" />
+                            </linearGradient>
+                            <!-- Resplandor neón médico -->
+                            <filter id="ecgNeonGlow" x="-20%" y="-40%" width="140%" height="180%">
+                                <feGaussianBlur stdDeviation="1.8" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+
+                        <!-- Mini cuadrícula tenue médica de fondo (ECG paper grid) -->
+                        <g class="ecg-grid-lines" opacity="0.18">
+                            <line x1="0" y1="12" x2="170" y2="12" stroke="#0ea5e9" stroke-width="0.7" stroke-dasharray="2 3" />
+                            <line x1="0" y1="25" x2="170" y2="25" stroke="#0ea5e9" stroke-width="0.8" />
+                            <line x1="0" y1="38" x2="170" y2="38" stroke="#0ea5e9" stroke-width="0.7" stroke-dasharray="2 3" />
+                            <line x1="30" y1="0" x2="30" y2="50" stroke="#0ea5e9" stroke-width="0.7" stroke-dasharray="2 3" />
+                            <line x1="65" y1="0" x2="65" y2="50" stroke="#0ea5e9" stroke-width="0.7" stroke-dasharray="2 3" />
+                            <line x1="100" y1="0" x2="100" y2="50" stroke="#0ea5e9" stroke-width="0.7" stroke-dasharray="2 3" />
+                            <line x1="135" y1="0" x2="135" y2="50" stroke="#0ea5e9" stroke-width="0.7" stroke-dasharray="2 3" />
+                        </g>
+
+                        <!-- Onda base completa (trazado anatómico ECG P-Q-R-S-T perfecto) -->
+                        <path class="sidebar-ecg-bg-line"
+                              d="M 4 25 L 24 25 Q 28 25 30 22 Q 32 25 36 25 L 44 25 L 48 29 L 54 7 L 60 41 L 64 22 L 68 25 L 76 25 Q 82 20 88 25 L 102 25 Q 106 25 108 22 Q 110 25 114 25 L 122 25 L 126 29 L 132 7 L 138 41 L 142 22 L 146 25 L 154 25 Q 160 20 166 25" />
+
+                        <!-- Onda viva iluminada con flujo de pulso continuo -->
+                        <path class="sidebar-ecg-stream" filter="url(#ecgNeonGlow)"
+                              d="M 4 25 L 24 25 Q 28 25 30 22 Q 32 25 36 25 L 44 25 L 48 29 L 54 7 L 60 41 L 64 22 L 68 25 L 76 25 Q 82 20 88 25 L 102 25 Q 106 25 108 22 Q 110 25 114 25 L 122 25 L 126 29 L 132 7 L 138 41 L 142 22 L 146 25 L 154 25 Q 160 20 166 25" />
+
+                        <!-- Punto de pulso cardiológico que recorre la cresta -->
+                        <circle class="sidebar-ecg-heart-ping" r="3.2" fill="#38bdf8" filter="url(#ecgNeonGlow)">
+                            <animateMotion 
+                                path="M 4 25 L 24 25 Q 28 25 30 22 Q 32 25 36 25 L 44 25 L 48 29 L 54 7 L 60 41 L 64 22 L 68 25 L 76 25 Q 82 20 88 25 L 102 25 Q 106 25 108 22 Q 110 25 114 25 L 122 25 L 126 29 L 132 7 L 138 41 L 142 22 L 146 25 L 154 25 Q 160 20 166 25"
+                                dur="2.4s"
+                                repeatCount="indefinite" />
+                        </circle>
                     </svg>
                 </div>
             </a>

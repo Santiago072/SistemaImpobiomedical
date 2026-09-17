@@ -41,13 +41,14 @@ body.menu-oculto .menu-lateral {
 
 /* Encabezado del Sidebar */
 .sidebar-header-corp {
-    padding: 16px 18px;
+    padding: 18px 16px 14px 16px;
     border-bottom: 1px solid #edf2f7;
     display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(to bottom, #f0f7f8, #ffffff);
     position: relative;
+    overflow: hidden;
 }
 
 .sidebar-brand-link {
@@ -59,56 +60,75 @@ body.menu-oculto .menu-lateral {
 }
 
 .sidebar-cardio-badge {
-    width: 135px;
-    height: 52px;
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 4px 10px;
-    border: 1.5px solid #cce8ea;
+    width: 100%;
+    max-width: 220px;
+    height: 64px;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(16, 117, 126, 0.15);
-    transition: transform .25s ease, box-shadow .25s ease;
-    overflow: hidden;
+    box-shadow: none;
+    transition: transform .25s ease;
+    overflow: visible;
+    position: relative;
 }
 
 .sidebar-brand-link:hover .sidebar-cardio-badge {
-    transform: scale(1.04);
-    box-shadow: 0 6px 20px rgba(16, 117, 126, 0.25);
-    border-color: #38bdf8;
+    transform: scale(1.05);
+    box-shadow: none;
+    border: none;
 }
 
 .sidebar-ecg-svg {
     width: 100%;
     height: 100%;
+    display: block;
+    overflow: visible;
 }
 
 .sidebar-ecg-bg-line {
-    stroke: rgba(16, 117, 126, 0.22);
-    stroke-width: 2.2;
+    stroke: rgba(14, 165, 233, 0.22);
+    stroke-width: 2.5;
     stroke-linecap: round;
     stroke-linejoin: round;
     fill: none;
 }
 
 .sidebar-ecg-stream {
-    stroke: #38bdf8;
-    stroke-width: 2.6;
+    stroke: url(#cardioGlowGrad);
+    stroke-width: 3.4;
     stroke-linecap: round;
     stroke-linejoin: round;
     fill: none;
-    stroke-dasharray: 60 140;
+    stroke-dasharray: 70 130;
     stroke-dashoffset: 200;
-    animation: sidebarCardioPulse 2.2s linear infinite;
-    filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.85));
+    animation: sidebarCardioPulse 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.95));
+}
+
+.sidebar-ecg-heart-ping {
+    animation: pingPulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pingPulse {
+    0% {
+        opacity: 0.6;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1.25);
+    }
 }
 
 @keyframes sidebarCardioPulse {
-    from {
+    0% {
         stroke-dashoffset: 200;
     }
-    to {
+    100% {
         stroke-dashoffset: 0;
     }
 }

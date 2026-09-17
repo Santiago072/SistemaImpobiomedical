@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__, 2) . '/config/seguridad.php';
+require_once dirname(__DIR__) . '/models/ProveedorModel.php';
 
 /**
  * OrdenCompraController — gestión de órdenes de compra.
@@ -16,17 +17,20 @@ class OrdenCompraController
     private OrdenCompraModel $model;
     private CotizacionModel  $cotizacionModel;
     private CalculoComercialService $calculoService;
+    private ProveedorModel   $proveedorModel;
     private int $porPagina = 10;
 
     public function __construct(
         \PDO $conexion, 
         ?OrdenCompraModel $model = null, 
         ?CotizacionModel $cotizacionModel = null,
-        ?CalculoComercialService $calculoService = null
+        ?CalculoComercialService $calculoService = null,
+        ?ProveedorModel $proveedorModel = null
     ) {
         $this->model           = $model ?? new OrdenCompraModel($conexion);
         $this->cotizacionModel = $cotizacionModel ?? new CotizacionModel($conexion);
         $this->calculoService  = $calculoService ?? new CalculoComercialService();
+        $this->proveedorModel  = $proveedorModel ?? new ProveedorModel($conexion);
     }
 
     // ── PASO 1: Seleccionar ítems de la cotización ────────────────────────────
@@ -222,6 +226,26 @@ class OrdenCompraController
                 );
             }
 
+            // Auto-registro en directorio de proveedores por NIT si aún no existe
+            if (!empty($proveedorNit)) {
+                $provExistente = $this->proveedorModel->buscarPorNit($proveedorNit);
+                if (!$provExistente) {
+                    try {
+                        $this->proveedorModel->crear([
+                            'nit'                => $proveedorNit,
+                            'nombre_proveedor'   => $proveedor,
+                            'tipo_contribuyente' => !empty($tipoContribuyente) ? $tipoContribuyente : 'PERSONA JURÍDICA',
+                            'nombre_banco'       => $bancoNombre,
+                            'numero_cuenta'      => $bancoCuenta,
+                            'tipo_cuenta'        => $bancoTipoCuenta,
+                            'estado'             => 'activo'
+                        ]);
+                    } catch (\Throwable $te) {
+                        error_log('Error auto-registrando proveedor desde orden de cotización: ' . $te->getMessage());
+                    }
+                }
+            }
+
             // Insertar los ítems seleccionados
             foreach ($itemsIds as $itemId) {
                 $itemId = (int)$itemId;
@@ -361,6 +385,27 @@ class OrdenCompraController
                 $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
                 $fleteIva, $fletePorcentajeIva
             );
+        }
+
+        // ── AUTO-REGISTRO O ACTUALIZACIÓN EN EL DIRECTORIO DE PROVEEDORES (Validando por NIT) ──
+        if (!empty($proveedorNit)) {
+            $provExistente = $this->proveedorModel->buscarPorNit($proveedorNit);
+            if (!$provExistente) {
+                // Si no existe por NIT, registrarlo automáticamente en el directorio de proveedores
+                try {
+                    $this->proveedorModel->crear([
+                        'nit'                => $proveedorNit,
+                        'nombre_proveedor'   => $proveedor,
+                        'tipo_contribuyente' => !empty($tipoContribuyente) ? $tipoContribuyente : 'PERSONA JURÍDICA',
+                        'nombre_banco'       => $bancoNombre,
+                        'numero_cuenta'      => $bancoCuenta,
+                        'tipo_cuenta'        => $bancoTipoCuenta,
+                        'estado'             => 'activo'
+                    ]);
+                } catch (\Throwable $te) {
+                    error_log('Error auto-registrando proveedor desde orden directa: ' . $te->getMessage());
+                }
+            }
         }
 
         // Insertar los ítems

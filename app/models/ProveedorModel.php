@@ -74,6 +74,7 @@ class ProveedorModel
         }
 
         $termNitNorm = function_exists('normalizar_nit') ? normalizar_nit($termino) : str_replace(['.', ' '], '', $termino);
+        $termSoloDigitos = preg_replace('/\D/', '', $termino);
 
         $stmt = $this->db->prepare(
             "SELECT id, nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta
@@ -81,12 +82,14 @@ class ProveedorModel
              WHERE estado = 'activo'
                AND (nit LIKE :term1 
                     OR REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') LIKE :termNorm
+                    OR REPLACE(REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', ''), '-', '') LIKE :termDigitos
                     OR nombre_proveedor LIKE :term2)
              ORDER BY (REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :termNormExact) DESC, nombre_proveedor ASC
              LIMIT :lim"
         );
         $stmt->bindValue(':term1', '%' . $termino . '%');
         $stmt->bindValue(':termNorm', '%' . $termNitNorm . '%');
+        $stmt->bindValue(':termDigitos', '%' . $termSoloDigitos . '%');
         $stmt->bindValue(':term2', '%' . $termino . '%');
         $stmt->bindValue(':termNormExact', $termNitNorm);
         $stmt->bindValue(':lim',   $limite, \PDO::PARAM_INT);
