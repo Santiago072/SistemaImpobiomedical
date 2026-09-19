@@ -417,39 +417,24 @@ class CotizacionModel
 
     /**
      * Cuenta cotizaciones finalizadas según su estado comercial (pendiente, concluida, descartada).
-     * Los roles admin y compras ven el total global; otros usuarios solo las suyas.
+     * Si se pasan filtros (como rango de fechas, cliente, etc.), se aplican al conteo.
+     * Los roles admin y compras ven el total según filtros; otros usuarios solo las suyas.
      */
-    public function contarPorEstadoComercial(string $estado, int $usuarioId = 0, string $rol = 'usuario'): int
+    public function contarPorEstadoComercial(string $estado, int $usuarioId = 0, string $rol = 'usuario', array $filtros = []): int
     {
-        $sql = "SELECT COUNT(*) AS total FROM cotizaciones c WHERE c.estado = 'finalizada' AND c.estado_comercial = :est";
-        $params = [':est' => $estado];
-
-        if ($rol !== 'admin' && $rol !== 'compras' && $usuarioId > 0) {
-            $sql .= ' AND c.usuario_id = :uid';
-            $params[':uid'] = $usuarioId;
-        }
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return (int)$stmt->fetchColumn();
+        $filtrosConEstado = $filtros;
+        $filtrosConEstado['estado_comercial'] = $estado;
+        return $this->contarConFiltros($filtrosConEstado, $usuarioId, $rol);
     }
 
     /**
-     * Cuenta todas las cotizaciones finalizadas.
+     * Cuenta todas las cotizaciones finalizadas aplicando filtros activos (ej. rango de fechas).
      */
-    public function contarTotalFinalizadas(int $usuarioId = 0, string $rol = 'usuario'): int
+    public function contarTotalFinalizadas(int $usuarioId = 0, string $rol = 'usuario', array $filtros = []): int
     {
-        $sql = "SELECT COUNT(*) AS total FROM cotizaciones c WHERE c.estado = 'finalizada'";
-        $params = [];
-
-        if ($rol !== 'admin' && $rol !== 'compras' && $usuarioId > 0) {
-            $sql .= ' AND c.usuario_id = :uid';
-            $params[':uid'] = $usuarioId;
-        }
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return (int)$stmt->fetchColumn();
+        $filtrosSinEstado = $filtros;
+        unset($filtrosSinEstado['estado_comercial']);
+        return $this->contarConFiltros($filtrosSinEstado, $usuarioId, $rol);
     }
 
     private function construirWhere(array $filtros, int $usuarioId = 0, string $rol = 'usuario'): array

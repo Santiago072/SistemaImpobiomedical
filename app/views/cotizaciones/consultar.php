@@ -157,12 +157,18 @@ include dirname(__DIR__) . '/layout/menu.php';
                                     <option value="descartada" <?= $estCom === 'descartada' ? 'selected' : '' ?>>🔴 Descartada</option>
                                 </select>
                                 <div class="cot-fecha-cambio-lbl">
-                                    <?php if (!empty($cot['fecha_cambio_estado']) && $estCom !== 'pendiente'): ?>
-                                        <i class="bi bi-clock-history"></i> <?= date('d/m/Y H:i', strtotime($cot['fecha_cambio_estado'])) ?>
-                                    <?php else: ?>
-                                        <span class="cot-entrega-pendiente">Sin cambio</span>
-                                    <?php endif; ?>
-                                </div>
+                                     <?php if ($estCom !== 'pendiente'): 
+                                         $fVisual = !empty($cot['fecha_cambio_estado']) ? $cot['fecha_cambio_estado'] : ($cot['fecha_creacion'] ?? null);
+                                     ?>
+                                         <?php if ($fVisual): ?>
+                                             <i class="bi bi-clock-history"></i> <?= date('d/m/Y' . (!empty($cot['fecha_cambio_estado']) ? ' H:i' : ''), strtotime($fVisual)) ?>
+                                         <?php else: ?>
+                                             <span class="cot-entrega-pendiente">Sin cambio</span>
+                                         <?php endif; ?>
+                                     <?php else: ?>
+                                         <span class="cot-entrega-pendiente">Sin cambio</span>
+                                     <?php endif; ?>
+                                 </div>
                             </td>
                             <td class="text-center">
                                 <select class="estado-entrega-select <?= $entClass ?>" 

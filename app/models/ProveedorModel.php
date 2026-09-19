@@ -75,24 +75,39 @@ class ProveedorModel
 
         $termNitNorm = function_exists('normalizar_nit') ? normalizar_nit($termino) : str_replace(['.', ' '], '', $termino);
         $termSoloDigitos = preg_replace('/\D/', '', $termino);
+        $tieneDigitosSuficientes = strlen($termSoloDigitos) >= 3;
 
-        $stmt = $this->db->prepare(
-            "SELECT id, nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta
-             FROM proveedores
-             WHERE estado = 'activo'
-               AND (nit LIKE :term1 
-                    OR REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') LIKE :termNorm
-                    OR REPLACE(REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', ''), '-', '') LIKE :termDigitos
-                    OR nombre_proveedor LIKE :term2)
-             ORDER BY (REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :termNormExact) DESC, nombre_proveedor ASC
-             LIMIT :lim"
-        );
-        $stmt->bindValue(':term1', '%' . $termino . '%');
+        $sql = "SELECT id, nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta
+                FROM proveedores
+                WHERE estado = 'activo'
+                  AND (
+                      LOWER(nombre_proveedor) LIKE LOWER(:termNom)
+                      OR nit LIKE :termNitRaw
+                      OR REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') LIKE :termNorm";
+
+        if ($tieneDigitosSuficientes) {
+            $sql .= " OR REPLACE(REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', ''), '-', '') LIKE :termDigitos";
+        }
+
+        $sql .= ")
+                ORDER BY 
+                    (LOWER(TRIM(nombre_proveedor)) = LOWER(:termExactNom)) DESC,
+                    (REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :termNormExact) DESC,
+                    (LOWER(nombre_proveedor) LIKE LOWER(:termNomPrefix)) DESC,
+                    nombre_proveedor ASC
+                LIMIT :lim";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':termNom', '%' . $termino . '%');
+        $stmt->bindValue(':termNitRaw', '%' . $termino . '%');
         $stmt->bindValue(':termNorm', '%' . $termNitNorm . '%');
-        $stmt->bindValue(':termDigitos', '%' . $termSoloDigitos . '%');
-        $stmt->bindValue(':term2', '%' . $termino . '%');
+        if ($tieneDigitosSuficientes) {
+            $stmt->bindValue(':termDigitos', '%' . $termSoloDigitos . '%');
+        }
+        $stmt->bindValue(':termExactNom', $termino);
         $stmt->bindValue(':termNormExact', $termNitNorm);
-        $stmt->bindValue(':lim',   $limite, \PDO::PARAM_INT);
+        $stmt->bindValue(':termNomPrefix', $termino . '%');
+        $stmt->bindValue(':lim', $limite, \PDO::PARAM_INT);
         $stmt->execute();
 
         return $stmt->fetchAll();

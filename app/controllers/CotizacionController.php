@@ -624,11 +624,15 @@ class CotizacionController
         }
         $busquedaEstado  = $filtros['estado_comercial'] ?? '';
 
-        // Conteos dinámicos para los badges de cada pestaña
-        $conteoPendientes  = $this->model->contarPorEstadoComercial('pendiente', $usuarioId, $rol);
-        $conteoConcluidas   = $this->model->contarPorEstadoComercial('concluida', $usuarioId, $rol);
-        $conteoDescartadas  = $this->model->contarPorEstadoComercial('descartada', $usuarioId, $rol);
-        $conteoTodas        = $this->model->contarTotalFinalizadas($usuarioId, $rol);
+        // Filtros base para los conteos de las pestañas (excluyendo estado_comercial para que aplique a todas)
+        $filtrosConteo = $filtros;
+        unset($filtrosConteo['estado_comercial']);
+
+        // Conteos dinámicos para los badges de cada pestaña respetando los filtros aplicados (ej. rango de fechas)
+        $conteoPendientes  = $this->model->contarPorEstadoComercial('pendiente', $usuarioId, $rol, $filtrosConteo);
+        $conteoConcluidas   = $this->model->contarPorEstadoComercial('concluida', $usuarioId, $rol, $filtrosConteo);
+        $conteoDescartadas  = $this->model->contarPorEstadoComercial('descartada', $usuarioId, $rol, $filtrosConteo);
+        $conteoTodas        = $this->model->contarTotalFinalizadas($usuarioId, $rol, $filtrosConteo);
 
         $total        = $this->model->contarConFiltros($filtros, $usuarioId, $rol);
         $totalPaginas = (int)ceil($total / $this->porPagina);
@@ -706,16 +710,19 @@ class CotizacionController
                 $usuarioId = (int)$_SESSION['usuario_id'];
                 $rol       = $_SESSION['rol'] ?? 'usuario';
                 
-                $conteoPendientes = $this->model->contarPorEstadoComercial('pendiente', $usuarioId, $rol);
-                $conteoConcluidas  = $this->model->contarPorEstadoComercial('concluida', $usuarioId, $rol);
-                $conteoDescartadas = $this->model->contarPorEstadoComercial('descartada', $usuarioId, $rol);
-                $conteoTodas       = $this->model->contarTotalFinalizadas($usuarioId, $rol);
+                $filtrosSesion = $_SESSION['cotizacion_filtros'] ?? [];
+                unset($filtrosSesion['estado_comercial']);
+
+                $conteoPendientes = $this->model->contarPorEstadoComercial('pendiente', $usuarioId, $rol, $filtrosSesion);
+                $conteoConcluidas  = $this->model->contarPorEstadoComercial('concluida', $usuarioId, $rol, $filtrosSesion);
+                $conteoDescartadas = $this->model->contarPorEstadoComercial('descartada', $usuarioId, $rol, $filtrosSesion);
+                $conteoTodas       = $this->model->contarTotalFinalizadas($usuarioId, $rol, $filtrosSesion);
 
                 echo json_encode([
                     'status'             => 'success', 
                     'message'            => 'Estado actualizado exitosamente', 
                     'nuevo_estado'       => $nuevoEstado,
-                    'fecha_cambio'       => $nuevoEstado === 'pendiente' ? null : date('Y-m-d H:i'),
+                    'fecha_cambio'       => $nuevoEstado === 'pendiente' ? null : date('d/m/Y H:i'),
                     'conteo_pendientes'  => $conteoPendientes,
                     'conteo_concluidas'  => $conteoConcluidas,
                     'conteo_descartadas' => $conteoDescartadas,

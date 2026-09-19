@@ -627,11 +627,12 @@ if (inpProv && listaProv) {
                             item.className = 'prov-search-item';
                             item.innerHTML = `
                                 <div>
-                                    <strong class="nit-text">${p.nit}</strong>
-                                    <div style="font-size:12.5px; color:#1e293b; font-weight:600; margin-top:2px;">${p.nombre_proveedor}</div>
-                                    ${p.nombre_banco ? `<div class="sub-text"><i class="bi bi-bank"></i> ${p.nombre_banco} ${p.tipo_cuenta || ''}</div>` : ''}
+                                    <div style="font-size:13.5px; color:#0f172a; font-weight:700;">${p.nombre_proveedor}</div>
+                                    <div style="font-size:12px; color:#64748b; margin-top:2px;">
+                                        NIT: <strong style="color:#0d9488;">${p.nit}</strong>
+                                    </div>
                                 </div>
-                                <span class="mod-badge badge-green">Seleccionar</span>
+                                <span class="mod-badge badge-green" style="font-size:11px; padding:3px 10px;">Seleccionar</span>
                             `;
                             item.addEventListener('click', () => {
                                 inpProv.value = p.nombre_proveedor;
