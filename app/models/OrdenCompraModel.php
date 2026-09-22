@@ -16,11 +16,17 @@ class OrdenCompraModel
         $this->db = $conexion;
     }
 
-    // ── Consecutivo P.O. ──────────────────────────────────────────────────────
-
+    /**
+     * Genera el siguiente número P.O. de forma atómica.
+     * DEBE llamarse dentro de una transacción abierta para que el
+     * FOR UPDATE efectivamente bloquee la fila y evite la condición de carrera.
+     */
     private function siguientePO(): int
     {
-        $stmt = $this->db->prepare("SELECT COALESCE(MAX(numero_po), 0) + 1 AS siguiente FROM ordenes_compra");
+        $stmt = $this->db->prepare(
+            "SELECT COALESCE(MAX(numero_po), 0) + 1 AS siguiente
+             FROM ordenes_compra FOR UPDATE"
+        );
         $stmt->execute();
         return (int)$stmt->fetchColumn();
     }

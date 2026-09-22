@@ -225,6 +225,66 @@ class ProveedorModel
     }
 
     /**
+     * Registra un proveedor si no existe por NIT, o actualiza datos bancarios/nombre
+     * si ya existe pero tiene esos campos vacíos. Diseñado para el auto-registro
+     * desde órdenes de compra sin generar Duplicate Entry.
+     *
+     * @return int ID del proveedor (nuevo o existente)
+     */
+    public function registrarOActualizar(array $datos): int
+    {
+        $nit  = trim($datos['nit'] ?? '');
+        $nom  = trim($datos['nombre_proveedor'] ?? '');
+        $tipo = trim($datos['tipo_contribuyente'] ?? 'PERSONA JURÍDICA');
+        $banco   = !empty($datos['nombre_banco'])   ? trim($datos['nombre_banco'])   : null;
+        $cuenta  = !empty($datos['numero_cuenta'])  ? trim($datos['numero_cuenta'])  : null;
+        $tipoCta = !empty($datos['tipo_cuenta'])    ? trim($datos['tipo_cuenta'])    : null;
+
+        if ($nit === '') {
+            return 0;
+        }
+
+        // Verificar si ya existe por NIT (normalizado)
+        $existente = $this->buscarPorNit($nit);
+
+        if ($existente) {
+            // Solo actualizar campos bancarios si estaban vacíos en la BD
+            $actualizar = [];
+            if (!empty($banco)   && empty($existente['nombre_banco']))   $actualizar['nombre_banco']   = $banco;
+            if (!empty($cuenta)  && empty($existente['numero_cuenta']))  $actualizar['numero_cuenta']  = $cuenta;
+            if (!empty($tipoCta) && empty($existente['tipo_cuenta']))    $actualizar['tipo_cuenta']    = $tipoCta;
+
+            if (!empty($actualizar)) {
+                $sets = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($actualizar)));
+                $params = array_combine(
+                    array_map(fn($k) => ":$k", array_keys($actualizar)),
+                    array_values($actualizar)
+                );
+                $params[':id'] = (int)$existente['id'];
+                $stmt = $this->db->prepare("UPDATE proveedores SET $sets WHERE id = :id");
+                $stmt->execute($params);
+            }
+            return (int)$existente['id'];
+        }
+
+        // No existe → INSERT
+        $stmt = $this->db->prepare(
+            "INSERT INTO proveedores
+             (nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta, estado)
+             VALUES (:nit, :nom, :tipo, :banco, :cta, :tipo_cta, 'activo')"
+        );
+        $stmt->execute([
+            ':nit'      => $nit,
+            ':nom'      => $nom,
+            ':tipo'     => $tipo,
+            ':banco'    => $banco,
+            ':cta'      => $cuenta,
+            ':tipo_cta' => $tipoCta,
+        ]);
+        return (int)$this->db->lastInsertId();
+    }
+
+    /**
      * Eliminación suave (Soft Delete) o física si no tiene historial.
      */
     public function eliminar(int $id): bool

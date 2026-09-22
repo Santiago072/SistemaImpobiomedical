@@ -226,23 +226,19 @@ class OrdenCompraController
                 );
             }
 
-            // Auto-registro en directorio de proveedores por NIT si aún no existe
+            // Auto-registro o actualización en el directorio de proveedores (sin riesgo de Duplicate Entry)
             if (!empty($proveedorNit)) {
-                $provExistente = $this->proveedorModel->buscarPorNit($proveedorNit);
-                if (!$provExistente) {
-                    try {
-                        $this->proveedorModel->crear([
-                            'nit'                => $proveedorNit,
-                            'nombre_proveedor'   => $proveedor,
-                            'tipo_contribuyente' => !empty($tipoContribuyente) ? $tipoContribuyente : 'PERSONA JURÍDICA',
-                            'nombre_banco'       => $bancoNombre,
-                            'numero_cuenta'      => $bancoCuenta,
-                            'tipo_cuenta'        => $bancoTipoCuenta,
-                            'estado'             => 'activo'
-                        ]);
-                    } catch (\Throwable $te) {
-                        error_log('Error auto-registrando proveedor desde orden de cotización: ' . $te->getMessage());
-                    }
+                try {
+                    $this->proveedorModel->registrarOActualizar([
+                        'nit'                => $proveedorNit,
+                        'nombre_proveedor'   => $proveedor,
+                        'tipo_contribuyente' => !empty($tipoContribuyente) ? $tipoContribuyente : 'PERSONA JURÍDICA',
+                        'nombre_banco'       => $bancoNombre,
+                        'numero_cuenta'      => $bancoCuenta,
+                        'tipo_cuenta'        => $bancoTipoCuenta,
+                    ]);
+                } catch (\Throwable $te) {
+                    error_log('Error auto-registrando proveedor desde orden de cotización: ' . $te->getMessage());
                 }
             }
 
@@ -387,24 +383,19 @@ class OrdenCompraController
             );
         }
 
-        // ── AUTO-REGISTRO O ACTUALIZACIÓN EN EL DIRECTORIO DE PROVEEDORES (Validando por NIT) ──
+        // ── AUTO-REGISTRO O ACTUALIZACIÓN EN EL DIRECTORIO DE PROVEEDORES (sin riesgo de Duplicate Entry) ──
         if (!empty($proveedorNit)) {
-            $provExistente = $this->proveedorModel->buscarPorNit($proveedorNit);
-            if (!$provExistente) {
-                // Si no existe por NIT, registrarlo automáticamente en el directorio de proveedores
-                try {
-                    $this->proveedorModel->crear([
-                        'nit'                => $proveedorNit,
-                        'nombre_proveedor'   => $proveedor,
-                        'tipo_contribuyente' => !empty($tipoContribuyente) ? $tipoContribuyente : 'PERSONA JURÍDICA',
-                        'nombre_banco'       => $bancoNombre,
-                        'numero_cuenta'      => $bancoCuenta,
-                        'tipo_cuenta'        => $bancoTipoCuenta,
-                        'estado'             => 'activo'
-                    ]);
-                } catch (\Throwable $te) {
-                    error_log('Error auto-registrando proveedor desde orden directa: ' . $te->getMessage());
-                }
+            try {
+                $this->proveedorModel->registrarOActualizar([
+                    'nit'                => $proveedorNit,
+                    'nombre_proveedor'   => $proveedor,
+                    'tipo_contribuyente' => !empty($tipoContribuyente) ? $tipoContribuyente : 'PERSONA JURÍDICA',
+                    'nombre_banco'       => $bancoNombre,
+                    'numero_cuenta'      => $bancoCuenta,
+                    'tipo_cuenta'        => $bancoTipoCuenta,
+                ]);
+            } catch (\Throwable $te) {
+                error_log('Error auto-registrando proveedor desde orden directa: ' . $te->getMessage());
             }
         }
 

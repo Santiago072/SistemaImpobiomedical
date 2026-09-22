@@ -238,6 +238,16 @@ if (isset($_SESSION['cotizacion_revision_de']) || isset($_SESSION['cotizacion_aj
     }
 }
 
+// ── Limpieza de filtros de búsqueda al salir del módulo ───────────────────────
+// Si el usuario navega a un módulo diferente, se limpian los filtros guardados
+// en sesión para que al volver encuentre la vista limpia sin filtros residuales.
+if ($module !== 'cotizaciones' && isset($_SESSION['cotizacion_filtros'])) {
+    unset($_SESSION['cotizacion_filtros']);
+}
+if ($module !== 'ordenes' && isset($_SESSION['orden_filtros'])) {
+    unset($_SESSION['orden_filtros']);
+}
+
 // ── Dispatch por módulo ───────────────────────────────────────────────────────
 
 if ($module === 'panel') {
