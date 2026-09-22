@@ -1,6 +1,6 @@
 # 📚 Manual de Usuario — Sistema Impobiomedical
 
-**Versión del sistema**: v3.3.0 (Edición Comercial, Proveedores y Operativa)  
+**Versión del sistema**: v3.5.1 (Edición Comercial, Proveedores y Operativa)  
 **Autor y Titular**: Santiago Lizcano  
 **Público objetivo**: Asesores comerciales y administradores de Impobiomedical
 
@@ -56,6 +56,7 @@ Al iniciar sesión llegará al **Panel Principal**, que muestra:
 * **Buscar del Catálogo:** Digite el nombre del producto en el buscador en vivo y seleccione la opción deseada para autocompletar título, descripción técnica, imagen y categoría (incluyendo *Servicio Calibración*).
 * **Ingreso Manual:** Puede registrar productos o servicios médicos personalizados directamente completando los campos requeridos y seleccionando su categoría.
 * **Calculadora de Ganancias Dinámica:** Permite ingresar el precio base del proveedor y calcular utilidad, flete, calibración y estampillas. El valor resultante se establece como el precio unitario del producto para la cotización.
+* **Búsqueda Predictiva de Proveedor:** En el ítem puede buscar el proveedor por Nombre o NIT; el sistema presentará sugerencias limpias con opción de selección directa.
 * **Agregar:** Presione **"Agregar a Cotización"** para almacenar temporalmente el ítem. Los borradores y productos agregados quedan preservados inteligentemente.
 
 ### Paso 2: Datos del Cliente y Finalización
@@ -68,14 +69,18 @@ Al iniciar sesión llegará al **Panel Principal**, que muestra:
 
 ## 4. Consultar Cotizaciones y Revisiones
 
-* **Filtros de Búsqueda:** Filtre por fecha, cliente, número de cotización o estado comercial (🟡 *Pendiente*, 🟢 *Concluida*, 🔴 *Descartada*).
+* **Pestañas (Tabs) de Estado:** Navegue entre *Cotizaciones Pendientes*, *Cotizaciones Concluidas*, *Cotizaciones Descartadas* y *Todas las Cotizaciones*.
+* **Filtro Avanzado por Rango de Fechas:** Ingrese fecha **Desde** y **Hasta** para acotar la consulta. Los tags numéricos en cada pestaña se actualizan de forma reactiva reflejando exactamente el número de cotizaciones comprendidas en ese intervalo. Para volver al histórico general, use el botón de limpiar filtros (✖).
+* **Estados Comerciales y de Entrega en Vivo:** 
+  * Al cambiar de *Pendiente* a *Concluida* o *Descartada*, se registra y muestra la fecha y hora del cambio (`d/m/Y H:i`). En cotizaciones históricas donde dicha fecha no existía, se preserva el estado *"Sin cambio"*.
+  * El estado de entrega permite registrar *Pendiente* ("Por despachar"), *En Tránsito* ("En camino") o *Entregado* (con fecha y cómputo de días).
 * **Ver PDF:** Abre el PDF formal para el cliente en un visor emergente interactivo con opción de descarga de PDF.
 * **Descargar Excel:** Botón verde `[ 📊 Excel ]` para descargar la cotización en una hoja de cálculo estructurada de forma inmediata (sin imágenes para máxima velocidad con muchos productos).
 * **Hoja de Respaldo:** Consulta interna confidencial con los costos de proveedor y márgenes para auditoría.
 * **Modificar (Ajustar vs. Nueva Versión):** Al hacer clic en ✏️ **Modificar**, se abre un diálogo que permite escoger:
   * **Ajustar Cotización (Mismo número):** Permite corregir productos, precios o condiciones directamente sobre la cotización original conservando su mismo número (ej: `EB01`), sin crear registros duplicados ni aumentar el consecutivo mensual.
   * **Nueva Versión / Revisión:** Deja la original intacta y crea una cotización derivada (`_01`, `_02`...) para auditoría de cambios comerciales.
-* **Emitir Orden:** Botón directo para pasar los ítems cotizados a una Orden de Compra formal.
+* **Emitir Orden:** Botón directo para pasar los ítems cotizados a una Orden de Compra formal (habilitado únicamente para cotizaciones en estado pendiente).
 * **Eliminar Cotización:** Disponible para usuarios con rol `admin` o `compras` independientemente del estado de la cotización.
 
 ---
@@ -83,7 +88,7 @@ Al iniciar sesión llegará al **Panel Principal**, que muestra:
 ## 5. Órdenes de Compra (P.O.)
 
 * **Emisión:** Desde consultar cotizaciones, haga clic en 🛒 **Orden** en propuestas pendientes. Seleccione únicamente los ítems a comprar al proveedor y complete los datos bancarios y tributarios (se autocompletan predictivamente desde el directorio oficial si el proveedor ya existe).
-* **Órdenes de Mostrador (Directas):** Permite emitir compras a proveedores sin necesidad de una cotización previa pulsando **"+ Nueva Orden Mostrador"**.
+* **Órdenes de Mostrador (Directas):** Permite emitir compras a proveedores sin necesidad de una cotización previa pulsando **"+ Nueva Orden Mostrador"**. Cuenta con búsqueda dual interactiva por Razón Social o NIT, y auto-registra automáticamente al proveedor en el directorio central si aún no existe.
 * **Ajustar Orden de Compra:** En la tabla de consulta de órdenes, pulse el botón 🛠️ **Ajustar** en la fila de la orden correspondiente. El sistema reabrirá la orden permitiendo modificar ítems, cantidades, datos tributarios, flete, retenciones o descuentos, **conservando intacto el mismo consecutivo P.O.** tras guardar.
 * **Cancelación de Ajuste:** Si decide no realizar modificaciones, el botón **"Cancelar Ajuste"** restablece la orden original sin aplicar ningún cambio.
 * **Visor Automático:** Al guardar o ajustar una orden, el sistema lo llevará directamente a la tabla de órdenes abriendo automáticamente el visor del PDF en un modal interactivo para descargar o imprimir.

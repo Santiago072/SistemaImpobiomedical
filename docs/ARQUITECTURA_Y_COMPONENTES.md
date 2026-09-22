@@ -1,6 +1,6 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** v3.5.0  
+**Versión:** v3.5.1  
 **Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -30,8 +30,8 @@ El **Sistema Impobiomedical** es una plataforma web especializada para la gesti�
 Centraliza el ciclo comercial completo:
 - Creación de cotizaciones dinámicas con cálculo automatizado de márgenes de utilidad, fletes, calibración metrológica e impuestos.
 - Emisión de documentos PDF oficiales para entidades de salud (hospitales, clínicas, laboratorios y médicos independientes).
-- Control de estados comerciales (`pendiente`, `concluida`, `descartada`) con actualización reactiva en tiempo real vía AJAX.
-- Generación de órdenes de compra (P.O. - Purchase Orders) por proveedor seleccionado con navegación por pestañas (*Pendientes* y *Completadas*) y exportación selectiva a PDF y Excel.
+- Control de estados comerciales (`pendiente`, `concluida`, `descartada`) con actualización reactiva en tiempo real vía AJAX y registro de auditoría temporal (`fecha_cambio_estado`).
+- Generación de órdenes de compra (P.O. - Purchase Orders) por proveedor seleccionado con navegación por pestañas (*Pendientes* y *Completadas*), auto-registro de proveedores y exportación selectiva a PDF y Excel.
 - Hojas internas de respaldo confidencial de costos de proveedores.
 - Directorio de entidades de salud y catálogo médico con almacenamiento sanitizado de fotografías.
 - Panel analítico con indicadores clave de rendimiento (KPIs), gráfico mensual comparativo y reportes ejecutivos.
@@ -50,6 +50,7 @@ graph TB
         UI_ORD["📦 Gestión de Órdenes de Compra (P.O.)\napp/views/ordenes/"]
         UI_PROD["🩺 Catálogo de Productos Médicos\napp/views/productos/"]
         UI_CLI["🏢 Directorio de Clientes & Entidades\napp/views/clientes/"]
+        UI_PROV["🚚 Directorio de Proveedores\napp/views/proveedores/"]
         UI_USR["👥 Administración de Usuarios\napp/views/usuarios/"]
         UI_EST["📈 Estadísticas y Métricas\napp/views/estadisticas/"]
     end
@@ -69,6 +70,7 @@ graph TB
         CTRL_ORD["OrdenCompraController\nGeneración de P.O., Tabs y Exportaciones"]
         CTRL_PROD["ProductoController\nCatálogo y Paginación"]
         CTRL_CLI["ClienteController\nDirectorio y Búsqueda AJAX"]
+        CTRL_PROV["ProveedorController\nDirectorio y Modales Reactivos"]
         CTRL_USR["UsuarioController\nGestión de Usuarios y Roles"]
         CTRL_EST["EstadisticaController\nReportes y Filtros Avanzados"]
     end
@@ -87,6 +89,7 @@ graph TB
         MODEL_ORD["OrdenCompraModel"]
         MODEL_PROD["ProductoModel"]
         MODEL_CLI["ClienteModel"]
+        MODEL_PROV["ProveedorModel"]
         MODEL_USR["UsuarioModel"]
         MODEL_EST["EstadisticaModel"]
     end
@@ -96,6 +99,7 @@ graph TB
         TBL_USUARIOS["usuarios"]
         TBL_CLIENTES["clientes"]
         TBL_PRODUCTOS["productos"]
+        TBL_PROVEEDORES["proveedores"]
         TBL_COTIZACIONES["cotizaciones"]
         TBL_ITEMS_COT["cotizacion_items"]
         TBL_ORDENES["ordenes_compra"]
@@ -135,6 +139,7 @@ graph TB
 | Órdenes | **Orden Directa** | `/?module=ordenes&action=crear_directa` | **Nueva** — Generar P.O. sin cotización previa (compra directa) |
 | Productos | Listar | `/?module=productos` | Catálogo médico y subida de imágenes |
 | Clientes | Listar | `/?module=clientes` | Directorio de entidades de salud |
+| Proveedores | Listar | `/?module=proveedores` | Directorio comercial y bancario de proveedores |
 | Usuarios | Listar | `/?module=usuarios` | Gestión de cuentas de asesores y roles |
 | Estadísticas | Reportes | `/?module=estadisticas` | Métricas y gráficos comparativos consolidados |
 
@@ -148,10 +153,10 @@ graph TB
 | [seguridad.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/config/seguridad.php) | Core | **SRP** | Manejo de sesiones blindadas, tokens CSRF, rate limiting, sanitización y escape XSS. |
 | [conexion.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/config/conexion.php) | Persistencia | **Singleton** | Conexión única PDO con `ERRMODE_EXCEPTION` y emulación deshabilitada. |
 | [RepositoryInterface.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/contracts/RepositoryInterface.php) | Contratos | **ISP** | Contrato base estandarizado para operaciones CRUD (`listar`, `contar`, `buscarPorId`, `eliminar`). |
-| [CotizacionController.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/controllers/CotizacionController.php) | Controlador | **SRP** | Orquesta el flujo de cotizaciones, creación de borradores y versiones. |
+| [CotizacionController.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/controllers/CotizacionController.php) | Controlador | **SRP** | Orquesta el flujo de cotizaciones, creación de borradores, versiones y reactividad de tags por filtros. |
 | [FinalizarCotizacionService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/FinalizarCotizacionService.php) | Servicio | **SRP** | Generación de números consecutivos (`EB 01`, `EB 01_01`) y cierre de cotizaciones. |
 | [ItemCotizacionService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/ItemCotizacionService.php) | Servicio | **SRP** | Algoritmo de cálculo dinámico de utilidades, fletes, calibración, estampillas e IVA. |
-| [OrdenCompraController.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/controllers/OrdenCompraController.php) | Controlador | **SRP** | Emisión y control de órdenes, navegación por pestañas y exportación selectiva a PDF/Excel. |
+| [OrdenCompraController.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/controllers/OrdenCompraController.php) | Controlador | **SRP** | Emisión y control de órdenes, navegación por pestañas, auto-registro de proveedores y exportación selectiva. |
 | [FileUploadService.php](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/services/FileUploadService.php) | Servicio | **SRP** | Validación de tipos MIME reales, tamaños máximos y nombres únicos de archivos. |
 | [CotizacionModel.php — `construirWhere()`](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/models/CotizacionModel.php) | Persistencia | **SRP** | Filtro de búsqueda con coincidencia exacta de prefijo de código (`LIKE 'EB %'`), evitando que códigos similares como `EB-HM` contaminen los resultados de búsqueda por `EB`. |
 | [Modelos PDO](file:///c:/xampp/htdocs/SistemaImpobiomedical/app/models/) | Persistencia | **ISP / DIP** | Acceso a datos con parámetros nombrados, eliminando cualquier vector de SQL Injection e implementando `RepositoryInterface`. |
@@ -344,12 +349,17 @@ erDiagram
         text observaciones
         string estado
         string estado_comercial
+        datetime fecha_cambio_estado
+        string estado_entrega
+        datetime fecha_entrega
+        boolean es_revision
     }
 
     cotizacion_items {
         int id PK
         int cotizacion_id FK
         int producto_id FK
+        int proveedor_id FK
         string titulo
         string foto
         text descripcion
@@ -366,8 +376,9 @@ erDiagram
         string categoria
         string codigo_producto
         string proveedor
+        string proveedor_nit
         string codigo_proveedor
-        string calc_ops
+        json calc_ops
     }
 
     ordenes_compra {
@@ -378,12 +389,19 @@ erDiagram
         int usuario_id FK
         string proveedor
         string proveedor_nit
+        string estado_proveedor
         string tipo_contribuyente
         string condiciones_pago
         string iva
         string departamento_compras
         string nota
         decimal retencion
+        decimal flete
+        string flete_iva
+        decimal flete_porcentaje_iva
+        string tipo_descuento
+        decimal descuento_valor
+        decimal descuento
         date fecha
         string estado
         string banco_nombre

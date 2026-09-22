@@ -4,6 +4,19 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.5.1] - 2026-09-18
+### Corregido
+- **Sincronización reactiva de tags y badges en consultar cotizaciones (`CotizacionController.php`, `CotizacionModel.php`):**
+  - Los métodos `contarPorEstadoComercial()` y `contarTotalFinalizadas()` ahora aceptan el arreglo de filtros activos (`$filtros`), permitiendo que al buscar por rango de fechas (`fecha_desde` y `fecha_hasta`), cliente o consecutivo, los contadores de las 4 pestañas (*Pendientes*, *Concluidas*, *Descartadas*, *Todas*) se actualicen en tiempo real reflejando los registros exactos del filtro y no el total histórico global.
+- **Formato y consistencia en fecha de cambio de estado (`CotizacionController.php`, `consultar.php`):**
+  - Unificación del formato de fecha a `d/m/Y H:i` en las respuestas AJAX de cambio de estado comercial.
+  - En cotizaciones históricas donde `fecha_cambio_estado` no se registró en la base de datos (previas a la incorporación del campo), se respeta la etiqueta *"Sin cambio"* para preservar la veracidad de los datos cronológicos sin inventar fechas de creación como sustitutos.
+- **Búsqueda predictiva de proveedores en cotizaciones (`ProveedorModel.php`, `crear.php`, `editar_item.php`):**
+  - Corrección en `ProveedorModel::buscarLive()` para evitar coincidencias masivas accidentales (`LIKE '%%'`) cuando el término buscado es puramente textual y no numérico.
+  - Simplificación del layout de tarjetas de autocompletado en el formulario de ítem (Nombre y NIT claros con badge "Seleccionar").
+
+---
+
 ## [v3.5.0] - 2026-09-16
 ### Añadido
 - **Auto-registro inteligente de proveedores en órdenes de compra (`OrdenCompraController.php`):**

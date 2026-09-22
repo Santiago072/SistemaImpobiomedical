@@ -1,6 +1,6 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v3.4.1  
+**Versión del Sistema:** v3.5.1  
 **Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -48,12 +48,13 @@ El sistema cuenta con tres roles claramente estructurados:
 * **RF18.1:** El sistema debe inhabilitar la opción de crear revisiones derivadas sobre cotizaciones que ya son revisiones (evitando generar anidamientos como `EB01_01_01`), admitiendo exclusivamente el ajuste directo sobre las mismas o la edición de la cotización original base.
 * **RF18.2:** El sistema debe restringir el ajuste y modificación de cotizaciones a sus autores originales, a excepción de los roles `admin` y `compras` que pueden ajustar o modificar cualquier cotización.
 * **RF18.3:** El sistema debe restituir automáticamente a estado finalizada cualquier cotización en modo ajuste si el usuario decide cancelar o si navega hacia otro módulo del aplicativo.
-* **RF19:** El sistema debe permitir actualizar el **Estado Comercial** de las cotizaciones entre *Pendiente*, *Concluida* y *Descartada* en tiempo real; mientras permanezca en *Pendiente* mostrará la etiqueta *"Sin cambio"*, y al cambiar a *Concluida* o *Descartada* mostrará la fecha y hora exacta del cambio de estado.
+* **RF19:** El sistema debe permitir actualizar el **Estado Comercial** de las cotizaciones entre *Pendiente*, *Concluida* y *Descartada* en tiempo real; mientras permanezca en *Pendiente* mostrará la etiqueta *"Sin cambio"*, y al cambiar a *Concluida* o *Descartada* registrará y mostrará la fecha y hora exacta del cambio de estado (`fecha_cambio_estado`). En cotizaciones históricas previas donde dicha fecha no exista en base de datos, mantendrá la etiqueta *"Sin cambio"*.
 * **RF20:** El sistema debe permitir gestionar el **Estado de Entrega** de las cotizaciones entre *Pendiente*, *En Tránsito* y *Entregado* en tiempo real; mientras esté *Pendiente* mostrará *"Por despachar"*, al pasar a *En Tránsito* indicará *"En camino"*, y al marcarse como *Entregado* registrará y mostrará la fecha de entrega efectiva junto al tiempo transcurrido en días.
 * **RF21:** El sistema debe generar documentos PDF oficiales para el cliente con diseño corporativo y hojas de respaldo confidencial con costos y proveedores.
 * **RF22:** El sistema debe permitir la exportación de cotizaciones a Excel en un formato estructurado y ultrarrápido sin imágenes para optimizar tiempos en listas extensas.
 * **RF22.1:** El sistema debe permitir a los roles `admin` y `compras` consultar las cotizaciones emitidas por todos los usuarios del sistema, así como eliminar cotizaciones obsoletas en cualquier estado comercial (`pendiente`, `concluida`, `descartada`) con verificación CSRF.
 * **RF22.2:** El sistema debe implementar un filtro de búsqueda por número de cotización con coincidencia exacta de código de asesor: al buscar un código sin espacio (ej. `EB`), el sistema retorna únicamente cotizaciones con ese código exacto (`EB 01`, `EB 02`) sin incluir códigos que lo contengan como subcadena (`EB-HM 01`, `EB-KD 03`). Al buscar con espacio (ej. `EB 01`), el sistema también incluye revisiones derivadas (`EB 01_01`).
+* **RF22.3:** El sistema debe sincronizar reactivamente los tags y badges numéricos de las pestañas (*Pendientes*, *Concluidas*, *Descartadas*, *Todas*) en la vista de consulta para reflejar con precisión el rango de fechas activo (`fecha_desde` y `fecha_hasta`) y demás filtros de búsqueda.
 
 ### 📦 Órdenes de Compra (P.O. - Purchase Orders)
 * **RF23:** El sistema debe permitir generar órdenes de compra dirigidas a proveedores a partir de cotizaciones en estado pendiente o mediante la creación de Órdenes Directas de mostrador.
@@ -93,6 +94,8 @@ El sistema cuenta con tres roles claramente estructurados:
 * **RF44:** El sistema debe autocompletar predictivamente los datos del proveedor (NIT, Razón Social, cuenta y banco) al momento de cotizar productos o emitir órdenes de compra.
 * **RF45:** El sistema debe clasificar cronológicamente a los proveedores en las órdenes de compra como `Nuevo` (cuando se trata de la primera orden emitida para dicho proveedor) o `Registrado` (cuando ya cuenta con una o más órdenes previas emitidas en el historial), preservando el autocompletado de datos desde el directorio centralizado.
 * **RF45.1:** El sistema debe presentar la lista de proveedores con mejoras de UX: acciones contextuales claras, badges de estado visual y layout de lista optimizado para navegación rápida.
+* **RF51:** El sistema debe auto-registrar proveedores no existentes en la tabla oficial de `proveedores` al emitir órdenes de compra directas o derivadas de cotizaciones, validando su documento tributario para evitar redundancias manuales.
+* **RF52:** El sistema debe implementar búsqueda interactiva dual (por Razón Social y por NIT) con sugerencias limpias (Nombre y NIT), permitiendo seleccionar entre múltiples razones sociales con un mismo documento y limpiando automáticamente los datos bancarios y tributarios asociados si el usuario borra o modifica el NIT.
 
 ### 🎨 Interfaz, Accesibilidad y Ayuda en Línea
 * **RF46:** El sistema debe destacar visualmente todos los campos y etiquetas de entrada obligatorios con asterisco en color rojo vivo contrastado (`.required-star`, `#ef4444 !important`) tanto en renderizado estático como en formularios dinámicos.
@@ -100,6 +103,7 @@ El sistema cuenta con tres roles claramente estructurados:
 * **RF48:** El sistema debe actualizar reactivamente en el cliente los badges y colores de estado (comercial y de entrega) sin requerir recarga total de la pantalla.
 * **RF49:** El sistema debe incorporar un favicon unificado oficial en formato vectorial (`favicon.svg`) en todas las interfaces públicas y privadas.
 * **RF50:** El sistema debe preservar los datos de proveedor digitados en la calculadora dinámica de cotización al seleccionar o reutilizar ítems del catálogo médico.
+* **RF53:** El menú lateral debe integrar una animación cardiológica de alta fidelidad con trazado continuo P-Q-R-S-T, retícula clínica translúcida y punto de pulso en neón cyan, sin marcos rígidos envolventes.
 
 ---
 
