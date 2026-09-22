@@ -4,6 +4,22 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.5.2] - 2026-09-22
+### Mejorado
+- **Consecutivo P.O. atómico bajo transacción concurrente (`OrdenCompraModel.php`):**
+  - Se blindó la generación de números consecutivos de órdenes de compra (`siguientePO()`) incorporando bloqueo pesimista `SELECT ... FOR UPDATE` ejecutado estrictamente dentro de la transacción activa de `crearOrden()`. Esto elimina colisiones o saltos accidentales de consecutivo ante peticiones simultáneas.
+- **Auto-registro robusto y patrón UPSERT de proveedores (`ProveedorModel.php`, `OrdenCompraController.php`):**
+  - Implementación de `ProveedorModel::registrarOActualizar()`, reemplazando el patrón previo *check-then-insert* (propenso a carreras de tiempo / errores de clave duplicada).
+  - Si el proveedor ya existe por NIT/cédula, se completan de forma segura campos vacíos (banco, tipo y número de cuenta) sin sobreescribir datos preexistentes válidos; si no existe, se inserta atómicamente.
+- **Alineación del catálogo de ítems y productos en cotizaciones (`ItemCotizacionService.php`):**
+  - Consistencia documentada con el patrón de reutilización y actualización por nombre/título de producto para evitar duplicidades al reutilizar referencias en nuevas cotizaciones.
+
+### Corregido
+- **Aislamiento y limpieza de filtros en sesión (`index.php`):**
+  - Se configuró la limpieza automática (`unset`) de variables de sesión (`cotizacion_filtros` y `orden_filtros`) al navegar entre distintos módulos del sistema, evitando que filtros residuales de fecha o búsqueda interfieran de manera no deseada al reingresar a las vistas de consulta.
+
+---
+
 ## [v3.5.1] - 2026-09-18
 ### Corregido
 - **Sincronización reactiva de tags y badges en consultar cotizaciones (`CotizacionController.php`, `CotizacionModel.php`):**
