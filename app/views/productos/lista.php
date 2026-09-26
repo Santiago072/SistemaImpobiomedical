@@ -216,7 +216,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <span>Sin imagen</span>
                     </div>
                     <input type="file" name="foto" id="c_foto" accept="image/*" class="prod-file-input">
-                    <small class="prod-file-hint">Máx: 5MB · JPG, PNG, WebP</small>
+                    <small class="prod-file-hint">Máx: 8MB · JPG, PNG, WebP</small>
                 </div>
             </div>
 
@@ -295,7 +295,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                         <span>Sin imagen</span>
                     </div>
                     <input type="file" name="foto" id="e_foto" accept="image/*" class="prod-file-input">
-                    <small class="prod-file-hint">Máx: 5MB · JPG, PNG, WebP</small>
+                    <small class="prod-file-hint">Máx: 8MB · JPG, PNG, WebP</small>
                 </div>
             </div>
 

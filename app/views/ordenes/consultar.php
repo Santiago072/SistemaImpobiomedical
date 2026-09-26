@@ -36,12 +36,11 @@ $tabActual = $tabActual ?? 'pendientes';
         </div>
         <?php unset($_SESSION['flash_success']); endif; ?>
 
-        <?php if (!empty($_SESSION['flash_error'])): ?>
-        <div class="mod-alert mod-alert-err">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <span><?= htmlspecialchars($_SESSION['flash_error']) ?></span>
-        </div>
-        <?php unset($_SESSION['flash_error']); endif; ?>
+        <?php if (!empty($_SESSION['flash_error'])):
+            $alertaErrorMsg = $_SESSION['flash_error'];
+            unset($_SESSION['flash_error']);
+            include __DIR__ . '/../layout/alerta_error.php';
+        endif; ?>
 
         <!-- Pestañas (Tabs) de Estado -->
         <div class="orden-tabs-container">

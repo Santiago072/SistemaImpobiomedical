@@ -47,18 +47,21 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
             </div>
         </div>
 
-        <?php if (!empty($_SESSION['flash_error'])): ?>
-        <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($_SESSION['flash_error']) ?></div>
-        <?php unset($_SESSION['flash_error']); ?>
-        <?php endif; ?>
+        <?php if (!empty($_SESSION['flash_error'])):
+            $alertaErrorMsg = $_SESSION['flash_error'];
+            unset($_SESSION['flash_error']);
+            include __DIR__ . '/../layout/alerta_error.php';
+        endif; ?>
 
-        <?php if (isset($_GET['error']) && $_GET['error'] === 'no_items'): ?>
-        <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> Debe seleccionar al menos un ítem.</div>
-        <?php endif; ?>
+        <?php if (isset($_GET['error']) && $_GET['error'] === 'no_items'):
+            $alertaErrorMsg = 'Debe seleccionar al menos un ítem de la cotización para generar la orden de compra.';
+            include __DIR__ . '/../layout/alerta_error.php';
+        endif; ?>
 
-        <?php if (isset($_GET['error']) && $_GET['error'] === 'proveedor_mixto'): ?>
-        <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> No puedes combinar ítems de distintos proveedores en una misma orden. Filtra por proveedor y genera una orden por cada uno.</div>
-        <?php endif; ?>
+        <?php if (isset($_GET['error']) && $_GET['error'] === 'proveedor_mixto'):
+            $alertaErrorMsg = 'No puedes combinar ítems de distintos proveedores en una misma orden. Filtra por proveedor y genera una orden por cada uno.';
+            include __DIR__ . '/../layout/alerta_error.php';
+        endif; ?>
 
         <!-- Alerta dinámica JS para proveedor mixto -->
         <div id="alertaProveedorMixto" class="mod-alert mod-alert-err form-hidden-action"></div>

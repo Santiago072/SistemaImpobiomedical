@@ -166,13 +166,13 @@ function validar_numero($numero): bool
 function validar_imagen(array $archivo): array
 {
     $extensionesPermitidas = explode(',', $_ENV['ALLOWED_EXTENSIONS'] ?? getenv('ALLOWED_EXTENSIONS') ?: 'jpg,jpeg,png,gif,webp');
-    $maxSize               = (int)($_ENV['UPLOAD_MAX_SIZE'] ?? getenv('UPLOAD_MAX_SIZE') ?: 5242880);
+    $maxSize               = (int)($_ENV['UPLOAD_MAX_SIZE'] ?? getenv('UPLOAD_MAX_SIZE') ?: 8388608); // 8 MB
 
     if ($archivo['error'] !== UPLOAD_ERR_OK) {
         return ['valido' => false, 'mensaje' => 'Error al subir el archivo'];
     }
     if ($archivo['size'] > $maxSize) {
-        return ['valido' => false, 'mensaje' => 'El archivo es demasiado grande (máximo 5 MB)'];
+        return ['valido' => false, 'mensaje' => 'El archivo es demasiado grande (máximo 8 MB)'];
     }
 
     $extension = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));

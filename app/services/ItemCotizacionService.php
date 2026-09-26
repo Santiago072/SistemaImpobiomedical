@@ -57,7 +57,7 @@ class ItemCotizacionService
         $calc_ops = ($calc_ops_decoded === null) ? '{}' : json_encode($calc_ops_decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if (empty($proveedor)) {
-            throw new \InvalidArgumentException('El nombre del proveedor es obligatorio.');
+            throw new \InvalidArgumentException('El nombre del proveedor es obligatorio. Escribe el nombre o NIT del proveedor en el campo Proveedor antes de guardar el ítem.');
         }
 
         if (!in_array($iva, ['si', 'no'], true)) {
@@ -178,13 +178,13 @@ class ItemCotizacionService
         $calc_ops = ($calc_ops_decoded === null) ? '{}' : json_encode($calc_ops_decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if (empty($proveedor)) {
-            throw new \InvalidArgumentException('El nombre del proveedor es obligatorio.');
+            throw new \InvalidArgumentException('El nombre del proveedor es obligatorio. Escribe el nombre o NIT del proveedor en el campo Proveedor antes de guardar el ítem.');
         }
 
         if (!in_array($iva, ['si', 'no'], true)) {
-            throw new \InvalidArgumentException('IVA no válido');
+            throw new \InvalidArgumentException('IVA no válido. Selecciona Sí o No en el campo ¿Aplica IVA?');
         } elseif ($cantidad <= 0 || $precio < 0) {
-            throw new \InvalidArgumentException('Cantidad y precio deben ser valores válidos');
+            throw new \InvalidArgumentException('Cantidad y precio deben ser valores válidos. La cantidad debe ser mayor a 0 y el precio no puede ser negativo.');
         }
 
         $foto = $this->uploader->reemplazar($fileData['foto'] ?? [], $postData['foto_actual'] ?? '');

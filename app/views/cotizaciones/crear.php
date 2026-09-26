@@ -51,11 +51,81 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         <?php endif; ?>
 
         <?php
-        $errorUrl = htmlspecialchars(urldecode($_GET['error'] ?? ''));
-        if (!empty($errorUrl)): ?>
-        <div class="mod-alert mod-alert-err">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <span>Error al guardar el ítem: <?= $errorUrl ?></span>
+        $errorRaw = urldecode($_GET['error'] ?? '');
+        if (!empty($errorRaw)):
+            // Mapa de mensajes amigables: [código/fragmento de error] => [icono, título, descripción, sugerencia]
+            $erroresAmigables = [
+                'csrf' => [
+                    'icono'     => 'bi-shield-lock-fill',
+                    'titulo'    => 'Sesión de seguridad expirada',
+                    'desc'      => 'Tu sesión de seguridad venció por inactividad. Esto es normal si tardaste más de unos minutos completando el formulario.',
+                    'sug'       => 'Recarga la página con F5 para obtener un nuevo token y vuelve a intentarlo. No perderás los ítems ya guardados.',
+                ],
+                'El nombre del proveedor es obligatorio' => [
+                    'icono'     => 'bi-building-exclamation',
+                    'titulo'    => 'Falta el proveedor',
+                    'desc'      => 'No se escribió el nombre del proveedor del producto antes de guardar.',
+                    'sug'       => 'En la sección derecha del formulario, escribe el nombre o NIT del proveedor en el campo <strong>Proveedor</strong> e intenta de nuevo.',
+                ],
+                'Cantidad y precio' => [
+                    'icono'     => 'bi-calculator',
+                    'titulo'    => 'Valores numéricos inválidos',
+                    'desc'      => 'La cantidad debe ser mayor a 0 y el precio no puede ser negativo ni estar vacío.',
+                    'sug'       => 'Revisa los campos <strong>Cantidad</strong> y <strong>Precio</strong> e ingresa valores válidos antes de guardar.',
+                ],
+                'No se pudo guardar el ítem' => [
+                    'icono'     => 'bi-wifi-off',
+                    'titulo'    => 'Error al conectar con el servidor',
+                    'desc'      => 'No fue posible registrar el ítem en este momento.',
+                    'sug'       => 'Verifica tu conexión a internet e intenta nuevamente. Si el problema persiste, contacta al administrador del sistema.',
+                ],
+                'IVA no válido' => [
+                    'icono'     => 'bi-percent',
+                    'titulo'    => 'Valor de IVA no reconocido',
+                    'desc'      => 'El campo de IVA tiene un valor inesperado.',
+                    'sug'       => 'Selecciona <strong>Sí</strong> o <strong>No</strong> en el campo <strong>¿Aplica IVA?</strong> e intenta de nuevo.',
+                ],
+                'demasiado grande' => [
+                    'icono'     => 'bi-file-earmark-x-fill',
+                    'titulo'    => 'Imagen demasiado pesada',
+                    'desc'      => 'El archivo de imagen supera el límite permitido de <strong>8 MB</strong>.',
+                    'sug'       => 'Comprime la imagen antes de adjuntarla. Puedes reducir su tamaño desde el celular en <em>Editar foto → Recortar/Reducir</em>, o usar una herramienta online gratuita.',
+                ],
+                'no es una imagen válida' => [
+                    'icono'     => 'bi-image-alt',
+                    'titulo'    => 'Formato de imagen no compatible',
+                    'desc'      => 'El archivo que intentaste subir no es una imagen válida o su formato no está permitido.',
+                    'sug'       => 'Usa solo imágenes en formato <strong>JPG, PNG o WebP</strong>. Si tienes un PDF o Word, toma una captura de pantalla y súbela como imagen.',
+                ],
+            ];
+
+            $errorInfo = null;
+            foreach ($erroresAmigables as $patron => $info) {
+                if (stripos($errorRaw, $patron) !== false) {
+                    $errorInfo = $info;
+                    break;
+                }
+            }
+
+            // Si no hay mapeo, mostrar el error técnico con un mensaje genérico
+            if (!$errorInfo) {
+                $errorInfo = [
+                    'icono'  => 'bi-exclamation-triangle-fill',
+                    'titulo' => 'No fue posible guardar el ítem',
+                    'desc'   => htmlspecialchars($errorRaw),
+                    'sug'    => 'Si el problema persiste, toma una captura de pantalla de esta pantalla y compártela con el administrador.',
+                ];
+            }
+        ?>
+        <div class="mod-alert mod-alert-err" style="display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;">
+            <i class="bi <?= $errorInfo['icono'] ?>" style="font-size:1.6rem; flex-shrink:0; margin-top:2px;"></i>
+            <div>
+                <strong style="display:block; font-size:1rem; margin-bottom:4px;"><?= $errorInfo['titulo'] ?></strong>
+                <span style="display:block; color:#7f1d1d; margin-bottom:6px;"><?= $errorInfo['desc'] ?></span>
+                <span style="display:block; font-size:0.85rem; color:#92400e; background:#fef3c7; border-radius:6px; padding:5px 10px;">
+                    <i class="bi bi-lightbulb-fill" style="color:#d97706;"></i> <strong>Sugerencia:</strong> <?= $errorInfo['sug'] ?>
+                </span>
+            </div>
         </div>
         <?php endif; ?>
 
@@ -216,6 +286,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <div class="imo-form-group">
                             <label>Imagen del Producto</label>
                             <input type="file" name="foto" id="inpFoto" accept="image/*">
+                            <small class="imo-hint" style="display:block; margin-top:4px; font-size:11px; color:#64748b;">Máx: 8MB · Formatos: JPG, PNG, WebP</small>
                             <div id="previewFoto" class="mt-8"></div>
                         </div>
 

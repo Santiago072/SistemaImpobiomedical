@@ -20,8 +20,60 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
         </div>
 
-        <?php if ($mensajeError): ?>
-        <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($mensajeError) ?></div>
+        <?php if ($mensajeError):
+            // Mapa de errores amigables
+            $erroresAmigablesEdit = [
+                'proveedor es obligatorio' => [
+                    'icono'  => 'bi-building-exclamation',
+                    'titulo' => 'Falta el proveedor',
+                    'desc'   => 'No se escribió el nombre del proveedor del producto.',
+                    'sug'    => 'Escribe el nombre o NIT del proveedor en el campo <strong>Proveedor</strong> e intenta guardar de nuevo.',
+                ],
+                'Cantidad y precio' => [
+                    'icono'  => 'bi-calculator',
+                    'titulo' => 'Valores numéricos inválidos',
+                    'desc'   => 'La cantidad debe ser mayor a 0 y el precio no puede ser negativo.',
+                    'sug'    => 'Revisa los campos <strong>Cantidad</strong> y <strong>Precio</strong> e ingresa valores válidos.',
+                ],
+                'demasiado grande' => [
+                    'icono'  => 'bi-file-earmark-x-fill',
+                    'titulo' => 'Imagen demasiado pesada',
+                    'desc'   => 'El archivo de imagen supera el límite permitido de <strong>8 MB</strong>.',
+                    'sug'    => 'Sube una imagen más liviana (JPG, PNG o WebP de menos de 8 MB).',
+                ],
+                'no es una imagen válida' => [
+                    'icono'  => 'bi-image-alt',
+                    'titulo' => 'Formato de imagen no compatible',
+                    'desc'   => 'El archivo que intentaste subir no es una imagen válida o su formato no está permitido.',
+                    'sug'    => 'Usa solo imágenes en formato <strong>JPG, PNG o WebP</strong>.',
+                ],
+            ];
+            $editErrorInfo = null;
+            foreach ($erroresAmigablesEdit as $patron => $info) {
+                if (stripos($mensajeError, $patron) !== false) {
+                    $editErrorInfo = $info;
+                    break;
+                }
+            }
+            if (!$editErrorInfo) {
+                $editErrorInfo = [
+                    'icono'  => 'bi-exclamation-triangle-fill',
+                    'titulo' => 'No fue posible guardar el cambio',
+                    'desc'   => htmlspecialchars($mensajeError),
+                    'sug'    => 'Si el problema persiste, comparte una captura con el administrador.',
+                ];
+            }
+        ?>
+        <div class="mod-alert mod-alert-err" style="display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;">
+            <i class="bi <?= $editErrorInfo['icono'] ?>" style="font-size:1.6rem; flex-shrink:0; margin-top:2px;"></i>
+            <div>
+                <strong style="display:block; font-size:1rem; margin-bottom:4px;"><?= $editErrorInfo['titulo'] ?></strong>
+                <span style="display:block; color:#7f1d1d; margin-bottom:6px;"><?= $editErrorInfo['desc'] ?></span>
+                <span style="display:block; font-size:0.85rem; color:#92400e; background:#fef3c7; border-radius:6px; padding:5px 10px;">
+                    <i class="bi bi-lightbulb-fill" style="color:#d97706;"></i> <strong>Sugerencia:</strong> <?= $editErrorInfo['sug'] ?>
+                </span>
+            </div>
+        </div>
         <?php endif; ?>
 
         <div class="mod-form-panel p-24 mx-auto">
@@ -105,6 +157,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                                 </div>
                             <?php endif; ?>
                             <input type="file" name="foto" accept="image/*">
+                            <small class="imo-hint" style="display:block; margin-top:4px; font-size:11px; color:#64748b;">Máx: 8MB · Formatos: JPG, PNG, WebP</small>
                         </div>
                     </div>
 

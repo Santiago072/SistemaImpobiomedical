@@ -44,12 +44,11 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
             </div>
         </div>
 
-        <?php if (!empty($_SESSION['flash_error'])): ?>
-        <div class="mod-alert mod-alert-err">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <span><?= htmlspecialchars($_SESSION['flash_error']) ?></span>
-        </div>
-        <?php unset($_SESSION['flash_error']); endif; ?>
+        <?php if (!empty($_SESSION['flash_error'])):
+            $alertaErrorMsg = $_SESSION['flash_error'];
+            unset($_SESSION['flash_error']);
+            include __DIR__ . '/../layout/alerta_error.php';
+        endif; ?>
 
         <form method="POST" action="<?= $basePath ?>?module=ordenes&action=crear_directa_guardar" id="formOrdenDirecta">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">

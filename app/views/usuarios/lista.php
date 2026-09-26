@@ -27,9 +27,10 @@ include dirname(__DIR__) . '/layout/menu.php';
         <?php if (!empty($mensajeExito)): ?>
         <div class="mod-alert mod-alert-ok"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($mensajeExito) ?></div>
         <?php endif; ?>
-        <?php if (!empty($mensajeError)): ?>
-        <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($mensajeError) ?></div>
-        <?php endif; ?>
+        <?php if (!empty($mensajeError)):
+            $alertaErrorMsg = $mensajeError;
+            include __DIR__ . '/../layout/alerta_error.php';
+        endif; ?>
 
         <!-- Búsqueda -->
         <div class="mod-search-bar">

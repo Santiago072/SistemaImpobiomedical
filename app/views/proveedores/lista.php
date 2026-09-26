@@ -30,10 +30,11 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         <div class="mod-alert mod-alert-ok"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($mensajeExito) ?></div>
         <?php unset($_SESSION['flash_exito']); ?>
         <?php endif; ?>
-        <?php if (!empty($mensajeError)): ?>
-        <div class="mod-alert mod-alert-err"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($mensajeError) ?></div>
-        <?php unset($_SESSION['flash_error']); ?>
-        <?php endif; ?>
+        <?php if (!empty($mensajeError)):
+            $alertaErrorMsg = $mensajeError;
+            unset($_SESSION['flash_error']);
+            include __DIR__ . '/../layout/alerta_error.php';
+        endif; ?>
 
         <!-- ── Barra de Búsqueda ── -->
         <div class="mod-search-bar">
