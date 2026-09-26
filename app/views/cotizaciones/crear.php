@@ -127,7 +127,9 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 </span>
             </div>
         </div>
-        <?php endif; ?>
+        <?php
+            unset($erroresAmigables, $errorInfo, $patron, $info);
+        endif; ?>
 
         <div class="cot-grid">
 

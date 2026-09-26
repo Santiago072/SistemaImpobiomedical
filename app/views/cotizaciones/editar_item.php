@@ -74,7 +74,9 @@ include dirname(__DIR__) . '/layout/menu.php';
                 </span>
             </div>
         </div>
-        <?php endif; ?>
+        <?php
+            unset($erroresAmigablesEdit, $editErrorInfo, $patron, $info);
+        endif; ?>
 
         <div class="mod-form-panel p-24 mx-auto">
             <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=editar_item&id=<?= intval($datos['id']) ?>" enctype="multipart/form-data">
