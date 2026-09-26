@@ -4,7 +4,22 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.5.3] - 2026-09-26
+### Mejorado
+- **Sistema de mensajes de error amigables y orientadores (todos los módulos):**
+  - Creado nuevo partial reutilizable `app/views/layout/alerta_error.php` con 22 patrones de traducción: mapea mensajes técnicos (excepciones, flash errors, parámetros GET) a alertas visuales enriquecidas con **icono contextual**, **título claro**, **descripción de la causa** y **sugerencia concreta en caja amarilla**.
+  - Errores cubiertos: token CSRF expirado · proveedor vacío · NIT duplicado (clientes y proveedores) · correo inválido · productos sin seleccionar · proveedores mixtos en orden · cliente vacío en finalizar · permisos insuficientes · estado de cotización incompatible · imagen demasiado pesada · error de BD · entre otros.
+  - Aplicado en: `cotizaciones/crear.php`, `cotizaciones/editar_item.php`, `cotizaciones/finalizar.php`, `cotizaciones/consultar.php`, `clientes/lista.php`, `proveedores/lista.php`, `usuarios/lista.php`, `ordenes/consultar.php`, `ordenes/crear_directa.php`, `ordenes/seleccionar_items.php`.
+- **Validación preventiva de archivos de imagen en el cliente (`public/js/script.js`):**
+  - Reemplazado el `alert()` nativo del navegador por una notificación inline amigable que aparece debajo del campo de imagen, muestra el nombre y peso del archivo, e incluye enlace directo a squoosh.app para comprimir.
+  - Añadida validación de extensión de archivo (rechaza formatos no-imagen como PDF, DOCX) antes de enviar el formulario.
+- **Mensajes de excepción más descriptivos (`app/services/ItemCotizacionService.php`):**
+  - Los mensajes de `InvalidArgumentException` en `guardarItem()` y `actualizarItem()` ahora incluyen la causa y la acción esperada del usuario, no solo la regla de validación.
+
+---
+
 ## [v3.5.2] - 2026-09-22
+
 ### Mejorado
 - **Consecutivo P.O. atómico bajo transacción concurrente (`OrdenCompraModel.php`):**
   - Se blindó la generación de números consecutivos de órdenes de compra (`siguientePO()`) incorporando bloqueo pesimista `SELECT ... FOR UPDATE` ejecutado estrictamente dentro de la transacción activa de `crearOrden()`. Esto elimina colisiones o saltos accidentales de consecutivo ante peticiones simultáneas.
