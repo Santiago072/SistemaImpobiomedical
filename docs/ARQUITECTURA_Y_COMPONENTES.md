@@ -1,6 +1,6 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** v3.5.1  
+**Versión:** v3.5.3  
 **Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -203,7 +203,7 @@ SistemaImpobiomedical/
 │       ├── cotizaciones/       # Cotizador, finalizar, consultar, respaldo y PDF
 │       ├── estadisticas/       # Métricas y reporte consolidado
 │       ├── landingauth/        # Portal institucional y acceso interactivo
-│       ├── layout/             # Header, menú lateral, topbar, paginación y footer
+│       ├── layout/             # Header, menú lateral, topbar, alerta_error (helper amigable), paginación y footer
 │       ├── ordenes/            # Consultar, pestañas, generar P.O. y exportar Excel
 │       ├── panel/              # Dashboard principal
 │       ├── productos/          # Catálogo médico y exportación PDF con imágenes
@@ -562,6 +562,14 @@ css/
 | **Ataques de Fuerza Bruta** | Rate limiting en memoria con ventana de tiempo fija (`verificar_rate_limit()`). | `config/seguridad.php` |
 | **Falsificación de Archivos** | Verificación de extensión en lista blanca y validación de cabecera binaria MIME (`finfo_open`). | `app/services/FileUploadService.php` |
 | **Session Hijacking** | Cookies con flags `HttpOnly`, `SameSite=Strict`, `Secure` y expiración por inactividad a 3600s. | `config/seguridad.php` |
+
+### 9.1 Subsistema de Alertas y Mensajes Amigables (`app/views/layout/alerta_error.php`)
+
+Para evitar pantallas blancas o mensajes de excepción técnicos crudos (ej. "Token CSRF inválido", "El archivo excede el límite"), el sistema implementa un motor de traducción visual de errores:
+
+- **Estructura Estándar:** Cada alerta procesada se despliega en una tarjeta con fondo rojo suave (`#fef2f2`), borde izquierdo carmesí (`#ef4444`), icono descriptivo en 1.6rem, **título en negrita**, **descripción de la causa** y un **recuadro amarillo** (`#fef3c7`) con la **sugerencia de solución paso a paso**.
+- **Cobertura Integral (22 Patrones):** Detecta y traduce tokens expirados, NITs duplicados, validaciones de correo, campos vacíos, proveedores mixtos, selección de órdenes/ítems, estados incompatibles y límites de subida de archivos (8 MB).
+- **Validación Preventiva en Cliente (`public/js/script.js`):** Intercepta archivos que superen los 8 MB o tengan formatos no admitidos antes del envío HTTP, mostrando advertencias contextuales con enlaces directos a herramientas de compresión en línea.
 
 ---
 

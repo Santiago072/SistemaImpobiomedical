@@ -1,6 +1,6 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v3.5.1  
+**Versión del Sistema:** v3.5.3  
 **Fecha:** Septiembre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -104,6 +104,7 @@ El sistema cuenta con tres roles claramente estructurados:
 * **RF49:** El sistema debe incorporar un favicon unificado oficial en formato vectorial (`favicon.svg`) en todas las interfaces públicas y privadas.
 * **RF50:** El sistema debe preservar los datos de proveedor digitados en la calculadora dinámica de cotización al seleccionar o reutilizar ítems del catálogo médico.
 * **RF53:** El menú lateral debe integrar una animación cardiológica de alta fidelidad con trazado continuo P-Q-R-S-T, retícula clínica translúcida y punto de pulso en neón cyan, sin marcos rígidos envolventes.
+* **RF54:** El sistema debe transformar todos los mensajes de error técnicos, excepciones del servidor y validaciones de formulario en tarjetas de alerta visual amigables compuestas por un ícono descriptivo, título en negrita, explicación de la causa y un cuadro con sugerencias de solución paso a paso, complementado con validación preventiva de archivos e imágenes pesadas antes del envío en el cliente.
 
 ---
 

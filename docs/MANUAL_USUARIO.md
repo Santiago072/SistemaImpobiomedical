@@ -1,6 +1,6 @@
 # 📚 Manual de Usuario — Sistema Impobiomedical
 
-**Versión del sistema**: v3.5.1 (Edición Comercial, Proveedores y Operativa)  
+**Versión del sistema**: v3.5.3 (Edición Comercial, Proveedores y Operativa)  
 **Autor y Titular**: Santiago Lizcano  
 **Público objetivo**: Asesores comerciales y administradores de Impobiomedical
 
@@ -158,3 +158,9 @@ En la barra superior de todas las pantallas del sistema se encuentra el botón *
 - `EB` → Código del asesor comercial.
 - `01` → Consecutivo mensual de la cotización.
 - `_01` → Número de revisión o actualización de la oferta.
+
+### ¿Cuál es el límite de tamaño para subir fotos de productos?
+El sistema admite imágenes de hasta **8 MB** en formatos JPG, PNG y WebP. Si seleccionas una imagen que exceda este tamaño o tenga un formato incompatible, el formulario te advertirá de inmediato antes de enviarlo e incluirá un acceso para optimizarla.
+
+### ¿Qué debo hacer si aparece una alerta roja de error?
+Cada alerta roja en pantalla incluye un **título claro** con la causa del inconveniente y un **cuadro amarillo con la solución paso a paso** (por ejemplo: recargar con F5 si expiró el tiempo de sesión, buscar si un NIT ya existe, o verificar campos requeridos). Sigue las instrucciones del cuadro amarillo para completar la acción.
