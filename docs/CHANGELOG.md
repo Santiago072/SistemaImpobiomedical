@@ -4,6 +4,23 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.5.4] - 2026-10-02
+### Corregido
+- **Sincronización reactiva y blindaje de proveedor en emisión de órdenes (`seleccionar_items.php`, `OrdenCompraController.php`):**
+  - Se eliminó la asignación fija del primer proveedor (`$proveedores[0]`) cuando una cotización involucra múltiples proveedores, dejando el campo libre para evitar arrastrar proveedores incorrectos.
+  - Al marcar o desmarcar casillas de ítems desde la vista general (*Todos*), el sistema detecta de forma reactiva el proveedor del ítem seleccionado, asignándolo de inmediato al formulario y autocompletando su NIT y datos bancarios.
+  - Se incorporó blindaje en el backend dentro de `OrdenCompraController::crear()`: si los ítems seleccionados pertenecen a un proveedor específico, la cabecera de la orden se sincroniza y fuerza automáticamente con dicho proveedor, eliminando discrepancias accidentales entre cabecera e ítems.
+
+### Mejorado
+- **Interfaz de Órdenes Directas y Catálogo Exclusivo (`crear_directa.php`):**
+  - Se eliminó el botón manual y la inserción de filas vacías no estructuradas, garantizando que todos los productos provengan exclusivamente del catálogo oficial de insumos y equipos médicos.
+  - Se implementó un estado vacío (*Empty State*) interactivo con mensaje orientador que desaparece de forma reactiva al añadir productos desde el buscador predictivo.
+- **Limpieza visual y diseño de componentes (`cotizaciones.css`, `ordenes.css`, `consultar.php`):**
+  - Supresión de botones de scrollbar y flechas automáticas del navegador al final de las pestañas de cotizaciones (`.cot-tabs-container`).
+  - Rediseño del botón "Limpiar selección" en órdenes de compra con una pastilla interactiva moderna (`.btn-limpiar-sel-chip`) con microinteracciones y efectos hover sutiles.
+
+---
+
 ## [v3.5.3] - 2026-09-26
 ### Mejorado
 - **Sistema de mensajes de error amigables y orientadores (todos los módulos):**

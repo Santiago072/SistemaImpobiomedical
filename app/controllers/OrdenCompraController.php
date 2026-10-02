@@ -90,7 +90,7 @@ class OrdenCompraController
             }
         }
 
-        $proveedorInicial = $ordenAjustando['proveedor'] ?? ($proveedores[0] ?? '');
+        $proveedorInicial = $ordenAjustando['proveedor'] ?? (count($proveedores) === 1 ? ($proveedores[0] ?? '') : '');
         $infoProveedorInicial = !empty($proveedorInicial) ? $this->model->buscarHistorialProveedor($proveedorInicial) : null;
 
         return compact('cotizacion', 'items', 'proveedores', 'csrf_token', 'infoProveedorInicial', 'ordenAjustando', 'itemsOrdenAjustando');
@@ -194,6 +194,33 @@ class OrdenCompraController
             header('Location: ' . BASE_URL . '?module=ordenes&action=seleccionar_items&cotizacion='
                 . urlencode($cotizacionNumero) . '&error=proveedor_mixto');
             exit();
+        }
+
+        // Blindaje contra desincronización: si los ítems seleccionados pertenecen a un proveedor específico,
+        // la orden debe asignarse a ese proveedor y no a otro prellenado accidentalmente
+        if (count($proveedoresSeleccionados) === 1) {
+            $provItem = $proveedoresSeleccionados[0];
+            if (mb_strtolower(trim($proveedor)) !== mb_strtolower(trim($provItem))) {
+                $proveedor = $provItem;
+                // Re-verificar datos e historial para el proveedor real del ítem
+                $historialProv = $this->model->buscarHistorialProveedor($proveedor);
+                if (!empty($historialProv['datos']['proveedor_nit'])) {
+                    $proveedorNit = $historialProv['datos']['proveedor_nit'];
+                }
+                if (!empty($historialProv['datos']['tipo_contribuyente'])) {
+                    $tipoContribuyente = $historialProv['datos']['tipo_contribuyente'];
+                }
+                if (!empty($historialProv['datos']['banco_nombre'])) {
+                    $bancoNombre = $historialProv['datos']['banco_nombre'];
+                }
+                if (!empty($historialProv['datos']['numero_cuenta'])) {
+                    $bancoCuenta = $historialProv['datos']['numero_cuenta'];
+                }
+                if (!empty($historialProv['datos']['tipo_cuenta'])) {
+                    $bancoTipoCuenta = $historialProv['datos']['tipo_cuenta'];
+                }
+                $estadoProveedor = !empty($historialProv['registrado']) ? 'registrado' : 'nuevo';
+            }
         }
 
         $idAjuste = !empty($_SESSION['orden_ajustando_id']) ? (int)$_SESSION['orden_ajustando_id'] : 0;

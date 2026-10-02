@@ -258,8 +258,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                     <div class="oc-field-group">
                         <label class="oc-label"><i class="bi bi-building"></i> Proveedor (TO:) <span class="required-star">*</span></label>
                         <input type="text" name="proveedor" id="inputProveedor" class="oc-input" required
-                               placeholder="Nombre del proveedor" maxlength="200"
-                               value="<?= htmlspecialchars($ordenAjustando['proveedor'] ?? ($proveedores[0] ?? '')) ?>" autocomplete="off">
+                               placeholder="<?= empty($proveedorInicial) ? 'Seleccione ítems o filtre por proveedor...' : 'Nombre del proveedor' ?>" maxlength="200"
+                               value="<?= htmlspecialchars($proveedorInicial) ?>" autocomplete="off">
                         <input type="hidden" name="estado_proveedor" id="inputEstadoProveedor" value="<?= htmlspecialchars($ordenAjustando['estado_proveedor'] ?? ($isRegistradoIni ? 'registrado' : 'nuevo')) ?>">
                     </div>
 
@@ -579,6 +579,30 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
             }
         }
 
+        // Si todos los ítems marcados pertenecen a un único proveedor, sincronizar el formulario con él
+        if (proveedoresSeleccionados.size === 1) {
+            const unicoProv = Array.from(proveedoresSeleccionados)[0];
+            const inp = document.getElementById('inputProveedor');
+            if (inp && inp.value.trim() !== unicoProv) {
+                inp.value = unicoProv;
+                verificarProveedor(unicoProv);
+            }
+        } else if (cnt === 0 && !btnGen.disabled) {
+            // Si se desmarcaron todos los ítems y no hay ajuste activo
+            <?php if (!$esAjuste && count($proveedores) > 1): ?>
+            const inp = document.getElementById('inputProveedor');
+            if (inp && inp.value.trim()) {
+                inp.value = '';
+                limpiarCamposProveedor();
+                if (badgeProv) {
+                    badgeProv.className = 'mod-badge badge-gold';
+                    badgeProv.innerHTML = '<i class="bi bi-question-circle"></i> Ingrese proveedor';
+                }
+                if (hdnEstado) hdnEstado.value = 'nuevo';
+            }
+            <?php endif; ?>
+        }
+
         btnGen.disabled = cnt === 0 || provMixto;
         checkAll.indeterminate = cnt > 0 && cnt < checks.length;
         checkAll.checked       = cnt === checks.length && checks.length > 0;
@@ -625,32 +649,14 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                 }
             });
 
+            const inpProv = document.getElementById('inputProveedor');
             if (prov) {
-                const inpProv = document.getElementById('inputProveedor');
                 if (inpProv) {
                     inpProv.value = prov;
                     verificarProveedor(prov);
                 }
             }
             actualizarResumen();
-        });
-    });
-
-    // ── Auto-rellenar proveedor al seleccionar un ítem ────────────────────
-    checks.forEach(c => {
-        c.addEventListener('change', function(){
-            if (this.checked) {
-                const row  = this.closest('tr');
-                const prov = row.dataset.proveedor;
-                const nit  = row.dataset.nit;
-                if (prov || nit) {
-                    const inp = document.getElementById('inputProveedor');
-                    if (inp && !inp.value.trim()) {
-                        inp.value = prov;
-                        verificarProveedor(nit || prov);
-                    }
-                }
-            }
         });
     });
 

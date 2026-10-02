@@ -74,9 +74,6 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                         <button type="button" id="btnLimpiarProductos" style="padding: 8px 14px; font-size: 13px; font-weight: 600; color: #64748b; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseenter="this.style.background='#f1f5f9'; this.style.color='#ef4444'; this.style.borderColor='#fca5a5';" onmouseleave="this.style.background='#ffffff'; this.style.color='#64748b'; this.style.borderColor='#cbd5e1';">
                             <i class="bi bi-arrow-counterclockwise"></i> Limpiar Productos
                         </button>
-                        <button type="button" class="btn-mod-primary" id="btnAgregarFila" style="padding: 8px 14px; font-size: 13px;">
-                            <i class="bi bi-plus-circle-fill"></i> + Agregar Producto Manual
-                        </button>
                     </div>
                 </div>
 
@@ -291,10 +288,37 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
 (function() {
     let filaIndex = 0;
     const tbody = document.getElementById('tbodyItemsDirecta');
-    const btnAgregar = document.getElementById('btnAgregarFila');
     const form = document.getElementById('formOrdenDirecta');
 
+    function verificarFilaVacia() {
+        const filas = tbody.querySelectorAll('tr:not(#filaEmptyState)');
+        const emptyRow = document.getElementById('filaEmptyState');
+        if (filas.length === 0) {
+            if (!emptyRow) {
+                const trEmpty = document.createElement('tr');
+                trEmpty.id = 'filaEmptyState';
+                trEmpty.innerHTML = `
+                    <td colspan="7" class="text-center" style="padding: 32px 16px; color: #64748b; background: #f8fafc;">
+                        <i class="bi bi-search" style="font-size: 24px; color: #0d9488; display: block; margin-bottom: 8px;"></i>
+                        <span style="font-size: 13.5px; font-weight: 600;">Aún no se han agregado productos a la orden.</span>
+                        <p style="margin: 4px 0 0 0; font-size: 12px; color: #94a3b8;">Use el buscador de arriba para seleccionar productos del catálogo oficial e insertarlos automáticamente.</p>
+                    </td>
+                `;
+                tbody.appendChild(trEmpty);
+            }
+        } else {
+            if (emptyRow) {
+                emptyRow.remove();
+            }
+        }
+    }
+
     function agregarFila(codigo = '', titulo = '', desc = '', cantidad = 1, precio = 0, aplicaIva = 'si', pctIva = 19) {
+        const emptyRow = document.getElementById('filaEmptyState');
+        if (emptyRow) {
+            emptyRow.remove();
+        }
+
         filaIndex++;
         const tr = document.createElement('tr');
         tr.id = 'fila-item-' + filaIndex;
@@ -336,12 +360,9 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
 
         // Eventos en inputs de la fila
         tr.querySelector('.mod-btn-del').addEventListener('click', function() {
-            if (tbody.querySelectorAll('tr').length > 1) {
-                tr.remove();
-                calcularTotales();
-            } else {
-                alert('Debe haber al menos un producto en la orden.');
-            }
+            tr.remove();
+            verificarFilaVacia();
+            calcularTotales();
         });
 
         tr.querySelectorAll('.item-cantidad, .item-precio, .item-iva-sel').forEach(inp => {
@@ -402,15 +423,6 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                                 `;
 
                                 div.addEventListener('click', () => {
-                                    // Si la primera fila está vacía, reemplazarla
-                                    const filasExistentes = tbody.querySelectorAll('tr');
-                                    if (filasExistentes.length === 1) {
-                                        const tit = filasExistentes[0].querySelector('.item-titulo').value.trim();
-                                        if (!tit) {
-                                            filasExistentes[0].remove();
-                                        }
-                                    }
-
                                     agregarFila(
                                         p.codigo_proveedor || p.codigo_producto || '',
                                         p.titulo || '',
@@ -450,21 +462,19 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         });
     }
 
-    btnAgregar.addEventListener('click', () => agregarFila());
-
     const btnLimpiar = document.getElementById('btnLimpiarProductos');
     if (btnLimpiar) {
         btnLimpiar.addEventListener('click', function() {
             if (confirm('¿Desea limpiar toda la lista de productos agregados?')) {
                 tbody.innerHTML = '';
                 filaIndex = 0;
-                agregarFila(); // Deja una fila en blanco inicial
+                verificarFilaVacia();
                 calcularTotales();
             }
         });
     }
 
-    // Precargar ítems si está en modo ajuste, o agregar primera fila en blanco por defecto
+    // Precargar ítems si está en modo ajuste, o dejar lista con empty state
     const itemsExistentes = <?= json_encode($itemsAjustando ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     if (itemsExistentes && itemsExistentes.length > 0) {
         itemsExistentes.forEach(it => {
@@ -479,7 +489,7 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
             );
         });
     } else {
-        agregarFila();
+        verificarFilaVacia();
     }
 
     function formatPesos(num) {
@@ -797,10 +807,10 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
     });
 
     form.addEventListener('submit', function(e) {
-        const filas = tbody.querySelectorAll('tr');
+        const filas = tbody.querySelectorAll('tr:not(#filaEmptyState)');
         if (filas.length === 0) {
             e.preventDefault();
-            alert('Debe agregar al menos un producto a la orden.');
+            alert('Debe agregar al menos un producto del catálogo a la orden.');
         }
     });
 

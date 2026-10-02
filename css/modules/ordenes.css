@@ -87,7 +87,41 @@
     color: #475569;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+}
+
+.btn-limpiar-sel-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 6px;
+    padding: 3px 10px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 20px;
+    color: #dc2626;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(220, 38, 38, 0.05);
+}
+
+.btn-limpiar-sel-chip:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+    color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(220, 38, 38, 0.12);
+}
+
+.btn-limpiar-sel-chip:active {
+    transform: translateY(0);
+}
+
+.btn-limpiar-sel-chip i {
+    font-size: 12px;
 }
 
 .btn-export-pdf {

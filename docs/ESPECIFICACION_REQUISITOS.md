@@ -1,7 +1,7 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v3.5.3  
-**Fecha:** Septiembre 2026  
+**Versión del Sistema:** v3.5.4  
+**Fecha:** Octubre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
 Este documento formaliza los requisitos funcionales (RF), requisitos no funcionales (RNF), control de acceso por roles y reglas de negocio del **Sistema Impobiomedical**.
@@ -67,6 +67,8 @@ El sistema cuenta con tres roles claramente estructurados:
 * **RF29.1:** El sistema debe permitir ajustar directamente cualquier orden de compra conservando estrictamente su número consecutivo P.O. original, precargando los ítems, cantidades, proveedor y valores financieros para su corrección atómica transaccional.
 * **RF29.2:** El sistema debe restringir el ajuste de órdenes de compra al usuario creador de la misma o a roles con privilegio superior (`admin` y `compras`).
 * **RF29.3:** El sistema debe redirigir tras el guardado o ajuste de una orden de compra directamente a la vista de consulta de órdenes con apertura automática del visor modal del PDF, de modo que al navegar hacia atrás o cerrar el documento el usuario permanezca en la tabla completa de órdenes.
+* **RF29.4:** El sistema debe sincronizar reactivamente en tiempo real el proveedor de la orden de compra con el proveedor del ítem seleccionado tanto al utilizar los botones de filtro como al marcar directamente casillas en la vista general, asegurando en backend la coherencia estricta entre la cabecera de la orden y los productos seleccionados para evitar asignaciones erróneas en cotizaciones multiproveedor.
+* **RF29.5:** En la emisión de Órdenes Directas de mostrador, el sistema debe exigir que todos los ítems provengan exclusivamente del catálogo oficial de productos mediante su buscador predictivo, restringiendo el ingreso manual de productos no estructurados para preservar la integridad de los datos comerciales.
 
 ### 🩺 Catálogo de Productos Médicos (Solo Administrador)
 * **RF30:** El sistema debe permitir registrar, editar y listar productos médicos organizados en cuadrícula de tarjetas con foto, código, título, categoría (incluyendo *Servicio Calibración*), IVA y estado.

@@ -702,6 +702,21 @@ select.estado-entrega-select option {
     border-bottom: 2px solid #e2e8f0;
     padding-bottom: 0;
     overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE / Edge */
+}
+
+.cot-tabs-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+    height: 0;
+    width: 0;
+}
+
+.cot-tabs-container::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
 }
 
 .cot-tab-btn {

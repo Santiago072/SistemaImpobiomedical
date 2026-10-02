@@ -1,6 +1,6 @@
 # 📚 Manual de Usuario — Sistema Impobiomedical
 
-**Versión del sistema**: v3.5.3 (Edición Comercial, Proveedores y Operativa)  
+**Versión del sistema**: v3.5.4 (Edición Comercial, Proveedores y Operativa)  
 **Autor y Titular**: Santiago Lizcano  
 **Público objetivo**: Asesores comerciales y administradores de Impobiomedical
 
@@ -87,8 +87,8 @@ Al iniciar sesión llegará al **Panel Principal**, que muestra:
 
 ## 5. Órdenes de Compra (P.O.)
 
-* **Emisión:** Desde consultar cotizaciones, haga clic en 🛒 **Orden** en propuestas pendientes. Seleccione únicamente los ítems a comprar al proveedor y complete los datos bancarios y tributarios (se autocompletan predictivamente desde el directorio oficial si el proveedor ya existe).
-* **Órdenes de Mostrador (Directas):** Permite emitir compras a proveedores sin necesidad de una cotización previa pulsando **"+ Nueva Orden Mostrador"**. Cuenta con búsqueda dual interactiva por Razón Social o NIT, y auto-registra automáticamente al proveedor en el directorio central si aún no existe.
+* **Emisión:** Desde consultar cotizaciones, haga clic en 🛒 **Orden** en propuestas pendientes. Seleccione únicamente los ítems a comprar al proveedor y complete los datos bancarios y tributarios (se autocompletan predictivamente desde el directorio oficial si el proveedor ya existe). Si la cotización tiene varios proveedores, el sistema detecta y sincroniza automáticamente al proveedor del ítem que marques (o puedes filtrar por proveedor con los botones superiores).
+* **Órdenes de Mostrador (Directas):** Permite emitir compras a proveedores sin necesidad de una cotización previa pulsando **"+ Nueva Orden Mostrador"**. Cuenta con buscador predictivo conectado al catálogo oficial para añadir productos homologados, búsqueda dual interactiva por Razón Social o NIT, y auto-registra automáticamente al proveedor en el directorio central si aún no existe.
 * **Ajustar Orden de Compra:** En la tabla de consulta de órdenes, pulse el botón 🛠️ **Ajustar** en la fila de la orden correspondiente. El sistema reabrirá la orden permitiendo modificar ítems, cantidades, datos tributarios, flete, retenciones o descuentos, **conservando intacto el mismo consecutivo P.O.** tras guardar.
 * **Cancelación de Ajuste:** Si decide no realizar modificaciones, el botón **"Cancelar Ajuste"** restablece la orden original sin aplicar ningún cambio.
 * **Visor Automático:** Al guardar o ajustar una orden, el sistema lo llevará directamente a la tabla de órdenes abriendo automáticamente el visor del PDF en un modal interactivo para descargar o imprimir.

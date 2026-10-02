@@ -96,8 +96,8 @@ $tabActual = $tabActual ?? 'pendientes';
             <div class="export-count-text">
                 <i class="bi bi-check-all"></i>
                 <span id="seleccionados-conteo">0</span> órdenes seleccionadas
-                <button type="button" id="btn-limpiar-seleccion" onclick="limpiarSeleccionOrdenes()" style="display:none; margin-left: 10px; background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; text-decoration: underline;">
-                    <i class="bi bi-x-circle"></i> Limpiar selección
+                <button type="button" id="btn-limpiar-seleccion" class="btn-limpiar-sel-chip" onclick="limpiarSeleccionOrdenes()" style="display:none;">
+                    <i class="bi bi-x-circle-fill"></i> Limpiar selección
                 </button>
             </div>
             <div class="header-actions-wrap">
