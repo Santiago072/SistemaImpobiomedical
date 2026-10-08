@@ -50,7 +50,7 @@ class EstadisticaController
         if ($usuarioId) {
             require_once dirname(__DIR__) . '/models/UsuarioModel.php';
             $usuarioModel = new UsuarioModel($this->model->getDbConnection());
-            $u = $usuarioModel->obtenerPorId($usuarioId);
+            $u = $usuarioModel->buscarPorId($usuarioId);
             if ($u) {
                 $vendedorFiltrado = $u['nombre'] ?? null;
             }
