@@ -403,7 +403,7 @@ table { width:100%; border-collapse:collapse; }
 <div class="section-spacer"></div>
 
 <!-- ══ Top Vendedores ══ -->
-<h2>Top Vendedores (por Monto Vendido) <?= !empty($vendedorFiltrado) ? '<span style="font-size:8.5px; font-weight:normal; color:#92400e; background:#fef3c7; padding:2px 7px; border-radius:4px; margin-left:6px;">Consolidado General</span>' : '' ?></h2>
+<h2>Top Vendedores (por Monto Vendido)</h2>
 <table class="top-table">
   <thead>
     <tr>
@@ -421,14 +421,10 @@ table { width:100%; border-collapse:collapse; }
     <?php foreach ($topVendedores['labels'] as $i => $label): 
         $montoVend = (float)($topVendedores['data'][$i] ?? 0);
         $pctVend   = $totalVendidoPeriodo > 0 ? round(($montoVend / $totalVendidoPeriodo) * 100, 1) : 0;
-        $esVendedorSeleccionado = !empty($vendedorFiltrado) && mb_strtolower(trim($label)) === mb_strtolower(trim($vendedorFiltrado));
     ?>
-    <tr <?= $esVendedorSeleccionado ? 'style="background:#fef9c3 !important;"' : '' ?>>
+    <tr>
       <td style="font-weight:bold; color:#f59e0b;"><?= $i+1 ?></td>
-      <td style="font-weight:bold; color:<?= $esVendedorSeleccionado ? '#92400e' : '#334155' ?>;">
-        <?= htmlspecialchars($label) ?>
-        <?= $esVendedorSeleccionado ? ' <span style="font-size:7px; color:#b45309; font-weight:bold;">(FILTRADO)</span>' : '' ?>
-      </td>
+      <td style="font-weight:bold; color:#334155;"><?= htmlspecialchars($label) ?></td>
       <td>
         <div class="bar-outer">
           <div class="bar-inner amber" style="width:<?= barPct((int)$montoVend, (int)$maxVendedores) ?>%;"></div>
