@@ -358,7 +358,7 @@ table { width:100%; border-collapse:collapse; }
 <div class="section-spacer"></div>
 
 <!-- ══ Evolución Mensual ══ -->
-<h2>Evolución Mensual — Cotizaciones Totales vs Concluidas</h2>
+<h2>Evolución Mensual — Cotizaciones Totales vs Concluidas <?= !empty($vendedorFiltrado) ? '<span style="font-size:8.5px; font-weight:normal; color:#1e40af; background:#dbeafe; padding:2px 7px; border-radius:4px; margin-left:6px;">Vendedor: ' . htmlspecialchars($vendedorFiltrado) . '</span>' : '<span style="font-size:8.5px; font-weight:normal; color:#475569; margin-left:6px;">(Todos los usuarios)</span>' ?></h2>
 <table class="evo-table">
   <thead>
     <tr>
@@ -424,7 +424,18 @@ table { width:100%; border-collapse:collapse; }
 <div class="section-spacer"></div>
 
 <!-- ══ Ventas por Cliente por Mes (Monto y % del Mes) ══ -->
-<h2>Ventas a Clientes por Mes (Desglose y % de Participación Mensual)</h2>
+<?php
+$subtituloMesVentas = '';
+if (!empty($mesVentas) && $mesVentas !== 'todos') {
+    $partesSel = explode('-', $mesVentas);
+    $nombresM = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    $nombreMesSel = isset($partesSel[1]) ? ($nombresM[(int)$partesSel[1] - 1] . ' ' . $partesSel[0]) : $mesVentas;
+    $subtituloMesVentas = '<span style="font-size:8.5px; font-weight:normal; color:#065f46; background:#d1fae5; padding:2px 7px; border-radius:4px; margin-left:6px;">Mes Filtrado: ' . htmlspecialchars($nombreMesSel) . '</span>';
+} else {
+    $subtituloMesVentas = '<span style="font-size:8.5px; font-weight:normal; color:#475569; margin-left:6px;">(Todos los meses)</span>';
+}
+?>
+<h2>Ventas a Clientes por Mes (Desglose y % de Participación Mensual) <?= $subtituloMesVentas ?></h2>
 <?php if (empty($ventasClientesMes['meses'])): ?>
 <table class="top-table">
   <tr><td style="text-align:center; color:#9ca3af; padding:10px;">Sin ventas registradas por cliente en este período</td></tr>

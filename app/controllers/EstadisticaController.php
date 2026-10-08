@@ -43,9 +43,21 @@ class EstadisticaController
 
         $fechaInicio = $_GET['fecha_inicio'] ?? null;
         $fechaFin    = $_GET['fecha_fin']    ?? null;
+        $usuarioId   = !empty($_GET['usuario_id']) && is_numeric($_GET['usuario_id']) ? (int)$_GET['usuario_id'] : null;
+        $mesVentas   = !empty($_GET['mes_ventas']) && $_GET['mes_ventas'] !== 'todos' ? trim($_GET['mes_ventas']) : null;
 
-        $data = $this->model->getDatosReporte($fechaInicio, $fechaFin);
-        extract($data); // $kpis, $topClientes, $topProductos, $topVendedores, $evolucion
+        $vendedorFiltrado = null;
+        if ($usuarioId) {
+            require_once dirname(__DIR__) . '/models/UsuarioModel.php';
+            $usuarioModel = new UsuarioModel($this->model->getDbConnection());
+            $u = $usuarioModel->obtenerPorId($usuarioId);
+            if ($u) {
+                $vendedorFiltrado = $u['nombre'] ?? null;
+            }
+        }
+
+        $data = $this->model->getDatosReporte($fechaInicio, $fechaFin, $usuarioId, $mesVentas);
+        extract($data); // $kpis, $topClientes, $topProductos, $topVendedores, $evolucion, $ventasClientesMes
 
         include __DIR__ . '/../views/estadisticas/reporte_pdf.php';
         exit();

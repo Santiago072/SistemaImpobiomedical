@@ -349,15 +349,23 @@ class EstadisticaModel
     }
 
     // ── 7. Datos completos para exportar PDF de Reporte ─────────────────────
-    public function getDatosReporte(?string $fi = null, ?string $ff = null): array
+    public function getDatosReporte(?string $fi = null, ?string $ff = null, ?int $usuario_id = null, ?string $mes_ventas = null): array
     {
+        $ventasClientesMes = $this->getVentasMensualesPorCliente($fi, $ff);
+
+        // Si se especificó un mes puntual para las ventas por cliente
+        if (!empty($mes_ventas) && $mes_ventas !== 'todos' && isset($ventasClientesMes['porMes'][$mes_ventas])) {
+            $ventasClientesMes['meses'] = [$mes_ventas];
+            $ventasClientesMes['porMes'] = [$mes_ventas => $ventasClientesMes['porMes'][$mes_ventas]];
+        }
+
         return [
-            'kpis'          => $this->getKpisGenerales($fi, $ff),
-            'topClientes'   => $this->getTopClientes(10, $fi, $ff),
-            'topProductos'  => $this->getTopProductos(10, $fi, $ff),
-            'topVendedores' => $this->getTopVendedores(10, $fi, $ff),
-            'evolucion'     => $this->getMetricasEvolucion($fi, $ff),
-            'ventasClientesMes' => $this->getVentasMensualesPorCliente($fi, $ff),
+            'kpis'              => $this->getKpisGenerales($fi, $ff),
+            'topClientes'       => $this->getTopClientes(10, $fi, $ff),
+            'topProductos'      => $this->getTopProductos(10, $fi, $ff),
+            'topVendedores'     => $this->getTopVendedores(10, $fi, $ff),
+            'evolucion'         => $this->getMetricasEvolucion($fi, $ff, $usuario_id),
+            'ventasClientesMes' => $ventasClientesMes,
         ];
     }
 }

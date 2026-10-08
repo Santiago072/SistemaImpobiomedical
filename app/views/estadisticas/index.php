@@ -39,7 +39,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <?php if ($fechaInicio || $fechaFin): ?>
                             <a href="<?= $basePath ?>?module=estadisticas" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Limpiar</a>
                         <?php endif; ?>
-                        <a href="<?= $basePath ?>?module=estadisticas&action=reporte_pdf<?= $fechaInicio ? '&fecha_inicio='.urlencode($fechaInicio) : '' ?><?= $fechaFin ? '&fecha_fin='.urlencode($fechaFin) : '' ?>"
+                        <a id="btnExportarPdf" href="<?= $basePath ?>?module=estadisticas&action=reporte_pdf<?= $fechaInicio ? '&fecha_inicio='.urlencode($fechaInicio) : '' ?><?= $fechaFin ? '&fecha_fin='.urlencode($fechaFin) : '' ?>"
                            class="btn btn-pdf" target="_blank" title="Exportar PDF del reporte actual">
                             <i class="bi bi-file-earmark-pdf-fill"></i> PDF
                         </a>
@@ -252,6 +252,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Función para actualizar los parámetros en el enlace del botón PDF
+    const actualizarUrlPdf = () => {
+        const btnPdf = document.getElementById('btnExportarPdf');
+        if (!btnPdf) return;
+        try {
+            const url = new URL(btnPdf.href, window.location.origin);
+            const vendVal = selVendedor ? selVendedor.value : 'todos';
+            const mesVal  = selMes ? selMes.value : 'todos';
+
+            if (vendVal && vendVal !== 'todos') {
+                url.searchParams.set('usuario_id', vendVal);
+            } else {
+                url.searchParams.delete('usuario_id');
+            }
+
+            if (mesVal && mesVal !== 'todos') {
+                url.searchParams.set('mes_ventas', mesVal);
+            } else {
+                url.searchParams.delete('mes_ventas');
+            }
+
+            btnPdf.href = url.pathname + url.search;
+        } catch (e) {
+            console.error('Error al actualizar URL de PDF:', e);
+        }
+    };
+
     // Event listener para el selector de vendedor
     const selVendedor = document.getElementById('selectVendedorEvolucion');
     if (selVendedor) {
@@ -269,6 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 chartEvolucion.data.datasets[1].data = concs;
             }
             chartEvolucion.update();
+            actualizarUrlPdf();
         });
     }
 
@@ -544,6 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 chartVentasMes.data.labels = d.labels.length ? d.labels : ['Sin ventas en este período'];
                 chartVentasMes.data.datasets[0].data = d.montos.length ? d.montos : [0];
                 chartVentasMes.update();
+                actualizarUrlPdf();
             });
         }
     }
