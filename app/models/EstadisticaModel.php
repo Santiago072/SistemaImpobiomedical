@@ -229,7 +229,17 @@ class EstadisticaModel
             $whereEvo .= " AND c.fecha_creacion >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)";
         }
 
+        // Si se pide un usuario específico, primero obtenemos los meses del período global
+        $mesesBase = [];
         if ($usuario_id && $usuario_id > 0) {
+            $qMeses = "SELECT DISTINCT DATE_FORMAT(c.fecha_creacion, '%Y-%m') as mes
+                       FROM cotizaciones c
+                       WHERE c.estado = 'finalizada' $whereEvo
+                       ORDER BY mes ASC";
+            $stmtM = $this->db->prepare($qMeses);
+            $stmtM->execute($params);
+            $mesesBase = $stmtM->fetchAll(\PDO::FETCH_COLUMN);
+
             $whereEvo .= " AND c.usuario_id = :uid";
             $params[':uid'] = $usuario_id;
         }
@@ -245,14 +255,32 @@ class EstadisticaModel
         $stmt = $this->db->prepare($q);
         $stmt->execute($params);
 
-        $datos = ['meses' => [], 'cotizaciones' => [], 'concluidas' => []];
+        $datosPorMes = [];
         foreach ($stmt->fetchAll() as $row) {
-            $datos['meses'][]        = $row['mes'];
-            $datos['cotizaciones'][] = (int)$row['cotizaciones'];
-            $datos['concluidas'][]   = (int)$row['concluidas'];
+            $datosPorMes[$row['mes']] = [
+                'cotizaciones' => (int)$row['cotizaciones'],
+                'concluidas'   => (int)$row['concluidas']
+            ];
         }
+
+        $datos = ['meses' => [], 'cotizaciones' => [], 'concluidas' => []];
+        if (!empty($mesesBase)) {
+            foreach ($mesesBase as $m) {
+                $datos['meses'][]        = $m;
+                $datos['cotizaciones'][] = $datosPorMes[$m]['cotizaciones'] ?? 0;
+                $datos['concluidas'][]   = $datosPorMes[$m]['concluidas'] ?? 0;
+            }
+        } else {
+            foreach ($datosPorMes as $m => $v) {
+                $datos['meses'][]        = $m;
+                $datos['cotizaciones'][] = $v['cotizaciones'];
+                $datos['concluidas'][]   = $v['concluidas'];
+            }
+        }
+
         return $datos;
     }
+
 
     /**
      * Retorna la evolución mensual pre-calculada de todos los usuarios para alternar en JS

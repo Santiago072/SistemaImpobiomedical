@@ -257,16 +257,39 @@ document.addEventListener('DOMContentLoaded', function() {
         const btnPdf = document.getElementById('btnExportarPdf');
         if (!btnPdf) return;
         try {
-            const url = new URL(btnPdf.href, window.location.origin);
-            const vendVal = selVendedor ? selVendedor.value : 'todos';
-            const mesVal  = selMes ? selMes.value : 'todos';
+            const elVend = document.getElementById('selectVendedorEvolucion');
+            const elMes  = document.getElementById('selectMesVentasClientes');
+            const inputFi = document.querySelector('input[name="fecha_inicio"]');
+            const inputFf = document.querySelector('input[name="fecha_fin"]');
 
+            const vendVal = elVend ? elVend.value : 'todos';
+            const mesVal  = elMes  ? elMes.value  : 'todos';
+            const fiVal   = inputFi ? inputFi.value : '';
+            const ffVal   = inputFf ? inputFf.value : '';
+
+            const url = new URL(btnPdf.href, window.location.origin);
+
+            // Mantener o actualizar rango de fechas
+            if (fiVal) {
+                url.searchParams.set('fecha_inicio', fiVal);
+            } else if (!url.searchParams.get('fecha_inicio')) {
+                url.searchParams.delete('fecha_inicio');
+            }
+
+            if (ffVal) {
+                url.searchParams.set('fecha_fin', ffVal);
+            } else if (!url.searchParams.get('fecha_fin')) {
+                url.searchParams.delete('fecha_fin');
+            }
+
+            // Filtro de vendedor
             if (vendVal && vendVal !== 'todos') {
                 url.searchParams.set('usuario_id', vendVal);
             } else {
                 url.searchParams.delete('usuario_id');
             }
 
+            // Filtro de mes
             if (mesVal && mesVal !== 'todos') {
                 url.searchParams.set('mes_ventas', mesVal);
             } else {
@@ -278,6 +301,15 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error al actualizar URL de PDF:', e);
         }
     };
+
+
+    // Asegurar que al hacer clic se actualicen los parámetros exactos
+    const btnPdfEl = document.getElementById('btnExportarPdf');
+    if (btnPdfEl) {
+        btnPdfEl.addEventListener('click', function() {
+            actualizarUrlPdf();
+        });
+    }
 
     // Event listener para el selector de vendedor
     const selVendedor = document.getElementById('selectVendedorEvolucion');

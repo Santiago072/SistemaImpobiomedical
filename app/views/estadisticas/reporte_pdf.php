@@ -43,6 +43,13 @@ if (!empty($fechaInicio) && !empty($fechaFin)) {
     $periodoLabel = 'Período: Todos los registros';
 }
 
+$nombreMesSel = '';
+if (!empty($mesVentas) && $mesVentas !== 'todos') {
+    $partesSel = explode('-', $mesVentas);
+    $nombresM = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    $nombreMesSel = isset($partesSel[1]) ? ($nombresM[(int)$partesSel[1] - 1] . ' ' . $partesSel[0]) : $mesVentas;
+}
+
 $fechaGenerado = date('d/m/Y H:i');
 
 // Máximos para barras proporcionales y total para porcentajes
@@ -179,6 +186,16 @@ table { width:100%; border-collapse:collapse; }
         <div style="margin-top:6px; display:inline-block; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:2px 8px; border-radius:10px; font-size:7.5px; font-weight:bold;">
           <?= htmlspecialchars($periodoLabel) ?>
         </div>
+        <?php if (!empty($vendedorFiltrado)): ?>
+          <div style="margin-top:3px; display:inline-block; background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; padding:2px 8px; border-radius:10px; font-size:7.5px; font-weight:bold;">
+            Vendedor: <?= htmlspecialchars($vendedorFiltrado) ?>
+          </div>
+        <?php endif; ?>
+        <?php if (!empty($mesVentas) && $mesVentas !== 'todos'): ?>
+          <div style="margin-top:3px; display:inline-block; background:#fef3c7; border:1px solid #fde68a; color:#92400e; padding:2px 8px; border-radius:10px; font-size:7.5px; font-weight:bold;">
+            Mes: <?= htmlspecialchars($nombreMesSel ?? $mesVentas) ?>
+          </div>
+        <?php endif; ?>
       </td>
 
       <!-- COL 3: Logo IMPOBIOMEDICAL grande -->
@@ -319,45 +336,7 @@ table { width:100%; border-collapse:collapse; }
 
 <div class="section-spacer"></div>
 
-<!-- ══ Top Vendedores ══ -->
-<h2>Top Vendedores (por Monto Vendido)</h2>
-<table class="top-table">
-  <thead>
-    <tr>
-      <th style="width:25px;">#</th>
-      <th>Vendedor</th>
-      <th>Proporción de ventas</th>
-      <th style="width:45px; text-align:center;">%</th>
-      <th style="width:110px; text-align:right;">Monto Vendido</th>
-    </tr>
-  </thead>
-  <tbody>
-    <?php if (empty($topVendedores['labels'])): ?>
-    <tr><td colspan="5" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados</td></tr>
-    <?php else: ?>
-    <?php foreach ($topVendedores['labels'] as $i => $label): 
-        $montoVend = (float)($topVendedores['data'][$i] ?? 0);
-        $pctVend   = $totalVendidoPeriodo > 0 ? round(($montoVend / $totalVendidoPeriodo) * 100, 1) : 0;
-    ?>
-    <tr>
-      <td style="font-weight:bold; color:#f59e0b;"><?= $i+1 ?></td>
-      <td style="font-weight:bold; color:#334155;"><?= htmlspecialchars($label) ?></td>
-      <td>
-        <div class="bar-outer">
-          <div class="bar-inner amber" style="width:<?= barPct((int)$montoVend, (int)$maxVendedores) ?>%;"></div>
-        </div>
-      </td>
-      <td style="text-align:center; font-weight:bold; color:#d97706; font-size:7.5px;"><?= number_format($pctVend, 1, ',', '.') ?>%</td>
-      <td style="text-align:right; font-weight:bold; color:#0f172a;"><?= fmtR($montoVend) ?></td>
-    </tr>
-    <?php endforeach; ?>
-    <?php endif; ?>
-  </tbody>
-</table>
-
-<div class="section-spacer"></div>
-
-<!-- ══ Evolución Mensual ══ -->
+<!-- ══ Evolución Mensual (Cotizaciones Totales vs Concluidas) ══ -->
 <h2>Evolución Mensual — Cotizaciones Totales vs Concluidas <?= !empty($vendedorFiltrado) ? '<span style="font-size:8.5px; font-weight:normal; color:#1e40af; background:#dbeafe; padding:2px 7px; border-radius:4px; margin-left:6px;">Vendedor: ' . htmlspecialchars($vendedorFiltrado) . '</span>' : '<span style="font-size:8.5px; font-weight:normal; color:#475569; margin-left:6px;">(Todos los usuarios)</span>' ?></h2>
 <table class="evo-table">
   <thead>
@@ -420,6 +399,49 @@ table { width:100%; border-collapse:collapse; }
   </tfoot>
   <?php endif; ?>
 </table>
+
+<div class="section-spacer"></div>
+
+<!-- ══ Top Vendedores ══ -->
+<h2>Top Vendedores (por Monto Vendido) <?= !empty($vendedorFiltrado) ? '<span style="font-size:8.5px; font-weight:normal; color:#92400e; background:#fef3c7; padding:2px 7px; border-radius:4px; margin-left:6px;">Consolidado General</span>' : '' ?></h2>
+<table class="top-table">
+  <thead>
+    <tr>
+      <th style="width:25px;">#</th>
+      <th>Vendedor</th>
+      <th>Proporción de ventas</th>
+      <th style="width:45px; text-align:center;">%</th>
+      <th style="width:110px; text-align:right;">Monto Vendido</th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php if (empty($topVendedores['labels'])): ?>
+    <tr><td colspan="5" style="text-align:center; color:#9ca3af; padding:10px;">Sin datos registrados</td></tr>
+    <?php else: ?>
+    <?php foreach ($topVendedores['labels'] as $i => $label): 
+        $montoVend = (float)($topVendedores['data'][$i] ?? 0);
+        $pctVend   = $totalVendidoPeriodo > 0 ? round(($montoVend / $totalVendidoPeriodo) * 100, 1) : 0;
+        $esVendedorSeleccionado = !empty($vendedorFiltrado) && mb_strtolower(trim($label)) === mb_strtolower(trim($vendedorFiltrado));
+    ?>
+    <tr <?= $esVendedorSeleccionado ? 'style="background:#fef9c3 !important;"' : '' ?>>
+      <td style="font-weight:bold; color:#f59e0b;"><?= $i+1 ?></td>
+      <td style="font-weight:bold; color:<?= $esVendedorSeleccionado ? '#92400e' : '#334155' ?>;">
+        <?= htmlspecialchars($label) ?>
+        <?= $esVendedorSeleccionado ? ' <span style="font-size:7px; color:#b45309; font-weight:bold;">(FILTRADO)</span>' : '' ?>
+      </td>
+      <td>
+        <div class="bar-outer">
+          <div class="bar-inner amber" style="width:<?= barPct((int)$montoVend, (int)$maxVendedores) ?>%;"></div>
+        </div>
+      </td>
+      <td style="text-align:center; font-weight:bold; color:#d97706; font-size:7.5px;"><?= number_format($pctVend, 1, ',', '.') ?>%</td>
+      <td style="text-align:right; font-weight:bold; color:#0f172a;"><?= fmtR($montoVend) ?></td>
+    </tr>
+    <?php endforeach; ?>
+    <?php endif; ?>
+  </tbody>
+</table>
+
 
 <div class="section-spacer"></div>
 
