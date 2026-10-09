@@ -81,7 +81,7 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                     <table class="mod-table" id="tablaItemsDirecta">
                         <thead>
                             <tr>
-                                <th style="width: 125px;">Cód. Proveedor</th>
+                                <th style="width: 125px;">Cód. Producto</th>
                                 <th>Producto / Descripción *</th>
                                 <th style="width: 90px;" class="text-right">Cantidad *</th>
                                 <th style="width: 140px;" class="text-right">Precio Prov. ($) *</th>
@@ -325,7 +325,7 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         tr.innerHTML = `
             <td>
                 <input type="text" name="items[${filaIndex}][codigo_proveedor]" class="oc-input"
-                       placeholder="Cód. Prov" value="${codigo}" maxlength="60" style="padding: 6px 8px; font-size: 12.5px;">
+                       placeholder="Cód. Prod" value="${codigo}" maxlength="60" style="padding: 6px 8px; font-size: 12.5px;">
             </td>
             <td>
                 <input type="text" name="items[${filaIndex}][titulo]" class="oc-input item-titulo" required

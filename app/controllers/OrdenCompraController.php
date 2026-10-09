@@ -93,7 +93,7 @@ class OrdenCompraController
         $proveedorInicial = $ordenAjustando['proveedor'] ?? (count($proveedores) === 1 ? ($proveedores[0] ?? '') : '');
         $infoProveedorInicial = !empty($proveedorInicial) ? $this->model->buscarHistorialProveedor($proveedorInicial) : null;
 
-        return compact('cotizacion', 'items', 'proveedores', 'csrf_token', 'infoProveedorInicial', 'ordenAjustando', 'itemsOrdenAjustando');
+        return compact('cotizacion', 'items', 'proveedores', 'csrf_token', 'infoProveedorInicial', 'ordenAjustando', 'itemsOrdenAjustando', 'proveedorInicial');
     }
 
     // ── PASO 2: Guardar orden + redirigir al PDF ──────────────────────────────

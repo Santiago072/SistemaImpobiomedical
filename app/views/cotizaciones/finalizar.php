@@ -33,7 +33,12 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <!-- ── Formulario ── -->
             <div class="panel-form">
                 <div class="mod-table-wrap p-24 overflow-visible">
-                    <h2 class="mod-title mb-16"><i class="bi bi-building"></i> Datos del Cliente</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                        <h2 class="mod-title" style="margin: 0;"><i class="bi bi-building"></i> Datos del Cliente</h2>
+                        <button type="button" id="btnLimpiarCliente" style="padding: 7px 13px; font-size: 12.5px; font-weight: 600; color: #64748b; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseenter="this.style.background='#f1f5f9'; this.style.color='#ef4444'; this.style.borderColor='#fca5a5';" onmouseleave="this.style.background='#ffffff'; this.style.color='#64748b'; this.style.borderColor='#cbd5e1';">
+                            <i class="bi bi-arrow-counterclockwise"></i> Limpiar Datos del Cliente
+                        </button>
+                    </div>
 
                     <!-- Buscar cliente del catálogo -->
                     <div class="search-live mb-16">
@@ -234,6 +239,28 @@ function autocompletar(c) {
     document.getElementById('inpClienteCiudad').value    = c.municipio || '';
     document.getElementById('listaClientes').style.display = 'none';
     document.getElementById('busquedaCliente').value = '';
+}
+
+function limpiarDatosCliente() {
+    document.getElementById('hdnClienteId').value        = '';
+    document.getElementById('inpClienteNombre').value    = '';
+    document.getElementById('inpClienteNit').value       = '';
+    document.getElementById('inpClienteDepto').value     = '';
+    document.getElementById('inpClienteDir').value       = '';
+    document.getElementById('inpClienteTel').value       = '';
+    document.getElementById('inpClienteEmail').value     = '';
+    document.getElementById('inpClienteContacto').value  = '';
+    document.getElementById('inpClienteCiudad').value    = '';
+    document.getElementById('busquedaCliente').value     = '';
+    document.getElementById('listaClientes').style.display = 'none';
+    document.getElementById('inpClienteNombre').focus();
+}
+
+const btnLimpiar = document.getElementById('btnLimpiarCliente');
+if (btnLimpiar) {
+    btnLimpiar.addEventListener('click', function() {
+        limpiarDatosCliente();
+    });
 }
 
 document.addEventListener('click', e => {

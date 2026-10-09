@@ -72,8 +72,8 @@ include dirname(__DIR__) . '/layout/menu.php';
                 </div>
                 <div class="usr-info">
                     <div><i class="bi bi-upc-scan"></i> Cód: <?= htmlspecialchars($u['codigo'] ?? 'N/A') ?></div>
-                    <div><i class="bi bi-envelope"></i> <?= htmlspecialchars($u['correo']) ?></div>
-                    <div><i class="bi bi-telephone"></i> <?= htmlspecialchars($u['telefono']) ?></div>
+                    <div><i class="bi bi-envelope"></i> <?= htmlspecialchars($u['correo'] ?? '') ?></div>
+                    <div><i class="bi bi-telephone"></i> <?= htmlspecialchars($u['telefono'] ?? '') ?></div>
                 </div>
                 <div class="usr-actions">
                     <button type="button" class="mod-btn-edit" onclick="abrirModalEditar(<?= htmlspecialchars(json_encode($u)) ?>, event)">
