@@ -21,9 +21,11 @@ class ProductoModel implements RepositoryInterface
         $params = [];
 
         if ($busqueda !== '') {
-            $where[] = "(titulo LIKE :busq_tit OR codigo_producto LIKE :busq_cod OR categoria LIKE :busq_cat OR descripcion LIKE :busq_desc)";
+            $where[] = "(titulo LIKE :busq_tit OR codigo_producto LIKE :busq_cod OR marca LIKE :busq_mar OR modelo LIKE :busq_mod OR categoria LIKE :busq_cat OR descripcion LIKE :busq_desc)";
             $params[':busq_tit']  = "%$busqueda%";
             $params[':busq_cod']  = "%$busqueda%";
+            $params[':busq_mar']  = "%$busqueda%";
+            $params[':busq_mod']  = "%$busqueda%";
             $params[':busq_cat']  = "%$busqueda%";
             $params[':busq_desc'] = "%$busqueda%";
         }
@@ -60,9 +62,11 @@ class ProductoModel implements RepositoryInterface
             $where[] = "id IN (" . implode(',', $placeholders) . ")";
         } else {
             if ($busqueda !== '') {
-                $where[] = "(titulo LIKE :busq_tit OR codigo_producto LIKE :busq_cod OR categoria LIKE :busq_cat OR descripcion LIKE :busq_desc)";
+                $where[] = "(titulo LIKE :busq_tit OR codigo_producto LIKE :busq_cod OR marca LIKE :busq_mar OR modelo LIKE :busq_mod OR categoria LIKE :busq_cat OR descripcion LIKE :busq_desc)";
                 $params[':busq_tit']  = "%$busqueda%";
                 $params[':busq_cod']  = "%$busqueda%";
+                $params[':busq_mar']  = "%$busqueda%";
+                $params[':busq_mod']  = "%$busqueda%";
                 $params[':busq_cat']  = "%$busqueda%";
                 $params[':busq_desc'] = "%$busqueda%";
             }
@@ -86,9 +90,11 @@ class ProductoModel implements RepositoryInterface
         $params = [];
 
         if ($busqueda !== '') {
-            $where[] = "(titulo LIKE :busq_tit OR codigo_producto LIKE :busq_cod OR categoria LIKE :busq_cat OR descripcion LIKE :busq_desc)";
+            $where[] = "(titulo LIKE :busq_tit OR codigo_producto LIKE :busq_cod OR marca LIKE :busq_mar OR modelo LIKE :busq_mod OR categoria LIKE :busq_cat OR descripcion LIKE :busq_desc)";
             $params[':busq_tit']  = "%$busqueda%";
             $params[':busq_cod']  = "%$busqueda%";
+            $params[':busq_mar']  = "%$busqueda%";
+            $params[':busq_mod']  = "%$busqueda%";
             $params[':busq_cat']  = "%$busqueda%";
             $params[':busq_desc'] = "%$busqueda%";
         }
@@ -128,14 +134,14 @@ class ProductoModel implements RepositoryInterface
     {
         if ($busqueda !== '') {
             $stmt = $this->db->prepare(
-                "SELECT id, titulo, foto, descripcion, iva, porcentaje_iva, categoria, codigo_producto, codigo_proveedor
+                "SELECT id, titulo, foto, descripcion, iva, porcentaje_iva, categoria, codigo_producto, marca, modelo, codigo_proveedor
                  FROM productos WHERE estado='activo' AND titulo LIKE :busqueda
                  ORDER BY titulo LIMIT 50"
             );
             $stmt->execute([':busqueda' => "%$busqueda%"]);
         } else {
             $stmt = $this->db->prepare(
-                "SELECT id, titulo, foto, descripcion, iva, porcentaje_iva, categoria, codigo_producto, codigo_proveedor
+                "SELECT id, titulo, foto, descripcion, iva, porcentaje_iva, categoria, codigo_producto, marca, modelo, codigo_proveedor
                  FROM productos WHERE estado='activo' ORDER BY titulo LIMIT 50"
             );
             $stmt->execute();
@@ -163,11 +169,12 @@ class ProductoModel implements RepositoryInterface
 
     public function crear(string $titulo, string $foto, string $descripcion,
                           string $iva, float $porcentaje_iva,
-                          ?string $categoria = null, ?string $codigo_producto = null): bool
+                          ?string $categoria = null, ?string $codigo_producto = null,
+                          ?string $marca = null, ?string $modelo = null): bool
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO productos (titulo, foto, descripcion, iva, porcentaje_iva, categoria, codigo_producto)
-             VALUES (:titulo, :foto, :desc, :iva, :porciva, :cat, :codprod)'
+            'INSERT INTO productos (titulo, foto, descripcion, iva, porcentaje_iva, categoria, codigo_producto, marca, modelo)
+             VALUES (:titulo, :foto, :desc, :iva, :porciva, :cat, :codprod, :marca, :modelo)'
         );
         return $stmt->execute([
             ':titulo'   => $titulo,
@@ -177,16 +184,20 @@ class ProductoModel implements RepositoryInterface
             ':porciva'  => $porcentaje_iva,
             ':cat'      => $categoria,
             ':codprod'  => $codigo_producto,
+            ':marca'    => $marca,
+            ':modelo'   => $modelo,
         ]);
     }
 
     public function actualizar(int $id, string $titulo, string $foto, string $descripcion,
                                string $iva, float $porcentaje_iva,
-                               string $estado, ?string $categoria = null, ?string $codigo_producto = null): bool
+                               string $estado, ?string $categoria = null, ?string $codigo_producto = null,
+                               ?string $marca = null, ?string $modelo = null): bool
     {
         $stmt = $this->db->prepare(
             'UPDATE productos SET titulo=:titulo, foto=:foto, descripcion=:desc, iva=:iva,
-             porcentaje_iva=:porciva, estado=:estado, categoria=:cat, codigo_producto=:codprod
+             porcentaje_iva=:porciva, estado=:estado, categoria=:cat, codigo_producto=:codprod,
+             marca=:marca, modelo=:modelo
              WHERE id=:id'
         );
         return $stmt->execute([
@@ -198,6 +209,8 @@ class ProductoModel implements RepositoryInterface
             ':estado'   => $estado,
             ':cat'      => $categoria,
             ':codprod'  => $codigo_producto,
+            ':marca'    => $marca,
+            ':modelo'   => $modelo,
             ':id'       => $id,
         ]);
     }

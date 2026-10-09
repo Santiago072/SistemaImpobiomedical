@@ -268,91 +268,95 @@ SistemaImpobiomedical/
 
 ```mermaid
 erDiagram
-    usuarios ||--o{ cotizaciones : crea
-    usuarios ||--o{ ordenes_compra : emite
-    clientes ||--o{ cotizaciones : recibe
-    proveedores ||--o{ cotizacion_items : suministra
-    proveedores ||--o{ ordenes_compra : factura
-    cotizaciones ||--|{ cotizacion_items : contiene
-    cotizaciones ||--o{ ordenes_compra : origina
-    ordenes_compra ||--|{ orden_compra_items : contiene
-    productos ||--o{ cotizacion_items : provee
-
-    proveedores {
-        int id PK
-        string nit UK
-        string nombre_proveedor
-        string tipo_contribuyente
-        string nombre_banco
-        string numero_cuenta
-        string tipo_cuenta
-        string estado
-        datetime fecha_creacion
-    }
+    usuarios ||--o{ cotizaciones : "crea"
+    usuarios ||--o{ ordenes_compra : "genera"
+    clientes |o--o{ cotizaciones : "referenciado en"
+    cotizaciones ||--|{ cotizacion_items : "contiene"
+    cotizaciones ||--o{ ordenes_compra : "origina"
+    productos |o--o{ cotizacion_items : "referenciado en"
+    proveedores |o--o{ cotizacion_items : "suministra"
+    ordenes_compra ||--|{ orden_compra_items : "contiene"
+    cotizacion_items ||--o{ orden_compra_items : "referencia"
 
     usuarios {
         int id PK
-        string codigo UK
-        string documento UK
-        string nombre
-        string correo
-        string telefono
-        string cargo
-        string password
-        string rol
-        string estado
+        varchar codigo UK
+        varchar documento UK
+        varchar nombre
+        varchar correo
+        varchar password
+        varchar telefono
+        varchar cargo
+        enum rol "admin, compras, usuario"
+        enum estado "activo, inactivo"
     }
 
     clientes {
         int id PK
-        string nombre
-        string nit UK
-        string departamento
-        string municipio
-        string direccion
-        string nombre_contacto
-        string telefono
-        string correo
-        string estado
+        varchar nombre
+        varchar nit UK
+        varchar departamento
+        varchar municipio
+        varchar direccion
+        varchar nombre_contacto
+        varchar telefono
+        varchar correo
+        enum estado "activo, inactivo"
     }
 
     productos {
         int id PK
-        string codigo_producto
-        string titulo
-        string foto
+        varchar titulo
+        varchar foto
         text descripcion
-        decimal precio
-        string categoria
-        string iva
-        string estado
+        enum iva "si, no"
+        decimal porcentaje_iva
+        varchar categoria
+        varchar codigo_producto
+        varchar marca
+        varchar modelo
+        varchar codigo_proveedor
+        enum estado "activo, inactivo"
+    }
+
+    proveedores {
+        int id PK
+        varchar nit UK
+        varchar nombre_proveedor
+        varchar tipo_contribuyente
+        varchar nombre_banco
+        varchar numero_cuenta
+        varchar tipo_cuenta
+        enum estado "activo, inactivo"
+        datetime fecha_creacion
     }
 
     cotizaciones {
         int id PK
-        string numero_cotizacion
+        varchar numero_cotizacion
         int usuario_id FK
-        string usuario_codigo
+        varchar usuario_codigo
         int cliente_id FK
-        string cliente_nombre
-        string cliente_nit
-        string cliente_departamento
-        string cliente_ciudad
-        string cliente_direccion
-        string cliente_telefono
-        string cliente_correo
-        string cliente_contacto
+        varchar cliente_nombre
+        varchar cliente_nit
+        varchar cliente_direccion
+        varchar cliente_telefono
+        varchar cliente_correo
+        varchar cliente_contacto
+        varchar cliente_ciudad
+        varchar asesor_nombre
+        varchar asesor_cargo
         date fecha_creacion
         int dias_validez
         date fecha_validez
-        string condiciones_pago
+        varchar condiciones_pago
         text observaciones
-        string estado
-        string estado_comercial
+        enum estado "borrador, finalizada"
+        enum estado_comercial "pendiente, concluida, descartada"
         datetime fecha_cambio_estado
-        string estado_entrega
+        enum estado_entrega "pendiente, en_transito, entregado"
         datetime fecha_entrega
-        boolean es_revision
+        tinyint es_revision "0=real, 1=clon_temporal"
     }
 
     cotizacion_items {
@@ -360,24 +364,26 @@ erDiagram
         int cotizacion_id FK
         int producto_id FK
         int proveedor_id FK
-        string titulo
-        string foto
+        varchar titulo
+        varchar foto
         text descripcion
         int cantidad
         decimal precio
+        enum iva "si, no"
+        decimal porcentaje_iva
+        varchar tiempo_entrega
+        varchar categoria
+        varchar codigo_producto
+        varchar marca
+        varchar modelo
         decimal precio_proveedor
         decimal porcentaje_utilidad
         decimal flete
         decimal calibracion
         decimal estampillas
-        string iva
-        decimal porcentaje_iva
-        string tiempo_entrega
-        string categoria
-        string codigo_producto
-        string proveedor
-        string proveedor_nit
-        string codigo_proveedor
+        varchar proveedor
+        varchar proveedor_nit
+        varchar codigo_proveedor
         json calc_ops
     }
 
@@ -385,40 +391,40 @@ erDiagram
         int id PK
         int numero_po UK
         int cotizacion_id FK
-        string cotizacion_numero
+        varchar cotizacion_numero
         int usuario_id FK
-        string proveedor
-        string proveedor_nit
-        string estado_proveedor
-        string tipo_contribuyente
-        string condiciones_pago
-        string iva
-        string departamento_compras
-        string nota
+        varchar proveedor
+        varchar proveedor_nit
+        enum estado_proveedor "registrado, nuevo"
+        varchar tipo_contribuyente
+        varchar condiciones_pago
+        varchar iva
+        varchar departamento_compras
+        text nota
         decimal retencion
         decimal flete
-        string flete_iva
+        enum flete_iva "si, no"
         decimal flete_porcentaje_iva
-        string tipo_descuento
+        enum tipo_descuento "monto, porcentaje"
         decimal descuento_valor
         decimal descuento
         date fecha
-        string estado
-        string banco_nombre
-        string banco_cuenta
-        string banco_tipo_cuenta
+        enum estado "pendiente, completada"
+        varchar banco_nombre
+        varchar banco_cuenta
+        varchar banco_tipo_cuenta
     }
 
     orden_compra_items {
         int id PK
         int orden_id FK
         int cotizacion_item_id FK
-        string codigo_proveedor
-        string titulo
+        varchar codigo_proveedor
+        varchar titulo
         text descripcion
         int cantidad
         decimal precio_unit
-        string iva
+        enum iva "si, no"
         decimal porcentaje_iva
         decimal total
     }
@@ -490,18 +496,18 @@ flowchart TD
     Paso1 --> Paso2["2️⃣ Calculadora<br/>(Utilidad, Flete, Calibración)"]
     Paso2 --> Paso3{"¿Más ítems?"}
     Paso3 -- Sí --> Paso1
-    Paso3 -- No --> Paso4["3️⃣ Datos del Cliente<br/>(NIT, Depto, Ciudad)"]
+    Paso3 -- No --> Paso4["3️⃣ Datos del Cliente y Condiciones<br/>(Validez, Pago, Ubicación)"]
     Paso4 --> Paso5["4️⃣ Finalizar<br/>(Consecutivo: EB 01)"]
     
     Paso5 --> Paso6["📄 PDF Cliente<br/>(Oferta oficial)"]
-    Paso5 --> Paso7["📋 Respaldo<br/>(Costos internos)"]
+    Paso5 --> Paso7["📋 Respaldo<br/>(Costos y Utilidades)"]
     Paso5 --> Estado{"5️⃣ Seguimiento"}
     
-    Estado -- 🟡 Negociando --> Pendiente["🟡 Pendiente"]
-    Estado -- 🔴 Desiste --> Descartada["🔴 Descartada"]
-    Estado -- 🟢 Aprobada --> Concluida["🟢 Concluida"]
+    Estado -- 🟡 En negociación --> Pendiente["🟡 Pendiente"]
+    Estado -- 🔴 Desiste --> Descartada["🔴 Descartada (Bloquea P.O.)"]
+    Estado -- 🟢 Aprobada --> Concluida["🟢 Concluida (Bloquea P.O.)"]
 
-    Concluida --> Orden["6️⃣ Orden de Compra<br/>(Selección por proveedor)"]
+    Pendiente --> Orden["6️⃣ Emitir Orden de Compra<br/>(Selección por proveedor)"]
     Orden --> Fin(["📦 Emisión P.O. PDF"])
 
     style Inicio fill:#10757e,stroke:#0d5c63,color:#fff

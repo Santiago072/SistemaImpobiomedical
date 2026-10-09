@@ -70,6 +70,8 @@ class ProductoController
 
         $categoria      = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
         $codigo_producto= mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
+        $marca          = mb_substr(sanitizar_entrada($_POST['marca'] ?? ''), 0, 100);
+        $modelo         = mb_substr(sanitizar_entrada($_POST['modelo'] ?? ''), 0, 100);
 
         if (!$titulo || !$descripcion) {
             $mensajeError = 'Todos los campos son obligatorios';
@@ -83,7 +85,7 @@ class ProductoController
 
         $foto = $this->uploader->subir($_FILES['foto'] ?? [], '');
 
-        if ($this->model->crear($titulo, $foto, $descripcion, $iva, $porcentaje_iva, $categoria, $codigo_producto)) {
+        if ($this->model->crear($titulo, $foto, $descripcion, $iva, $porcentaje_iva, $categoria, $codigo_producto, $marca, $modelo)) {
             header('Location: ' . BASE_URL . '?module=productos&created=1');
             exit();
         }
@@ -131,6 +133,8 @@ class ProductoController
 
         $categoria      = mb_substr(sanitizar_entrada($_POST['categoria'] ?? ''), 0, 100);
         $codigo_producto= mb_substr(sanitizar_entrada($_POST['codigo_producto'] ?? ''), 0, 60);
+        $marca          = mb_substr(sanitizar_entrada($_POST['marca'] ?? ''), 0, 100);
+        $modelo         = mb_substr(sanitizar_entrada($_POST['modelo'] ?? ''), 0, 100);
 
         if (!$titulo || !$descripcion) {
             $mensajeError = 'Todos los campos son obligatorios';
@@ -139,7 +143,7 @@ class ProductoController
 
         $foto = $this->uploader->reemplazar($_FILES['foto'] ?? [], $producto['foto'] ?? '');
 
-        if ($this->model->actualizar($id, $titulo, $foto, $descripcion, $iva, $porcentaje_iva, $estado, $categoria, $codigo_producto)) {
+        if ($this->model->actualizar($id, $titulo, $foto, $descripcion, $iva, $porcentaje_iva, $estado, $categoria, $codigo_producto, $marca, $modelo)) {
             header('Location: ' . BASE_URL . '?module=productos&updated=1');
             exit();
         }

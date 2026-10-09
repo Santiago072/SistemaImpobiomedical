@@ -41,6 +41,8 @@ class ItemCotizacionService
         $tiempo_entrega      = mb_substr(sanitizar_entrada($postData['tiempo_entrega'] ?? ''), 0, 120);
         $categoria           = mb_substr(sanitizar_entrada($postData['categoria'] ?? ''), 0, 100);
         $codigo_producto     = mb_substr(sanitizar_entrada($postData['codigo_producto'] ?? ''), 0, 60);
+        $marca               = mb_substr(sanitizar_entrada($postData['marca'] ?? ''), 0, 100);
+        $modelo              = mb_substr(sanitizar_entrada($postData['modelo'] ?? ''), 0, 100);
         $precio_proveedor    = (float)($postData['precio_proveedor'] ?? 0);
         $porcentaje_utilidad = (float)($postData['porcentaje_utilidad'] ?? 0);
         $flete               = (float)($postData['flete'] ?? 0);
@@ -87,7 +89,7 @@ class ItemCotizacionService
             $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
             $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
             $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops,
-            $proveedor_id, $proveedor_nit
+            $proveedor_id, $proveedor_nit, $marca, $modelo
         );
 
         if (!$inserted) {
@@ -132,12 +134,14 @@ class ItemCotizacionService
                         $porcentaje_iva,
                         'activo',
                         !empty($categoria) ? $categoria : ($productoExistente['categoria'] ?? null),
-                        !empty($codigo_producto) ? $codigo_producto : ($productoExistente['codigo_producto'] ?? null)
+                        !empty($codigo_producto) ? $codigo_producto : ($productoExistente['codigo_producto'] ?? null),
+                        !empty($marca) ? $marca : ($productoExistente['marca'] ?? null),
+                        !empty($modelo) ? $modelo : ($productoExistente['modelo'] ?? null)
                     );
                 }
             } else {
                 // Crear un producto totalmente nuevo
-                $this->productoModel->crear($titulo, $foto, $descripcion, $iva, $porcentaje_iva, $categoria, $codigo_producto);
+                $this->productoModel->crear($titulo, $foto, $descripcion, $iva, $porcentaje_iva, $categoria, $codigo_producto, $marca, $modelo);
             }
         }
     }
@@ -162,6 +166,8 @@ class ItemCotizacionService
         $tiempo_entrega      = mb_substr(sanitizar_entrada($postData['tiempo_entrega'] ?? ''), 0, 120);
         $categoria           = mb_substr(sanitizar_entrada($postData['categoria'] ?? ''), 0, 100);
         $codigo_producto     = mb_substr(sanitizar_entrada($postData['codigo_producto'] ?? ''), 0, 60);
+        $marca               = mb_substr(sanitizar_entrada($postData['marca'] ?? ''), 0, 100);
+        $modelo              = mb_substr(sanitizar_entrada($postData['modelo'] ?? ''), 0, 100);
         $precio_proveedor    = (float)($postData['precio_proveedor'] ?? 0);
         $porcentaje_utilidad = (float)($postData['porcentaje_utilidad'] ?? 0);
         $flete               = (float)($postData['flete'] ?? 0);
@@ -194,7 +200,7 @@ class ItemCotizacionService
             $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
             $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
             $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops,
-            $proveedor_id, $proveedor_nit
+            $proveedor_id, $proveedor_nit, $marca, $modelo
         );
     }
 }

@@ -15,7 +15,7 @@
 5. [Órdenes de Compra (P.O.)](#5-órdenes-de-compra-po)
 6. [Gestión de Clientes](#6-gestión-de-clientes)
 7. [Gestión de Proveedores](#7-gestión-de-proveedores)
-8. [Gestión de Productos (Solo Admin)](#8-gestión-de-productos-solo-admin)
+8. [Catálogo de Productos (Eliminación Solo Admin)](#8-catálogo-de-productos-eliminación-solo-admin)
 9. [Gestión de Usuarios (Solo Admin)](#9-gestión-de-usuarios-solo-admin)
 10. [Estadísticas y Reportes (Solo Admin)](#10-estadísticas-y-reportes-solo-admin)
 11. [Botón de Ayuda Rápida](#11-botón-de-ayuda-rápida)
@@ -27,7 +27,7 @@
 
 ### Iniciar sesión
 1. Abrir el navegador y dirigirse a la URL del sistema.
-2. Ingresar su **código/documento** y **contraseña**.
+2. Ingresar su **número de documento** y **contraseña** (o su documento como contraseña inicial).
 3. Hacer clic en **"Ingresar al Sistema"**.
 4. *(Opcional)*: Use el ícono 👁️ para mostrar u ocultar su contraseña digitada.
 
@@ -53,8 +53,8 @@ Al iniciar sesión llegará al **Panel Principal**, que muestra:
 ## 3. Nueva Cotización (Flujo en 2 Pasos)
 
 ### Paso 1: Agregar Productos (Ítems)
-* **Buscar del Catálogo:** Digite el nombre del producto en el buscador en vivo y seleccione la opción deseada para autocompletar título, descripción técnica, imagen y categoría (incluyendo *Servicio Calibración*).
-* **Ingreso Manual:** Puede registrar productos o servicios médicos personalizados directamente completando los campos requeridos y seleccionando su categoría.
+* **Buscar del Catálogo:** Digite el nombre del producto en el buscador en vivo y seleccione la opción deseada para autocompletar nombre, código, marca, modelo, descripción técnica, imagen y categoría.
+* **Ingreso Manual:** Puede registrar productos o servicios médicos personalizados completando los campos obligatorios: **Nombre del Producto**, **Marca**, **Modelo**, cantidad y descripción.
 * **Calculadora de Ganancias Dinámica:** Permite ingresar el precio base del proveedor y calcular utilidad, flete, calibración y estampillas. El valor resultante se establece como el precio unitario del producto para la cotización.
 * **Búsqueda Predictiva de Proveedor:** En el ítem puede buscar el proveedor por Nombre o NIT; el sistema presentará sugerencias limpias con opción de selección directa.
 * **Agregar:** Presione **"Agregar a Cotización"** para almacenar temporalmente el ítem. Los borradores y productos agregados quedan preservados inteligentemente.
@@ -116,11 +116,11 @@ Directorio centralizado de proveedores comerciales y técnicos:
 
 ---
 
-## 8. Gestión de Productos (Solo Admin)
+## 8. Catálogo de Productos (Eliminación Solo Admin)
 
-* Catálogo con fotos sanitizadas, categorías, códigos y porcentajes de IVA.
-* Exportación completa del catálogo a PDF.
-* Las eliminaciones no afectan cotizaciones históricas ya emitidas.
+* Catálogo con fotos sanitizadas, categorías, códigos y porcentajes de IVA; accesible por todos los usuarios para consulta, creación y edición.
+* Exportación completa, por categoría o por selección a PDF.
+* La acción de eliminar productos está reservada exclusivamente para el Administrador y no afecta cotizaciones históricas ya emitidas.
 
 ---
 

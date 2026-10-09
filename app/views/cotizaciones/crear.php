@@ -233,16 +233,32 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             </select>
                         </div>
 
-                        <div class="imo-form-group">
-                            <label>Código del Producto</label>
-                            <input type="text" name="codigo_producto" id="inpCodigoProducto" maxlength="60"
-                                   placeholder="Ej: MQ-001">
+                        <div class="imo-form-row">
+                            <div class="imo-form-group">
+                                <label>Código del Producto</label>
+                                <input type="text" name="codigo_producto" id="inpCodigoProducto" maxlength="60"
+                                       placeholder="Ej: MQ-001">
+                            </div>
+                            <div class="imo-form-group">
+                                <label>Nombre del Producto *</label>
+                                <input type="text" name="titulo" id="inpTitulo" required maxlength="255"
+                                       value="<?= htmlspecialchars($producto['titulo'] ?? '') ?>">
+                            </div>
                         </div>
 
-                        <div class="imo-form-group">
-                            <label>Título / Nombre del Producto *</label>
-                            <input type="text" name="titulo" id="inpTitulo" required maxlength="255"
-                                   value="<?= htmlspecialchars($producto['titulo'] ?? '') ?>">
+                        <div class="imo-form-row">
+                            <div class="imo-form-group">
+                                <label>Marca *</label>
+                                <input type="text" name="marca" id="inpMarca" required maxlength="100"
+                                       placeholder="Ej: Philips, 3M, Mindray..."
+                                       value="<?= htmlspecialchars($producto['marca'] ?? '') ?>">
+                            </div>
+                            <div class="imo-form-group">
+                                <label>Modelo *</label>
+                                <input type="text" name="modelo" id="inpModelo" required maxlength="100"
+                                       placeholder="Ej: Series 2000, Pro-X..."
+                                       value="<?= htmlspecialchars($producto['modelo'] ?? '') ?>">
+                            </div>
                         </div>
 
                         <div class="imo-form-row">
@@ -352,6 +368,11 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                              class="item-thumb-img">
                                         <?php endif; ?>
                                         <?= htmlspecialchars(mb_strimwidth($it['titulo'], 0, 40, '…')) ?>
+                                        <?php if (!empty($it['marca']) || !empty($it['modelo'])): ?>
+                                            <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                                                <?= htmlspecialchars(trim(($it['marca'] ?? '') . ' ' . ($it['modelo'] ?? ''))) ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td><?= $qty ?></td>
                                     <td>$<?= number_format($pu, 0, ',', '.') ?></td>
@@ -433,7 +454,7 @@ function buscarProductos(q) {
                             <div style="font-weight: 600; font-size: 13px; color: #1e293b;">${p.titulo}</div>
                             <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
                                 ${p.categoria ? `<span class="mod-badge badge-blue" style="font-size: 10px; padding: 1px 6px;">${p.categoria}</span> ` : ''}
-                                
+                                ${(p.marca || p.modelo) ? `<span style="color:#64748b; font-size:11px;">${[p.marca, p.modelo].filter(Boolean).join(' - ')}</span>` : ''}
                             </div>
                         </div>
                         <span class="mod-badge badge-green" style="font-size: 11px;">+ Agregar</span>
@@ -478,6 +499,12 @@ function autocompletar(p) {
     // Auto-fill new fields
     document.getElementById('inpCategoria').value      = p.categoria || '';
     document.getElementById('inpCodigoProducto').value = p.codigo_producto || '';
+    if (document.getElementById('inpMarca')) {
+        document.getElementById('inpMarca').value      = p.marca || '';
+    }
+    if (document.getElementById('inpModelo')) {
+        document.getElementById('inpModelo').value     = p.modelo || '';
+    }
     // Preservar código de proveedor si el usuario ya lo escribió en la calculadora
     const inpCodProv = document.getElementById('inpCodigoProveedor');
     if (inpCodProv) {
@@ -652,6 +679,8 @@ function limpiarFormulario() {
     // Limpiar campos nuevos
     document.getElementById('inpCategoria').value = '';
     document.getElementById('inpCodigoProducto').value = '';
+    if (document.getElementById('inpMarca')) document.getElementById('inpMarca').value = '';
+    if (document.getElementById('inpModelo')) document.getElementById('inpModelo').value = '';
     
     document.getElementById('inpPrecioProveedor').value = '';
     document.getElementById('inpProveedor').value = '';

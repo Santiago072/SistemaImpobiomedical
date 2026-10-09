@@ -201,11 +201,11 @@ class CotizacionModel
         $stmt = $this->db->prepare(
             "INSERT INTO cotizacion_items
              (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio,
-              iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto,
+              iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto, marca, modelo,
               precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas,
               proveedor_id, proveedor, proveedor_nit, codigo_proveedor, calc_ops)
              SELECT :new_id, producto_id, titulo, foto, descripcion, cantidad, precio,
-                    iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto,
+                    iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto, marca, modelo,
                     precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas,
                     proveedor_id, proveedor, proveedor_nit, codigo_proveedor, calc_ops
              FROM cotizacion_items WHERE cotizacion_id = :old_id"
@@ -585,14 +585,15 @@ class CotizacionModel
                                  float $flete = 0, float $calibracion = 0,
                                  float $estampillas = 0, string $proveedor = '',
                                  string $codigoProveedor = '', string $calcOps = '{}',
-                                 ?int $proveedorId = null, string $proveedorNit = ''): bool
+                                 ?int $proveedorId = null, string $proveedorNit = '',
+                                 string $marca = '', string $modelo = ''): bool
     {
         $stmt = $this->db->prepare(
             'INSERT INTO cotizacion_items
              (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio, iva, porcentaje_iva, tiempo_entrega,
-              categoria, codigo_producto, precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, proveedor_id, proveedor, proveedor_nit, codigo_proveedor, calc_ops)
+              categoria, codigo_producto, marca, modelo, precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, proveedor_id, proveedor, proveedor_nit, codigo_proveedor, calc_ops)
              VALUES (:cid, :pid, :tit, :foto, :desc, :cant, :prec, :iva, :porciva, :tient,
-                     :cat, :codprod, :precprov, :porcutil, :flet, :calib, :estamp, :prov_id, :prov, :prov_nit, :codprov, :calc)'
+                     :cat, :codprod, :marca, :modelo, :precprov, :porcutil, :flet, :calib, :estamp, :prov_id, :prov, :prov_nit, :codprov, :calc)'
         );
         $ok = $stmt->execute([
             ':cid'      => $cotizacionId,
@@ -607,6 +608,8 @@ class CotizacionModel
             ':tient'    => $tiempoEntrega,
             ':cat'      => $categoria,
             ':codprod'  => $codigoProducto,
+            ':marca'    => $marca,
+            ':modelo'   => $modelo,
             ':precprov' => $precioProveedor,
             ':porcutil' => $porcentajeUtilidad,
             ':flet'     => $flete,
@@ -632,13 +635,14 @@ class CotizacionModel
                                    float $flete = 0, float $calibracion = 0,
                                    float $estampillas = 0, string $proveedor = '',
                                    string $codigoProveedor = '', string $calcOps = '{}',
-                                   ?int $proveedorId = null, string $proveedorNit = ''): bool
+                                   ?int $proveedorId = null, string $proveedorNit = '',
+                                   string $marca = '', string $modelo = ''): bool
     {
         $stmt = $this->db->prepare(
             'UPDATE cotizacion_items
              SET titulo=:tit, foto=:foto, descripcion=:desc, cantidad=:cant, precio=:prec,
                  iva=:iva, porcentaje_iva=:porciva, tiempo_entrega=:tient,
-                 categoria=:cat, codigo_producto=:codprod,
+                 categoria=:cat, codigo_producto=:codprod, marca=:marca, modelo=:modelo,
                  precio_proveedor=:precprov, porcentaje_utilidad=:porcutil,
                  flete=:flet, calibracion=:calib, estampillas=:estamp,
                  proveedor_id=:prov_id, proveedor=:prov, proveedor_nit=:prov_nit, codigo_proveedor=:codprov, calc_ops=:calc
@@ -655,6 +659,8 @@ class CotizacionModel
             ':tient'    => $tiempoEntrega,
             ':cat'      => $categoria,
             ':codprod'  => $codigoProducto,
+            ':marca'    => $marca,
+            ':modelo'   => $modelo,
             ':precprov' => $precioProveedor,
             ':porcutil' => $porcentajeUtilidad,
             ':flet'     => $flete,

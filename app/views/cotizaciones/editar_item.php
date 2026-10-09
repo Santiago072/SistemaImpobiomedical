@@ -93,26 +93,38 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <!-- Columna Izquierda: Información del Producto -->
                     <div class="cot-edit-left">
                         <div class="imo-form-group">
-                            <label>Nombre del Producto *</label>
-                            <input type="text" name="titulo" value="<?= htmlspecialchars($datos['titulo']) ?>" required maxlength="100">
+                            <label>Categoría</label>
+                            <select name="categoria">
+                                <option value="">-- Seleccionar categoría --</option>
+                                <?php
+                                $cats = ['Insumo Medico Quirurgico', 'Insumo Medico Odontologico', 'Mobiliario Hospitalario', 'Equipo Medico', 'Accesorios', 'Repuestos', 'Equipo de Terapia', 'Medicamentos'];
+                                foreach($cats as $c) {
+                                    $sel = ($datos['categoria'] ?? '') === $c ? 'selected' : '';
+                                    echo "<option value=\"$c\" $sel>$c</option>";
+                                }
+                                ?>
+                            </select>
                         </div>
+
                         <div class="imo-form-row">
-                            <div class="imo-form-group">
-                                <label>Categoría</label>
-                                <select name="categoria">
-                                    <option value="">-- Seleccionar categoría --</option>
-                                    <?php
-                                    $cats = ['Insumo Medico Quirurgico', 'Insumo Medico Odontologico', 'Mobiliario Hospitalario', 'Equipo Medico', 'Accesorios', 'Repuestos', 'Equipo de Terapia', 'Medicamentos'];
-                                    foreach($cats as $c) {
-                                        $sel = ($datos['categoria'] ?? '') === $c ? 'selected' : '';
-                                        echo "<option value=\"$c\" $sel>$c</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
                             <div class="imo-form-group">
                                 <label>Código del Producto</label>
                                 <input type="text" name="codigo_producto" value="<?= htmlspecialchars($datos['codigo_producto'] ?? '') ?>" maxlength="60" placeholder="Ej: MQ-001">
+                            </div>
+                            <div class="imo-form-group">
+                                <label>Nombre del Producto *</label>
+                                <input type="text" name="titulo" value="<?= htmlspecialchars($datos['titulo']) ?>" required maxlength="255">
+                            </div>
+                        </div>
+
+                        <div class="imo-form-row">
+                            <div class="imo-form-group">
+                                <label>Marca *</label>
+                                <input type="text" name="marca" value="<?= htmlspecialchars($datos['marca'] ?? '') ?>" required maxlength="100" placeholder="Ej: Philips, 3M...">
+                            </div>
+                            <div class="imo-form-group">
+                                <label>Modelo *</label>
+                                <input type="text" name="modelo" value="<?= htmlspecialchars($datos['modelo'] ?? '') ?>" required maxlength="100" placeholder="Ej: Pro-X, Series 2000...">
                             </div>
                         </div>
 
