@@ -104,6 +104,11 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <div class="prod-name"><?= htmlspecialchars($p['titulo']) ?></div>
                     <div class="prod-meta prod-meta-spacing">
                         <?php if(!empty($p['codigo_producto'])): ?><span class="prod-tag tag-code"><i class="bi bi-upc-scan"></i> <?= htmlspecialchars($p['codigo_producto']) ?></span><?php endif; ?>
+                        <?php if(!empty($p['marca']) || !empty($p['modelo'])): ?>
+                            <span class="prod-tag tag-code" title="Marca / Modelo">
+                                <i class="bi bi-tag"></i> <?= htmlspecialchars(trim(($p['marca'] ?? '') . ' ' . ($p['modelo'] ?? ''))) ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
                     <div class="prod-meta">
                         <span class="prod-tag <?= $p['iva'] === 'si' ? 'tag-iva' : 'tag-noiva' ?>">
@@ -195,7 +200,17 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                     <div class="imo-form-group">
                         <label>Nombre del Producto *</label>
-                        <input type="text" name="titulo" required maxlength="60">
+                        <input type="text" name="titulo" required maxlength="255">
+                    </div>
+                    <div class="imo-form-row">
+                        <div class="imo-form-group">
+                            <label>Marca *</label>
+                            <input type="text" name="marca" required maxlength="100" placeholder="Ej: Philips, 3M, Mindray...">
+                        </div>
+                        <div class="imo-form-group">
+                            <label>Modelo *</label>
+                            <input type="text" name="modelo" required maxlength="100" placeholder="Ej: Series 2000, Pro-X...">
+                        </div>
                     </div>
                     <div class="imo-form-group">
                         <label>Descripción *</label>
@@ -265,7 +280,17 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                     <div class="imo-form-group">
                         <label>Nombre del Producto *</label>
-                        <input type="text" id="e_titulo" name="titulo" required maxlength="60">
+                        <input type="text" id="e_titulo" name="titulo" required maxlength="255">
+                    </div>
+                    <div class="imo-form-row">
+                        <div class="imo-form-group">
+                            <label>Marca *</label>
+                            <input type="text" id="e_marca" name="marca" required maxlength="100" placeholder="Ej: Philips, 3M, Mindray...">
+                        </div>
+                        <div class="imo-form-group">
+                            <label>Modelo *</label>
+                            <input type="text" id="e_modelo" name="modelo" required maxlength="100" placeholder="Ej: Series 2000, Pro-X...">
+                        </div>
                     </div>
                     <div class="imo-form-group">
                         <label>Descripción *</label>
@@ -339,6 +364,8 @@ function abrirModalCrear() {
 function abrirModalEditar(p) {
     document.getElementById('e_id').value          = p.id;
     document.getElementById('e_titulo').value      = p.titulo || '';
+    document.getElementById('e_marca').value       = p.marca || '';
+    document.getElementById('e_modelo').value      = p.modelo || '';
     document.getElementById('e_descripcion').value = p.descripcion || '';
     document.getElementById('e_iva').value         = p.iva || 'no';
     document.getElementById('e_estado').value      = p.estado || 'activo';
@@ -567,6 +594,7 @@ function renderizarProductosAjax(productos, isAdmin) {
                 <div class="prod-name">${tituloEsc}</div>
                 <div class="prod-meta prod-meta-spacing">
                     ${p.codigo_producto ? `<span class="prod-tag tag-code"><i class="bi bi-upc-scan"></i> ${escapeHtml(p.codigo_producto)}</span>` : ''}
+                    ${(p.marca || p.modelo) ? `<span class="prod-tag tag-code" title="Marca / Modelo"><i class="bi bi-tag"></i> ${escapeHtml([p.marca, p.modelo].filter(Boolean).join(' '))}</span>` : ''}
                 </div>
                 <div class="prod-meta">
                     <span class="prod-tag ${p.iva === 'si' ? 'tag-iva' : 'tag-noiva'}">
