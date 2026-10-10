@@ -1,6 +1,6 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** v3.5.4  
+**Versión:** v3.5.5  
 **Fecha:** Octubre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -618,6 +618,7 @@ El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de produc
 | `$_SESSION['csrf_token']` | `string` | Token de seguridad activo |
 | `$_SESSION['cotizacion_id']` | `int` | ID de la cotización en borrador/ajuste en construcción |
 | `$_SESSION['cotizacion_ajustando_id']` | `int` | ID de la cotización original finalizada en proceso de ajuste directo |
+| `$_SESSION['cotizacion_ajustando_clon_id']` | `int` | ID del clon temporal de trabajo (`es_revision = 1`) para el ajuste directo |
 | `$_SESSION['cotizacion_ajustando_numero']` | `string` | Número oficial de la cotización en proceso de ajuste directo |
 | `$_SESSION['cotizacion_revision_de']` | `string` | Número base de cotización que se está modificando |
 | `$_SESSION['borrador_previo_id']` | `int` | ID del borrador del asesor respaldado antes de iniciar un ajuste o modificación |

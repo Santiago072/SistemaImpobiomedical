@@ -4,6 +4,19 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.5.5] - 2026-10-10
+### Corregido
+- **Aislamiento absoluto e integridad en Ajuste Directo de Cotizaciones (`CotizacionController.php`, `CotizacionModel.php`, `index.php`):**
+  - Se eliminó la degradación directa de la cotización finalizada a borrador en la base de datos durante el ajuste, la cual provocaba que si el usuario salía del módulo o no guardaba, la cotización original quedara oculta o con ítems modificados parcialmente.
+  - Implementado el patrón de **Clon Temporal de Trabajo (`es_revision = 1`)**: al entrar a *Ajustar*, la cotización original permanece intacta en estado `finalizada` visible en consultas. El usuario opera sobre un clon de trabajo aislado.
+  - Al presionar *Guardar Ajuste y Generar PDF*, el método `CotizacionModel::aplicarItemsAjuste()` transfiere de forma atómica los ítems modificados a la cotización original, actualiza la cabecera conservando su consecutivo oficial y elimina el clon temporal.
+  - Si el usuario abandona el módulo o cancela el ajuste, el clon temporal se descarta automáticamente sin alterar la cotización original.
+  - Incorporado el método `CotizacionModel::limpiarClonesHuerfanos()` para depurar clones temporales residuales sin tocar jamás borradores normales (`es_revision = 0`).
+- **Blindaje en Vista de Finalización de Cotizaciones (`CotizacionController.php`):**
+  - Se actualizó el bloque `catch (\Throwable $e)` en `CotizacionController::finalizar()` para capturar excepciones con detalle técnico en lugar de mensajes genéricos mudos, asegurando además que el objeto `$cotizacion` se devuelva a la vista para conservar los datos precargados del cliente.
+
+---
+
 ## [v3.5.4] - 2026-10-02
 ### Corregido
 - **Sincronización reactiva y blindaje de proveedor en emisión de órdenes (`seleccionar_items.php`, `OrdenCompraController.php`):**

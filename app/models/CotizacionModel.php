@@ -715,27 +715,57 @@ class CotizacionModel
     }
 
     /**
-     * Pone temporalmente una cotización finalizada en estado borrador para que
-     * el flujo de ajuste pueda agregar/quitar/modificar ítems con normalidad.
-     * El estado se restaura a 'finalizada' al llamar a finalizarCotizacion() con $numeroFijo.
+     * Prepara una cotización para ajuste directo sin degradarla a 'borrador'.
+     * Mantiene estado = 'finalizada' en la base de datos para garantizar que nunca
+     * desaparezca de consultas ni reportes si la sesión se interrumpe.
      */
     public function reabrirParaAjuste(int $id): void
     {
+        // No cambiamos el estado en BD: se conserva en 'finalizada' y con es_revision = 0
         $stmt = $this->db->prepare(
-            "UPDATE cotizaciones SET estado = 'borrador', es_revision = 0 WHERE id = :id"
+            "UPDATE cotizaciones SET es_revision = 0 WHERE id = :id"
         );
         $stmt->execute([':id' => $id]);
     }
 
     /**
-     * Restaura el estado de una cotización ajustada a 'finalizada' si el usuario
-     * cancela el proceso de ajuste.
+     * Reemplaza de forma atómica los ítems de una cotización finalizada con los ítems
+     * de su clon temporal de trabajo, y luego elimina el clon temporal.
      */
-    public function restaurarEstadoFinalizada(int $id): void
+    public function aplicarItemsAjuste(int $clonId, int $cotizacionDestinoId): void
     {
-        $stmt = $this->db->prepare(
-            "UPDATE cotizaciones SET estado = 'finalizada' WHERE id = :id"
+        // 1. Eliminar ítems anteriores de la cotización finalizada
+        $stmtDel = $this->db->prepare('DELETE FROM cotizacion_items WHERE cotizacion_id = :dest_id');
+        $stmtDel->execute([':dest_id' => $cotizacionDestinoId]);
+
+        // 2. Mover los ítems del clon temporal hacia la cotización finalizada
+        $stmtMove = $this->db->prepare('UPDATE cotizacion_items SET cotizacion_id = :dest_id WHERE cotizacion_id = :clon_id');
+        $stmtMove->execute([':dest_id' => $cotizacionDestinoId, ':clon_id' => $clonId]);
+
+        // 3. Eliminar la cabecera del clon temporal
+        $stmtDelClon = $this->db->prepare('DELETE FROM cotizaciones WHERE id = :clon_id');
+        $stmtDelClon->execute([':clon_id' => $clonId]);
+    }
+
+    /**
+     * Elimina clones temporales huérfanos del usuario (es_revision = 1 y estado = borrador).
+     * NUNCA toca el borrador normal del usuario (es_revision = 0).
+     */
+    public function limpiarClonesHuerfanos(int $usuarioId): void
+    {
+        // Eliminar ítems de clones temporales
+        $stmtItems = $this->db->prepare(
+            "DELETE i FROM cotizacion_items i
+             INNER JOIN cotizaciones c ON i.cotizacion_id = c.id
+             WHERE c.usuario_id = :uid AND c.estado = 'borrador' AND c.es_revision = 1"
         );
-        $stmt->execute([':id' => $id]);
+        $stmtItems->execute([':uid' => $usuarioId]);
+
+        // Eliminar cabeceras de clones temporales
+        $stmtCot = $this->db->prepare(
+            "DELETE FROM cotizaciones WHERE usuario_id = :uid AND estado = 'borrador' AND es_revision = 1"
+        );
+        $stmtCot->execute([':uid' => $usuarioId]);
     }
 }
+

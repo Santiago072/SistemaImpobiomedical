@@ -103,7 +103,7 @@ class CotizacionController
 
             $_SESSION['cotizacion_id'] = $id;
         } else {
-            // Verificar que la cotización en sesión todavía existe y es válida
+            // Verificar que la cotización en sesión todavía existe y es un borrador válido
             $cotizacionExistente = $this->model->buscarPorId((int)$_SESSION['cotizacion_id']);
 
             if (!$cotizacionExistente || $cotizacionExistente['estado'] !== 'borrador') {
@@ -112,7 +112,13 @@ class CotizacionController
                    ?? $this->model->buscarCabeceraVacia($usuarioId)
                    ?? $this->model->crearCabecera($usuarioId, $usuarioCodigo, $asesorNombre, $asesorCargo);
                 $_SESSION['cotizacion_id'] = $id;
-                unset($_SESSION['cotizacion_revision_de'], $_SESSION['borrador_previo_id']);
+                unset(
+                    $_SESSION['cotizacion_revision_de'],
+                    $_SESSION['borrador_previo_id'],
+                    $_SESSION['cotizacion_ajustando_id'],
+                    $_SESSION['cotizacion_ajustando_clon_id'],
+                    $_SESSION['cotizacion_ajustando_numero']
+                );
             }
         }
         return (int)$_SESSION['cotizacion_id'];
@@ -417,12 +423,25 @@ class CotizacionController
             }
         }
 
-        // Poner la cotización en modo borrador temporalmente para poder editarla
-        $this->model->reabrirParaAjuste((int)$cotizacionOriginal['id']);
+        // Limpiar clones temporales previos que hayan quedado sin terminar
+        $usuarioId     = (int)$_SESSION['usuario_id'];
+        $this->model->limpiarClonesHuerfanos($usuarioId);
 
-        // Establecer en sesión la cotización original como la activa
-        $_SESSION['cotizacion_id']         = (int)$cotizacionOriginal['id'];
+        // Crear un clon temporal de trabajo (es_revision = 1) para realizar los ajustes.
+        // La cotización ORIGINAL permanece finalizada, visible e INTOCABLE en la base de datos.
+        $usuarioCodigo = $_SESSION['usuario_codigo'] ?? '';
+        $asesorNombre  = $cotizacionOriginal['asesor_nombre'];
+        $asesorCargo   = $cotizacionOriginal['asesor_cargo'];
+
+        $clonTemporalId = $this->model->crearCabecera($usuarioId, $usuarioCodigo, $asesorNombre, $asesorCargo);
+        $this->model->marcarComoRevision($clonTemporalId);
+        $this->model->clonarDatosCabecera((int)$cotizacionOriginal['id'], $clonTemporalId);
+        $this->model->clonarItems((int)$cotizacionOriginal['id'], $clonTemporalId);
+
+        // Establecer en sesión el clon temporal como la cotización de trabajo
+        $_SESSION['cotizacion_id']               = $clonTemporalId;
         $_SESSION['cotizacion_ajustando_id']     = (int)$cotizacionOriginal['id'];
+        $_SESSION['cotizacion_ajustando_clon_id'] = $clonTemporalId;
         $_SESSION['cotizacion_ajustando_numero'] = $cotizacionOriginal['numero_cotizacion'];
 
         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
@@ -433,11 +452,12 @@ class CotizacionController
     public function cancelarAjuste(): void
     {
         verificar_autenticacion();
-        if (isset($_SESSION['cotizacion_ajustando_id'])) {
-            $id = (int)$_SESSION['cotizacion_ajustando_id'];
-            $this->model->restaurarEstadoFinalizada($id);
-            unset($_SESSION['cotizacion_ajustando_id'], $_SESSION['cotizacion_ajustando_numero']);
+        // Si había un clon temporal de ajuste, eliminarlo (la cotización original nunca fue tocada)
+        if (isset($_SESSION['cotizacion_ajustando_clon_id'])) {
+            $this->model->eliminar((int)$_SESSION['cotizacion_ajustando_clon_id']);
+            unset($_SESSION['cotizacion_ajustando_clon_id']);
         }
+        unset($_SESSION['cotizacion_ajustando_id'], $_SESSION['cotizacion_ajustando_numero']);
 
         if (isset($_SESSION['borrador_previo_id'])) {
             $_SESSION['cotizacion_id'] = (int)$_SESSION['borrador_previo_id'];
@@ -511,32 +531,47 @@ class CotizacionController
         }
 
         try {
-            $modoAjuste  = isset($_SESSION['cotizacion_ajustando_id']) &&
-                           (int)$_SESSION['cotizacion_ajustando_id'] === $cotizacion_id;
-            $revisionDe  = $modoAjuste ? null : ($_SESSION['cotizacion_revision_de'] ?? null);
-            $numeroFijo  = $modoAjuste ? ($_SESSION['cotizacion_ajustando_numero'] ?? null) : null;
+            $esModoAjuste = isset($_SESSION['cotizacion_ajustando_id']);
+            $destinoId    = $esModoAjuste ? (int)$_SESSION['cotizacion_ajustando_id'] : $cotizacion_id;
+            $revisionDe   = $esModoAjuste ? null : ($_SESSION['cotizacion_revision_de'] ?? null);
+            $numeroFijo   = $esModoAjuste ? ($_SESSION['cotizacion_ajustando_numero'] ?? null) : null;
 
-            $numeroCotizacion = $this->finalizarService->procesarFinalizacion(
-                $cotizacion_id, $_POST, $_SESSION, $revisionDe, $numeroFijo
-            );
+            if ($esModoAjuste) {
+                // 1. Aplicar datos del cliente y cabecera sobre la cotización destino original
+                $numeroCotizacion = $this->finalizarService->procesarFinalizacion(
+                    $destinoId, $_POST, $_SESSION, null, $numeroFijo
+                );
 
-            // Limpiar sesión
-            unset($_SESSION['cotizacion_id'], $_SESSION['cotizacion_revision_de']);
-            if ($modoAjuste) {
-                unset($_SESSION['cotizacion_ajustando_id'], $_SESSION['cotizacion_ajustando_numero']);
+                // 2. Mover ítems del clon temporal a la cotización destino original y borrar el clon
+                $this->model->aplicarItemsAjuste($cotizacion_id, $destinoId);
+
+                unset(
+                    $_SESSION['cotizacion_id'],
+                    $_SESSION['cotizacion_ajustando_id'],
+                    $_SESSION['cotizacion_ajustando_clon_id'],
+                    $_SESSION['cotizacion_ajustando_numero']
+                );
+
                 // Restaurar el borrador previo si existía
                 if (isset($_SESSION['borrador_previo_id'])) {
                     $_SESSION['cotizacion_id'] = (int)$_SESSION['borrador_previo_id'];
                     unset($_SESSION['borrador_previo_id']);
                 }
+            } else {
+                // Flujo normal de nueva cotización o nueva revisión derivada
+                $numeroCotizacion = $this->finalizarService->procesarFinalizacion(
+                    $cotizacion_id, $_POST, $_SESSION, $revisionDe, null
+                );
+                unset($_SESSION['cotizacion_id'], $_SESSION['cotizacion_revision_de']);
             }
 
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=generar_pdf&ver=' . urlencode($numeroCotizacion));
             exit();
-        } catch (\Exception $e) {
-            error_log('Error al finalizar cotización: ' . $e->getMessage());
-            $mensajeError = 'Error inesperado al finalizar la cotización';
-            return compact('csrf_token', 'mensajeError', 'items', 'cotizacion_id');
+        } catch (\Throwable $e) {
+            error_log('Error al finalizar cotización: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            $mensajeError = 'Error al finalizar cotización: ' . $e->getMessage();
+            $cotizacion   = $this->model->buscarPorId($cotizacion_id);
+            return compact('csrf_token', 'mensajeError', 'items', 'cotizacion_id', 'cotizacion');
         }
     }
 

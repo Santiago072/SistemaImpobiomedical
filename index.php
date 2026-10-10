@@ -216,8 +216,11 @@ if (isset($_SESSION['cotizacion_revision_de']) || isset($_SESSION['cotizacion_aj
     if (!$esFlujoCotizacion) {
         $cotModelTemp = new CotizacionModel($db);
         if (isset($_SESSION['cotizacion_ajustando_id'])) {
-            // Restaurar estado a finalizada
-            $cotModelTemp->restaurarEstadoFinalizada((int)$_SESSION['cotizacion_ajustando_id']);
+            // Eliminar el clon temporal de trabajo si existía (la original nunca se modificó)
+            if (isset($_SESSION['cotizacion_ajustando_clon_id'])) {
+                $cotModelTemp->eliminar((int)$_SESSION['cotizacion_ajustando_clon_id']);
+                unset($_SESSION['cotizacion_ajustando_clon_id']);
+            }
             unset($_SESSION['cotizacion_ajustando_id'], $_SESSION['cotizacion_ajustando_numero']);
         } elseif (isset($_SESSION['cotizacion_revision_de'])) {
             if (isset($_SESSION['cotizacion_id'])) {
