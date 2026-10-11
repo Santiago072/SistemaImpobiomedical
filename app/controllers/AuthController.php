@@ -67,8 +67,8 @@ class AuthController
         }
 
         // 🔒 Rate Limiting: solo contar intentos FALLIDOS (credenciales incorrectas)
-        // Límite estricto de seguridad: 5 intentos fallidos de login cada 5 minutos (300 segundos) para evitar fuerza bruta
-        verificar_rate_limit(5, 300, 'login');
+        // Máximo 5 intentos fallidos de login con ventana de 1 minuto (60 segundos)
+        verificar_rate_limit(5, 60, 'login');
 
         $mensajeError = 'Documento o contraseña incorrectos';
         return compact('mensajeError', 'csrf_token');
@@ -77,7 +77,14 @@ class AuthController
     public function logout(): void
     {
         iniciar_sesion_segura();
-        session_unset();
+        $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
         session_destroy();
         header('Location: ' . BASE_URL);
         exit();

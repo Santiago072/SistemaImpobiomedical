@@ -74,11 +74,11 @@ index.php (Front Controller & Router con Security Headers)
 
 3. **Configurar variables de entorno (`config/.env`):**
    ```bash
-   cp .env.example config/.env
+   cp config/.env.example config/.env
    ```
    Ajusta credenciales locales (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`, `APP_BASE=/SistemaImpobiomedical/`).
 
-4. **Importar base de datos:** Importa `BD.txt` en MySQL / phpMyAdmin.
+4. **Importar base de datos:** Importa `config/bd.sql` en MySQL / phpMyAdmin.
 
 5. **Ejecutar pruebas unitarias:**
    ```bash

@@ -1,4 +1,4 @@
-﻿Options -Indexes
+Options -Indexes
 
 # ── Front Controller Routing ──────────────────────────────────────────────────
 # Compatible con XAMPP local (/SistemaImpobiomedical/) y Docker (/)
@@ -35,7 +35,7 @@
 </IfModule>
 
 <IfModule mod_rewrite.c>
-    RewriteRule ^(logs|app|config|vendor)/ - [F,L]
+    RewriteRule ^(logs|app|config|vendor|sessions)/ - [F,L]
 </IfModule>
 
 <IfModule mod_php.c>

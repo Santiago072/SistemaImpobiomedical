@@ -1,6 +1,6 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** v3.5.5  
+**Versión:** v3.5.6  
 **Fecha:** Octubre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -212,6 +212,7 @@ SistemaImpobiomedical/
 │
 ├── config/
 │   ├── .env.example            # Plantilla de variables de entorno
+│   ├── bd.sql                  # Script DDL/DML de inicialización de Base de Datos MySQL
 │   ├── EnvLoader.php           # Cargador seguro de configuración .env
 │   ├── conexion.php            # Singleton PDO con manejo seguro de excepciones
 │   └── seguridad.php           # Biblioteca central de funciones de seguridad (Rate Limit, CSRF, NIT)
@@ -247,8 +248,11 @@ SistemaImpobiomedical/
 │
 ├── tests/
 │   └── Unit/                   # Suite de pruebas unitarias PHPUnit 10
-│       ├── CalculosComercialesTest.php
-│       └── SeguridadTest.php
+│       ├── CalculosCotizacionTest.php
+│       ├── FileUploadServiceTest.php
+│       ├── OrdenCompraCalculosTest.php
+│       ├── SeguridadTest.php
+│       └── ValidacionesNegocioTest.php
 │
 ├── uploads/                    # Almacenamiento persistente de imágenes sanitizadas
 ├── .github/workflows/ci.yml    # Pipeline de Integración Continua (CI)
@@ -350,7 +354,6 @@ erDiagram
         int dias_validez
         date fecha_validez
         varchar condiciones_pago
-        text observaciones
         enum estado "borrador, finalizada"
         enum estado_comercial "pendiente, concluida, descartada"
         datetime fecha_cambio_estado
@@ -449,10 +452,10 @@ erDiagram
 ### 6.3 Cotizador y Negociaciones (`CotizacionController.php`)
 - **Manejo de Borrador Activo:** Sesión `$_SESSION['cotizacion_id']` para construir la cotización paso a paso sin perder datos.
 - **Modal de Selección Ajustar vs. Modificar:** Diálogo interactivo al pulsar Modificar que permite elegir entre:
-  - **Ajustar Cotización (`action=ajustar`):** Abre la cotización original finalizada en modo de edición temporal, conservando intacto su mismo número (ej: `EB01`) sin incrementar el contador mensual y actualizando directamente los datos y el PDF.
-  - **Nueva Versión / Revisión (`action=modificar`):** Genera una copia clonada con sufijo secuencial (`_01`, `_02`) conservando el historial comercial anterior.
+  - **Ajustar Cotización (`action=ajustar`):** Crea un clon temporal de trabajo (`es_revision = 1`) para editar los ítems de forma aislada, manteniendo la cotización original intacta en la base de datos y visible en consultas. Al guardar (`guardar_ajuste`), transfiere atómicamente los ítems corregidos mediante `CotizacionModel::aplicarItemsAjuste()`, actualiza el PDF y preserva el mismo número consecutivo original (ej: `EB 01`) sin incrementar el contador mensual.
+  - **Nueva Versión / Revisión (`action=modificar`):** Genera una copia formal con sufijo secuencial (`_01`, `_02`) conservando el historial comercial anterior.
 - **Validación de Propiedad y Permisos (Ownership Check):** Los usuarios estándar solo pueden ajustar o modificar cotizaciones de su autoría; los roles `admin` y `compras` tienen permisos globales de edición y eliminación.
-- **Protección de Abandono de Flujo:** Restauración automática a estado `'finalizada'` si el usuario navega fuera del módulo o cancela el ajuste (`action=cancelar_ajuste`).
+- **Protección de Abandono de Flujo:** Si el usuario cancela (`action=cancelar_ajuste`) o navega fuera del módulo sin guardar, el clon temporal es depurado y la cotización original permanece inalterada. El método `CotizacionModel::limpiarClonesHuerfanos()` previene la acumulación de clones residuales sin tocar los borradores activos.
 - **Actualización de Estado Comercial:** Endpoint `cambiar_estado` protegido con token CSRF y rate limit con respuesta JSON asíncrona y reactividad inmediata en el botón de órdenes.
 - **Eliminación Desacoplada:** El botón de eliminar se encuentra desacoplado del estado comercial, permitiendo a administradores y encargados de compras purgar cotizaciones en cualquier estado.
 

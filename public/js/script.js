@@ -97,6 +97,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.addEventListener('pageshow', function (event) {
         restaurarBotonesEnvio();
+        // Si la página se recupera de la memoria caché del navegador (botón Atrás tras cerrar sesión),
+        // forzar una recarga limpia contra el servidor para que valide si la sesión aún existe
+        if (event.persisted) {
+            window.location.reload();
+        }
     });
 
     // ── RESALTAR ASTERISCOS (*) OBLIGATORIOS EN ROJO GLOBALMENTE ──

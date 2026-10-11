@@ -47,7 +47,7 @@ class ProductoController
 
     public function crear(): array
     {
-        verificar_autenticacion();
+        verificar_admin();
 
         $mensajeError = '';
         $csrf_token   = generar_token_csrf();
@@ -96,7 +96,7 @@ class ProductoController
 
     public function editar(): array
     {
-        verificar_autenticacion();
+        verificar_admin();
 
         $mensajeError = '';
         $csrf_token   = generar_token_csrf();

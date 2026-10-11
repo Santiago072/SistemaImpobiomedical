@@ -294,7 +294,7 @@ class OrdenCompraController
             exit();
         } catch (\Throwable $e) {
             error_log('Error creando o ajustando orden de compra: ' . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error al guardar la orden: ' . $e->getMessage();
+            $_SESSION['flash_error'] = 'Error al guardar la orden. Por favor intente nuevamente.';
             header('Location: ' . BASE_URL . '?module=ordenes&action=seleccionar_items&cotizacion=' . urlencode($cotizacionNumero));
             exit();
         }
@@ -678,6 +678,15 @@ class OrdenCompraController
         if (!$orden) {
             http_response_code(404);
             die('Orden de compra no encontrada.');
+        }
+
+        // Permisos RBAC: admin y compras tienen visibilidad global; rol 'usuario' solo sus propias órdenes
+        $rolUsuario = $_SESSION['rol'] ?? 'usuario';
+        $usuarioId  = (int)($_SESSION['usuario_id'] ?? 0);
+        if (!in_array($rolUsuario, ['admin', 'compras'], true) && (int)($orden['usuario_id'] ?? 0) !== $usuarioId) {
+            $_SESSION['flash_error'] = 'No tienes permisos para visualizar o descargar esta orden de compra.';
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
+            exit();
         }
 
         $items  = $this->model->obtenerItems($id);

@@ -139,7 +139,7 @@ class CotizacionController
             exit();
         } catch (\Exception $e) {
             error_log('Error en procesarGuardarItem: ' . $e->getMessage());
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear&error=' . urlencode($e->getMessage()));
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear&error=item_error');
             exit();
         }
     }
@@ -161,6 +161,13 @@ class CotizacionController
 
         if (!$cotizacion) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
+
+        $rolUsuario = $_SESSION['rol'] ?? 'usuario';
+        $usuarioId  = (int)($_SESSION['usuario_id'] ?? 0);
+        if ($rolUsuario === 'usuario' && (int)($cotizacion['usuario_id'] ?? 0) !== $usuarioId) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=sin_permiso');
             exit();
         }
 
@@ -569,7 +576,7 @@ class CotizacionController
             exit();
         } catch (\Throwable $e) {
             error_log('Error al finalizar cotización: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-            $mensajeError = 'Error al finalizar cotización: ' . $e->getMessage();
+            $mensajeError = 'Error al finalizar la cotización. Por favor intente nuevamente.';
             $cotizacion   = $this->model->buscarPorId($cotizacion_id);
             return compact('csrf_token', 'mensajeError', 'items', 'cotizacion_id', 'cotizacion');
         }
@@ -888,6 +895,13 @@ class CotizacionController
             }
             http_response_code(404);
             die('Cotización no encontrada.');
+        }
+
+        $rolUsuario = $_SESSION['rol'] ?? 'usuario';
+        $usuarioId  = (int)($_SESSION['usuario_id'] ?? 0);
+        if ($rolUsuario === 'usuario' && (int)($cotizacion['usuario_id'] ?? 0) !== $usuarioId) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=sin_permiso');
+            exit();
         }
 
         $forzar = isset($_GET['descargar']);

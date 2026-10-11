@@ -97,7 +97,6 @@ CREATE TABLE IF NOT EXISTS cotizaciones (
     dias_validez         INT DEFAULT 30,
     fecha_validez        DATE NULL,                    -- Se calcula al finalizar
     condiciones_pago     VARCHAR(100) DEFAULT 'CONTADO',
-    observaciones        TEXT NULL,
     estado               ENUM('borrador', 'finalizada') DEFAULT 'borrador',
     estado_comercial     ENUM('pendiente', 'concluida', 'descartada') DEFAULT 'pendiente',
     fecha_cambio_estado  DATETIME NULL DEFAULT NULL,

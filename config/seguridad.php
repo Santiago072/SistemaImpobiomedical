@@ -33,7 +33,14 @@ function iniciar_sesion_segura(): void
     $base    = defined('BASE_URL') ? BASE_URL : '/';
 
     if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $timeout)) {
-        session_unset();
+        $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
         session_destroy();
         header("Location: {$base}?timeout=1");
         exit();

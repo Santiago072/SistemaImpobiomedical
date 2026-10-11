@@ -97,6 +97,12 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                     'desc'      => 'El archivo que intentaste subir no es una imagen válida o su formato no está permitido.',
                     'sug'       => 'Usa solo imágenes en formato <strong>JPG, PNG o WebP</strong>. Si tienes un PDF o Word, toma una captura de pantalla y súbela como imagen.',
                 ],
+                'item_error' => [
+                    'icono'     => 'bi-exclamation-triangle-fill',
+                    'titulo'    => 'Error al procesar el ítem',
+                    'desc'      => 'Ocurrió un inconveniente al intentar guardar el ítem de la cotización.',
+                    'sug'       => 'Verifique que los datos ingresados sean correctos e intente nuevamente. Si el problema persiste, contacte al administrador.',
+                ],
             ];
 
             $errorInfo = null;

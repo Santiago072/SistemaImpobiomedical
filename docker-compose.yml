@@ -37,7 +37,7 @@ services:
       MARIADB_PASSWORD: ${DB_PASS:-}
     volumes:
       - impo_db_data:/var/lib/mysql
-      - ./BD.txt:/docker-entrypoint-initdb.d/BD.sql
+      - ./config/bd.sql:/docker-entrypoint-initdb.d/BD.sql
     networks:
       - sodicol_network
 

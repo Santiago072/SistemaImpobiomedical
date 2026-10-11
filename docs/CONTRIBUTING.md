@@ -29,9 +29,9 @@ Para trabajar en este proyecto localmente se requiere:
    ```
 
 3. **Configurar el entorno (`config/.env`):**
-   * Copia `.env.example` a `config/.env`:
+   * Copia el archivo de plantilla a `config/.env`:
      ```bash
-     cp .env.example config/.env
+     cp config/.env.example config/.env
      ```
    * Ajusta las credenciales de tu base de datos local y URL base:
      ```ini
@@ -43,7 +43,7 @@ Para trabajar en este proyecto localmente se requiere:
      ```
 
 4. **Importar la Base de Datos:**
-   * Importa el archivo `BD.txt` en tu gestor de base de datos MySQL / phpMyAdmin.
+   * Importa el archivo `config/bd.sql` en tu gestor de base de datos MySQL / phpMyAdmin.
 
 ---
 
