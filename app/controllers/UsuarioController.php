@@ -40,10 +40,11 @@ class UsuarioController
         if (isset($_GET['reset']))    $mensajeExito = 'Contraseña restablecida exitosamente';
         if (isset($_GET['error'])) {
             $mapa = [
-                'last_admin'    => 'No se puede eliminar el último administrador',
-                'self_delete'   => 'No puede eliminarse a sí mismo',
-                'delete_failed' => 'Error al eliminar el usuario',
-                'invalid_id'    => 'ID de usuario inválido',
+                'last_admin'       => 'No se puede eliminar al único administrador del sistema',
+                'self_delete'      => 'No puedes eliminar tu propia cuenta mientras tienes la sesión activa',
+                'has_cotizaciones' => 'El usuario tiene cotizaciones asociadas y no puede ser eliminado para mantener el historial comercial. Recomendación: Cambie su estado a Inactivo.',
+                'delete_failed'    => 'Error al eliminar el usuario',
+                'invalid_id'       => 'ID de usuario inválido',
             ];
             $mensajeError = $mapa[$_GET['error']] ?? 'Error al procesar la solicitud';
         }
@@ -262,13 +263,23 @@ class UsuarioController
         $id = (int)$rawId;
 
         if ($id === (int)$_SESSION['usuario_id']) {
-            $responderError('No puedes eliminar tu propia cuenta', 'self_delete');
+            $responderError('No puedes eliminar tu propia cuenta mientras tienes la sesión activa.', 'self_delete');
         }
 
         $usuarioAEliminar = $this->model->buscarPorId($id);
         if ($usuarioAEliminar && $usuarioAEliminar['rol'] === 'admin' &&
             $this->model->contarAdmins() <= 1) {
-            $responderError('No se puede eliminar al último administrador', 'last_admin');
+            $responderError('No se puede eliminar al único administrador del sistema.', 'last_admin');
+        }
+
+        // Validación preventiva de cotizaciones asociadas
+        $cotModel = new CotizacionModel($this->db);
+        $totalCotizaciones = $cotModel->contarDelUsuario($id);
+        if ($totalCotizaciones > 0) {
+            $responderError(
+                "El usuario tiene {$totalCotizaciones} cotización(es) asociadas en el sistema y no puede ser eliminado para mantener la trazabilidad e historial comercial. Se recomienda cambiar su estado a Inactivo.",
+                'has_cotizaciones'
+            );
         }
 
         if ($this->model->eliminar($id)) {
@@ -281,9 +292,9 @@ class UsuarioController
             exit();
         }
 
-        $err = $_SESSION['db_error'] ?? 'delete_failed';
+        $err = $_SESSION['db_error'] ?? 'El usuario tiene registros asociados y no puede ser eliminado. Cambie su estado a Inactivo.';
         unset($_SESSION['db_error']);
-        $_SESSION['mensajeError'] = 'Error al eliminar: ' . $err;
+        $_SESSION['mensajeError'] = $err;
         header('Location: ' . BASE_URL . '?module=usuarios');
         exit();
     }
@@ -426,6 +437,25 @@ class UsuarioController
         }
         $_SESSION['mensajeError'] = $msg;
         header('Location: ' . BASE_URL . '?module=panel');
+        exit();
+    }
+
+    // ── AJAX BÚSQUEDA EN VIVO ─────────────────────────────────────────────────
+    public function ajaxBuscar(): void
+    {
+        verificar_admin();
+        verificar_rate_limit(60, 60, 'ajax_usuarios');
+        header('Content-Type: application/json; charset=utf-8');
+
+        $term = sanitizar_entrada($_GET['term'] ?? $_GET['busqueda'] ?? $_GET['q'] ?? '');
+        $usuarios = $this->model->listar(0, 100, $term);
+
+        echo json_encode([
+            'status'   => 'ok',
+            'usuarios' => $usuarios,
+            'total'    => count($usuarios),
+            'isAdmin'  => true,
+        ]);
         exit();
     }
 }

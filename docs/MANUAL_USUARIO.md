@@ -36,17 +36,34 @@ Si el sistema permanece **inactivo por más de 1 hora**, la sesión se cerrará 
 
 ---
 
+### Roles del Sistema y Niveles de Acceso
+El sistema cuenta con **3 roles de usuario** claramente definidos:
+1. **Administrador (`admin`):**
+   * **Alcance:** Control total y sin restricciones de la plataforma.
+   * **Permisos exclusivos:** Gestión de usuarios/contraseñas, estadísticas ejecutivas gerenciales, y potestad exclusiva de eliminación física o *Soft Delete* en **Clientes**, **Proveedores** y **Productos**.
+   * **Visibilidad:** Global (ve y puede gestionar/eliminar cotizaciones y órdenes de todos los asesores).
+2. **Encargado de Compras (`compras`):**
+   * **Alcance:** Gestión operativa comercial y de abastecimiento de la empresa.
+   * **Permisos:** Acceso completo a cotizaciones, órdenes de compra, directorios de clientes, proveedores y catálogo de productos (creación y edición).
+   * **Visibilidad y Eliminación:** *Visibilidad global* (ve las cotizaciones y órdenes de compra emitidas por todos los asesores) y **cuenta con permisos para eliminar cotizaciones y órdenes de compra** en cualquier estado. Está restringido de los módulos de Gestión de Usuarios y Estadísticas Gerenciales.
+3. **Asesor Comercial (`usuario`):**
+   * **Alcance:** Asesor comercial estándar.
+   * **Permisos:** Crear cotizaciones, emitir órdenes de compra, registrar clientes y consultar catálogos.
+   * **Aislamiento de Datos:** Estricto aislamiento por propietario (`usuario_id`). Solo visualiza, ajusta o genera versiones de sus propias cotizaciones y órdenes. **No tiene permisos para eliminar cotizaciones, órdenes ni catálogos maestros**.
+
+---
+
 ## 2. Dashboard Principal
 
 Al iniciar sesión llegará al **Panel Principal**, que muestra:
 
 ### Tarjetas KPI
-| Tarjeta | Administrador | Asesor / Usuario |
-|---|---|---|
-| **Cotizaciones Totales** | Todas las registradas en el sistema | Solo las creadas por el asesor |
-| **Cotizaciones este Mes** | Conteo consolidado del mes | Consecutivo mensual propio |
-| **Clientes Registrados** | Total entidades de salud | Total entidades de salud |
-| **Productos en Catálogo** | Total catálogo médico | Total catálogo médico |
+| Tarjeta | Administrador (`admin`) | Encargado de Compras (`compras`) | Asesor Comercial (`usuario`) |
+|---|---|---|---|
+| **Cotizaciones Totales** | Todas las registradas en el sistema | Todas las registradas en el sistema | Solo las creadas por el asesor |
+| **Cotizaciones este Mes** | Conteo consolidado del mes | Conteo consolidado del mes | Consecutivo mensual propio |
+| **Clientes Registrados** | Total entidades de salud | Total entidades de salud | Total entidades de salud |
+| **Productos en Catálogo** | Total catálogo médico | Total catálogo médico | Total catálogo médico |
 
 ---
 
@@ -77,9 +94,20 @@ Al iniciar sesión llegará al **Panel Principal**, que muestra:
 * **Ver PDF:** Abre el PDF formal para el cliente en un visor emergente interactivo con opción de descarga de PDF.
 * **Descargar Excel:** Botón verde `[ 📊 Excel ]` para descargar la cotización en una hoja de cálculo estructurada de forma inmediata (sin imágenes para máxima velocidad con muchos productos).
 * **Hoja de Respaldo:** Consulta interna confidencial con los costos de proveedor y márgenes para auditoría.
-* **Modificar (Ajustar vs. Nueva Versión):** Al hacer clic en ✏️ **Modificar**, se abre un diálogo que permite escoger:
-  * **Ajustar Cotización (Mismo número):** Permite corregir productos, precios o condiciones directamente sobre la cotización original conservando su mismo número (ej: `EB01`), sin crear registros duplicados ni aumentar el consecutivo mensual.
-  * **Nueva Versión / Revisión:** Deja la original intacta y crea una cotización derivada (`_01`, `_02`...) para auditoría de cambios comerciales.
+* **Modificar Cotización (Ajustar vs. Nueva Versión / Revisión):** Al hacer clic en ✏️ **Modificar**, el sistema despliega una ventana modal interactiva con dos caminos de edición según la necesidad comercial:
+  * **🛠️ Ajustar Cotización (Mismo número):**
+    * **Propósito:** Corregir errores tipográficos, ajustar precios, cambiar cantidades, reemplazar ítems o actualizar datos del cliente.
+    * **Comportamiento:** Modifica directamente la cotización actual **preservando su número de cotización original (ej: `EB 01`)**. No crea registros duplicados, no incrementa el consecutivo mensual de cotizaciones y actualiza tanto el PDF del cliente como la Hoja de Respaldo interna.
+    * **Cuándo usarlo:** Cuando se trata de la misma negociación y se cometió un error o el cliente solicitó un pequeño cambio previo al cierre sin requerir histórico.
+  * **📑 Nueva Versión / Revisión (Clon con sufijo `_01`, `_02`):**
+    * **Propósito:** Generar una propuesta comercial evolucionada manteniendo el historial de la versión anterior para trazabilidad y auditoría.
+    * **Comportamiento:** Clona la cotización conservando la original **completamente intacta** en el listado y genera una versión derivada con sufijo secuencial (ejemplo: si la original es `EB 01`, la nueva versión será `EB 01_01`, y la siguiente `EB 01_02`).
+    * **Restricción de seguridad:** Si una cotización ya es una revisión (contiene `_`), la opción de "Nueva Versión" se deshabilita para evitar cadenas infinitas de versiones anidadas; en ese caso se debe modificar la original o usar la opción *Ajustar*.
+* **Control Logístico de Estado de Entrega:** Cada cotización incluye un menú desplegable en vivo para monitoreo de despachos:
+  * 🟡 **Pendiente:** Estado inicial ("Por despachar").
+  * 🔵 **En Tránsito:** Producto despachado ("En camino").
+  * 🟢 **Entregado:** Registra automáticamente la fecha y hora de entrega y calcula los días transcurridos desde la emisión.
+* **Descargar Excel:** Botón verde `[ 📊 Excel ]` para descargar de inmediato la cotización completa en formato tabular `Excel (.xlsx)` estructurado (sin imágenes para máxima velocidad incluso con catálogos extensos).
 * **Emitir Orden:** Botón directo para pasar los ítems cotizados a una Orden de Compra formal (habilitado únicamente para cotizaciones en estado pendiente).
 * **Eliminar Cotización:** Disponible para usuarios con rol `admin` o `compras` independientemente del estado de la cotización.
 
@@ -100,8 +128,9 @@ Al iniciar sesión llegará al **Panel Principal**, que muestra:
 ## 6. Gestión de Clientes
 
 Directorio centralizado de instituciones de salud:
-* Búsqueda en vivo por nombre, NIT o municipio.
-* Creación y edición con validación de NIT único.
+* **Búsqueda en Vivo:** Filtrado predictivo por nombre, NIT o municipio con botón de limpieza instantánea `[X]`.
+* **Creación y Edición:** Registro con validación de NIT único para evitar duplicados institucionales.
+* **Eliminación y Soft Delete (Exclusivo Administrador):** La eliminación de clientes está reservada exclusivamente para el Administrador. El sistema aplica *Soft Delete* (cambia su estado a inactivo en base de datos), impidiendo que sea seleccionado en futuras cotizaciones sin perder las cotizaciones o facturas que se le emitieron en el pasado.
 
 ---
 
@@ -111,23 +140,27 @@ Directorio centralizado de proveedores comerciales y técnicos:
 * **Consulta y Búsqueda en Vivo:** Localice rápidamente proveedores por NIT o Nombre sin necesidad de presionar Enter (búsqueda automática con debounce).
 * **Nuevo Proveedor:** Modal para registrar NIT, Razón Social, Tipo de Contribuyente y datos bancarios (Banco, Tipo de Cuenta y Número).
 * **Edición Rápida:** Actualice información comercial o bancaria desde el botón de lápiz.
-* **Desactivación Segura (Solo Admin):** Los administradores pueden desactivar proveedores obsoletos. Los proveedores desactivados no aparecerán en nuevas cotizaciones u órdenes.
+* **Desactivación Segura / Soft Delete (Exclusivo Administrador):** Esta acción está reservada exclusivamente para el Administrador. Al desactivar un proveedor obsoleto, este se oculta de las búsquedas y de la selección para nuevas cotizaciones y órdenes de compra, protegiendo y manteniendo completamente intactas las compras y cotizaciones históricas asociadas a dicho proveedor.
 * **Normalización de NIT:** El sistema limpia automáticamente puntos y espacios al escribir, manteniendo intacto el formato con guion de verificación (ej: `900535843-3`).
 
 ---
 
 ## 8. Catálogo de Productos (Eliminación Solo Admin)
 
-* Catálogo con fotos sanitizadas, categorías, códigos y porcentajes de IVA; accesible por todos los usuarios para consulta, creación y edición.
-* Exportación completa, por categoría o por selección a PDF.
-* La acción de eliminar productos está reservada exclusivamente para el Administrador y no afecta cotizaciones históricas ya emitidas.
+Directorio y catálogo central de equipamiento y dispositivos médicos:
+* **Uso Compartido (Asesores y Administrador):** Todos los usuarios comerciales y administrativos pueden buscar, consultar, crear nuevos productos y editar información técnica existente (código, categoría, marca, modelo, descripción, porcentaje de IVA y fotografía médica sanitizada).
+* **Exportación PDF:** Descarga de catálogo completo, filtrado por categorías o selección puntual mediante barra flotante interactiva.
+* **Eliminación y Soft Delete (Exclusivo Administrador):** El botón de eliminar producto (`trash`) únicamente es visible y ejecutable por el Administrador. El sistema ejecuta una inactivación lógica (*Soft Delete*), de modo que el producto no aparece en nuevas búsquedas pero permanece perfectamente intacto en el historial de cotizaciones e informes pasados.
 
 ---
 
-## 9. Gestión de Usuarios (Solo Admin)
+## 9. Gestión Administrativa y de Usuarios (Solo Admin)
 
-* Alta de asesores con su **Código de Cotización** (2 letras, ej: `EB`, `SL`).
-* Reset de contraseñas rápido al número de documento en un solo clic.
+* **Gestión de Asesores:** Creación de usuarios con asignación de rol y **Código de Cotización** exclusivo (2 letras, ej: `EB`, `SL`).
+* **Contraseñas y Accesos:** Asignación inicial con el número de documento y restablecimiento rápido en un clic en caso de olvido.
+* **Políticas Centralizadas de Soft Delete y Protección de Integridad:**
+  * **Clientes, Proveedores y Productos:** La eliminación es potestad exclusiva del Administrador y opera mediante *Soft Delete* (inactivación lógica). Esto garantiza que ninguna cotización, hoja de respaldo u orden de compra histórica pierda integridad, descripciones ni cálculos contables.
+  * **Usuarios y Asesores:** Si un usuario ya tiene cotizaciones u órdenes emitidas en el sistema, el motor de base de datos protege la integridad referencial y bloquea el borrado destructivo, recomendando pasarlo a estado *Inactivo* para inhabilitar su acceso conservando la auditoría de sus ventas.
 
 ---
 

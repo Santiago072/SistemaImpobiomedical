@@ -103,6 +103,12 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                     'desc'      => 'Ocurrió un inconveniente al intentar guardar el ítem de la cotización.',
                     'sug'       => 'Verifique que los datos ingresados sean correctos e intente nuevamente. Si el problema persiste, contacte al administrador.',
                 ],
+                'no_items' => [
+                    'icono'     => 'bi-cart-x-fill',
+                    'titulo'    => 'No hay productos en la cotización',
+                    'desc'      => 'Debes agregar al menos un producto a la cotización antes de proceder a completarla o finalizarla.',
+                    'sug'       => 'Selecciona un producto del catálogo o agrega un ítem manualmente antes de continuar.',
+                ],
             ];
 
             $errorInfo = null;

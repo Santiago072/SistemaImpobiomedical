@@ -291,6 +291,9 @@ if ($module === 'usuarios') {
         case 'cambiar_password_modal':
             $ctrl->cambiarPasswordModal();
             break;
+        case 'ajax_buscar':
+            $ctrl->ajaxBuscar();
+            break;
         case 'crear':
         case 'editar':
             $dataForm = $action === 'crear' ? $ctrl->crear() : $ctrl->editar();

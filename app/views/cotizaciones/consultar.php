@@ -23,6 +23,13 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
         </div>
 
+        <?php if (!empty($_SESSION['flash_exito'])): ?>
+            <div class="mod-alert mod-alert-ok mb-16">
+                <i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($_SESSION['flash_exito']) ?>
+            </div>
+            <?php unset($_SESSION['flash_exito']); ?>
+        <?php endif; ?>
+
         <?php if (!empty($_SESSION['flash_error'])):
             $alertaErrorMsg = $_SESSION['flash_error'];
             unset($_SESSION['flash_error']);
@@ -637,6 +644,25 @@ document.addEventListener('keydown', e => {
         cerrarModalEdicion();
     }
 });
+
+<?php
+$descargarPdfNum = sanitizar_entrada($_GET['descargar_pdf'] ?? '');
+if (!empty($descargarPdfNum)):
+?>
+document.addEventListener('DOMContentLoaded', function() {
+    const pdfUrl = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&ver=<?= urlencode($descargarPdfNum) ?>&descargar=1';
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = pdfUrl;
+    document.body.appendChild(iframe);
+
+    // Limpiar el parámetro de la URL sin recargar la página para que quede limpio el historial
+    if (window.history.replaceState) {
+        const urlLimpia = window.location.protocol + '//' + window.location.host + window.location.pathname + '?module=cotizaciones&action=consultar';
+        window.history.replaceState({ path: urlLimpia }, '', urlLimpia);
+    }
+});
+<?php endif; ?>
 </script>
 
 <?php include dirname(__DIR__) . '/layout/footer.php'; ?>

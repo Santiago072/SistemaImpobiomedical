@@ -110,23 +110,24 @@ $totalValorFinal      = 0;
                                     <div class="mb-3">
                                         <strong>$<?= number_format($acumUtil, 0, ',', '.') ?></strong>
                                     </div>
-                                    <?php if (!empty($opsUtil)): ?>
                                     <div class="resp-ops-box resp-ops-green">
-                                        <?php foreach ($opsUtil as $op):
-                                            $tipo  = $op['tipo']  ?? 'suma';
-                                            $valor = (float)($op['valor'] ?? 0);
-                                            if ($valor == 0) continue;
-                                            if ($tipo === 'suma') {
-                                                echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
-                                            } elseif ($tipo === 'mult_pct') {
-                                                echo '<span>+ ' . $valor . '%</span><br>';
-                                            } elseif ($tipo === 'div_pct') {
-                                                echo '<span>÷ ' . $valor . '</span><br>';
-                                            }
-                                        endforeach;
-                                        ?>
+                                        <?php if (!empty($opsUtil)): ?>
+                                            <?php foreach ($opsUtil as $op):
+                                                $tipo  = $op['tipo']  ?? 'suma';
+                                                $valor = (float)($op['valor'] ?? 0);
+                                                if ($valor == 0) continue;
+                                                if ($tipo === 'suma') {
+                                                    echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
+                                                } elseif ($tipo === 'mult_pct') {
+                                                    echo '<span>+ ' . $valor . '%</span><br>';
+                                                } elseif ($tipo === 'div_pct') {
+                                                    echo '<span>÷ ' . $valor . '</span><br>';
+                                                }
+                                            endforeach; ?>
+                                        <?php else: ?>
+                                            <span>-</span>
+                                        <?php endif; ?>
                                     </div>
-                                    <?php endif; ?>
                                 </td>
 
                                 <!-- Flete acumulado + operaciones -->
@@ -134,23 +135,24 @@ $totalValorFinal      = 0;
                                     <div class="mb-3">
                                         <strong>$<?= number_format($acumFlete, 0, ',', '.') ?></strong>
                                     </div>
-                                    <?php if (!empty($opsFlete)): ?>
                                     <div class="resp-ops-box resp-ops-amber">
-                                        <?php foreach ($opsFlete as $op):
-                                            $tipo  = $op['tipo']  ?? 'suma';
-                                            $valor = (float)($op['valor'] ?? 0);
-                                            if ($valor == 0) continue;
-                                            if ($tipo === 'suma') {
-                                                echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
-                                            } elseif ($tipo === 'mult_pct') {
-                                                echo '<span>+ ' . $valor . '%</span><br>';
-                                            } elseif ($tipo === 'div_pct') {
-                                                echo '<span>÷ ' . $valor . '</span><br>';
-                                            }
-                                        endforeach;
-                                        ?>
+                                        <?php if (!empty($opsFlete)): ?>
+                                            <?php foreach ($opsFlete as $op):
+                                                $tipo  = $op['tipo']  ?? 'suma';
+                                                $valor = (float)($op['valor'] ?? 0);
+                                                if ($valor == 0) continue;
+                                                if ($tipo === 'suma') {
+                                                    echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
+                                                } elseif ($tipo === 'mult_pct') {
+                                                    echo '<span>+ ' . $valor . '%</span><br>';
+                                                } elseif ($tipo === 'div_pct') {
+                                                    echo '<span>÷ ' . $valor . '</span><br>';
+                                                }
+                                            endforeach; ?>
+                                        <?php else: ?>
+                                            <span>-</span>
+                                        <?php endif; ?>
                                     </div>
-                                    <?php endif; ?>
                                 </td>
 
                                 <!-- Calibración acumulada + operaciones -->
@@ -158,51 +160,49 @@ $totalValorFinal      = 0;
                                     <div class="mb-3">
                                         <strong>$<?= number_format($acumCalib, 0, ',', '.') ?></strong>
                                     </div>
-                                    <?php if (!empty($opsCalib)): ?>
                                     <div class="resp-ops-box resp-ops-blue">
-                                        <?php foreach ($opsCalib as $op):
-                                            $tipo  = $op['tipo']  ?? 'suma';
-                                            $valor = (float)($op['valor'] ?? 0);
-                                            if ($valor == 0) continue;
-                                            if ($tipo === 'suma') {
-                                                echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
-                                            } elseif ($tipo === 'mult_pct') {
-                                                echo '<span>+ ' . $valor . '%</span><br>';
-                                            } elseif ($tipo === 'div_pct') {
-                                                echo '<span>÷ ' . $valor . '</span><br>';
-                                            }
-                                        endforeach;
-                                        ?>
+                                        <?php if (!empty($opsCalib)): ?>
+                                            <?php foreach ($opsCalib as $op):
+                                                $tipo  = $op['tipo']  ?? 'suma';
+                                                $valor = (float)($op['valor'] ?? 0);
+                                                if ($valor == 0) continue;
+                                                if ($tipo === 'suma') {
+                                                    echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
+                                                } elseif ($tipo === 'mult_pct') {
+                                                    echo '<span>+ ' . $valor . '%</span><br>';
+                                                } elseif ($tipo === 'div_pct') {
+                                                    echo '<span>÷ ' . $valor . '</span><br>';
+                                                }
+                                            endforeach; ?>
+                                        <?php else: ?>
+                                            <span>-</span>
+                                        <?php endif; ?>
                                     </div>
-                                    <?php endif; ?>
                                 </td>
 
                                 <!-- Estampillas acumuladas + operaciones -->
                                 <td class="text-right text-purple-dark font-600 font-11 val-top">
-                                    <?php if ($acumEstamp > $acumCalib): ?>
                                     <div class="mb-3">
                                         <strong>$<?= number_format($acumEstamp, 0, ',', '.') ?></strong>
                                     </div>
-                                    <?php if (!empty($opsEstamp)): ?>
                                     <div class="resp-ops-box resp-ops-purple">
-                                        <?php foreach ($opsEstamp as $op):
-                                            $tipo  = $op['tipo']  ?? 'suma';
-                                            $valor = (float)($op['valor'] ?? 0);
-                                            if ($valor == 0) continue;
-                                            if ($tipo === 'suma') {
-                                                echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
-                                            } elseif ($tipo === 'mult_pct') {
-                                                echo '<span>+ ' . $valor . '%</span><br>';
-                                            } elseif ($tipo === 'div_pct') {
-                                                echo '<span>÷ ' . $valor . '</span><br>';
-                                            }
-                                        endforeach;
-                                        ?>
+                                        <?php if (!empty($opsEstamp)): ?>
+                                            <?php foreach ($opsEstamp as $op):
+                                                $tipo  = $op['tipo']  ?? 'suma';
+                                                $valor = (float)($op['valor'] ?? 0);
+                                                if ($valor == 0) continue;
+                                                if ($tipo === 'suma') {
+                                                    echo '<span>+ $' . number_format($valor, 0, ',', '.') . '</span><br>';
+                                                } elseif ($tipo === 'mult_pct') {
+                                                    echo '<span>+ ' . $valor . '%</span><br>';
+                                                } elseif ($tipo === 'div_pct') {
+                                                    echo '<span>÷ ' . $valor . '</span><br>';
+                                                }
+                                            endforeach; ?>
+                                        <?php else: ?>
+                                            <span>-</span>
+                                        <?php endif; ?>
                                     </div>
-                                    <?php endif; ?>
-                                    <?php else: ?>
-                                    <span class="text-muted-gray">-</span>
-                                    <?php endif; ?>
                                 </td>
 
                                 <!-- V/F con IVA (valor unitario, sin multiplicar por cantidad) -->

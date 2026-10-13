@@ -18,7 +18,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         <div class="mod-header">
             <div>
                 <h1 class="mod-title"><i class="bi bi-building"></i> Gestión de Clientes</h1>
-                <p class="mod-sub"><?= $total ?? 0 ?> cliente(s) registrado(s)</p>
+                <p class="mod-sub"><span id="total-clientes-count"><?= $total ?? 0 ?></span> cliente(s) registrado(s)</p>
             </div>
             <button class="btn-mod-primary" onclick="abrirModalCrear()">
                 <i class="bi bi-plus-lg"></i> Nuevo Cliente
@@ -36,14 +36,12 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
         <!-- ── Búsqueda ── -->
         <div class="mod-search-bar">
-            <form method="GET" action="<?= $basePath ?>index.php" class="mod-search-form">
+            <form method="GET" action="<?= $basePath ?>index.php" class="mod-search-form" id="form-busqueda-clientes">
                 <input type="hidden" name="module" value="clientes">
                 <span class="mod-search-icon"><i class="bi bi-search"></i></span>
-                <input type="text" name="busqueda" placeholder="Buscar por nombre, NIT o municipio..."
-                       value="<?= htmlspecialchars($busqueda) ?>" class="mod-search-input">
-                <?php if ($busqueda !== ''): ?>
-                <a href="<?= $basePath ?>?module=clientes" class="mod-btn-clear"><i class="bi bi-x-lg"></i></a>
-                <?php endif; ?>
+                <input type="text" name="busqueda" id="input-busqueda-clientes" placeholder="Buscar por nombre, NIT o municipio..."
+                       value="<?= htmlspecialchars($busqueda) ?>" class="mod-search-input" autocomplete="off">
+                <a href="<?= $basePath ?>?module=clientes" class="mod-btn-clear" id="btn-clear-clientes" style="<?= empty($busqueda) ? 'display:none;' : '' ?>" title="Limpiar búsqueda"><i class="bi bi-x-lg"></i></a>
             </form>
         </div>
 
@@ -62,7 +60,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tbody-clientes">
                 <?php if (empty($clientes)): ?>
                     <tr>
                         <td colspan="8" class="mod-empty">
@@ -247,12 +245,13 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         </div>
         <div class="imo-modal-body">
             <p>¿Está seguro de que desea eliminar al cliente <strong id="nombre-eliminar"></strong>?</p>
-            <p class="imo-muted-sm">Esta acción no se puede deshacer.</p>
+            <p class="imo-muted-sm">Esta acción cambiará el estado a inactivo para proteger el historial de cotizaciones.</p>
         </div>
         <div class="imo-modal-footer">
             <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
             <form id="form-eliminar-cliente" method="POST" action="" class="form-inline-action">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                <input type="hidden" name="id" id="eliminar_cliente_id">
                 <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
             </form>
         </div>
@@ -385,6 +384,8 @@ function abrirModalEditar(data) {
 
 function confirmarEliminar(id, nombre) {
     document.getElementById('nombre-eliminar').textContent = nombre;
+    const inputId = document.getElementById('eliminar_cliente_id');
+    if (inputId) inputId.value = id;
     document.getElementById('form-eliminar-cliente').action = BASE + '?module=clientes&action=eliminar&id=' + id;
     document.getElementById('modal-eliminar').classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -402,6 +403,144 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') {
     });
     document.body.style.overflow = 'auto';
 }});
+
+// ── Búsqueda en vivo idéntica a Catálogo de Productos (AJAX sin recargar) ──
+let timerBusqClientes  = null;
+const inpBusqClientes  = document.getElementById('input-busqueda-clientes');
+const formBusqClientes = document.getElementById('form-busqueda-clientes');
+const btnClearClientes = document.getElementById('btn-clear-clientes');
+const tbodyClientes    = document.getElementById('tbody-clientes');
+const pagInfoClientes  = document.querySelector('.mod-pag-info');
+const htmlOriginalTbody = tbodyClientes ? tbodyClientes.innerHTML : '';
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+function escapeJsString(text) {
+    if (!text) return '';
+    return String(text).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+function restaurarVistaClientes() {
+    if (tbodyClientes) tbodyClientes.innerHTML = htmlOriginalTbody;
+    const wrapPag = document.querySelector('.mod-pagination-wrap, .mod-paginacion, ul.pagination, div[class*="pagin"]');
+    if (wrapPag) wrapPag.style.display = '';
+    if (pagInfoClientes) pagInfoClientes.style.display = '';
+}
+
+function renderizarClientesAjax(lista, isAdmin) {
+    if (!tbodyClientes) return;
+
+    if (!lista || lista.length === 0) {
+        tbodyClientes.innerHTML = `
+            <tr>
+                <td colspan="8" class="mod-empty">
+                    <i class="bi bi-search"></i>
+                    <p>No se encontraron clientes coincidentes.</p>
+                </td>
+            </tr>
+        `;
+        if (pagInfoClientes) pagInfoClientes.textContent = '0 cliente(s) encontrado(s)';
+        return;
+    }
+
+    let html = '';
+    lista.forEach(c => {
+        const nombreEsc   = escapeHtml(c.nombre || '');
+        const nitEsc      = escapeHtml(c.nit || '');
+        const munDep      = escapeHtml((c.municipio || '') + (c.municipio && c.departamento ? ', ' : '') + (c.departamento || ''));
+        const contactoEsc = escapeHtml(c.nombre_contacto || '');
+        const telEsc      = escapeHtml(c.telefono || '');
+        const correoEsc   = escapeHtml(c.correo || '—');
+        const estadoVal   = (c.estado || 'activo').toLowerCase();
+        const badgeClass  = estadoVal === 'activo' ? 'badge-green' : 'badge-red';
+        const estadoLabel = escapeHtml(c.estado || 'Activo');
+        const cJson       = escapeHtml(JSON.stringify(c));
+        const nombreSafe  = escapeJsString(c.nombre || '');
+        const cid         = parseInt(c.id);
+
+        html += `
+            <tr>
+                <td><strong>${nombreEsc}</strong></td>
+                <td>${nitEsc}</td>
+                <td>${munDep}</td>
+                <td>${contactoEsc}</td>
+                <td>${telEsc}</td>
+                <td>${correoEsc}</td>
+                <td>
+                    <span class="mod-badge ${badgeClass}">${estadoLabel}</span>
+                </td>
+                <td>
+                    <div class="mod-actions">
+                        <button class="mod-btn-edit" title="Editar" onclick="abrirModalEditar(${cJson})">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        ${isAdmin ? `
+                        <button class="mod-btn-del" title="Eliminar" onclick="confirmarEliminar(${cid}, '${nombreSafe}')">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbodyClientes.innerHTML = html;
+    if (pagInfoClientes) {
+        pagInfoClientes.textContent = `Mostrando ${lista.length} cliente(s) encontrado(s)`;
+    }
+}
+
+if (inpBusqClientes) {
+    inpBusqClientes.addEventListener('input', function() {
+        clearTimeout(timerBusqClientes);
+        const q = this.value.trim();
+
+        if (btnClearClientes) {
+            btnClearClientes.style.display = q.length > 0 ? 'flex' : 'none';
+        }
+
+        if (q === '') {
+            restaurarVistaClientes();
+            return;
+        }
+
+        timerBusqClientes = setTimeout(() => {
+            fetch(`${BASE}?module=clientes&action=ajax_buscar&term=${encodeURIComponent(q)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        const wrapPag = document.querySelector('.mod-pagination-wrap, .mod-paginacion, ul.pagination, div[class*="pagin"]');
+                        if (wrapPag) wrapPag.style.display = 'none';
+                        renderizarClientesAjax(data.clientes, data.isAdmin);
+                    }
+                })
+                .catch(err => console.error('Error en búsqueda AJAX de clientes:', err));
+        }, 200);
+    });
+
+    if (formBusqClientes) {
+        formBusqClientes.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    }
+}
+
+if (btnClearClientes) {
+    btnClearClientes.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (inpBusqClientes) {
+            inpBusqClientes.value = '';
+            inpBusqClientes.focus();
+        }
+        btnClearClientes.style.display = 'none';
+        restaurarVistaClientes();
+    });
+}
 </script>
 
 <script src="<?= $basePath ?>public/js/script.js"></script>

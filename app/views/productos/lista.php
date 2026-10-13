@@ -61,17 +61,15 @@ include dirname(__DIR__) . '/layout/menu.php';
 
         <!-- Búsqueda -->
         <div class="mod-search-bar">
-            <form action="<?= $basePath ?>" method="GET" class="mod-search-form">
+            <form action="<?= $basePath ?>" method="GET" class="mod-search-form" id="form-busqueda-productos">
                 <input type="hidden" name="module" value="productos">
                 <input type="hidden" name="action" value="lista">
                 <?php if (!empty($categoriaSel)): ?>
                 <input type="hidden" name="categoria" value="<?= htmlspecialchars($categoriaSel) ?>">
                 <?php endif; ?>
                 <span class="mod-search-icon"><i class="bi bi-search"></i></span>
-                <input type="text" name="busqueda" class="mod-search-input" value="<?= htmlspecialchars($busqueda) ?>" placeholder="Buscar producto...">
-                <?php if ($busqueda): ?>
-                <a href="<?= $basePath ?>?module=productos&action=lista<?= !empty($categoriaSel) ? '&categoria='.urlencode($categoriaSel) : '' ?>" class="mod-btn-clear"><i class="bi bi-x-lg"></i></a>
-                <?php endif; ?>
+                <input type="text" name="busqueda" id="input-busqueda-productos" class="mod-search-input" value="<?= htmlspecialchars($busqueda) ?>" placeholder="Buscar producto...">
+                <a href="<?= $basePath ?>?module=productos&action=lista<?= !empty($categoriaSel) ? '&categoria='.urlencode($categoriaSel) : '' ?>" class="mod-btn-clear" id="btn-clear-productos" style="<?= empty($busqueda) ? 'display:none;' : '' ?>" title="Limpiar búsqueda"><i class="bi bi-x-lg"></i></a>
             </form>
         </div>
 
@@ -341,11 +339,13 @@ include dirname(__DIR__) . '/layout/menu.php';
         </div>
         <div class="imo-modal-body">
             <p class="imo-modal-desc">¿Seguro que deseas eliminar <strong id="nombre-eliminar"></strong>?</p>
+            <p class="imo-muted-sm">Esta acción cambiará el estado a inactivo para proteger el historial de cotizaciones y órdenes.</p>
         </div>
         <div class="imo-modal-footer">
             <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
             <form id="form-eliminar-producto" method="POST" action="" class="form-inline-action">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                <input type="hidden" name="id" id="eliminar_producto_id">
                 <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
             </form>
         </div>
@@ -407,6 +407,8 @@ document.getElementById('e_foto')?.addEventListener('change', function() {
 
 function confirmarEliminar(id, nombre) {
     document.getElementById('nombre-eliminar').textContent = nombre;
+    const inpId = document.getElementById('eliminar_producto_id');
+    if (inpId) inpId.value = id;
     document.getElementById('form-eliminar-producto').action = BASE + '?module=productos&action=eliminar&id=' + id;
     document.getElementById('modal-eliminar').classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -634,10 +636,16 @@ function escapeJsString(text) {
     return String(text).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
 }
 
+const btnClearProductos = document.getElementById('btn-clear-productos');
+
 if (inputBusq) {
     inputBusq.addEventListener('input', function() {
         clearTimeout(timerFiltro);
         const q = this.value.trim();
+
+        if (btnClearProductos) {
+            btnClearProductos.style.display = q.length > 0 ? 'flex' : 'none';
+        }
 
         if (q === '') {
             // Restaurar vista original
@@ -669,6 +677,29 @@ if (inputBusq) {
                 })
                 .catch(err => console.error('Error en búsqueda AJAX:', err));
         }, 200);
+    });
+}
+
+if (btnClearProductos) {
+    btnClearProductos.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (inputBusq) {
+            inputBusq.value = '';
+            inputBusq.focus();
+        }
+        btnClearProductos.style.display = 'none';
+        if (prodGrid) prodGrid.innerHTML = htmlOriginalGrid;
+        document.querySelectorAll('.chk-select-prod').forEach(chk => {
+            const pid = parseInt(chk.value);
+            if (productosSeleccionados.has(pid)) {
+                chk.checked = true;
+                const card = chk.closest('.prod-card');
+                if (card) card.classList.add('is-selected');
+            }
+        });
+        const wrapPag = document.querySelector('.mod-pagination-wrap, .mod-paginacion, ul.pagination, div[class*="pagin"]');
+        if (wrapPag) wrapPag.style.display = '';
+        if (pagInfo) pagInfo.style.display = '';
     });
 }
 </script>

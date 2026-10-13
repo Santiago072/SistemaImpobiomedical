@@ -69,7 +69,7 @@ $tabActual = $tabActual ?? 'pendientes';
                 <input type="text" name="proveedor" value="<?= htmlspecialchars($busquedaProveedor) ?>"
                        placeholder="Proveedor..." maxlength="60" class="mod-search-input">
                 <input type="text" name="cotizacion_numero" value="<?= htmlspecialchars($busquedaCotizacion) ?>"
-                       placeholder="N° Cot." maxlength="20" class="mod-search-input">
+                       placeholder="N° Orden / Cot..." maxlength="40" class="mod-search-input">
                 <div class="filter-input-field">
                     <label class="filter-label-text">Desde:</label>
                     <input type="date" name="fecha_inicio" value="<?= htmlspecialchars($busquedaFechaInicio ?? '') ?>"

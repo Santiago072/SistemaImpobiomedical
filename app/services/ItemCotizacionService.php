@@ -195,12 +195,52 @@ class ItemCotizacionService
 
         $foto = $this->uploader->reemplazar($fileData['foto'] ?? [], $postData['foto_actual'] ?? '');
 
-        return $this->cotizacionModel->actualizarItem(
+        $actualizado = $this->cotizacionModel->actualizarItem(
             $itemId, $cotizacion_id, $titulo, $foto,
             $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
             $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
             $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops,
             $proveedor_id, $proveedor_nit, $marca, $modelo
         );
+
+        // Sincronizar catálogo general de productos al editar
+        if ($actualizado && !empty($titulo)) {
+            $itemActual = $this->cotizacionModel->buscarItemPorId($itemId, $cotizacion_id);
+            $productoId = !empty($itemActual['producto_id']) ? (int)$itemActual['producto_id'] : null;
+
+            $productoExistente = null;
+            if ($productoId !== null) {
+                $productoExistente = $this->productoModel->buscarPorId($productoId);
+            }
+            if (!$productoExistente) {
+                $productoExistente = $this->productoModel->buscarPorTitulo($titulo);
+                if ($productoExistente) {
+                    $productoId = (int)$productoExistente['id'];
+                }
+            }
+
+            if ($productoExistente && $productoId !== null) {
+                if (empty($foto) && !empty($productoExistente['foto'])) {
+                    $foto = $productoExistente['foto'];
+                }
+                $this->productoModel->actualizar(
+                    $productoId,
+                    $titulo,
+                    !empty($foto) ? $foto : (string)($productoExistente['foto'] ?? ''),
+                    !empty($descripcion) ? $descripcion : (string)($productoExistente['descripcion'] ?? ''),
+                    $iva,
+                    $porcentaje_iva,
+                    'activo',
+                    !empty($categoria) ? $categoria : ($productoExistente['categoria'] ?? null),
+                    !empty($codigo_producto) ? $codigo_producto : ($productoExistente['codigo_producto'] ?? null),
+                    !empty($marca) ? $marca : ($productoExistente['marca'] ?? null),
+                    !empty($modelo) ? $modelo : ($productoExistente['modelo'] ?? null)
+                );
+            } elseif (!empty($titulo) && !empty($marca) && !empty($modelo)) {
+                $this->productoModel->crear($titulo, $foto, $descripcion, $iva, $porcentaje_iva, $categoria, $codigo_producto, $marca, $modelo);
+            }
+        }
+
+        return $actualizado;
     }
 }

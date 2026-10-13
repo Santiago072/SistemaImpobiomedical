@@ -187,19 +187,32 @@ class ProveedorController
 
     /**
      * Endpoint AJAX: Búsqueda predictiva en tiempo real (por NIT o Nombre)
-     * Utilizado en Nueva Cotización y Nueva Orden de Compra.
+     * Utilizado en Directorio de Proveedores, Nueva Cotización y Nueva Orden de Compra.
      */
-    public function ajaxBuscar(): void
-    {
-        verificar_autenticacion();
-        verificar_rate_limit(60, 60, 'proveedor_buscar');
-        header('Content-Type: application/json; charset=utf-8');
+     public function ajaxBuscar(): void
+     {
+         verificar_autenticacion();
+         verificar_rate_limit(60, 60, 'proveedor_buscar');
+         header('Content-Type: application/json; charset=utf-8');
 
-        $term = sanitizar_entrada($_GET['term'] ?? '');
-        $res  = $this->model->buscarLive($term, 12);
-        echo json_encode($res);
-        exit();
-    }
+         $term = sanitizar_entrada($_GET['term'] ?? $_GET['busqueda'] ?? $_GET['q'] ?? '');
+         // Si se solicita desde la lista de proveedores (vista completa)
+         $modo = sanitizar_entrada($_GET['modo'] ?? '');
+         if ($modo === 'directorio') {
+             $res = $this->model->listar(1, 100, $term, '');
+             echo json_encode([
+                 'status'      => 'ok',
+                 'proveedores' => $res['proveedores'] ?? [],
+                 'total'       => $res['total'] ?? 0,
+                 'isAdmin'     => (($_SESSION['rol'] ?? '') === 'admin'),
+             ]);
+             exit();
+         }
+
+         $res = $this->model->buscarLive($term, 12);
+         echo json_encode($res);
+         exit();
+     }
 
     /**
      * Endpoint AJAX: Obtener datos de un proveedor específico por ID.

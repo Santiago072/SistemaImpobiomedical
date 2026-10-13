@@ -584,8 +584,18 @@ class OrdenCompraModel
             $params[':prov']     = '%' . $filtros['proveedor'] . '%';
         }
         if (!empty($filtros['cotizacion_numero'])) {
-            $condiciones[]       = 'o.cotizacion_numero LIKE :cnum';
-            $params[':cnum']     = '%' . $filtros['cotizacion_numero'] . '%';
+            $termCot = trim($filtros['cotizacion_numero']);
+            // Extraer posibles dígitos si el usuario escribe "P.O. 3", "po 3", "#3" o "3"
+            $soloDigitos = preg_replace('/\D/', '', $termCot);
+
+            if ($soloDigitos !== '' && is_numeric($soloDigitos)) {
+                $condiciones[] = '(o.cotizacion_numero LIKE :cnum OR o.numero_po = :po_num)';
+                $params[':cnum']   = '%' . $termCot . '%';
+                $params[':po_num'] = (int)$soloDigitos;
+            } else {
+                $condiciones[]   = 'o.cotizacion_numero LIKE :cnum';
+                $params[':cnum'] = '%' . $termCot . '%';
+            }
         }
         if (!empty($filtros['fecha_inicio'])) {
             $condiciones[]       = 'DATE(o.fecha) >= :fi';

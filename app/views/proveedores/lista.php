@@ -18,7 +18,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         <div class="mod-header">
             <div>
                 <h1 class="mod-title"><i class="bi bi-truck"></i> Directorio de Proveedores</h1>
-                <p class="mod-sub"><?= $total ?? 0 ?> proveedor(es) registrado(s)</p>
+                <p class="mod-sub"><span id="total-proveedores-count"><?= $total ?? 0 ?></span> proveedor(es) registrado(s)</p>
             </div>
             <button type="button" class="btn-mod-primary" onclick="abrirModalCrear()">
                 <i class="bi bi-plus-lg"></i> Nuevo Proveedor
@@ -43,9 +43,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 <span class="mod-search-icon"><i class="bi bi-search"></i></span>
                 <input type="text" id="inputBusqueda" name="busqueda" placeholder="Buscar por NIT, Nombre del Proveedor o Banco..."
                        value="<?= htmlspecialchars($busqueda) ?>" class="mod-search-input" autocomplete="off">
-                <?php if ($busqueda !== ''): ?>
-                <a href="<?= $basePath ?>?module=proveedores" class="mod-btn-clear" title="Limpiar búsqueda"><i class="bi bi-x-lg"></i></a>
-                <?php endif; ?>
+                <a href="<?= $basePath ?>?module=proveedores" class="mod-btn-clear" id="btn-clear-proveedores" style="<?= empty($busqueda) ? 'display:none;' : '' ?>" title="Limpiar búsqueda"><i class="bi bi-x-lg"></i></a>
             </form>
         </div>
 
@@ -64,7 +62,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <th class="col-actions">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tbody-proveedores">
                     <?php if (empty($proveedores)): ?>
                     <tr>
                         <td colspan="8" class="mod-empty">
@@ -418,23 +416,142 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// ── Búsqueda automática en vivo sin presionar Enter (debounce 400ms) ──
-const inpBusqueda = document.getElementById('inputBusqueda');
-const formBusqueda = document.getElementById('formBusqueda');
-let searchDebounceTimer = null;
+// ── Búsqueda en vivo idéntica a Catálogo de Productos (AJAX sin recargar) ──
+let timerBusqProveedores  = null;
+const inpBusqueda         = document.getElementById('inputBusqueda');
+const formBusqueda        = document.getElementById('formBusqueda');
+const btnClearProveedores = document.getElementById('btn-clear-proveedores');
+const tbodyProveedores    = document.getElementById('tbody-proveedores');
+const pagInfoProveedores  = document.querySelector('.mod-pag-info');
+const htmlOriginalProvTbody = tbodyProveedores ? tbodyProveedores.innerHTML : '';
 
-if (inpBusqueda && formBusqueda) {
-    // Colocar cursor al final del texto si ya tiene contenido
-    if (inpBusqueda.value.length > 0) {
-        inpBusqueda.focus();
-        inpBusqueda.setSelectionRange(inpBusqueda.value.length, inpBusqueda.value.length);
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+function escapeJsString(text) {
+    if (!text) return '';
+    return String(text).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+function restaurarVistaProveedores() {
+    if (tbodyProveedores) tbodyProveedores.innerHTML = htmlOriginalProvTbody;
+    const wrapPag = document.querySelector('.mod-pagination-wrap, .mod-paginacion, ul.pagination, div[class*="pagin"]');
+    if (wrapPag) wrapPag.style.display = '';
+    if (pagInfoProveedores) pagInfoProveedores.style.display = '';
+}
+
+function renderizarProveedoresAjax(lista, isAdmin) {
+    if (!tbodyProveedores) return;
+
+    if (!lista || lista.length === 0) {
+        tbodyProveedores.innerHTML = `
+            <tr>
+                <td colspan="8" class="mod-empty">
+                    <i class="bi bi-search"></i>
+                    <p>No se encontraron proveedores coincidentes.</p>
+                </td>
+            </tr>
+        `;
+        if (pagInfoProveedores) pagInfoProveedores.textContent = '0 proveedor(es) encontrado(s)';
+        return;
     }
 
+    let html = '';
+    lista.forEach(p => {
+        const nitEsc      = escapeHtml(p.nit || '');
+        const nombreEsc   = escapeHtml(p.nombre_proveedor || '');
+        const tipoContrib = escapeHtml(p.tipo_contribuyente || 'PERSONA JURÍDICA');
+        const bancoEsc    = escapeHtml(p.nombre_banco || '—');
+        const numCuenta   = escapeHtml(p.numero_cuenta || '—');
+        const tipoCuenta  = escapeHtml(p.tipo_cuenta || '—');
+        const estadoVal   = (p.estado || 'activo').toLowerCase();
+        const badgeClass  = estadoVal === 'activo' ? 'badge-green' : 'badge-red';
+        const badgeIcon   = estadoVal === 'activo' ? 'bi-check-circle-fill' : 'bi-x-circle-fill';
+        const estadoLabel = estadoVal === 'activo' ? 'Activo' : 'Inactivo';
+        const pJson       = escapeHtml(JSON.stringify(p));
+        const nombreSafe  = escapeJsString(p.nombre_proveedor || '');
+        const pid         = parseInt(p.id);
+
+        html += `
+            <tr>
+                <td><strong class="nit-text">${nitEsc}</strong></td>
+                <td><strong>${nombreEsc}</strong></td>
+                <td><span class="sub-text">${tipoContrib}</span></td>
+                <td>${bancoEsc}</td>
+                <td><span class="mono-text">${numCuenta}</span></td>
+                <td>${tipoCuenta}</td>
+                <td>
+                    <span class="mod-badge ${badgeClass}"><i class="bi ${badgeIcon}"></i> ${estadoLabel}</span>
+                </td>
+                <td>
+                    <div class="mod-actions-center">
+                        <button type="button" class="mod-btn-edit" title="Editar Proveedor" onclick="abrirModalEditar(${pJson})">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        ${(estadoVal === 'activo' && isAdmin) ? `
+                        <button type="button" class="mod-btn-del" title="Desactivar Proveedor" onclick="confirmarEliminar(${pid}, '${nombreSafe}')">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbodyProveedores.innerHTML = html;
+    if (pagInfoProveedores) {
+        pagInfoProveedores.textContent = `Mostrando ${lista.length} proveedor(es) encontrado(s)`;
+    }
+}
+
+if (inpBusqueda) {
     inpBusqueda.addEventListener('input', function() {
-        clearTimeout(searchDebounceTimer);
-        searchDebounceTimer = setTimeout(function() {
-            formBusqueda.submit();
-        }, 400);
+        clearTimeout(timerBusqProveedores);
+        const q = this.value.trim();
+
+        if (btnClearProveedores) {
+            btnClearProveedores.style.display = q.length > 0 ? 'flex' : 'none';
+        }
+
+        if (q === '') {
+            restaurarVistaProveedores();
+            return;
+        }
+
+        timerBusqProveedores = setTimeout(() => {
+            fetch(`${BASE_PROV}?module=proveedores&action=ajax_buscar&modo=directorio&term=${encodeURIComponent(q)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        const wrapPag = document.querySelector('.mod-pagination-wrap, .mod-paginacion, ul.pagination, div[class*="pagin"]');
+                        if (wrapPag) wrapPag.style.display = 'none';
+                        renderizarProveedoresAjax(data.proveedores, data.isAdmin);
+                    }
+                })
+                .catch(err => console.error('Error en búsqueda AJAX de proveedores:', err));
+        }, 200);
+    });
+
+    if (formBusqueda) {
+        formBusqueda.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    }
+}
+
+if (btnClearProveedores) {
+    btnClearProveedores.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (inpBusqueda) {
+            inpBusqueda.value = '';
+            inpBusqueda.focus();
+        }
+        btnClearProveedores.style.display = 'none';
+        restaurarVistaProveedores();
     });
 }
 

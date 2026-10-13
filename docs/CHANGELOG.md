@@ -4,6 +4,23 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.5.6] - 2026-10-12
+### Mejorado
+- **Modal de Ayuda Rápida Interactivo (`topbar.php`):**
+  - **Diferenciación explícita de Edición en Consultar Cotizaciones:** Documentadas detalladamente las dos vías operativas del modal de modificación:
+    - *Ajustar Cotización (Mismo número):* Corrección directa de ítems, cantidades y precios conservando el mismo consecutivo oficial sin generar duplicados.
+    - *Nueva Versión / Revisión (Clon con sufijo `_01`, `_02`):* Generación de clon para trazabilidad y auditoría comercial conservando intacto el historial original.
+  - **Exportar a Excel y Control Logístico:** Inclusión de la descarga tabular `.xlsx` ágil y el selector interactivo de estado de entrega (Pendiente, En Tránsito, Entregado con cómputo de días).
+  - **Soporte Adaptativo para los 3 Roles (`admin`, `compras`, `usuario`):** El encabezado del modal ahora identifica y muestra insignias contextuales para *Vista Administrador (Completa)*, *Vista Encargado de Compras* y *Vista Asesor Comercial*.
+  - **Visibilidad Global y Políticas de Eliminación:** Especificación en las pestañas de Cotizaciones y Órdenes de que los roles `admin` y `compras` cuentan con visibilidad global y permisos para eliminar registros, mientras que los asesores operan con aislamiento por autor.
+  - **Tarjeta de Eliminación y Seguridad (Soft Delete Exclusivo Admin):** Documentación centralizada en la pestaña de administración explicando que el borrado lógico (*Soft Delete*) en Clientes, Proveedores y Productos y el bloqueo por integridad referencial en Usuarios/Asesores es potestad exclusiva del Administrador para proteger la integridad histórica.
+- **Manual de Usuario Formal (`docs/MANUAL_USUARIO.md`):**
+  - Se incorporó la subsección *Roles del Sistema y Niveles de Acceso* detallando el alcance funcional de `admin`, `compras` y `usuario`.
+  - Actualización de la matriz de KPIs del Dashboard para reflejar las métricas consolidadas del Encargado de Compras.
+  - Actualización de las secciones de Cotizaciones, Órdenes, Clientes, Proveedores, Catálogo de Productos y Gestión Administrativa en concordancia con los permisos reales del sistema.
+
+---
+
 ## [v3.5.5] - 2026-10-10
 ### Corregido
 - **Aislamiento absoluto e integridad en Ajuste Directo de Cotizaciones (`CotizacionController.php`, `CotizacionModel.php`, `index.php`):**

@@ -51,7 +51,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
                     <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=finalizar" id="formFinalizar">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
-                        <input type="hidden" name="cliente_id" id="hdnClienteId" value="">
+                        <input type="hidden" name="cliente_id" id="hdnClienteId" value="<?= htmlspecialchars((string)($cotizacion['cliente_id'] ?? '')) ?>">
 
                         <div class="imo-form-row">
                             <div class="imo-form-group">
@@ -139,7 +139,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             <a href="<?= $basePath ?>?module=cotizaciones&action=crear" class="imo-btn-cancel text-nodecor">
                                 <i class="bi bi-arrow-left"></i> Volver a ítems
                             </a>
-                            <button type="submit" class="btn-mod-primary">
+                            <button type="submit" id="btnSubmitFinalizar" class="btn-mod-primary">
                                 <?php if (isset($_SESSION['cotizacion_ajustando_id'])): ?>
                                 <i class="bi bi-check2-circle"></i> Guardar Ajuste y Generar PDF
                                 <?php else: ?>
@@ -260,6 +260,19 @@ const btnLimpiar = document.getElementById('btnLimpiarCliente');
 if (btnLimpiar) {
     btnLimpiar.addEventListener('click', function() {
         limpiarDatosCliente();
+    });
+}
+
+const formFinalizar = document.getElementById('formFinalizar');
+if (formFinalizar) {
+    formFinalizar.addEventListener('submit', function(e) {
+        const btn = document.getElementById('btnSubmitFinalizar');
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+            btn.style.cursor = 'not-allowed';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+        }
     });
 }
 

@@ -124,7 +124,12 @@
 .imo-modal-close { background: none; border: none; font-size: 22px; color: #9ca3af; cursor: pointer; line-height: 1; padding: 4px; }
 .imo-modal-close:hover { color: #374151; }
 
-.imo-modal-body { padding: 24px 28px; }
+.imo-modal-body { padding: 24px 28px; color: #1e293b; }
+.imo-modal-body p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.55; color: #334155 !important; }
+.imo-modal-body p strong { color: #0f172a !important; font-weight: 700; }
+.imo-muted-sm { font-size: 13px !important; color: #64748b !important; margin-bottom: 0 !important; }
+.imo-modal-desc { color: #334155 !important; font-size: 14.5px; line-height: 1.55; margin-bottom: 8px; }
+.imo-modal-desc strong { color: #0f172a !important; font-weight: 700; }
 .imo-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
 .imo-form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; text-align: left; }
 .imo-form-group label { font-size: 12px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: .4px; }

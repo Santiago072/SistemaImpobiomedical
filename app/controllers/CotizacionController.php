@@ -516,8 +516,23 @@ class CotizacionController
         $cotizacion    = $this->model->buscarPorId($cotizacion_id);
 
         if (empty($items)) {
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear&error=no_items');
+            // Si la cotización no tiene ítems (por ejemplo, ya fue finalizada o el usuario dio clic atrás)
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
             exit();
+        }
+
+        // Si la cotización tiene un cliente asociado o por NIT, precargar departamento solo si tiene información
+        if ($cotizacion && empty($cotizacion['cliente_departamento'])) {
+            $clienteInfo = null;
+            if (!empty($cotizacion['cliente_id'])) {
+                $clienteInfo = $this->clienteModel->buscarPorId((int)$cotizacion['cliente_id']);
+            } elseif (!empty($cotizacion['cliente_nit'])) {
+                $clienteInfo = $this->clienteModel->buscarPorNit(trim($cotizacion['cliente_nit']));
+            }
+
+            if ($clienteInfo && !empty($clienteInfo['departamento'])) {
+                $cotizacion['cliente_departamento'] = $clienteInfo['departamento'];
+            }
         }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -572,7 +587,9 @@ class CotizacionController
                 unset($_SESSION['cotizacion_id'], $_SESSION['cotizacion_revision_de']);
             }
 
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=generar_pdf&ver=' . urlencode($numeroCotizacion));
+            // Redirigir limpiamente a Consultar Cotizaciones con éxito y disparador para descargar/ver el PDF
+            $_SESSION['flash_exito'] = 'Cotización ' . htmlspecialchars($numeroCotizacion) . ' guardada con éxito.';
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&descargar_pdf=' . urlencode($numeroCotizacion));
             exit();
         } catch (\Throwable $e) {
             error_log('Error al finalizar cotización: ' . $e->getMessage() . "\n" . $e->getTraceAsString());

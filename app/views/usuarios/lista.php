@@ -34,14 +34,12 @@ include dirname(__DIR__) . '/layout/menu.php';
 
         <!-- Búsqueda -->
         <div class="mod-search-bar">
-            <form action="<?= $basePath ?>" method="GET" class="mod-search-form">
+            <form action="<?= $basePath ?>" method="GET" class="mod-search-form" id="form-busqueda-usuarios">
                 <input type="hidden" name="module" value="usuarios">
                 <input type="hidden" name="action" value="lista">
                 <span class="mod-search-icon"><i class="bi bi-search"></i></span>
-                <input type="text" name="busqueda" class="mod-search-input" value="<?= htmlspecialchars($busqueda) ?>" placeholder="Buscar usuario por nombre, correo...">
-                <?php if ($busqueda): ?>
-                <a href="<?= $basePath ?>?module=usuarios&action=lista" class="mod-btn-clear"><i class="bi bi-x-lg"></i></a>
-                <?php endif; ?>
+                <input type="text" name="busqueda" id="input-busqueda-usuarios" class="mod-search-input" value="<?= htmlspecialchars($busqueda) ?>" placeholder="Buscar usuario por nombre, cargo, rol, correo...">
+                <a href="<?= $basePath ?>?module=usuarios&action=lista" class="mod-btn-clear" id="btn-clear-usuarios" style="<?= empty($busqueda) ? 'display:none;' : '' ?>" title="Limpiar búsqueda"><i class="bi bi-x-lg"></i></a>
             </form>
         </div>
 
@@ -325,6 +323,146 @@ document.addEventListener('keydown', e => {
         document.body.style.overflow = 'auto';
     }
 });
+
+// ── Búsqueda en vivo idéntica a Catálogo de Productos (AJAX sin recargar) ──
+let timerBusqUsuarios  = null;
+const inpBusqUsuarios  = document.getElementById('input-busqueda-usuarios');
+const formBusqUsuarios = document.getElementById('form-busqueda-usuarios');
+const btnClearUsuarios = document.getElementById('btn-clear-usuarios');
+const usrGrid          = document.querySelector('.usr-grid');
+const pagInfoUsuarios  = document.querySelector('.mod-pag-info');
+const htmlOriginalUsrGrid = usrGrid ? usrGrid.innerHTML : '';
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+function escapeJsString(text) {
+    if (!text) return '';
+    return String(text).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+function capitalizar(text) {
+    if (!text) return '';
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function restaurarVistaUsuarios() {
+    if (usrGrid) usrGrid.innerHTML = htmlOriginalUsrGrid;
+    const wrapPag = document.querySelector('.mod-pagination-wrap, .mod-paginacion, ul.pagination, div[class*="pagin"]');
+    if (wrapPag) wrapPag.style.display = '';
+    if (pagInfoUsuarios) pagInfoUsuarios.style.display = '';
+}
+
+function renderizarUsuariosAjax(usuarios) {
+    if (!usrGrid) return;
+
+    if (!usuarios || usuarios.length === 0) {
+        usrGrid.innerHTML = `
+            <div class="mod-empty-card" style="grid-column: 1 / -1;">
+                <i class="bi bi-search"></i>
+                <p>No se encontraron usuarios coincidentes.</p>
+            </div>
+        `;
+        if (pagInfoUsuarios) pagInfoUsuarios.textContent = '0 usuario(s) encontrado(s)';
+        return;
+    }
+
+    let html = '';
+    usuarios.forEach(u => {
+        const estActivo = (u.estado || 'activo').toLowerCase() === 'activo';
+        const uJson = escapeHtml(JSON.stringify(u));
+        const nombreSafe = escapeJsString(u.nombre || '');
+        const uid = parseInt(u.id);
+
+        html += `
+        <div class="usr-card">
+            <div class="usr-status ${estActivo ? 'status-on' : 'status-off'}">
+                <i class="bi bi-circle-fill"></i>
+                ${escapeHtml(u.estado || 'Activo')}
+            </div>
+            <div class="usr-avatar">
+                <i class="bi bi-person-circle"></i>
+            </div>
+            <div class="usr-name">${escapeHtml(u.nombre || '')}</div>
+            <div class="usr-cargo">
+                ${escapeHtml(u.cargo || 'Sin cargo')}
+            </div>
+            <div class="usr-role">
+                <i class="bi bi-shield-check"></i>
+                ${escapeHtml(capitalizar(u.rol || ''))}
+            </div>
+            <div class="usr-info">
+                <div><i class="bi bi-upc-scan"></i> Cód: ${escapeHtml(u.codigo || 'N/A')}</div>
+                <div><i class="bi bi-envelope"></i> ${escapeHtml(u.correo || '')}</div>
+                <div><i class="bi bi-telephone"></i> ${escapeHtml(u.telefono || '')}</div>
+            </div>
+            <div class="usr-actions">
+                <button type="button" class="mod-btn-edit" onclick="abrirModalEditar(${uJson}, event)">
+                    <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button type="button" class="mod-btn-del" onclick="confirmarEliminar(${uid}, '${nombreSafe}', event)">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+            </div>
+        </div>
+        `;
+    });
+
+    usrGrid.innerHTML = html;
+    if (pagInfoUsuarios) {
+        pagInfoUsuarios.textContent = `Mostrando ${usuarios.length} usuario(s) encontrado(s)`;
+    }
+}
+
+if (inpBusqUsuarios) {
+    inpBusqUsuarios.addEventListener('input', function() {
+        clearTimeout(timerBusqUsuarios);
+        const q = this.value.trim();
+
+        if (btnClearUsuarios) {
+            btnClearUsuarios.style.display = q.length > 0 ? 'flex' : 'none';
+        }
+
+        if (q === '') {
+            restaurarVistaUsuarios();
+            return;
+        }
+
+        timerBusqUsuarios = setTimeout(() => {
+            fetch(`${BASE}?module=usuarios&action=ajax_buscar&term=${encodeURIComponent(q)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        const wrapPag = document.querySelector('.mod-pagination-wrap, .mod-paginacion, ul.pagination, div[class*="pagin"]');
+                        if (wrapPag) wrapPag.style.display = 'none';
+                        renderizarUsuariosAjax(data.usuarios);
+                    }
+                })
+                .catch(err => console.error('Error en búsqueda AJAX de usuarios:', err));
+        }, 200);
+    });
+
+    if (formBusqUsuarios) {
+        formBusqUsuarios.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    }
+}
+
+if (btnClearUsuarios) {
+    btnClearUsuarios.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (inpBusqUsuarios) {
+            inpBusqUsuarios.value = '';
+            inpBusqUsuarios.focus();
+        }
+        btnClearUsuarios.style.display = 'none';
+        restaurarVistaUsuarios();
+    });
+}
 </script>
 
 <script src="<?= $basePath ?>public/js/script.js"></script>

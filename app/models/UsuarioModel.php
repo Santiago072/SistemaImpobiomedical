@@ -21,10 +21,13 @@ class UsuarioModel implements RepositoryInterface
         if ($busqueda !== '') {
             $param = "%$busqueda%";
             $stmt  = $this->db->prepare(
-                'SELECT * FROM usuarios WHERE nombre LIKE :b1 OR codigo LIKE :b2 ORDER BY nombre LIMIT :limit OFFSET :offset'
+                'SELECT * FROM usuarios WHERE (nombre LIKE :b1 OR codigo LIKE :b2 OR cargo LIKE :b3 OR correo LIKE :b4 OR rol LIKE :b5) ORDER BY nombre LIMIT :limit OFFSET :offset'
             );
             $stmt->bindValue(':b1', $param);
             $stmt->bindValue(':b2', $param);
+            $stmt->bindValue(':b3', $param);
+            $stmt->bindValue(':b4', $param);
+            $stmt->bindValue(':b5', $param);
         } else {
             $stmt = $this->db->prepare(
                 'SELECT * FROM usuarios ORDER BY nombre LIMIT :limit OFFSET :offset'
@@ -41,10 +44,13 @@ class UsuarioModel implements RepositoryInterface
         if ($busqueda !== '') {
             $param = "%$busqueda%";
             $stmt  = $this->db->prepare(
-                'SELECT COUNT(*) AS total FROM usuarios WHERE nombre LIKE :b1 OR codigo LIKE :b2'
+                'SELECT COUNT(*) AS total FROM usuarios WHERE (nombre LIKE :b1 OR codigo LIKE :b2 OR cargo LIKE :b3 OR correo LIKE :b4 OR rol LIKE :b5)'
             );
             $stmt->bindValue(':b1', $param);
             $stmt->bindValue(':b2', $param);
+            $stmt->bindValue(':b3', $param);
+            $stmt->bindValue(':b4', $param);
+            $stmt->bindValue(':b5', $param);
         } else {
             $stmt = $this->db->prepare('SELECT COUNT(*) AS total FROM usuarios');
         }

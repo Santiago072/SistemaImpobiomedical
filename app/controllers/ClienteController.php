@@ -183,11 +183,16 @@ class ClienteController
     public function ajaxBuscar(): void
     {
         verificar_autenticacion();
-        verificar_rate_limit(20, 60, 'ajax_clientes');
-        header('Content-Type: application/json');
-        $busqueda = sanitizar_entrada($_GET['q'] ?? '');
-        $clientes = $this->model->buscarParaSelect($busqueda);
-        echo json_encode(['status' => 'success', 'data' => $clientes]);
+        verificar_rate_limit(60, 60, 'ajax_clientes');
+        header('Content-Type: application/json; charset=utf-8');
+        $busqueda = sanitizar_entrada($_GET['term'] ?? $_GET['q'] ?? $_GET['busqueda'] ?? '');
+        $clientes = $this->model->listar(0, 100, $busqueda);
+        echo json_encode([
+            'status'   => 'ok',
+            'clientes' => $clientes,
+            'total'    => count($clientes),
+            'isAdmin'  => (($_SESSION['rol'] ?? '') === 'admin')
+        ]);
         exit();
     }
 

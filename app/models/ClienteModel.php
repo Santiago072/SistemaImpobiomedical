@@ -162,7 +162,8 @@ class ClienteModel implements RepositoryInterface
 
     public function eliminar(int $id): bool
     {
-        $stmt = $this->db->prepare("DELETE FROM clientes WHERE id=:id");
+        // Soft delete: cambiar a inactivo para proteger la integridad referencial del historial de cotizaciones
+        $stmt = $this->db->prepare("UPDATE clientes SET estado = 'inactivo' WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 }

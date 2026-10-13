@@ -79,10 +79,19 @@ $codigoUsuario = $usuario['codigo'] ?? ($_SESSION['usuario_codigo'] ?? '');
                     <h2 class="modal-manual-title">Manual de Usuario &bull; Impobiomedical</h2>
                     <p class="modal-manual-subtitle">
                         Guía de funcionamiento &mdash; 
-                        <span class="badge-manual-rol <?= $userRolActual === 'admin' ? 'badge-rol-admin' : 'badge-rol-user' ?>">
-                            <i class="bi <?= $userRolActual === 'admin' ? 'bi-shield-check' : 'bi-person-badge' ?>"></i>
-                            <?= $userRolActual === 'admin' ? 'Vista Administrador (Completa)' : 'Vista Asesor Comercial' ?>
+                        <?php if ($userRolActual === 'admin'): ?>
+                        <span class="badge-manual-rol badge-rol-admin">
+                            <i class="bi bi-shield-check"></i> Vista Administrador (Completa)
                         </span>
+                        <?php elseif ($userRolActual === 'compras'): ?>
+                        <span class="badge-manual-rol" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;">
+                            <i class="bi bi-cart-check"></i> Vista Encargado de Compras
+                        </span>
+                        <?php else: ?>
+                        <span class="badge-manual-rol badge-rol-user">
+                            <i class="bi bi-person-badge"></i> Vista Asesor Comercial
+                        </span>
+                        <?php endif; ?>
                     </p>
                 </div>
             </div>
@@ -101,7 +110,7 @@ $codigoUsuario = $usuario['codigo'] ?? ($_SESSION['usuario_codigo'] ?? '');
                 <i class="bi bi-cart-check-fill"></i> 3. Órdenes de Compra
             </button>
             <button type="button" class="tab-btn" onclick="cambiarTabManual('tab-clientes', this)">
-                <i class="bi bi-building"></i> 4. Clientes
+                <i class="bi bi-box-seam"></i> 4. Catálogos Comerciales
             </button>
             <?php if ($userRolActual === 'admin'): ?>
             <button type="button" class="tab-btn tab-btn-admin" onclick="cambiarTabManual('tab-admin', this)">
@@ -151,38 +160,64 @@ $codigoUsuario = $usuario['codigo'] ?? ($_SESSION['usuario_codigo'] ?? '');
             <!-- TAB 2: Consultar y Modificar -->
             <div id="tab-consultar" class="tab-content">
                 <div class="manual-section">
-                    <h3 class="manual-h3"><i class="bi bi-2-circle-fill text-primary"></i> Consulta, Estados y Revisiones</h3>
-                    <p class="manual-p">En el módulo <strong>Consultar Cotizaciones</strong> puedes buscar y dar seguimiento a todas las ofertas comerciales:</p>
+                    <h3 class="manual-h3"><i class="bi bi-2-circle-fill text-primary"></i> Consulta, Estados, Revisiones y Ajustes</h3>
+                    <p class="manual-p">En el módulo <strong>Consultar Cotizaciones</strong> puedes buscar, exportar y dar seguimiento a todas las ofertas comerciales:</p>
                     
                     <div class="manual-features-list">
                         <div class="feature-item">
                             <div class="feature-icon"><i class="bi bi-search"></i></div>
                             <div class="feature-text">
-                                <strong>Filtros Avanzados:</strong> Busca por rango de fechas, nombre o NIT del cliente, número de cotización o estado comercial.
+                                <strong>Filtros Avanzados y Pestañas:</strong> Busca por rango de fechas (Desde - Hasta), cliente, NIT o consecutivo. Pestañas dedicadas con contadores reactivos en vivo: <em>Pendientes</em>, <em>Concluidas</em>, <em>Descartadas</em> y <em>Todas</em>.
                             </div>
                         </div>
                         <div class="feature-item">
                             <div class="feature-icon"><i class="bi bi-file-earmark-pdf-fill text-danger"></i></div>
                             <div class="feature-text">
-                                <strong>Ver PDF:</strong> Abre el documento formal de la cotización presentado al cliente.
+                                <strong>Ver PDF:</strong> Abre el documento formal de la cotización presentado al cliente en un visor emergente interactivo con opción de descarga directa.
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="bi bi-file-earmark-excel-fill text-success"></i></div>
+                            <div class="feature-text">
+                                <strong>Exportar a Excel:</strong> Descarga la propuesta comercial completa en hoja de cálculo estructurada <code>.xlsx</code> de forma ágil y liviana para análisis de datos o envíos tabulares.
                             </div>
                         </div>
                         <div class="feature-item">
                             <div class="feature-icon"><i class="bi bi-shield-lock-fill text-warning"></i></div>
                             <div class="feature-text">
-                                <strong>Hoja de Respaldo:</strong> Documento confidencial interno con costos de proveedor y márgenes para auditoría interna.
+                                <strong>Hoja de Respaldo:</strong> Documento confidencial interno con costos de proveedor, calibración, estampillas y márgenes de ganancia para auditoría interna y compras.
                             </div>
                         </div>
                         <div class="feature-item">
-                            <div class="feature-icon"><i class="bi bi-pencil-square text-success"></i></div>
+                            <div class="feature-icon"><i class="bi bi-pencil-square text-primary"></i></div>
                             <div class="feature-text">
-                                <strong>Modificar / Crear Revisión:</strong> Permite editar una cotización existente creando una versión derivada (ej: <code>EB 01_01</code>) sin sobreescribir ni perder el historial original.
+                                <strong>Modificar Cotización (2 Opciones Disponibles):</strong>
+                                <ul style="margin: 6px 0 0 16px; padding: 0; font-size: 0.9em;">
+                                    <li><strong>🛠️ Ajustar Cotización (Mismo Número):</strong> Permite corregir productos, cantidades, precios o datos del cliente <em>manteniendo intacto el mismo consecutivo</em> (ej: <code>EB 01</code>), sin generar cotizaciones duplicadas ni alterar el consecutivo mensual.</li>
+                                    <li><strong>📑 Nueva Versión / Revisión:</strong> Clona la cotización generando una versión derivada (ej: <code>EB 01_01</code>, <code>EB 01_02</code>), preservando la cotización original inalterada para trazabilidad y auditoría comercial.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="bi bi-truck text-info"></i></div>
+                            <div class="feature-text">
+                                <strong>Control de Estado de Entrega:</strong> Permite gestionar la logística de cada cotización en tiempo real mediante un menú desplegable interactivo: 🟡 <em>Pendiente (Por despachar)</em>, 🔵 <em>En Tránsito (En camino)</em> y 🟢 <em>Entregado (con registro de fecha y cómputo de días)</em>.
                             </div>
                         </div>
                         <div class="feature-item">
                             <div class="feature-icon"><i class="bi bi-tags-fill"></i></div>
                             <div class="feature-text">
-                                <strong>Estados Comerciales:</strong> Clasifica las propuestas en 🟡 <em>Pendiente</em>, 🟢 <em>Concluida (Ganada)</em> o 🔴 <em>Descartada</em>.
+                                <strong>Estados Comerciales:</strong> Clasifica las propuestas en 🟡 <em>Pendiente</em>, 🟢 <em>Concluida (Ganada)</em> o 🔴 <em>Descartada</em>, registrando automáticamente la fecha y hora exacta del cambio de estado.
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon"><i class="bi bi-shield-lock-fill text-danger"></i></div>
+                            <div class="feature-text">
+                                <strong>Permisos por Rol (Visibilidad y Eliminación):</strong>
+                                <ul style="margin: 6px 0 0 16px; padding: 0; font-size: 0.9em;">
+                                    <li><strong>Asesor Comercial:</strong> Visualiza, ajusta y genera versiones exclusivamente de sus propias cotizaciones. No tiene permisos de eliminación.</li>
+                                    <li><strong>Admin y Encargado de Compras:</strong> Tienen <em>visibilidad global</em> (ven las cotizaciones de todos los asesores) y cuentan con el botón <i class="bi bi-trash3-fill text-danger"></i> para eliminar cotizaciones en cualquier estado comercial.</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -212,6 +247,7 @@ $codigoUsuario = $usuario['codigo'] ?? ($_SESSION['usuario_codigo'] ?? '');
                             <h4>Módulo Órdenes de Compra</h4>
                             <ul>
                                 <li>Visualiza órdenes separadas en pestañas <strong>Pendientes</strong> y <strong>Completadas</strong>.</li>
+                                <li><strong>Visibilidad Global y Eliminación:</strong> Los roles <strong>Admin</strong> y <strong>Compras</strong> ven las órdenes emitidas por todos los usuarios y pueden eliminarlas o cambiar su estado; los asesores solo gestionan las suyas.</li>
                                 <li><strong>Exportación Masiva:</strong> Selecciona varias órdenes con las casillas de verificación para exportar en bloque a <strong>PDF</strong> o descargar a <strong>Excel</strong> estructurado.</li>
                                 <li>Permite control ágil de despacho y recepción de mercancía médica.</li>
                             </ul>
@@ -220,28 +256,39 @@ $codigoUsuario = $usuario['codigo'] ?? ($_SESSION['usuario_codigo'] ?? '');
                 </div>
             </div>
 
-            <!-- TAB 4: Clientes -->
+            <!-- TAB 4: Catálogos Comerciales (Clientes, Proveedores y Productos) -->
             <div id="tab-clientes" class="tab-content">
                 <div class="manual-section">
-                    <h3 class="manual-h3"><i class="bi bi-4-circle-fill text-primary"></i> Directorio de Clientes e Instituciones de Salud</h3>
-                    <p class="manual-p">Gestiona y consulta el catálogo centralizado de hospitales, clínicas, EPS y entidades médicas:</p>
+                    <h3 class="manual-h3"><i class="bi bi-4-circle-fill text-primary"></i> Catálogos Comerciales: Clientes, Proveedores y Productos</h3>
+                    <p class="manual-p">Consulta y gestión de los directorios maestros de salud, proveedores oficiales y catálogo de equipamiento:</p>
                     
                     <div class="manual-step-grid">
                         <div class="manual-step-card">
-                            <div class="step-badge">Búsqueda y Filtros</div>
-                            <h4>Consulta en Tiempo Real</h4>
+                            <div class="step-badge">Clientes e Instituciones</div>
+                            <h4>Directorio de Salud</h4>
                             <ul>
-                                <li><strong>Filtrado Inmediato:</strong> Encuentra entidades al instante buscando por NIT, razón social, departamento o municipio.</li>
-                                <li><strong>Validación de NIT Único:</strong> Evita duplicados en el registro institucional.</li>
+                                <li><strong>Búsqueda Reactiva en Tiempo Real:</strong> Localiza al instante hospitales, clínicas o EPS por NIT, razón social o municipio, con botón <code>[X]</code> para limpiar búsqueda al instante.</li>
+                                <li><strong>Validación de NIT Único:</strong> Previene registros duplicados en el sistema.</li>
+                                <li><strong>Autocompletado Comercial:</strong> Al seleccionar un cliente en el Paso 2 de una cotización, sus datos tributarios y de despacho se completan automáticamente.</li>
                             </ul>
                         </div>
 
                         <div class="manual-step-card">
-                            <div class="step-badge">Registro y Cotizaciones</div>
-                            <h4>Autocompletado Comercial</h4>
+                            <div class="step-badge">Proveedores Comerciales</div>
+                            <h4>Directorio de Proveedores</h4>
                             <ul>
-                                <li><strong>Crear / Actualizar:</strong> Registra la persona de contacto, teléfono y correo electrónico.</li>
-                                <li><strong>Llenado Ágil:</strong> Al seleccionar un cliente en el paso final de una cotización, todos sus datos tributarios y geográficos se rellenan solos.</li>
+                                <li><strong>Búsqueda Predictiva en Vivo:</strong> Filtrado dinámico por NIT o Razón Social sin recargar página.</li>
+                                <li><strong>Datos Tributarios y Bancarios:</strong> Registra NIT, Razón Social, banco, tipo y número de cuenta para compras.</li>
+                                <li><strong>Sincronización con Órdenes:</strong> Al seleccionar un proveedor en cotizaciones u órdenes, sus datos bancarios y comerciales se cargan de inmediato.</li>
+                            </ul>
+                        </div>
+
+                        <div class="manual-step-card" style="grid-column: 1 / -1;">
+                            <div class="step-badge step-badge-teal">Catálogo de Productos</div>
+                            <h4>Equipamiento y Dispositivos Médicos</h4>
+                            <ul>
+                                <li><strong>Creación y Edición Abierta:</strong> Todos los usuarios (asesores y admin) pueden consultar, registrar y editar productos con fotos médicas sanitizadas, categorías, código institucional, marca, modelo y porcentaje de IVA.</li>
+                                <li><strong>Exportación PDF:</strong> Descarga el catálogo completo, por categoría o mediante la barra flotante de selección múltiple interactiva.</li>
                             </ul>
                         </div>
                     </div>
@@ -253,27 +300,27 @@ $codigoUsuario = $usuario['codigo'] ?? ($_SESSION['usuario_codigo'] ?? '');
             <div id="tab-admin" class="tab-content">
                 <div class="manual-section">
                     <h3 class="manual-h3"><i class="bi bi-shield-fill-check text-success"></i> Panel de Control y Administración</h3>
-                    <p class="manual-p">Funciones exclusivas para el rol de Administrador:</p>
+                    <p class="manual-p">Funciones y privilegios reservados exclusivamente para el rol de Administrador:</p>
                     
                     <div class="manual-step-grid">
                         <div class="manual-step-card">
-                            <div class="step-badge step-badge-teal">Usuarios y Claves</div>
-                            <h4>Gestión de Asesores</h4>
+                            <div class="step-badge step-badge-teal">Usuarios y Asesores</div>
+                            <h4>Gestión de Accesos</h4>
                             <ul>
-                                <li><strong>Creación de Usuarios:</strong> Asigna el nombre, rol y el <strong>Código de Cotización</strong> (2 letras, ej: <code>EB</code>, <code>SL</code>).</li>
-                                <li><strong>Contraseña Inicial:</strong> Al crear un usuario, su contraseña inicial por defecto es su <strong>número de documento</strong>.</li>
-                                <li><strong>Primer Ingreso:</strong> Cuando el usuario inicia sesión por primera vez con su documento, el sistema le sugiere actualizar su contraseña personal.</li>
-                                <li><strong>Restablecimiento:</strong> Si un asesor olvida su clave, el administrador puede restablecerla a su documento original con un solo clic.</li>
+                                <li><strong>Creación de Usuarios:</strong> Asigna nombre, rol y el <strong>Código de Cotización</strong> único de 2 letras (ej: <code>EB</code>, <code>SL</code>).</li>
+                                <li><strong>Contraseña Inicial:</strong> Al crear un usuario, su contraseña por defecto es su <strong>número de documento</strong>.</li>
+                                <li><strong>Primer Ingreso:</strong> El sistema sugiere al asesor cambiar su contraseña personal al ingresar por primera vez.</li>
+                                <li><strong>Restablecimiento Rápido:</strong> Si un asesor olvida su clave, el administrador la restablece al documento original con un solo clic.</li>
                             </ul>
                         </div>
 
                         <div class="manual-step-card">
-                            <div class="step-badge step-badge-teal">Productos</div>
-                            <h4>Catálogo Central</h4>
+                            <div class="step-badge step-badge-teal">Eliminación y Seguridad</div>
+                            <h4>Soft Delete Exclusivo (Admin)</h4>
                             <ul>
-                                <li><strong>Crear y Editar:</strong> Organiza productos con fotos médicas, categorías, código institucional, porcentaje de IVA y precios base.</li>
-                                <li><strong>Exportación:</strong> Descarga el catálogo completo de productos en PDF con diseño estructurado.</li>
-                                <li><strong>Seguridad de Datos:</strong> Eliminar o modificar un producto del catálogo no afecta las cotizaciones históricas ya emitidas.</li>
+                                <li><strong>Clientes, Proveedores y Productos:</strong> Solo el Administrador puede eliminarlos o desactivarlos. Se aplica <em>Soft Delete</em> (inactivación lógica en base de datos), ocultándolos de nuevas búsquedas y formularios sin borrar su historial ni romper cotizaciones u órdenes emitidas.</li>
+                                <li><strong>Asesores:</strong> Si un usuario tiene cotizaciones u órdenes asociadas, el sistema protege la integridad referencial y bloquea el borrado destructivo, recomendando cambiar su estado a <em>Inactivo</em>.</li>
+                                <li><strong>Protección de Datos:</strong> Ningún asesor comercial puede eliminar registros maestros; esto garantiza la trazabilidad comercial y auditoría de la empresa.</li>
                             </ul>
                         </div>
                     </div>

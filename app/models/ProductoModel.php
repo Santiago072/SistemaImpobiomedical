@@ -217,7 +217,8 @@ class ProductoModel implements RepositoryInterface
 
     public function eliminar(int $id): bool
     {
-        $stmt = $this->db->prepare("DELETE FROM productos WHERE id=:id");
+        // Soft delete: cambiar a inactivo para proteger la integridad del catálogo y las cotizaciones históricas
+        $stmt = $this->db->prepare("UPDATE productos SET estado = 'inactivo' WHERE id = :id");
         return $stmt->execute([':id' => $id]);
     }
 }
