@@ -2,10 +2,12 @@
 /**
  * Vista de Estadísticas — Módulo Analítico Avanzado
  */
-$basePath  = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
-$extraHead = '<script src="' . $basePath . 'public/js/chart.min.js"></script>';
+$pageTitle = 'Estadísticas del Sistema';
+$extraHead = '<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>';
 include __DIR__ . '/../layout/header.php';
 include __DIR__ . '/../layout/menu.php';
+
+$basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 ?>
 
 <div class="layout-main">
@@ -171,14 +173,13 @@ include __DIR__ . '/../layout/menu.php';
     </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-(function() {
-    function inicializarGraficos() {
-        if (typeof Chart === 'undefined') {
-            console.warn('Esperando a que Chart.js esté disponible...');
-            setTimeout(inicializarGraficos, 50);
-            return;
-        }
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no se ha podido cargar.');
+        return;
+    }
     
     const formatMes = mesStr => {
         if (!mesStr || typeof mesStr !== 'string') return '';
@@ -608,12 +609,7 @@ include __DIR__ . '/../layout/menu.php';
         }
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', inicializarGraficos);
-    } else {
-        inicializarGraficos();
-    }
-})();
+});
 </script>
 
 <script src="<?= $basePath ?>public/js/script.js"></script>

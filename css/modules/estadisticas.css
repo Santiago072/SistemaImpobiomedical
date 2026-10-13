@@ -140,7 +140,6 @@
     position: relative;
     flex-grow: 1;
     min-height: 320px;
-    height: 320px;
     width: 100%;
 }
 
@@ -148,17 +147,7 @@
     position: relative;
     flex-grow: 1;
     min-height: 280px;
-    height: 280px;
     width: 100%;
-}
-
-.chart-wrapper-lg canvas,
-.chart-wrapper-md canvas {
-    display: block;
-    width: 100% !important;
-    height: 100% !important;
-    position: relative;
-    z-index: 5;
 }
 
 .kpi-icon-purple {
