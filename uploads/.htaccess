@@ -1,0 +1,24 @@
+# Desactivar ejecucion de scripts PHP y cualquier motor de ejecucion en la carpeta de uploads
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+# Denegar acceso directo a archivos ejecutables o potencialmente maliciosos
+<FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|php8|phps|phar|cgi|pl|py|sh|bash|exe|bat|cmd|dll|bin|vbs|js|html|htm)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Forzar tipo de contenido generico o estricto para evitar ejecucion en navegador
+<FilesMatch "(?i)\.(jpg|jpeg|png|gif|webp)$">
+    Header set X-Content-Type-Options "nosniff"
+</FilesMatch>
+
+# Deshabilitar listado de directorios
+Options -Indexes -ExecCGI

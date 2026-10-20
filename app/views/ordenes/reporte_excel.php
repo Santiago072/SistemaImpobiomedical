@@ -84,13 +84,13 @@ $totalRegistros = count($datosExcel ?? []);
         <tr>
             <td class="text-center" style="font-weight:bold;"><?= (int)$row['numero_po'] ?></td>
             <td class="text-center"><?= htmlspecialchars($row['fecha'] ?? '') ?></td>
-            <td style="font-weight:bold;"><?= htmlspecialchars($row['proveedor'] ?? '') ?></td>
+            <td style="font-weight:bold;"><?= htmlspecialchars(sanitizar_formula_excel($row['proveedor'] ?? '')) ?></td>
             <td class="text-center <?= $ep === 'Registrado' ? 'badge-comp' : 'badge-pend' ?>"><?= $ep ?></td>
-            <td class="text-center" style="mso-number-format:'\@';"><?= htmlspecialchars($row['nit'] ?? '') ?></td>
-            <td class="text-center"><?= htmlspecialchars($row['banco_nombre'] ?? '—') ?></td>
-            <td class="text-center" style="mso-number-format:'\@';"><?= htmlspecialchars($row['banco_cuenta'] ?? '—') ?></td>
-            <td class="text-center"><?= htmlspecialchars($row['banco_tipo_cuenta'] ?? '—') ?></td>
-            <td><?= htmlspecialchars($row['cliente'] ?? '—') ?></td>
+            <td class="text-center" style="mso-number-format:'\@';"><?= htmlspecialchars(sanitizar_formula_excel($row['nit'] ?? '')) ?></td>
+            <td class="text-center"><?= htmlspecialchars(sanitizar_formula_excel($row['banco_nombre'] ?? '—')) ?></td>
+            <td class="text-center" style="mso-number-format:'\@';"><?= htmlspecialchars(sanitizar_formula_excel($row['banco_cuenta'] ?? '—')) ?></td>
+            <td class="text-center"><?= htmlspecialchars(sanitizar_formula_excel($row['banco_tipo_cuenta'] ?? '—')) ?></td>
+            <td><?= htmlspecialchars(sanitizar_formula_excel($row['cliente'] ?? '—')) ?></td>
             <td class="text-right" style="mso-number-format:'\$#,##0.00';">$ <?= number_format($desc, 2, ',', '.') ?></td>
             <td class="text-right" style="mso-number-format:'\$#,##0.00';">$ <?= number_format($flet, 2, ',', '.') ?></td>
             <td class="text-center <?= $est === 'completada' ? 'badge-comp' : 'badge-pend' ?>">

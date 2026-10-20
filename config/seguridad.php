@@ -158,6 +158,19 @@ function escapar_salida($data): string
     return htmlspecialchars((string)$data, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+/**
+ * Sanitiza valores exportados a Excel / CSV para prevenir ejecución de fórmulas maliciosas (CSV/Formula Injection).
+ * Si el texto inicia con '=', '+', '-', '@', '\t', '\r', le antepone un apóstrofe seguro.
+ */
+function sanitizar_formula_excel($data): string
+{
+    $str = (string)$data;
+    if ($str !== '' && in_array($str[0], ['=', '+', '-', '@', "\t", "\r"], true)) {
+        return "'" . $str;
+    }
+    return $str;
+}
+
 // ── Validadores ───────────────────────────────────────────────────────────────
 
 function validar_email(string $email): bool
@@ -187,8 +200,9 @@ function validar_imagen(array $archivo): array
         return ['valido' => false, 'mensaje' => 'Tipo de archivo no permitido'];
     }
 
+    $tmpPath = realpath($archivo['tmp_name']) ?: $archivo['tmp_name'];
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mime  = finfo_file($finfo, $archivo['tmp_name']);
+    $mime  = @finfo_file($finfo, $tmpPath);
     finfo_close($finfo);
 
     $mimesPermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];

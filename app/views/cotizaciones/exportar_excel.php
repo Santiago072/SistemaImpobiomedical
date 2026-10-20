@@ -126,38 +126,38 @@ header('Expires: 0');
     </tr>
     <tr>
         <td class="lbl" style="width: 12%;">CLIENTE:</td>
-        <td colspan="4" style="font-weight: bold;"><?= mb_strtoupper(htmlspecialchars($clienteNombre)) ?></td>
+        <td colspan="4" style="font-weight: bold;"><?= mb_strtoupper(htmlspecialchars(sanitizar_formula_excel($clienteNombre))) ?></td>
         <td class="lbl" style="width: 12%;">FECHA:</td>
         <td colspan="3"><?= $fechaFmt ?></td>
     </tr>
     <tr>
         <td class="lbl">NIT / C.C.:</td>
-        <td colspan="4"><?= htmlspecialchars($clienteNit ?: 'No especificado') ?></td>
+        <td colspan="4"><?= htmlspecialchars(sanitizar_formula_excel($clienteNit ?: 'No especificado')) ?></td>
         <td class="lbl">VALIDEZ:</td>
         <td colspan="3"><?= $diasValidez ?> DÍAS (Hasta <?= $validezFmt ?>)</td>
     </tr>
     <tr>
         <td class="lbl">CONTACTO:</td>
-        <td colspan="4"><?= mb_strtoupper(htmlspecialchars($clienteContacto ?: '-')) ?></td>
+        <td colspan="4"><?= mb_strtoupper(htmlspecialchars(sanitizar_formula_excel($clienteContacto ?: '-'))) ?></td>
         <td class="lbl">FORMA DE PAGO:</td>
-        <td colspan="3"><?= mb_strtoupper(htmlspecialchars($condicionesPago)) ?></td>
+        <td colspan="3"><?= mb_strtoupper(htmlspecialchars(sanitizar_formula_excel($condicionesPago))) ?></td>
     </tr>
     <tr>
         <td class="lbl">TELÉFONO / CEL:</td>
-        <td colspan="4"><?= htmlspecialchars($clienteTel ?: '-') ?></td>
+        <td colspan="4"><?= htmlspecialchars(sanitizar_formula_excel($clienteTel ?: '-')) ?></td>
         <td class="lbl">ASESOR:</td>
-        <td colspan="3"><?= mb_strtoupper(htmlspecialchars($asesorNombre)) ?></td>
+        <td colspan="3"><?= mb_strtoupper(htmlspecialchars(sanitizar_formula_excel($asesorNombre))) ?></td>
     </tr>
     <tr>
         <td class="lbl">CORREO:</td>
-        <td colspan="4"><?= htmlspecialchars($clienteEmail ?: '-') ?></td>
+        <td colspan="4"><?= htmlspecialchars(sanitizar_formula_excel($clienteEmail ?: '-')) ?></td>
         <td class="lbl">CARGO:</td>
-        <td colspan="3"><?= mb_strtoupper(htmlspecialchars($asesorCargo)) ?></td>
+        <td colspan="3"><?= mb_strtoupper(htmlspecialchars(sanitizar_formula_excel($asesorCargo))) ?></td>
     </tr>
     <?php if (!empty($clienteDir) || !empty($clienteCiudad)): ?>
     <tr>
         <td class="lbl">DIRECCIÓN / CIUDAD:</td>
-        <td colspan="8"><?= htmlspecialchars(trim($clienteDir . ' ' . $clienteCiudad)) ?></td>
+        <td colspan="8"><?= htmlspecialchars(sanitizar_formula_excel(trim($clienteDir . ' ' . $clienteCiudad))) ?></td>
     </tr>
     <?php endif; ?>
 </table>
@@ -199,18 +199,18 @@ header('Expires: 0');
         <tr class="<?= $rowCls ?>">
             <td class="text-center"><?= $i ?></td>
             <td class="text-center" style="font-weight: bold;"><?= $qty ?></td>
-            <td class="text-center"><?= htmlspecialchars($it['codigo_producto'] ?? $it['codigo_proveedor'] ?? '-') ?></td>
+            <td class="text-center"><?= htmlspecialchars(sanitizar_formula_excel($it['codigo_producto'] ?? $it['codigo_proveedor'] ?? '-')) ?></td>
             <td>
-                <strong><?= htmlspecialchars(mb_strtoupper($it['titulo'])) ?></strong>
+                <strong><?= htmlspecialchars(mb_strtoupper(sanitizar_formula_excel($it['titulo']))) ?></strong>
                 <?php if (!empty($it['descripcion'])): ?>
-                <br><span style="font-size: 8.5pt; color: #4b5563;"><?= nl2br(htmlspecialchars($it['descripcion'])) ?></span>
+                <br><span style="font-size: 8.5pt; color: #4b5563;"><?= nl2br(htmlspecialchars(sanitizar_formula_excel($it['descripcion']))) ?></span>
                 <?php endif; ?>
             </td>
             <td class="text-center"><?= $aplica ? number_format($pct, 0) . '%' : '0%' ?></td>
             <td class="money">$ <?= number_format($pu, 0, ',', '.') ?></td>
             <td class="money">$ <?= number_format($ivaFila, 0, ',', '.') ?></td>
             <td class="money" style="font-weight: bold; color: #047857;">$ <?= number_format($totalFila, 0, ',', '.') ?></td>
-            <td class="text-center"><?= htmlspecialchars($it['tiempo_entrega'] ?? '-') ?></td>
+            <td class="text-center"><?= htmlspecialchars(sanitizar_formula_excel($it['tiempo_entrega'] ?? '-')) ?></td>
         </tr>
         <?php endforeach; ?>
 

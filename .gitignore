@@ -11,6 +11,7 @@ logs/*.log
 # Uploads (imágenes de productos — persistidas en volumen Docker)
 uploads/*
 !uploads/.gitkeep
+!uploads/.htaccess
 
 # IDE
 .vscode/

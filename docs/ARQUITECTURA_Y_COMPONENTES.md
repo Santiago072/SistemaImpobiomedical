@@ -565,12 +565,15 @@ css/
 | **Inyección SQL** | Sentencias preparadas PDO con parámetros obligatorios `:param`. | Todos los archivos en `app/models/` |
 | **Cross-Site Scripting (XSS)** | Escape estricto con `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')` y sanitización. | `config/seguridad.php` y vistas |
 | **CSRF (Cross-Site Request Forgery)** | Tokens criptográficos aleatorios `random_bytes(32)` validados con `hash_equals()` en todas las peticiones POST/DELETE. | `config/seguridad.php` |
+| **CSV / Excel Formula Injection (CWE-1236)** | Sanitización con `sanitizar_formula_excel()`, anteponiendo apóstrofe de escape a textos con prefijos `=`, `+`, `-`, `@`, `\t` o `\r`. | `config/seguridad.php`, `exportar_excel.php`, `reporte_excel.php` |
+| **Ejecución Remota de Código en Subidas (RCE)** | Desactivación del motor PHP (`php_flag engine off`) y denegación estricta de extensiones ejecutables vía `.htaccess`. | `uploads/.htaccess` |
+| **Control de Acceso e IDOR (CWE-639)** | Verificación estricta en servidor de pertenencia (`usuario_id`) en PDFs y mutación de estados; eliminación restringida a `admin` y `compras`. | Controladores (`CotizacionController`, `OrdenCompraController`) |
 | **Clickjacking** | Cabecera HTTP `X-Frame-Options: SAMEORIGIN`. | `index.php` |
-| **MIME-Sniffing** | Cabecera HTTP `X-Content-Type-Options: nosniff`. | `index.php` |
+| **MIME-Sniffing & Polyglot** | Cabecera HTTP `X-Content-Type-Options: nosniff` y validación binaria profunda (`finfo_file`). | `index.php`, `config/seguridad.php` |
 | **Content Security Policy (CSP)** | Directiva estricta restringiendo scripts y estilos únicamente al origen y CDNs autorizados. | `index.php` |
 | **Ataques de Fuerza Bruta** | Rate limiting en memoria con ventana de tiempo fija (`verificar_rate_limit()`). | `config/seguridad.php` |
 | **Falsificación de Archivos** | Verificación de extensión en lista blanca y validación de cabecera binaria MIME (`finfo_open`). | `app/services/FileUploadService.php` |
-| **Session Hijacking** | Cookies con flags `HttpOnly`, `SameSite=Strict`, `Secure` y expiración por inactividad a 3600s. | `config/seguridad.php` |
+| **Session Hijacking** | Cookies con flags `HttpOnly`, `SameSite=Lax`, `Secure` y expiración por inactividad a 3600s. | `config/seguridad.php` |
 
 ### 9.1 Subsistema de Alertas y Mensajes Amigables (`app/views/layout/alerta_error.php`)
 
@@ -634,16 +637,21 @@ El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de produc
 
 ## 12. Suite de Pruebas Automatizadas (PHPUnit)
 
-El proyecto cuenta con una suite de pruebas unitarias configurada en `phpunit.xml`:
+El proyecto cuenta con una suite completa de **38 pruebas unitarias y de integración** (160 aserciones, 100% de éxito) configurada en `phpunit.xml`:
 
 ```bash
-# Ejecutar todas las pruebas unitarias
+# Ejecutar todas las pruebas unitarias e integración
 ./vendor/bin/phpunit
 ```
 
 ### Cobertura de Pruebas:
 - **`CalculosCotizacionTest.php`**: Valida cálculos de margen de utilidad, adición de fletes, calibración, estampillas, discriminación de IVA (19% y 0%), consecutivos con código de asesor y sufijos de revisión (`EB 01_01`).
 - **`SeguridadTest.php`**: Valida generación y rotación de tokens CSRF, sanitización contra inyecciones XSS, cifrado `bcrypt`, validadores de email y rate limiting.
+- **`FormulaInjectionTest.php`**: Valida la neutralización contra ataques de CSV / Excel Formula Injection (CWE-1236) ante prefijos maliciosos (`=`, `+`, `-`, `@`, `\t`, `\r`) preservando datos médicos legítimos.
+- **`RbacSeguridadTest.php`**: Valida el control de acceso en servidor, permisos de eliminación por rol (`admin`, `compras`) y prevención de IDOR para asesores comerciales (`usuario`).
+- **`RobustezEntradasTest.php`**: Valida el comportamiento del sistema ante valores numéricos extremos, flotantes con decimales atípicos, identificadores no numéricos y normalización de NITs.
+- **`Q4SeguridadAvanzadaTest.php`**: Valida defensas no funcionales de seguridad avanzada: bloqueo de scripts disfrazados de imágenes (MIME spoofing vía `finfo`), neutralización de Path Traversal (`../../`), hashing Bcrypt y caducidad de sesiones por inactividad.
+- **`FlujoIntegracionNegocioTest.php`**: Valida el ciclo de vida de negocio completo: aislamiento de ajuste directo mediante clon temporal, cancelación segura sin tocar el registro original, conservación de consecutivo P.O., regla de proveedor único en compras y paginación segura.
 - **`OrdenCompraCalculosTest.php`**: Valida la liquidación contable de órdenes de compra con IVA y retenciones en la fuente, el agrupamiento en bloque de ítems (eliminación de N+1) y estados válidos.
 - **`FileUploadServiceTest.php`**: Valida la generación criptográfica de nombres únicos de archivos y la lista blanca de extensiones de imágenes permitidas frente a extensiones peligrosas.
 - **`ValidacionesNegocioTest.php`**: Valida las reglas de bloqueo en backend para emisión de órdenes según el estado de la cotización y la integridad del JSON de operaciones dinámicas (`calc_ops`).

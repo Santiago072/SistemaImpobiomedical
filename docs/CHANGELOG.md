@@ -4,6 +4,31 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.5.7] - 2026-10-19
+### Seguridad
+- **Protección contra Inyección de Fórmulas CSV / Excel (CWE-1236):**
+  - Implementada la función `sanitizar_formula_excel($data)` en `config/seguridad.php`.
+  - Aplicada en `app/views/cotizaciones/exportar_excel.php` y `app/views/ordenes/reporte_excel.php` para neutralizar cargas que inicien con `=`, `+`, `-`, `@`, `\t` o `\r` anteponiendo un apóstrofe de escape seguro.
+- **Blindaje contra Ejecución Remota de Código en Subidas (RCE):**
+  - Creado `uploads/.htaccess` con directivas de desactivación de motores PHP (`php_flag engine off`) y denegación estricta de ejecución de scripts (`.php`, `.phtml`, `.phar`, `.sh`, `.exe`), permitiendo únicamente la entrega estática segura de imágenes médicas (`.jpg`, `.png`, `.webp`, `.gif`).
+  - Normalización de rutas con `realpath()` en `validar_imagen()` para compatibilidad estricta con Windows.
+
+### Pruebas y Calidad (QA)
+- **Expansión de la Suite de Pruebas Automatizadas a 38 Pruebas (160 Aserciones, 100% OK):**
+  - `FormulaInjectionTest.php`: Cobertura de vectores de inyección de fórmulas en reportes Excel.
+  - `RbacSeguridadTest.php`: Verificación en servidor de aislamiento de datos y prevención de IDOR.
+  - `RobustezEntradasTest.php`: Fuzzing de entradas numéricas extremas y normalización de identificadores y NITs.
+  - `Q4SeguridadAvanzadaTest.php`: Validación de mitigaciones contra MIME spoofing, path traversal, expiración de sesiones y hashing seguro Bcrypt.
+  - `FlujoIntegracionNegocioTest.php`: Simulación automatizada del ciclo de vida de negocio (aislamiento de ajuste directo con clon temporal, cancelación segura, conservación del número P.O. y regla de proveedor único en compras).
+
+### Documentación
+- **Especificación Desktop-First (`docs/ESPECIFICACION_REQUISITOS.md`):**
+  - Incorporado el requisito **RNF08**, formalizando que el sistema está diseñado y optimizado específicamente para estaciones de trabajo y computadores de escritorio donde opera la jornada de los asesores y administradores, no estando orientado a pantallas móviles debido a su alta densidad de datos comerciales.
+- **Actualización de Arquitectura Técnica (`docs/ARQUITECTURA_Y_COMPONENTES.md`):**
+  - Sincronización de la matriz de vectores de ataque y la sección 12 de suites PHPUnit.
+
+---
+
 ## [v3.5.6] - 2026-10-12
 ### Mejorado
 - **Modal de Ayuda Rápida Interactivo (`topbar.php`):**

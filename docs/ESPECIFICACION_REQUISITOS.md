@@ -105,6 +105,7 @@ El sistema cuenta con tres roles claramente estructurados:
 * **RNF05:** El código fuente debe contar con pruebas unitarias automatizadas para verificar la precisión de los cálculos comerciales y la seguridad del sistema.
 * **RNF06:** La generación de documentos PDF debe procesar catálogos extensos manteniendo un consumo eficiente de memoria mediante imágenes optimizadas.
 * **RNF07:** El sistema debe aplicar protección contra sobrecarga de peticiones e intentos de fuerza bruta mediante control de frecuencia (Rate Limiting).
+* **RNF08:** La interfaz de usuario está optimizada y orientada específicamente para estaciones de trabajo y computadores de escritorio/portátiles (Desktop) donde opera la jornada laboral de los asesores y administradores, no estando diseñada para operar de forma responsiva en pantallas de teléfonos móviles o dispositivos móviles pequeños debido a la alta densidad de datos.
 
 ---
 
