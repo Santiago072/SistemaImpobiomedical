@@ -331,6 +331,8 @@ erDiagram
         varchar nombre_banco
         varchar numero_cuenta
         varchar tipo_cuenta
+        varchar celular
+        varchar correo
         enum estado "activo, inactivo"
         datetime fecha_creacion
     }
@@ -411,6 +413,7 @@ erDiagram
         enum tipo_descuento "monto, porcentaje"
         decimal descuento_valor
         decimal descuento
+        decimal saldo_favor
         date fecha
         enum estado "pendiente, completada"
         varchar banco_nombre
@@ -637,7 +640,7 @@ El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de produc
 
 ## 12. Suite de Pruebas Automatizadas (PHPUnit)
 
-El proyecto cuenta con una suite completa de **38 pruebas unitarias y de integración** (160 aserciones, 100% de éxito) configurada en `phpunit.xml`:
+El proyecto cuenta con una suite completa de **39 pruebas unitarias y de integración** (162 aserciones, 100% de éxito) configurada en `phpunit.xml`:
 
 ```bash
 # Ejecutar todas las pruebas unitarias e integración
@@ -652,7 +655,7 @@ El proyecto cuenta con una suite completa de **38 pruebas unitarias y de integra
 - **`RobustezEntradasTest.php`**: Valida el comportamiento del sistema ante valores numéricos extremos, flotantes con decimales atípicos, identificadores no numéricos y normalización de NITs.
 - **`Q4SeguridadAvanzadaTest.php`**: Valida defensas no funcionales de seguridad avanzada: bloqueo de scripts disfrazados de imágenes (MIME spoofing vía `finfo`), neutralización de Path Traversal (`../../`), hashing Bcrypt y caducidad de sesiones por inactividad.
 - **`FlujoIntegracionNegocioTest.php`**: Valida el ciclo de vida de negocio completo: aislamiento de ajuste directo mediante clon temporal, cancelación segura sin tocar el registro original, conservación de consecutivo P.O., regla de proveedor único en compras y paginación segura.
-- **`OrdenCompraCalculosTest.php`**: Valida la liquidación contable de órdenes de compra con IVA y retenciones en la fuente, el agrupamiento en bloque de ítems (eliminación de N+1) y estados válidos.
+- **`OrdenCompraCalculosTest.php`**: Valida la liquidación contable de órdenes de compra con IVA, retenciones en la fuente, descuento de saldo a favor (y salvaguarda contra saldos negativos), el agrupamiento en bloque de ítems (eliminación de N+1) y estados válidos.
 - **`FileUploadServiceTest.php`**: Valida la generación criptográfica de nombres únicos de archivos y la lista blanca de extensiones de imágenes permitidas frente a extensiones peligrosas.
 - **`ValidacionesNegocioTest.php`**: Valida las reglas de bloqueo en backend para emisión de órdenes según el estado de la cotización y la integridad del JSON de operaciones dinámicas (`calc_ops`).
 

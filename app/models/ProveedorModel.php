@@ -1,7 +1,7 @@
 <?php
 /**
  * ProveedorModel — acceso a datos de proveedores via PDO.
- * Modelo compacto: nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta, estado.
+ * Campos: nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta, celular, correo, estado.
  */
 class ProveedorModel
 {
@@ -77,7 +77,7 @@ class ProveedorModel
         $termSoloDigitos = preg_replace('/\D/', '', $termino);
         $tieneDigitosSuficientes = strlen($termSoloDigitos) >= 3;
 
-        $sql = "SELECT id, nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta
+        $sql = "SELECT id, nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta, celular, correo
                 FROM proveedores
                 WHERE estado = 'activo'
                   AND (
@@ -181,8 +181,8 @@ class ProveedorModel
     {
         $stmt = $this->db->prepare(
             "INSERT INTO proveedores 
-             (nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta, estado)
-             VALUES (:nit, :nom, :tipo, :banco, :cta, :tipo_cta, :est)"
+             (nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta, celular, correo, estado)
+             VALUES (:nit, :nom, :tipo, :banco, :cta, :tipo_cta, :celular, :correo, :est)"
         );
         $stmt->execute([
             ':nit'      => trim($datos['nit'] ?? ''),
@@ -191,6 +191,8 @@ class ProveedorModel
             ':banco'    => !empty($datos['nombre_banco']) ? trim($datos['nombre_banco']) : null,
             ':cta'      => !empty($datos['numero_cuenta']) ? trim($datos['numero_cuenta']) : null,
             ':tipo_cta' => !empty($datos['tipo_cuenta']) ? trim($datos['tipo_cuenta']) : null,
+            ':celular'  => !empty($datos['celular']) ? trim($datos['celular']) : null,
+            ':correo'   => !empty($datos['correo']) ? trim($datos['correo']) : null,
             ':est'      => in_array($datos['estado'] ?? '', ['activo', 'inactivo'], true) ? $datos['estado'] : 'activo',
         ]);
         return (int)$this->db->lastInsertId();
@@ -209,6 +211,8 @@ class ProveedorModel
                  nombre_banco       = :banco,
                  numero_cuenta      = :cta,
                  tipo_cuenta        = :tipo_cta,
+                 celular            = :celular,
+                 correo             = :correo,
                  estado             = :est
              WHERE id = :id"
         );
@@ -219,6 +223,8 @@ class ProveedorModel
             ':banco'    => !empty($datos['nombre_banco']) ? trim($datos['nombre_banco']) : null,
             ':cta'      => !empty($datos['numero_cuenta']) ? trim($datos['numero_cuenta']) : null,
             ':tipo_cta' => !empty($datos['tipo_cuenta']) ? trim($datos['tipo_cuenta']) : null,
+            ':celular'  => !empty($datos['celular']) ? trim($datos['celular']) : null,
+            ':correo'   => !empty($datos['correo']) ? trim($datos['correo']) : null,
             ':est'      => in_array($datos['estado'] ?? '', ['activo', 'inactivo'], true) ? $datos['estado'] : 'activo',
             ':id'       => $id,
         ]);
@@ -248,11 +254,18 @@ class ProveedorModel
         $existente = $this->buscarPorNit($nit);
 
         if ($existente) {
-            // Solo actualizar campos bancarios si estaban vacíos en la BD
+            // Actualizar datos del proveedor (bancarios, contacto y datos fiscales) si cambiaron o fueron modificados en la orden
             $actualizar = [];
-            if (!empty($banco)   && empty($existente['nombre_banco']))   $actualizar['nombre_banco']   = $banco;
-            if (!empty($cuenta)  && empty($existente['numero_cuenta']))  $actualizar['numero_cuenta']  = $cuenta;
-            if (!empty($tipoCta) && empty($existente['tipo_cuenta']))    $actualizar['tipo_cuenta']    = $tipoCta;
+            if (!empty($nom)     && $nom !== ($existente['nombre_proveedor'] ?? ''))     $actualizar['nombre_proveedor']   = $nom;
+            if (!empty($tipo)    && $tipo !== ($existente['tipo_contribuyente'] ?? ''))  $actualizar['tipo_contribuyente'] = $tipo;
+            if (!empty($banco)   && $banco !== ($existente['nombre_banco'] ?? ''))       $actualizar['nombre_banco']       = $banco;
+            if (!empty($cuenta)  && $cuenta !== ($existente['numero_cuenta'] ?? ''))     $actualizar['numero_cuenta']      = $cuenta;
+            if (!empty($tipoCta) && $tipoCta !== ($existente['tipo_cuenta'] ?? ''))     $actualizar['tipo_cuenta']        = $tipoCta;
+            
+            $celular = !empty($datos['celular']) ? trim($datos['celular']) : null;
+            $correo  = !empty($datos['correo'])  ? trim($datos['correo'])  : null;
+            if (!empty($celular) && $celular !== ($existente['celular'] ?? ''))          $actualizar['celular']            = $celular;
+            if (!empty($correo)  && $correo !== ($existente['correo'] ?? ''))            $actualizar['correo']             = $correo;
 
             if (!empty($actualizar)) {
                 $sets = implode(', ', array_map(fn($k) => "$k = :$k", array_keys($actualizar)));
@@ -270,8 +283,8 @@ class ProveedorModel
         // No existe → INSERT
         $stmt = $this->db->prepare(
             "INSERT INTO proveedores
-             (nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta, estado)
-             VALUES (:nit, :nom, :tipo, :banco, :cta, :tipo_cta, 'activo')"
+             (nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta, celular, correo, estado)
+             VALUES (:nit, :nom, :tipo, :banco, :cta, :tipo_cta, :celular, :correo, 'activo')"
         );
         $stmt->execute([
             ':nit'      => $nit,
@@ -280,6 +293,8 @@ class ProveedorModel
             ':banco'    => $banco,
             ':cta'      => $cuenta,
             ':tipo_cta' => $tipoCta,
+            ':celular'  => !empty($datos['celular']) ? trim($datos['celular']) : null,
+            ':correo'   => !empty($datos['correo']) ? trim($datos['correo']) : null,
         ]);
         return (int)$this->db->lastInsertId();
     }

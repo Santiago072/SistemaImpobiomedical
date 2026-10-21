@@ -108,6 +108,7 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                         <span>IVA: <strong id="cntIva">$ 0</strong></span>
                         <span class="text-warning-gold">Retención (<span id="lblRetPct">2.5</span>%): <strong id="cntRet" class="text-warning-gold">$ 0</strong></span>
                         <span class="text-info">Flete: <strong id="cntFlete">$ 0</strong></span>
+                        <span id="wrapCntSaldoFavor" class="text-teal" style="display:none;">Saldo a Favor: <strong id="cntSaldoFavor" class="text-teal">- $ 0</strong></span>
                         <div class="text-total-wrap font-bold">TOTAL A PAGAR: <span id="cntTotal" class="resumen-total-text">$ 0</span></div>
                     </div>
                 </div>
@@ -215,9 +216,16 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                         </div>
                     </div>
 
+                    <div class="oc-field-group">
+                        <label class="oc-label"><i class="bi bi-wallet2"></i> Saldo a Favor ($)</label>
+                        <input type="number" name="saldo_favor" id="inputSaldoFavor" class="oc-input"
+                               placeholder="0" min="0" step="0.01"
+                               value="<?= isset($ordenAjustando['saldo_favor']) ? (float)$ordenAjustando['saldo_favor'] : 0 ?>">
+                    </div>
+
                 </div>
 
-                <!-- Datos bancarios -->
+                <!-- Datos bancarios y de contacto -->
                 <div class="bank-details-wrap">
                     <h4 class="section-title-orden">
                         <i class="bi bi-bank"></i> Datos Bancarios (No visibles en PDF)
@@ -243,6 +251,18 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                                 <option value="Ahorros" <?= $bTipo === 'Ahorros' ? 'selected' : '' ?>>Ahorros</option>
                                 <option value="Corriente" <?= $bTipo === 'Corriente' ? 'selected' : '' ?>>Corriente</option>
                             </select>
+                        </div>
+                        <div class="oc-field-group">
+                            <label class="oc-label"><i class="bi bi-telephone-fill"></i> Celular / Teléfono</label>
+                            <input type="text" name="proveedor_celular" id="inputProveedorCelular" class="oc-input"
+                                   placeholder="Ej: 3001234567" maxlength="30"
+                                   value="<?= htmlspecialchars($ordenAjustando['proveedor_celular'] ?? '') ?>">
+                        </div>
+                        <div class="oc-field-group">
+                            <label class="oc-label"><i class="bi bi-envelope-fill"></i> Correo Electrónico</label>
+                            <input type="email" name="proveedor_correo" id="inputProveedorCorreo" class="oc-input"
+                                   placeholder="Ej: ventas@proveedor.com" maxlength="100"
+                                   value="<?= htmlspecialchars($ordenAjustando['proveedor_correo'] ?? '') ?>">
                         </div>
                     </div>
                 </div>
@@ -545,10 +565,11 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         const fleteIvaSel = document.getElementById('inputFleteIva');
         const fleteAplicaIva = fleteIvaSel ? fleteIvaSel.value === 'si' : false;
         const fleteIvaVal = fleteAplicaIva ? flete * 0.19 : 0;
-        const totalIvaFinal = totalIva + fleteIvaVal;
+        // Saldo a favor (descontar de total a pagar)
+        const saldoFavor = parseFloat(document.getElementById('inputSaldoFavor')?.value) || 0;
 
         // TOTAL FINAL
-        const totalPagar = subtotalConDesc + totalIvaFinal - retencion + flete;
+        const totalPagar = Math.max(0, subtotalConDesc + totalIvaFinal - retencion + flete - saldoFavor);
 
         document.getElementById('cntItems').textContent = filas.length;
         document.getElementById('cntSubtotal').textContent = formatPesos(subtotal);
@@ -557,11 +578,21 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         document.getElementById('cntIva').textContent = '+ ' + formatPesos(totalIvaFinal) + (fleteAplicaIva && flete > 0 ? ' (inc. IVA flete)' : '');
         document.getElementById('cntRet').textContent = '- ' + formatPesos(retencion);
         document.getElementById('cntFlete').textContent = '+ ' + formatPesos(flete) + (fleteAplicaIva ? ' (con IVA)' : '');
+        const wrapSaldo = document.getElementById('wrapCntSaldoFavor');
+        const cntSaldo = document.getElementById('cntSaldoFavor');
+        if (wrapSaldo && cntSaldo) {
+            if (saldoFavor > 0) {
+                wrapSaldo.style.display = 'inline';
+                cntSaldo.textContent = '- ' + formatPesos(saldoFavor);
+            } else {
+                wrapSaldo.style.display = 'none';
+            }
+        }
         document.getElementById('cntTotal').textContent = formatPesos(totalPagar);
     }
 
     // Escuchadores de cambio en totales
-    ['inputTipoDescuento', 'inputDescuentoValor', 'inputRetencion', 'inputFlete', 'inputFleteIva'].forEach(id => {
+    ['inputTipoDescuento', 'inputDescuentoValor', 'inputRetencion', 'inputFlete', 'inputFleteIva', 'inputSaldoFavor'].forEach(id => {
         const elem = document.getElementById(id);
         if (elem) {
             elem.addEventListener('input', calcularTotales);
@@ -584,6 +615,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         const bnomInp  = document.getElementById('inputBancoNombre');
         const bctaInp  = document.getElementById('inputBancoCuenta');
         const btipoInp = document.getElementById('inputBancoTipoCuenta');
+        const celInp   = document.getElementById('inputProveedorCelular');
+        const corInp   = document.getElementById('inputProveedorCorreo');
 
         if (limpiarNombre && provInp) provInp.value = '';
         if (limpiarNit && nitInp) nitInp.value = '';
@@ -592,6 +625,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         if (bnomInp) bnomInp.value = '';
         if (bctaInp) bctaInp.value = '';
         if (btipoInp) btipoInp.value = '';
+        if (celInp) celInp.value = '';
+        if (corInp) corInp.value = '';
         ultimoProvAutocompletado = '';
     }
 
@@ -626,12 +661,16 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                     const bnomInp  = document.getElementById('inputBancoNombre');
                     const bctaInp  = document.getElementById('inputBancoCuenta');
                     const btipoInp = document.getElementById('inputBancoTipoCuenta');
+                    const celInp   = document.getElementById('inputProveedorCelular');
+                    const corInp   = document.getElementById('inputProveedorCorreo');
 
                     if (tcontInp) tcontInp.value = d.tipo_contribuyente || '';
                     if (condInp)  condInp.value = d.condiciones_pago || 'Según acuerdo';
                     if (bnomInp)  bnomInp.value = d.banco_nombre || '';
                     if (bctaInp)  bctaInp.value = d.banco_cuenta || '';
                     if (btipoInp) btipoInp.value = d.banco_tipo_cuenta || '';
+                    if (celInp)   celInp.value = d.celular || '';
+                    if (corInp)   corInp.value = d.correo || '';
                     ultimoProvAutocompletado = (d.proveedor || nombre).trim();
                 } else {
                     if (badgeProv) {

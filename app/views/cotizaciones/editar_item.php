@@ -139,8 +139,10 @@ include dirname(__DIR__) . '/layout/menu.php';
                                 <input type="number" name="cantidad" id="inpCantidad" value="<?= intval($datos['cantidad']) ?>" min="1" required>
                             </div>
                             <div class="imo-form-group">
-                                <label>Precio Unitario Final (sin IVA) *</label>
-                                <input type="number" step="0.01" name="precio" id="inpPrecio" value="<?= htmlspecialchars($datos['precio']) ?>" required>
+                                <label>Precio Unitario Final (sin IVA)
+                                    <span class="price-source-lbl" style="font-size:11px; color:#0d9488; font-weight:600; margin-left:4px;">(← de Estampillas)</span>
+                                </label>
+                                <input type="number" step="0.01" name="precio" id="inpPrecio" value="<?= htmlspecialchars($datos['precio']) ?>" placeholder="0.00">
                             </div>
                         </div>
 
@@ -208,7 +210,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                             </label>
                             
                             <div class="mb-12">
-                                <label class="font-12">Precio Proveedor Base ($) *</label>
+                                <label class="font-12">Precio Proveedor Base ($)</label>
                                 <input type="number" step="0.01" name="precio_proveedor" id="inpPrecioProveedor" 
                                        value="<?= htmlspecialchars($datos['precio_proveedor'] ?? 0) ?>" 
                                        oninput="calcularTotales()" placeholder="0.00">

@@ -228,6 +228,7 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                         <span>IVA: <strong id="cntIva">$ 0</strong></span>
                         <span class="text-warning-gold">Retención (<span id="lblRetPct">2.5</span>%): <strong id="cntRet" class="text-warning-gold">$ 0</strong></span>
                         <span class="text-info">Flete: <strong id="cntFlete">$ 0</strong></span>
+                        <span id="wrapCntSaldoFavor" class="text-teal" style="display:none;">Saldo a Favor: <strong id="cntSaldoFavor" class="text-teal">- $ 0</strong></span>
                         <div class="text-total-wrap font-bold">TOTAL A PAGAR: <span id="cntTotal" class="resumen-total-text">$ 0</span></div>
                     </div>
                 </div>
@@ -342,6 +343,13 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                         </div>
                     </div>
 
+                    <div class="oc-field-group">
+                        <label class="oc-label"><i class="bi bi-wallet2"></i> Saldo a Favor ($)</label>
+                        <input type="number" name="saldo_favor" id="inputSaldoFavor" class="oc-input"
+                               placeholder="0" min="0" step="0.01"
+                               value="<?= isset($ordenAjustando['saldo_favor']) ? (float)$ordenAjustando['saldo_favor'] : 0 ?>">
+                    </div>
+
                 </div>
 
                 <div class="bank-details-wrap">
@@ -369,6 +377,18 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                                 <option value="Ahorros" <?= $tipoCtaIni === 'Ahorros' ? 'selected' : '' ?>>Ahorros</option>
                                 <option value="Corriente" <?= $tipoCtaIni === 'Corriente' ? 'selected' : '' ?>>Corriente</option>
                             </select>
+                        </div>
+                        <div class="oc-field-group">
+                            <label class="oc-label"><i class="bi bi-telephone-fill"></i> Celular / Teléfono</label>
+                            <input type="text" name="proveedor_celular" id="inputProveedorCelular" class="oc-input"
+                                   placeholder="Ej: 3001234567" maxlength="30"
+                                   value="<?= htmlspecialchars($ordenAjustando['proveedor_celular'] ?? ($datosProvIni['celular'] ?? '')) ?>">
+                        </div>
+                        <div class="oc-field-group">
+                            <label class="oc-label"><i class="bi bi-envelope-fill"></i> Correo Electrónico</label>
+                            <input type="email" name="proveedor_correo" id="inputProveedorCorreo" class="oc-input"
+                                   placeholder="Ej: ventas@proveedor.com" maxlength="100"
+                                   value="<?= htmlspecialchars($ordenAjustando['proveedor_correo'] ?? ($datosProvIni['correo'] ?? '')) ?>">
                         </div>
                     </div>
                 </div>
@@ -485,11 +505,14 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
     const descValInput = document.getElementById('inputDescuentoValor');
     const descHdnInput = document.getElementById('inputDescuentoCalculado');
 
+    const saldoFavorInput = document.getElementById('inputSaldoFavor');
+
     if (retInput) retInput.addEventListener('input', actualizarResumen);
     if (fleteInput) fleteInput.addEventListener('input', actualizarResumen);
     if (fleteIvaSelect) fleteIvaSelect.addEventListener('change', actualizarResumen);
     if (descTipoInput) descTipoInput.addEventListener('change', actualizarResumen);
     if (descValInput) descValInput.addEventListener('input', actualizarResumen);
+    if (saldoFavorInput) saldoFavorInput.addEventListener('input', actualizarResumen);
 
     // ── Resumen de selección ──────────────────────────────────────────────
     const alertaProveedor = document.getElementById('alertaProveedorMixto');
@@ -546,8 +569,12 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
 
         const ivaGranTotal = ivaTotal + fleteIvaVal;
 
+        // Saldo a favor (descontar de total a pagar)
+        const saldoFavorVal = saldoFavorInput ? (parseFloat(saldoFavorInput.value) || 0) : 0;
+
         // Total a pagar
-        const totalNeto = subtotalConDescuento + ivaGranTotal - retVal + fleteVal;
+        const totalAntesSaldo = subtotalConDescuento + ivaGranTotal - retVal + fleteVal;
+        const totalNeto = Math.max(0, totalAntesSaldo - saldoFavorVal);
 
         cntItems.textContent = cnt;
         cntSub.textContent   = '$ ' + Math.round(subSinIva).toLocaleString('es-CO');
@@ -557,6 +584,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         const cntIva  = document.getElementById('cntIva');
         const cntRet  = document.getElementById('cntRet');
         const cntFlete = document.getElementById('cntFlete');
+        const wrapSaldo = document.getElementById('wrapCntSaldoFavor');
+        const cntSaldo = document.getElementById('cntSaldoFavor');
         const cntTot  = document.getElementById('cntTotal');
         const lblRet  = document.getElementById('lblRetPct');
 
@@ -565,6 +594,14 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         if (cntIva)     cntIva.textContent     = '$ ' + Math.round(ivaGranTotal).toLocaleString('es-CO') + (fleteAplicaIva && fleteVal > 0 ? ' (inc. IVA flete)' : '');
         if (cntRet)     cntRet.textContent     = '$ ' + Math.round(retVal).toLocaleString('es-CO');
         if (cntFlete)   cntFlete.textContent   = '+ $ ' + Math.round(fleteVal).toLocaleString('es-CO') + (fleteAplicaIva ? ' (con IVA)' : '');
+        if (wrapSaldo && cntSaldo) {
+            if (saldoFavorVal > 0) {
+                wrapSaldo.style.display = 'inline';
+                cntSaldo.textContent = '- $ ' + Math.round(saldoFavorVal).toLocaleString('es-CO');
+            } else {
+                wrapSaldo.style.display = 'none';
+            }
+        }
         if (cntTot)     cntTot.textContent     = '$ ' + Math.round(totalNeto).toLocaleString('es-CO');
         if (lblRet)     lblRet.textContent     = retPct.toString();
 
@@ -675,6 +712,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         const bnomInp  = document.getElementById('inputBancoNombre');
         const bctaInp  = document.getElementById('inputBancoCuenta');
         const btipoInp = document.getElementById('inputBancoTipoCuenta');
+        const celInp   = document.getElementById('inputProveedorCelular');
+        const corInp   = document.getElementById('inputProveedorCorreo');
 
         if (nitInp) nitInp.value = '';
         if (tcontInp) tcontInp.value = '';
@@ -682,6 +721,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         if (bnomInp) bnomInp.value = '';
         if (bctaInp) bctaInp.value = '';
         if (btipoInp) btipoInp.value = '';
+        if (celInp) celInp.value = '';
+        if (corInp) corInp.value = '';
         ultimoProvAutocompletado = '';
     }
 
@@ -730,6 +771,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                     const bnomInp  = document.getElementById('inputBancoNombre');
                     const bctaInp  = document.getElementById('inputBancoCuenta');
                     const btipoInp = document.getElementById('inputBancoTipoCuenta');
+                    const celInp   = document.getElementById('inputProveedorCelular');
+                    const corInp   = document.getElementById('inputProveedorCorreo');
 
                     if (nitInp) nitInp.value = d.proveedor_nit || '';
                     if (tcontInp) tcontInp.value = d.tipo_contribuyente || '';
@@ -737,6 +780,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                     if (bnomInp) bnomInp.value = d.banco_nombre || '';
                     if (bctaInp) bctaInp.value = d.banco_cuenta || '';
                     if (btipoInp) btipoInp.value = d.banco_tipo_cuenta || '';
+                    if (celInp) celInp.value = d.celular || '';
+                    if (corInp) corInp.value = d.correo || '';
                     ultimoProvAutocompletado = nombre.trim();
                 } else if (ultimoProvAutocompletado && ultimoProvAutocompletado !== nombre.trim()) {
                     limpiarCamposProveedor();

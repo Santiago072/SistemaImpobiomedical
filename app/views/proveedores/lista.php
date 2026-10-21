@@ -164,6 +164,17 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                     <input type="text" name="numero_cuenta" placeholder="Ej: 123456789" maxlength="100">
                 </div>
 
+                <div class="imo-form-row">
+                    <div class="imo-form-group">
+                        <label>Celular / Teléfono de Contacto</label>
+                        <input type="text" name="celular" placeholder="Ej: 3001234567" maxlength="30">
+                    </div>
+                    <div class="imo-form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" name="correo" placeholder="Ej: contacto@proveedor.com" maxlength="100">
+                    </div>
+                </div>
+
                 <div class="imo-form-group">
                     <label>Estado</label>
                     <select name="estado">
@@ -228,6 +239,17 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 <div class="imo-form-group">
                     <label>Número de Cuenta</label>
                     <input type="text" name="numero_cuenta" id="edit_numero_cuenta" maxlength="100">
+                </div>
+
+                <div class="imo-form-row">
+                    <div class="imo-form-group">
+                        <label>Celular / Teléfono de Contacto</label>
+                        <input type="text" name="celular" id="edit_celular" maxlength="30">
+                    </div>
+                    <div class="imo-form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" name="correo" id="edit_correo" maxlength="100">
+                    </div>
                 </div>
 
                 <div class="imo-form-group">
@@ -374,6 +396,8 @@ function abrirModalEditar(prov) {
     document.getElementById('edit_nombre_banco').value       = prov.nombre_banco || '';
     document.getElementById('edit_numero_cuenta').value      = prov.numero_cuenta || '';
     document.getElementById('edit_tipo_cuenta').value        = prov.tipo_cuenta || '';
+    document.getElementById('edit_celular').value            = prov.celular || '';
+    document.getElementById('edit_correo').value             = prov.correo || '';
     document.getElementById('edit_estado').value             = prov.estado || 'activo';
     
     if (inputNitProvEditar) {

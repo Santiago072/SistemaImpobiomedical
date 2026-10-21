@@ -189,14 +189,14 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
                                 <div class="imo-form-row">
                                     <div class="imo-form-group">
-                                        <label>Precio Proveedor Base ($) *</label>
+                                        <label>Precio Proveedor Base ($)</label>
                                         <input type="number" name="precio_proveedor" id="inpPrecioProveedor"
                                                min="0" step="0.01" placeholder="0.00" oninput="calcularTotales()">
                                     </div>
                                     <div class="imo-form-group search-live" style="position: relative;">
-                                        <label>Proveedor (Buscar por NIT o Nombre) <span class="required-star">*</span></label>
+                                        <label>Proveedor (Buscar por NIT o Nombre)</label>
                                         <input type="text" name="proveedor" id="inpProveedor" maxlength="100"
-                                               required placeholder="Escribe NIT o Nombre..." autocomplete="off">
+                                               placeholder="Escribe NIT o Nombre..." autocomplete="off">
                                         <input type="hidden" name="proveedor_id" id="hdnProveedorId" value="">
                                         <input type="hidden" name="proveedor_nit" id="hdnProveedorNit" value="">
                                         <div id="listaProveedores" class="lista-sugerencias" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:1050; background:#ffffff; border:1.5px solid #0d9488; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:220px; overflow-y:auto;"></div>
@@ -279,11 +279,11 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                 <input type="number" name="cantidad" id="inpCantidad" min="1" value="<?= $producto['cantidad'] ?? 1 ?>" required>
                             </div>
                             <div class="imo-form-group">
-                                <label>Precio Unitario (sin IVA) *
-                                    <span id="lblPrecioFuente" class="price-source-lbl"></span>
+                                <label>Precio Unitario (sin IVA)
+                                    <span id="lblPrecioFuente" class="price-source-lbl">(← de Estampillas)</span>
                                 </label>
                                 <input type="number" name="precio" id="inpPrecio" min="0" step="0.01"
-                                       value="<?= $producto['precio'] ?? '' ?>" required placeholder="0.00">
+                                       value="<?= $producto['precio'] ?? '' ?>" placeholder="0.00">
                             </div>
                         </div>
 
@@ -491,7 +491,7 @@ function autocompletar(p) {
     if (precioProveedorBase <= 0) {
         document.getElementById('inpPrecio').value = p.precio;
         const lbl = document.getElementById('lblPrecioFuente');
-        if (lbl) lbl.textContent = '';
+        if (lbl) lbl.textContent = '(← de Estampillas)';
     } else {
         // Si hay calculadora activa, recalcular totales para mantener sincronizado
         calcularTotales();
@@ -790,23 +790,8 @@ document.addEventListener('click', e => {
     }
 });
 
-// Serializar calcState en hidden y validar campo obligatorio de Proveedor antes de enviar el formulario
+// Serializar calcState en hidden antes de enviar el formulario
 document.getElementById('formItem').addEventListener('submit', function(e) {
-    const inpProv = document.getElementById('inpProveedor');
-    if (!inpProv || !inpProv.value.trim()) {
-        e.preventDefault();
-        const panel = document.getElementById('panelGanancias');
-        const icon = document.getElementById('iconGanancias');
-        if (panel && panel.style.display === 'none') {
-            panel.style.display = 'block';
-            if (icon) icon.className = 'bi bi-chevron-up';
-        }
-        if (inpProv) {
-            inpProv.focus();
-            inpProv.reportValidity();
-        }
-        return false;
-    }
     document.getElementById('hdnCalcOps').value = JSON.stringify(calcState);
 });
 

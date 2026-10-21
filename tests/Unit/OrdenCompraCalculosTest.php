@@ -76,4 +76,23 @@ class OrdenCompraCalculosTest extends TestCase
         $this->assertFalse(in_array('cancelada', $estadosPermitidos, true));
         $this->assertFalse(in_array('borrador', $estadosPermitidos, true));
     }
+
+    /**
+     * Prueba el cálculo con saldo a favor aplicado sobre el total neto a pagar.
+     */
+    public function testCalculoValorPagarConSaldoAFavor(): void
+    {
+        $subtotal = 256200.0;
+        $iva = 48678.0;
+        $totalSinSaldo = $subtotal + $iva; // 304,878
+        $saldoFavor = 16077.0;
+
+        $totalConSaldo = max(0.0, $totalSinSaldo - $saldoFavor); // 288,801
+        $this->assertEquals(288801.0, $totalConSaldo);
+
+        // Si el saldo a favor supera el total, no debe quedar negativo
+        $saldoExcesivo = 500000.0;
+        $totalLimiteCero = max(0.0, $totalSinSaldo - $saldoExcesivo);
+        $this->assertEquals(0.0, $totalLimiteCero);
+    }
 }

@@ -4,6 +4,31 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.5.8] - 2026-10-20
+### Agregado
+- **Soporte para Saldo a Favor en Órdenes de Compra:**
+  - Adición del campo `saldo_favor DECIMAL(20,2) DEFAULT 0.00` en la tabla `ordenes_compra` y migración en base de datos.
+  - Integración en los formularios de emisión de órdenes desde cotización (`seleccionar_items.php`) y órdenes directas de mostrador (`crear_directa.php`), así como en la vista de ajuste directo.
+  - Deducción automática y en tiempo real del saldo a favor sobre el valor final (`cntTotal = Math.max(0, totalAntesSaldo - saldoFavor)`), con visualización dinámica en el resumen comercial.
+  - Reflejo formal en el PDF oficial de la orden de compra (`generar_pdf.php`), mostrando la fila `SALDO A FAVOR: - $X` y el total liquidado neto a pagar.
+- **Campos de Contacto y Sincronización Integral de Proveedores:**
+  - Nuevas columnas `celular VARCHAR(30)` y `correo VARCHAR(100)` en la tabla `proveedores`.
+  - Formularios de creación y edición en el directorio de proveedores (`lista.php` y `ProveedorController.php`) con soporte completo para celular y correo electrónico.
+  - Campos de celular y correo electrónico en los formularios de emisión y ajuste de órdenes de compra (desde cotización y directas).
+  - Sincronización bidireccional automática en `ProveedorModel::registrarOActualizar()`: cualquier actualización de contacto (celular, correo), datos bancarios o razón social realizada durante la creación o ajuste de una orden actualiza de forma inmediata y persistente la ficha maestra del proveedor en la base de datos.
+
+### Mejorado
+- **Flexibilización en el Armado de Cotizaciones:**
+  - Campo `Precio Proveedor Base ($)` marcado como opcional en creación y edición de ítems (`crear.php`, `editar_item.php`).
+  - Eliminación de la validación bloqueante en backend (`ItemCotizacionService.php`) y en frontend que forzaba el ingreso de proveedor al momento de agregar un ítem inicial, permitiendo armar propuestas preliminares con precios referenciales.
+  - Indicador fijo y permanente `(← de Estampillas)` junto al campo `Precio Unitario (sin IVA)` para mayor claridad del asesor comercial al calcular precios con gravámenes tributarios.
+
+### Pruebas y Calidad (QA)
+- **Expansión de la Suite de Pruebas Automatizadas a 39 Pruebas (162 Aserciones, 100% OK):**
+  - Incorporada la prueba unitaria `OrdenCompraCalculosTest::testCalculoValorPagarConSaldoAFavor` para blindar el cálculo del total con saldo a favor y garantizar que nunca se generen valores netos negativos.
+
+---
+
 ## [v3.5.7] - 2026-10-19
 ### Seguridad
 - **Protección contra Inyección de Fórmulas CSV / Excel (CWE-1236):**

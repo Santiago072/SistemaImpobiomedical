@@ -229,15 +229,16 @@ A continuación se detallan las Historias de Usuario organizadas según la barra
   * **1.** En la creación de órdenes directas, el sistema exige que los ítems agregados provengan del catálogo oficial de productos para asegurar la consistencia del catálogo.
   * **2.** La orden directa genera su consecutivo oficial de orden de compra (P.O.) y se asocia al proveedor seleccionado.
 
-#### HU11 - Visor PDF, Exportación Individual/Masiva en PDF/Excel y Ajuste de Órdenes (Módulo: Órdenes de Compra)
+#### HU11 - Visor PDF, Exportación Individual/Masiva en PDF/Excel, Saldo a Favor y Ajuste de Órdenes (Módulo: Órdenes de Compra)
 * **Como** usuario autorizado (`admin`, `compras` o autor),
-* **Quiero** previsualizar las órdenes en un visor PDF interactivo, exportarlas de forma individual o masiva a PDF y Excel, y realizar ajustes directos conservando el consecutivo original,
-* **Para** enviar la orden formal al proveedor, alimentar reportes externos y corregir ítems sin alterar el número de control.
+* **Quiero** previsualizar las órdenes en un visor PDF interactivo, exportarlas de forma individual o masiva a PDF y Excel, aplicar saldos a favor deducibles y realizar ajustes directos conservando el consecutivo original,
+* **Para** enviar la orden formal al proveedor, reflejar anticipos a favor que reduzcan el saldo neto a pagar y corregir ítems sin alterar el número de control.
 * **Requisitos cubiertos:** `RF28`, `RF29`, `RF30`, `RF31`
 * **Criterios de Aceptación:**
   * **1.** El visor PDF interactivo permite ver, imprimir y descargar la orden de compra con el formato institucional de Impobiomedical.
   * **2.** El sistema permite seleccionar una o múltiples órdenes para su descarga consolidada en archivo PDF o exportación a Excel.
-  * **3.** La función "Ajustar Orden" permite modificar cantidades y precios conservando el mismo identificador P.O. original, restringida al autor de la orden o a roles `admin`/`compras`.
+  * **3.** La función "Ajustar Orden" permite modificar cantidades, precios y saldo a favor conservando el mismo identificador P.O. original, restringida al autor de la orden o a roles `admin`/`compras`.
+  * **4.** Si se especifica un saldo a favor, el sistema lo deduce del total a pagar tanto en el resumen interactivo como en el documento PDF oficial (`SALDO A FAVOR: - $X`), garantizando que el total neto nunca sea negativo.
 
 #### HU12 - Seguimiento de Estados y Eliminación de Órdenes (Módulo: Órdenes de Compra)
 * **Como** usuario con rol `admin` o `compras`,
@@ -266,15 +267,15 @@ A continuación se detallan las Historias de Usuario organizadas según la barra
 
 ### 6. 🚚 Módulo: Proveedores
 
-#### HU14 - Búsqueda en Tiempo Real, Carga y Detección Automática de Proveedores (Módulo: Proveedores)
+#### HU14 - Búsqueda en Tiempo Real, Carga, Contacto y Sincronización Automática de Proveedores (Módulo: Proveedores)
 * **Como** usuario autorizado (Asesor o Compras),
-* **Quiero** buscar proveedores por NIT o Nombre en tiempo real, cargar sus datos comerciales y bancarios (o ingresarlos manualmente), y que el sistema auto-clasifique y auto-registre nuevos proveedores desde órdenes de compra,
-* **Para** agilizar el aprovisionamiento de insumos y mantener centralizado el directorio comercial protegiendo su eliminación.
+* **Quiero** buscar proveedores por NIT o Nombre en tiempo real, cargar sus datos comerciales, bancarios y de contacto (celular y correo), y que el sistema auto-clasifique, auto-registre y auto-actualice proveedores desde la emisión o ajuste de órdenes de compra,
+* **Para** agilizar el aprovisionamiento de insumos y mantener centralizado y actualizado el directorio comercial protegiendo su eliminación.
 * **Requisitos cubiertos:** `RF45`, `RF46`, `RF47`, `RF48`, `RF49`
 * **Criterios de Aceptación:**
   * **1.** La búsqueda de proveedores por NIT o Razón Social responde en tiempo real mientras el usuario digita.
-  * **2.** El sistema permite seleccionar un proveedor para autocompletar sus datos bancarios y comerciales en cotizaciones u órdenes, o digitarlos manualmente si no está en la base.
-  * **3.** Al procesar una orden de compra, el sistema clasifica al proveedor como `Nuevo` (primera compra) o `Registrado` (compras previas) y lo registra en el directorio general si no existía.
+  * **2.** El sistema permite seleccionar un proveedor para autocompletar sus datos bancarios, de contacto (celular y correo) y comerciales en cotizaciones u órdenes, o digitarlos manualmente si no está en la base.
+  * **3.** Al procesar o ajustar una orden de compra, el sistema clasifica al proveedor como `Nuevo` (primera compra) o `Registrado` (compras previas), lo registra en el directorio general si no existía y sincroniza/actualiza automáticamente sus datos bancarios, de contacto y tributarios ante cualquier cambio.
   * **4.** La eliminación física o desactivación de proveedores está reservada exclusivamente al rol `admin`.
 
 ---

@@ -55,7 +55,8 @@ class OrdenCompraModel
         float  $descuentoValor = 0.00,
         float  $descuento = 0.00,
         string $fleteIva = 'no',
-        float  $fletePorcentajeIva = 19.00
+        float  $fletePorcentajeIva = 19.00,
+        float  $saldoFavor = 0.00
     ): int {
         $this->db->beginTransaction();
         try {
@@ -66,12 +67,12 @@ class OrdenCompraModel
                   proveedor, proveedor_nit, estado_proveedor, tipo_contribuyente,
                   condiciones_pago, iva, departamento_compras,
                   nota, retencion, flete, flete_iva, flete_porcentaje_iva,
-                  tipo_descuento, descuento_valor, descuento, fecha,
+                  tipo_descuento, descuento_valor, descuento, saldo_favor, fecha,
                   banco_nombre, banco_cuenta, banco_tipo_cuenta)
                  VALUES (:po, :cid, :cnum, :uid, :prov, :pnit, :eprov, :tcont,
                          :condpago, :iva, :depto, :nota, :ret,
                          :flete, :fiva, :fpctiva,
-                         :tdesc, :dval, :desc, :fecha,
+                         :tdesc, :dval, :desc, :sfavor, :fecha,
                          :bnom, :bcuenta, :btipo)"
             );
             $stmt->execute([
@@ -94,6 +95,7 @@ class OrdenCompraModel
                 ':tdesc'   => $tipoDescuento,
                 ':dval'    => $descuentoValor,
                 ':desc'    => $descuento,
+                ':sfavor'  => $saldoFavor,
                 ':fecha'   => $fecha,
                 ':bnom'    => $bancoNombre,
                 ':bcuenta' => $bancoCuenta,
@@ -128,7 +130,8 @@ class OrdenCompraModel
         float  $descuentoValor = 0.00,
         float  $descuento = 0.00,
         string $fleteIva = 'no',
-        float  $fletePorcentajeIva = 19.00
+        float  $fletePorcentajeIva = 19.00,
+        float  $saldoFavor = 0.00
     ): bool {
         $this->db->beginTransaction();
         try {
@@ -149,6 +152,7 @@ class OrdenCompraModel
                     tipo_descuento = :tdesc,
                     descuento_valor = :dval,
                     descuento = :desc,
+                    saldo_favor = :sfavor,
                     fecha = :fecha,
                     banco_nombre = :bnom,
                     banco_cuenta = :bcuenta,
@@ -172,6 +176,7 @@ class OrdenCompraModel
                 ':tdesc'   => $tipoDescuento,
                 ':dval'    => $descuentoValor,
                 ':desc'    => $descuento,
+                ':sfavor'  => $saldoFavor,
                 ':fecha'   => $fecha,
                 ':bnom'    => $bancoNombre,
                 ':bcuenta' => $bancoCuenta,
@@ -213,7 +218,7 @@ class OrdenCompraModel
                 $termSoloDig = preg_replace('/\D/', '', $termino);
                 $stmtProv = $this->db->prepare(
                     "SELECT id, nit, nombre_proveedor, tipo_contribuyente,
-                            nombre_banco, numero_cuenta, tipo_cuenta, estado
+                            nombre_banco, numero_cuenta, tipo_cuenta, celular, correo, estado
                      FROM proveedores
                      WHERE REPLACE(REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', ''), '-', '') = :p_digitos
                         OR REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :p_nitnorm
@@ -230,7 +235,7 @@ class OrdenCompraModel
             } else {
                 $stmtProv = $this->db->prepare(
                     "SELECT id, nit, nombre_proveedor, tipo_contribuyente,
-                            nombre_banco, numero_cuenta, tipo_cuenta, estado
+                            nombre_banco, numero_cuenta, tipo_cuenta, celular, correo, estado
                      FROM proveedores
                      WHERE REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :p_nitnorm
                         OR TRIM(nit) = :p_nit
@@ -292,6 +297,8 @@ class OrdenCompraModel
                         'banco_nombre'       => $provOficial['nombre_banco'] ?: '',
                         'banco_cuenta'       => $provOficial['numero_cuenta'] ?: '',
                         'banco_tipo_cuenta'  => $provOficial['tipo_cuenta'] ?: '',
+                        'celular'            => $provOficial['celular'] ?: '',
+                        'correo'             => $provOficial['correo'] ?: '',
                     ]
                 ];
             }
@@ -326,6 +333,8 @@ class OrdenCompraModel
                         'banco_nombre'       => $row['banco_nombre'] ?? '',
                         'banco_cuenta'       => $row['banco_cuenta'] ?? '',
                         'banco_tipo_cuenta'  => $row['banco_tipo_cuenta'] ?? '',
+                        'celular'            => '',
+                        'correo'             => '',
                     ]
                 ];
             }

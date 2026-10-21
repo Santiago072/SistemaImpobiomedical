@@ -58,9 +58,7 @@ class ItemCotizacionService
         $calc_ops_decoded = json_decode($calc_ops_raw, true);
         $calc_ops = ($calc_ops_decoded === null) ? '{}' : json_encode($calc_ops_decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        if (empty($proveedor)) {
-            throw new \InvalidArgumentException('El nombre del proveedor es obligatorio. Escribe el nombre o NIT del proveedor en el campo Proveedor antes de guardar el ítem.');
-        }
+
 
         if (!in_array($iva, ['si', 'no'], true)) {
             $iva = 'si';

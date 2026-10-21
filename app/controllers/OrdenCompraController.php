@@ -152,6 +152,8 @@ class OrdenCompraController
         $bancoNombre        = mb_substr(sanitizar_entrada($_POST['banco_nombre'] ?? ''), 0, 100);
         $bancoCuenta        = mb_substr(sanitizar_entrada($_POST['banco_cuenta'] ?? ''), 0, 100);
         $bancoTipoCuenta    = mb_substr(sanitizar_entrada($_POST['banco_tipo_cuenta'] ?? ''), 0, 100);
+        $provCelular        = mb_substr(sanitizar_entrada($_POST['proveedor_celular'] ?? ''), 0, 30);
+        $provCorreo         = mb_substr(sanitizar_entrada($_POST['proveedor_correo'] ?? ''), 0, 100);
 
         // Verificar estado de proveedor directamente contra la base de datos (por nombre o NIT normalizado)
         $historialProv = $this->model->buscarHistorialProveedor(!empty($proveedorNit) ? $proveedorNit : $proveedor);
@@ -166,6 +168,7 @@ class OrdenCompraController
         $tipoDescuento      = in_array($_POST['tipo_descuento'] ?? '', ['monto', 'porcentaje'], true) ? $_POST['tipo_descuento'] : 'monto';
         $descuentoValor     = max(0, (float)($_POST['descuento_valor'] ?? 0));
         $descuentoCalculado = max(0, (float)($_POST['descuento'] ?? 0));
+        $saldoFavor         = max(0, (float)($_POST['saldo_favor'] ?? 0));
 
         if (!$cotizacionId || empty($proveedor)) {
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&error=datos');
@@ -235,7 +238,7 @@ class OrdenCompraController
                     $nota, $retencion, $fecha,
                     $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
                     $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
-                    $fleteIva, $fletePorcentajeIva
+                    $fleteIva, $fletePorcentajeIva, $saldoFavor
                 );
                 $ordenId = $idAjuste;
                 unset($_SESSION['orden_ajustando_id'], $_SESSION['orden_ajustando_po']);
@@ -249,7 +252,7 @@ class OrdenCompraController
                     $nota, $retencion, $fecha,
                     $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
                     $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
-                    $fleteIva, $fletePorcentajeIva
+                    $fleteIva, $fletePorcentajeIva, $saldoFavor
                 );
             }
 
@@ -263,6 +266,8 @@ class OrdenCompraController
                         'nombre_banco'       => $bancoNombre,
                         'numero_cuenta'      => $bancoCuenta,
                         'tipo_cuenta'        => $bancoTipoCuenta,
+                        'celular'            => $provCelular,
+                        'correo'             => $provCorreo,
                     ]);
                 } catch (\Throwable $te) {
                     error_log('Error auto-registrando proveedor desde orden de cotización: ' . $te->getMessage());
@@ -366,6 +371,8 @@ class OrdenCompraController
         $bancoNombre        = mb_substr(sanitizar_entrada($_POST['banco_nombre'] ?? ''), 0, 100);
         $bancoCuenta        = mb_substr(sanitizar_entrada($_POST['banco_cuenta'] ?? ''), 0, 100);
         $bancoTipoCuenta    = mb_substr(sanitizar_entrada($_POST['banco_tipo_cuenta'] ?? ''), 0, 100);
+        $provCelular        = mb_substr(sanitizar_entrada($_POST['proveedor_celular'] ?? ''), 0, 30);
+        $provCorreo         = mb_substr(sanitizar_entrada($_POST['proveedor_correo'] ?? ''), 0, 100);
 
         // Estado del proveedor calculado contra la BD (por NIT o Nombre)
         $historialProv = $this->model->buscarHistorialProveedor(!empty($proveedorNit) ? $proveedorNit : $proveedor);
@@ -380,6 +387,7 @@ class OrdenCompraController
         $tipoDescuento      = in_array($_POST['tipo_descuento'] ?? '', ['monto', 'porcentaje'], true) ? $_POST['tipo_descuento'] : 'monto';
         $descuentoValor     = max(0, (float)($_POST['descuento_valor'] ?? 0));
         $descuentoCalculado = max(0, (float)($_POST['descuento'] ?? 0));
+        $saldoFavor         = max(0, (float)($_POST['saldo_favor'] ?? 0));
 
         $idAjuste = !empty($_SESSION['orden_ajustando_id']) ? (int)$_SESSION['orden_ajustando_id'] : 0;
 
@@ -392,7 +400,7 @@ class OrdenCompraController
                 $nota, $retencion, $fecha,
                 $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
                 $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
-                $fleteIva, $fletePorcentajeIva
+                $fleteIva, $fletePorcentajeIva, $saldoFavor
             );
             $ordenId = $idAjuste;
             unset($_SESSION['orden_ajustando_id'], $_SESSION['orden_ajustando_po']);
@@ -406,7 +414,7 @@ class OrdenCompraController
                 $nota, $retencion, $fecha,
                 $bancoNombre, $bancoCuenta, $bancoTipoCuenta,
                 $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
-                $fleteIva, $fletePorcentajeIva
+                $fleteIva, $fletePorcentajeIva, $saldoFavor
             );
         }
 
@@ -420,6 +428,8 @@ class OrdenCompraController
                     'nombre_banco'       => $bancoNombre,
                     'numero_cuenta'      => $bancoCuenta,
                     'tipo_cuenta'        => $bancoTipoCuenta,
+                    'celular'            => $provCelular,
+                    'correo'             => $provCorreo,
                 ]);
             } catch (\Throwable $te) {
                 error_log('Error auto-registrando proveedor desde orden directa: ' . $te->getMessage());

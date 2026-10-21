@@ -82,6 +82,7 @@ $fletePctIva       = (float)($orden['flete_porcentaje_iva'] ?? 19.00);
 $descuento         = (float)($orden['descuento'] ?? 0);
 $tipoDescuento     = $orden['tipo_descuento'] ?? 'monto';
 $descuentoValor    = (float)($orden['descuento_valor'] ?? 0);
+$saldoFavor        = (float)($orden['saldo_favor'] ?? 0);
 
 // Cálculos
 $subtotal = 0; $totalIvaItems = 0;
@@ -98,7 +99,8 @@ $subtotalNeto = max(0, $subtotal - $descuento);
 $retencion = $subtotalNeto * ($retencionPct / 100);
 $ivaFlete = ($fleteIva && $flete > 0) ? $flete * ($fletePctIva / 100) : 0;
 $totalIva = $totalIvaItems + $ivaFlete;
-$total     = $subtotalNeto + $totalIva - $retencion + $flete;
+$totalBruto = $subtotalNeto + $totalIva - $retencion + $flete;
+$total      = max(0, $totalBruto - $saldoFavor);
 
 // Formato número colombiano: punto miles, sin decimales
 if (!function_exists('fmt')) {
@@ -280,8 +282,9 @@ table { width:100%; border-collapse:collapse; }
 
 <?php
 $filasTotales = 4; // Subtotal, IVA, Retención, Total
-if ($descuento > 0) $filasTotales += 2; // Descuento y Subtotal con Descuento
-if ($flete > 0) $filasTotales += 1;     // Flete
+if ($descuento > 0) $filasTotales += 2;  // Descuento y Subtotal con Descuento
+if ($flete > 0) $filasTotales += 1;      // Flete
+if ($saldoFavor > 0) $filasTotales += 1; // Saldo a Favor
 ?>
 <!-- Fila nota + totales -->
 <tr>
@@ -314,6 +317,12 @@ if ($flete > 0) $filasTotales += 1;     // Flete
 <tr>
   <td class="tot-lbl">FLETE <?= $fleteIva ? '(+19% IVA)' : '' ?></td>
   <td colspan="2" class="tot-val"><?= fmt($flete) ?></td>
+</tr>
+<?php endif; ?>
+<?php if ($saldoFavor > 0): ?>
+<tr>
+  <td class="tot-lbl" style="font-weight:bold; color:#0f766e;">SALDO A FAVOR</td>
+  <td colspan="2" class="tot-val" style="color:#0f766e; font-weight:bold;">- <?= fmt($saldoFavor) ?></td>
 </tr>
 <?php endif; ?>
 <tr>

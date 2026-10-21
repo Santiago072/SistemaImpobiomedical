@@ -63,6 +63,8 @@ class ProveedorController
         $banco     = mb_substr(sanitizar_entrada($_POST['nombre_banco'] ?? ''), 0, 100);
         $cuenta    = mb_substr(sanitizar_entrada($_POST['numero_cuenta'] ?? ''), 0, 100);
         $tipoCta   = mb_substr(sanitizar_entrada($_POST['tipo_cuenta'] ?? ''), 0, 50);
+        $celular   = mb_substr(sanitizar_entrada($_POST['celular'] ?? ''), 0, 30);
+        $correo    = mb_substr(sanitizar_entrada($_POST['correo'] ?? ''), 0, 100);
         $estado    = in_array($_POST['estado'] ?? '', ['activo', 'inactivo'], true) ? $_POST['estado'] : 'activo';
 
         if ($nit === '' || $nombre === '') {
@@ -83,6 +85,8 @@ class ProveedorController
                 'nombre_banco'       => $banco,
                 'numero_cuenta'      => $cuenta,
                 'tipo_cuenta'        => $tipoCta,
+                'celular'            => $celular,
+                'correo'             => $correo,
                 'estado'             => $estado,
             ]);
 
@@ -122,6 +126,8 @@ class ProveedorController
         $banco     = mb_substr(sanitizar_entrada($_POST['nombre_banco'] ?? ''), 0, 100);
         $cuenta    = mb_substr(sanitizar_entrada($_POST['numero_cuenta'] ?? ''), 0, 100);
         $tipoCta   = mb_substr(sanitizar_entrada($_POST['tipo_cuenta'] ?? ''), 0, 50);
+        $celular   = mb_substr(sanitizar_entrada($_POST['celular'] ?? ''), 0, 30);
+        $correo    = mb_substr(sanitizar_entrada($_POST['correo'] ?? ''), 0, 100);
         $estado    = in_array($_POST['estado'] ?? '', ['activo', 'inactivo'], true) ? $_POST['estado'] : 'activo';
 
         if ($id <= 0 || $nit === '' || $nombre === '') {
@@ -144,6 +150,8 @@ class ProveedorController
                 'nombre_banco'       => $banco,
                 'numero_cuenta'      => $cuenta,
                 'tipo_cuenta'        => $tipoCta,
+                'celular'            => $celular,
+                'correo'             => $correo,
                 'estado'             => $estado,
             ]);
 
