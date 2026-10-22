@@ -200,15 +200,15 @@ class CotizacionModel
     {
         $stmt = $this->db->prepare(
             "INSERT INTO cotizacion_items
-             (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio,
+             (cotizacion_id, orden, producto_id, titulo, foto, descripcion, cantidad, unidad, precio,
               iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto, marca, modelo,
               precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas,
               proveedor_id, proveedor, proveedor_nit, codigo_proveedor, calc_ops)
-             SELECT :new_id, producto_id, titulo, foto, descripcion, cantidad, precio,
+             SELECT :new_id, orden, producto_id, titulo, foto, descripcion, cantidad, unidad, precio,
                     iva, porcentaje_iva, tiempo_entrega, categoria, codigo_producto, marca, modelo,
                     precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas,
                     proveedor_id, proveedor, proveedor_nit, codigo_proveedor, calc_ops
-             FROM cotizacion_items WHERE cotizacion_id = :old_id"
+             FROM cotizacion_items WHERE cotizacion_id = :old_id ORDER BY orden ASC, id ASC"
         );
         if (!$stmt->execute([':new_id' => $newId, ':old_id' => $oldId])) {
             error_log('Error execute clonarItems');
@@ -561,10 +561,92 @@ class CotizacionModel
     public function obtenerItems(int $cotizacionId): array
     {
         $stmt = $this->db->prepare(
-            'SELECT * FROM cotizacion_items WHERE cotizacion_id = :cid ORDER BY id ASC'
+            'SELECT * FROM cotizacion_items WHERE cotizacion_id = :cid ORDER BY orden ASC, id ASC'
         );
         $stmt->execute([':cid' => $cotizacionId]);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Reordena un ítem moviéndolo hacia arriba o hacia abajo respecto a sus hermanos.
+     */
+    public function moverItem(int $itemId, int $cotizacionId, string $direccion): bool
+    {
+        $items = $this->obtenerItems($cotizacionId);
+        if (count($items) <= 1) {
+            return false;
+        }
+
+        // Asegurar que todos tengan un índice secuencial limpio
+        $idxActual = -1;
+        foreach ($items as $k => $it) {
+            if ((int)$it['id'] === $itemId) {
+                $idxActual = $k;
+                break;
+            }
+        }
+
+        if ($idxActual === -1) {
+            return false;
+        }
+
+        $nuevoIdx = ($direccion === 'arriba') ? $idxActual - 1 : $idxActual + 1;
+        if ($nuevoIdx < 0 || $nuevoIdx >= count($items)) {
+            return false; // Ya está en el tope o en el fondo
+        }
+
+        // Intercambiar posiciones en el arreglo
+        $temp = $items[$idxActual];
+        $items[$idxActual] = $items[$nuevoIdx];
+        $items[$nuevoIdx] = $temp;
+
+        // Guardar nuevo orden secuencial en base de datos
+        $this->db->beginTransaction();
+        try {
+            $stmt = $this->db->prepare('UPDATE cotizacion_items SET orden = :pos WHERE id = :id AND cotizacion_id = :cid');
+            foreach ($items as $pos => $it) {
+                $stmt->execute([
+                    ':pos' => $pos + 1,
+                    ':id'  => (int)$it['id'],
+                    ':cid' => $cotizacionId
+                ]);
+            }
+            $this->db->commit();
+            return true;
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            error_log('Error en moverItem: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Guarda el orden secuencial a partir de una lista ordenada de IDs (Drag & Drop).
+     */
+    public function actualizarOrdenLista(int $cotizacionId, array $itemIdsOrdenados): bool
+    {
+        if (empty($itemIdsOrdenados)) {
+            return false;
+        }
+
+        $this->db->beginTransaction();
+        try {
+            $stmt = $this->db->prepare('UPDATE cotizacion_items SET orden = :pos WHERE id = :id AND cotizacion_id = :cid');
+            $pos = 1;
+            foreach ($itemIdsOrdenados as $id) {
+                $stmt->execute([
+                    ':pos' => $pos++,
+                    ':id'  => (int)$id,
+                    ':cid' => $cotizacionId
+                ]);
+            }
+            $this->db->commit();
+            return true;
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            error_log('Error en actualizarOrdenLista: ' . $e->getMessage());
+            return false;
+        }
     }
 
     public function buscarItemPorId(int $itemId, int $cotizacionId): ?array
@@ -586,22 +668,29 @@ class CotizacionModel
                                  float $estampillas = 0, string $proveedor = '',
                                  string $codigoProveedor = '', string $calcOps = '{}',
                                  ?int $proveedorId = null, string $proveedorNit = '',
-                                 string $marca = '', string $modelo = ''): bool
+                                 string $marca = '', string $modelo = '', string $unidad = ''): bool
     {
+        // Calcular siguiente posición de orden
+        $stmtMax = $this->db->prepare('SELECT IFNULL(MAX(orden), 0) + 1 AS siguiente_orden FROM cotizacion_items WHERE cotizacion_id = :cid');
+        $stmtMax->execute([':cid' => $cotizacionId]);
+        $sigOrden = (int)($stmtMax->fetchColumn() ?: 1);
+
         $stmt = $this->db->prepare(
             'INSERT INTO cotizacion_items
-             (cotizacion_id, producto_id, titulo, foto, descripcion, cantidad, precio, iva, porcentaje_iva, tiempo_entrega,
+             (cotizacion_id, orden, producto_id, titulo, foto, descripcion, cantidad, unidad, precio, iva, porcentaje_iva, tiempo_entrega,
               categoria, codigo_producto, marca, modelo, precio_proveedor, porcentaje_utilidad, flete, calibracion, estampillas, proveedor_id, proveedor, proveedor_nit, codigo_proveedor, calc_ops)
-             VALUES (:cid, :pid, :tit, :foto, :desc, :cant, :prec, :iva, :porciva, :tient,
+             VALUES (:cid, :orden, :pid, :tit, :foto, :desc, :cant, :unidad, :prec, :iva, :porciva, :tient,
                      :cat, :codprod, :marca, :modelo, :precprov, :porcutil, :flet, :calib, :estamp, :prov_id, :prov, :prov_nit, :codprov, :calc)'
         );
         $ok = $stmt->execute([
             ':cid'      => $cotizacionId,
+            ':orden'    => $sigOrden,
             ':pid'      => $productoId,
             ':tit'      => $titulo,
             ':foto'     => $foto,
             ':desc'     => $descripcion,
             ':cant'     => $cantidad,
+            ':unidad'   => trim($unidad),
             ':prec'     => $precio,
             ':iva'      => $iva,
             ':porciva'  => $porcentajeIva,
@@ -636,11 +725,11 @@ class CotizacionModel
                                    float $estampillas = 0, string $proveedor = '',
                                    string $codigoProveedor = '', string $calcOps = '{}',
                                    ?int $proveedorId = null, string $proveedorNit = '',
-                                   string $marca = '', string $modelo = ''): bool
+                                   string $marca = '', string $modelo = '', string $unidad = ''): bool
     {
         $stmt = $this->db->prepare(
             'UPDATE cotizacion_items
-             SET titulo=:tit, foto=:foto, descripcion=:desc, cantidad=:cant, precio=:prec,
+             SET titulo=:tit, foto=:foto, descripcion=:desc, cantidad=:cant, unidad=:unidad, precio=:prec,
                  iva=:iva, porcentaje_iva=:porciva, tiempo_entrega=:tient,
                  categoria=:cat, codigo_producto=:codprod, marca=:marca, modelo=:modelo,
                  precio_proveedor=:precprov, porcentaje_utilidad=:porcutil,
@@ -653,6 +742,7 @@ class CotizacionModel
             ':foto'     => $foto,
             ':desc'     => $descripcion,
             ':cant'     => $cantidad,
+            ':unidad'   => trim($unidad),
             ':prec'     => $precio,
             ':iva'      => $iva,
             ':porciva'  => $porcentajeIva,
@@ -684,6 +774,17 @@ class CotizacionModel
     }
 
     // ── ELIMINAR ───────────────────────────────────────────────────────────────
+
+    /**
+     * Consulta si la cotización tiene órdenes de compra asociadas.
+     * Retorna un arreglo con los números P.O. encontrados.
+     */
+    public function obtenerOrdenesAsociadas(int $cotizacionId): array
+    {
+        $stmt = $this->db->prepare('SELECT id, numero_po, proveedor FROM ordenes_compra WHERE cotizacion_id = :cid ORDER BY numero_po ASC');
+        $stmt->execute([':cid' => $cotizacionId]);
+        return $stmt->fetchAll();
+    }
 
     public function eliminar(int $id): bool
     {

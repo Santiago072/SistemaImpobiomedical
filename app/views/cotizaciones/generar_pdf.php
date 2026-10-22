@@ -364,7 +364,12 @@ foreach ($items as $it):
     $descHtml = nl2br(htmlspecialchars($it['descripcion'] ?? ''));
 ?>
   <tr class="<?= $rowCls ?>">
-    <td class="b tc vm" style="padding:6px 2px;"><?= $qty ?></td>
+    <td class="b tc vm" style="padding:6px 2px; font-size:9px;">
+      <strong><?= $qty ?></strong>
+      <?php if (!empty($it['unidad'])): ?>
+        <br><span style="font-size:7.5px; color:#1a8a8a; font-weight:bold;"><?= mb_strtoupper(htmlspecialchars($it['unidad'])) ?></span>
+      <?php endif; ?>
+    </td>
     <td class="b tl vt col-desc-cell" style="padding:6px 8px; width:30%;">
       <strong style="font-size:9.5px; display:block; margin-bottom:3px;"><?= mb_strtoupper(htmlspecialchars($it['titulo'])) ?></strong>
       <span style="font-size:8.5px; line-height:1.35;"><?= $descHtml ?></span>

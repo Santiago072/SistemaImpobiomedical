@@ -106,7 +106,7 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                                 <th>CÓD. PRD. PROVEEDOR</th>
                                 <th>Producto / Descripción</th>
                                 <th>Proveedor</th>
-                                <th class="text-right">Cant. a pedir</th>
+                                <th class="text-center">Cant. a pedir</th>
                                 <th class="text-right">Precio Prov.</th>
                                 <th class="text-right">IVA</th>
                                 <th class="text-right">Total</th>
@@ -148,6 +148,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][cantidad]"
                                                id="hdn-qty-<?= (int)$it['id'] ?>"
                                                value="<?= $qty ?>">
+                                        <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][unidad]"
+                                               value="<?= htmlspecialchars($it['unidad'] ?? '') ?>">
 
                                         <input type="hidden" name="items_data[<?= (int)$it['id'] ?>][iva]"
                                                value="<?= htmlspecialchars($it['iva']) ?>">
@@ -178,13 +180,13 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                                     <td>
                                         <?php if ($prov): ?>
                                         <span class="tag-code">
-                                            <?= htmlspecialchars($prov) ?>
+                                             <?= htmlspecialchars($prov) ?>
                                         </span>
                                         <?php else: ?>
                                         <span class="text-muted">—</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="text-right">
+                                    <td class="text-center">
                                         <input type="number"
                                                min="1"
                                                value="<?= $qty ?>"
@@ -192,6 +194,9 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                                                data-id="<?= (int)$it['id'] ?>"
                                                title="Cantidad a pedir"
                                                oninput="document.getElementById('hdn-qty-<?= (int)$it['id'] ?>').value=this.value; actualizarFila(this.closest('tr'))">
+                                        <?php if (!empty($it['unidad'])): ?>
+                                            <div style="font-size: 10px; color: #0d9488; font-weight: 600; margin-top: 2px; text-align: center;"><?= htmlspecialchars($it['unidad']) ?></div>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="text-right nowrap">
                                         <input type="number"

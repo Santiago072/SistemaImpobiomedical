@@ -284,6 +284,66 @@ class CotizacionController
         exit();
     }
 
+    // ── REORDENAR ÍTEM (Subir / Bajar o Drag & Drop vía AJAX) ─────────────────────
+    public function reordenarItem(): void
+    {
+        verificar_autenticacion();
+        verificar_rate_limit(60, 60, 'cotizacion_reordenar_item');
+
+        header('Content-Type: application/json');
+
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? $_POST['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
+            echo json_encode(['status' => 'error', 'message' => 'Token de seguridad inválido']);
+            exit();
+        }
+
+        $cotizacionId = (int)($_SESSION['cotizacion_id'] ?? 0);
+        if ($cotizacionId <= 0) {
+            echo json_encode(['status' => 'error', 'message' => 'No hay cotización activa']);
+            exit();
+        }
+
+        // Caso 1: Mover individual con flechas (arriba / abajo)
+        if (isset($_POST['id']) && isset($_POST['direccion'])) {
+            $itemId    = (int)$_POST['id'];
+            $direccion = sanitizar_entrada($_POST['direccion']); // 'arriba' o 'abajo'
+
+            if ($itemId <= 0 || !in_array($direccion, ['arriba', 'abajo'], true)) {
+                echo json_encode(['status' => 'error', 'message' => 'Parámetros de reordenamiento inválidos']);
+                exit();
+            }
+
+            $exito = $this->model->moverItem($itemId, $cotizacionId, $direccion);
+            if ($exito) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'No se pudo mover el ítem']);
+            }
+            exit();
+        }
+
+        // Caso 2: Drag & Drop (lista completa ordenada de IDs)
+        if (isset($_POST['orden_ids']) && is_array($_POST['orden_ids'])) {
+            $cleanIds = array_map('intval', array_filter($_POST['orden_ids'], 'is_numeric'));
+            if (empty($cleanIds)) {
+                echo json_encode(['status' => 'error', 'message' => 'Lista de IDs vacía']);
+                exit();
+            }
+
+            $exito = $this->model->actualizarOrdenLista($cotizacionId, $cleanIds);
+            if ($exito) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'No se pudo guardar el nuevo orden']);
+            }
+            exit();
+        }
+
+        echo json_encode(['status' => 'error', 'message' => 'Datos insuficientes para reordenar']);
+        exit();
+    }
+
     // ── ELIMINAR COTIZACIÓN (Solo Admin) ─────────────────────────────────────────
     public function eliminar(): void
     {
@@ -307,7 +367,22 @@ class CotizacionController
             exit();
         }
 
-        $this->model->eliminar((int)$id);
+        $cotId = (int)$id;
+
+        // Verificar si la cotización tiene órdenes de compra asociadas
+        $ordenesAsociadas = $this->model->obtenerOrdenesAsociadas($cotId);
+        if (!empty($ordenesAsociadas)) {
+            $numerosPo = array_map(function($o) {
+                return 'P.O. #' . (int)$o['numero_po'];
+            }, $ordenesAsociadas);
+            $textoPo = implode(', ', $numerosPo);
+
+            $_SESSION['flash_error'] = "No es posible eliminar esta cotización porque tiene órdenes de compra emitidas a compras ({$textoPo}). Para eliminar la cotización, primero debes anular o eliminar sus órdenes asociadas en el módulo de Órdenes de Compra.";
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
+
+        $this->model->eliminar($cotId);
         header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&deleted=1');
         exit();
     }

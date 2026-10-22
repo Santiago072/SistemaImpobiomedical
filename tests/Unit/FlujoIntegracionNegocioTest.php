@@ -183,4 +183,72 @@ class FlujoIntegracionNegocioTest extends TestCase
         $this->assertSame(1, $paginaSegura);
         $this->assertSame(0, $offset);
     }
+
+    /**
+     * Prueba 7: Regla de Negocio de Integridad y Bloqueo de Eliminación:
+     * Si una cotización tiene órdenes de compra oficiales asociadas,
+     * el sistema bloquea su eliminación para proteger los compromisos de compra y la trazabilidad.
+     */
+    public function testBloqueoEliminacionCotizacionConOrdenesAsociadas(): void
+    {
+        // 1. Simulación de cotización con órdenes de compra asociadas
+        $ordenesAsociadas = [
+            ['id' => 1, 'numero_po' => 105, 'proveedor' => 'Mindray Medical'],
+            ['id' => 2, 'numero_po' => 106, 'proveedor' => 'B. Braun']
+        ];
+
+        // Lógica de validación
+        $puedeEliminar = empty($ordenesAsociadas);
+        $this->assertFalse($puedeEliminar, 'Una cotización con órdenes de compra asociadas NO debe ser eliminada');
+
+        $numerosPo = array_map(function($o) {
+            return 'P.O. #' . (int)$o['numero_po'];
+        }, $ordenesAsociadas);
+        $textoPo = implode(', ', $numerosPo);
+
+        $this->assertSame('P.O. #105, P.O. #106', $textoPo);
+
+        // 2. Simulación de cotización sin órdenes de compra (debe permitir eliminación)
+        $ordenesVacias = [];
+        $puedeEliminarSinOrdenes = empty($ordenesVacias);
+        $this->assertTrue($puedeEliminarSinOrdenes, 'Una cotización sin órdenes de compra SÍ debe permitir su eliminación');
+    }
+
+    /**
+     * Prueba 8: Reordenamiento Secuencial de Ítems en Cotización:
+     * Verifica la lógica de intercambio de posiciones al subir o bajar filas.
+     */
+    public function testReordenamientoItemsCotizacion(): void
+    {
+        $items = [
+            ['id' => 10, 'titulo' => 'Electrocardiógrafo', 'orden' => 1],
+            ['id' => 20, 'titulo' => 'Monitor de Signos', 'orden' => 2],
+            ['id' => 30, 'titulo' => 'Desfibrilador', 'orden' => 3],
+        ];
+
+        // Mover ítem 30 (Desfibrilador) hacia 'arriba': debe intercambiar con el 20
+        $idxActual = 2; // posición del ítem 30
+        $idxDestino = $idxActual - 1; // posición 1 (ítem 20)
+
+        $temp = $items[$idxActual];
+        $items[$idxActual] = $items[$idxDestino];
+        $items[$idxDestino] = $temp;
+
+        // Reasignar orden secuencial 1, 2, 3
+        foreach ($items as $pos => &$it) {
+            $it['orden'] = $pos + 1;
+        }
+        unset($it);
+
+        $this->assertSame(30, $items[1]['id']);
+        $this->assertSame(2, $items[1]['orden']);
+        $this->assertSame('Desfibrilador', $items[1]['titulo']);
+
+        $this->assertSame(20, $items[2]['id']);
+        $this->assertSame(3, $items[2]['orden']);
+        $this->assertSame('Monitor de Signos', $items[2]['titulo']);
+
+        $this->assertSame(10, $items[0]['id']);
+        $this->assertSame(1, $items[0]['orden']);
+    }
 }

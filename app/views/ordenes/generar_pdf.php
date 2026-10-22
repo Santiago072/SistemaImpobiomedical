@@ -265,7 +265,12 @@ table { width:100%; border-collapse:collapse; }
 ?>
 <tr class="<?= $cls ?>">
   <td class="b tc vm" style="padding:7px 3px; font-size:8px; font-weight:bold;"><?= htmlspecialchars($codProv) ?></td>
-  <td class="b tc vm" style="padding:7px 2px; font-size:10.5px; font-weight:bold;"><?= $qty ?></td>
+  <td class="b tc vm" style="padding:7px 2px; font-size:10.5px; font-weight:bold;">
+    <?= $qty ?>
+    <?php if (!empty($it['unidad'])): ?>
+      <br><span style="font-size:7.5px; color:#1f3864; font-weight:bold;"><?= mb_strtoupper(htmlspecialchars($it['unidad'])) ?></span>
+    <?php endif; ?>
+  </td>
   <td class="b tc vm" style="padding:7px 8px; font-size:9px; font-weight:bold;" <?= $imgItem ? '' : 'colspan="2"' ?>>
     <?= mb_strtoupper(htmlspecialchars($it['titulo'])) ?>
   </td>

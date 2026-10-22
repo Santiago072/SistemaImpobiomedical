@@ -122,9 +122,24 @@ include dirname(__DIR__) . '/layout/menu.php';
                                 <label>Marca *</label>
                                 <input type="text" name="marca" value="<?= htmlspecialchars($datos['marca'] ?? '') ?>" required maxlength="100" placeholder="Ej: Philips, 3M...">
                             </div>
+                            <?php 
+                                $modActual = trim($datos['modelo'] ?? '');
+                                $esSinModActual = ($modActual === 'N/A' || $modActual === '-');
+                            ?>
                             <div class="imo-form-group">
-                                <label>Modelo *</label>
-                                <input type="text" name="modelo" value="<?= htmlspecialchars($datos['modelo'] ?? '') ?>" required maxlength="100" placeholder="Ej: Pro-X, Series 2000...">
+                                <label>Modelo <span id="reqModeloStar" style="color: #ef4444; <?= $esSinModActual ? 'display:none;' : '' ?>">*</span></label>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="text" name="modelo" id="inpModelo" required maxlength="100" 
+                                           placeholder="Ej: Pro-X, Series 2000..." 
+                                           style="flex: 1;"
+                                           data-prev-modelo="<?= htmlspecialchars($esSinModActual ? '' : $modActual) ?>"
+                                           value="<?= htmlspecialchars($esSinModActual ? 'N/A' : $modActual) ?>"
+                                           <?= $esSinModActual ? 'readonly style="background-color:#f1f5f9; color:#94a3b8;"' : '' ?>>
+                                    <label style="font-size: 11.5px; font-weight: 500; color: #475569; margin-bottom: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; padding: 7px 10px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; user-select: none;">
+                                        <input type="checkbox" name="sin_modelo" id="chkSinModelo" value="1" <?= $esSinModActual ? 'checked' : '' ?> onchange="toggleSinModelo(this.checked)" style="cursor: pointer; margin: 0;">
+                                        Sin modelo
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -134,9 +149,17 @@ include dirname(__DIR__) . '/layout/menu.php';
                         </div>
 
                         <div class="imo-form-row">
-                            <div class="imo-form-group">
-                                <label>Cantidad *</label>
-                                <input type="number" name="cantidad" id="inpCantidad" value="<?= intval($datos['cantidad']) ?>" min="1" required>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div class="imo-form-group">
+                                    <label>Cantidad *</label>
+                                    <input type="number" name="cantidad" id="inpCantidad" value="<?= intval($datos['cantidad']) ?>" min="1" required>
+                                </div>
+                                <div class="imo-form-group">
+                                    <label>Unidad de Medida</label>
+                                    <input type="text" name="unidad" id="inpUnidad" maxlength="50"
+                                           placeholder="Ej: Unidad, Caja..."
+                                           value="<?= htmlspecialchars($datos['unidad'] ?? '') ?>">
+                                </div>
                             </div>
                             <div class="imo-form-group">
                                 <label>Precio Unitario Final (sin IVA)
@@ -464,6 +487,29 @@ document.querySelector('form').addEventListener('submit', function(e) {
     }
     document.getElementById('hdnCalcOps').value = JSON.stringify(calcState);
 });
+
+function toggleSinModelo(sinModelo) {
+    const inp = document.getElementById('inpModelo');
+    const star = document.getElementById('reqModeloStar');
+    if (!inp) return;
+    if (sinModelo) {
+        if (inp.value && inp.value !== 'N/A') {
+            inp.dataset.prevModelo = inp.value;
+        }
+        inp.value = 'N/A';
+        inp.readOnly = true;
+        inp.style.backgroundColor = '#f1f5f9';
+        inp.style.color = '#94a3b8';
+        if (star) star.style.display = 'none';
+    } else {
+        const prev = inp.dataset.prevModelo || '';
+        inp.value = (prev !== 'N/A') ? prev : '';
+        inp.readOnly = false;
+        inp.style.backgroundColor = '';
+        inp.style.color = '';
+        if (star) star.style.display = 'inline';
+    }
+}
 </script>
 
 <?php include dirname(__DIR__) . '/layout/footer.php'; ?>

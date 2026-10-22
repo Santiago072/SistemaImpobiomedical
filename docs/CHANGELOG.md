@@ -4,6 +4,50 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.6.0] - 2026-10-21
+### Agregado
+- **Campo de Unidad de Medida en Ítems de Cotización y Órdenes de Compra:**
+  - Nueva columna `unidad VARCHAR(50) NOT NULL DEFAULT ''` agregada a `cotizacion_items` y `orden_compra_items`, reflejada en `config/bd.sql` y `docs/ARQUITECTURA_Y_COMPONENTES.md`.
+  - Campo de texto libre limpio al lado de **Cantidad** (subgrid 50% / 50%) con alineación estética frente a **Precio Unitario** en creación y edición de ítems (`crear.php`, `editar_item.php`).
+  - Alineación centrada de la columna **Cant.** y el texto de la unidad en la tabla de ítems (`crear.php`), tabla resumen en finalización (`finalizar.php`) y tabla de selección para órdenes de compra (`seleccionar_items.php`).
+  - Traslado automático y persistente del campo `unidad` desde la cotización hacia los ítems de la Orden de Compra (`orden_compra_items`).
+  - Reflejo comercial en la columna `CANT.` del PDF oficial de Cotización (`generar_pdf.php`) y en el PDF de Orden de Compra (`ordenes/generar_pdf.php`), mostrando la unidad debajo del número solo cuando fue digitada explícitamente.
+  - Compatibilidad total con cotizaciones históricas: si no se especificó unidad, los PDFs y tablas muestran limpiamente solo la cifra numérica.
+  - Exportación a Excel (`exportar_excel.php`) con sanitización de fórmulas combinando cantidad y unidad.
+
+- **Soporte Ágil para Productos Sin Modelo ("No Aplica"):**
+  - Checkbox reactivo `[✓] Sin modelo` junto al campo de Modelo en `crear.php` y `editar_item.php`.
+  - Al marcarse, el campo se completa con `N/A`, pasa a solo lectura con fondo atenuado y oculta el asterisco de obligatoriedad, permitiendo registrar medicamentos, insumos o accesorios sin trabas.
+  - Al desmarcarse, restaura inmediatamente el texto digitado previamente mediante atributo temporal (`data-prev-modelo`) sin pérdida de información.
+  - En las tablas, PDFs y vistas comerciales, se omite el modelo si es `N/A`, mostrando únicamente la marca de forma limpia.
+
+---
+
+## [v3.5.9] - 2026-10-21
+### Agregado
+- **Reordenamiento Interactivo de Ítems en Cotizaciones:**
+  - Adición de la columna `orden INT NOT NULL DEFAULT 0` en `cotizacion_items` y migración SQL.
+  - Botones reactivos de desplazamiento (⬆️ Subir / ⬇️ Bajar) en la tabla de ítems de cotización (`crear.php`), con intercambio visual fluido en el DOM y actualización automática del consecutivo `#`.
+  - Endpoint seguro `reordenar_item` en `CotizacionController.php` conectado al router central `index.php`, con persistencia transaccional atómica en `CotizacionModel::moverItem()` y `actualizarOrdenLista()`.
+  - El PDF formal para clientes y la Hoja de Respaldo interna respetan automáticamente el nuevo orden posicional definido por el asesor (`ORDER BY orden ASC, id ASC`).
+
+### Mejorado y Corregido
+- **Protección de Integridad y Bloqueo de Eliminación de Cotizaciones (Opción RESTRICT):**
+  - Implementado `CotizacionModel::obtenerOrdenesAsociadas()` para detectar si una cotización ya generó órdenes de compra oficiales con proveedores.
+  - Bloqueo preventivo en `CotizacionController::eliminar()` si existen órdenes asociadas, evitando la desaparición destructiva e involuntaria de compras y mostrando una alerta institucional con el listado de números P.O. afectados.
+  - Actualización de la clave foránea en `config/bd.sql` a `ON DELETE RESTRICT`.
+- **Blindaje en la Pantalla de Finalización de Cotizaciones (`finalizar.php`):**
+  - Validación previa de formulario nativo (`checkValidity()`) para impedir que el botón cambie a *"Guardando..."* si faltan campos obligatorios.
+  - Incorporado temporizador de seguridad automático (Timeout de 8 segundos) que rehabilita el botón si la sesión expiró por inactividad o la red demoró, guiando al usuario sin congelar la interfaz.
+  - Bloqueo de dobles clics accidentales durante el procesamiento.
+
+### Pruebas y Calidad (QA)
+- **Expansión de la Suite de Pruebas Automatizadas a 41 Pruebas (173 Aserciones, 100% OK):**
+  - Añadida `FlujoIntegracionNegocioTest::testBloqueoEliminacionCotizacionConOrdenesAsociadas` (validación de regla de negocio de borrado).
+  - Añadida `FlujoIntegracionNegocioTest::testReordenamientoItemsCotizacion` (verificación de intercambio secuencial de posiciones).
+
+---
+
 ## [v3.5.8] - 2026-10-20
 ### Agregado
 - **Soporte para Saldo a Favor en Órdenes de Compra:**

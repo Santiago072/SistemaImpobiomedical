@@ -167,7 +167,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                     ?>
                     <div class="tabla-responsive">
                         <table class="mod-table">
-                            <thead><tr><th>Producto</th><th>Cant.</th><th>Total</th></tr></thead>
+                            <thead><tr><th>Producto</th><th style="text-align: center;">Cant.</th><th>Total</th></tr></thead>
                             <tbody>
                             <?php foreach ($items as $it):
                                 $pu = (float)$it['precio']; $qty = (int)$it['cantidad'];
@@ -177,7 +177,12 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             ?>
                                 <tr>
                                     <td><?= htmlspecialchars(mb_strimwidth($it['titulo'], 0, 35, '…')) ?></td>
-                                    <td><?= $qty ?></td>
+                                    <td style="text-align: center;">
+                                        <strong><?= $qty ?></strong>
+                                        <?php if (!empty($it['unidad'])): ?>
+                                            <span style="font-size: 11px; color: #0d9488; font-weight: 600; display: block; text-align: center;"><?= htmlspecialchars($it['unidad']) ?></span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td>$<?= number_format($sub, 0, ',', '.') ?></td>
                                 </tr>
                             <?php endforeach; ?>
@@ -265,13 +270,50 @@ if (btnLimpiar) {
 
 const formFinalizar = document.getElementById('formFinalizar');
 if (formFinalizar) {
+    let formEnviado = false;
     formFinalizar.addEventListener('submit', function(e) {
+        // 1. Si el formulario no es válido según los campos requeridos, no bloquear el botón
+        if (!formFinalizar.checkValidity()) {
+            formFinalizar.reportValidity();
+            return;
+        }
+
+        // 2. Prevenir dobles clics accidentales
+        if (formEnviado) {
+            e.preventDefault();
+            return false;
+        }
+        formEnviado = true;
+
         const btn = document.getElementById('btnSubmitFinalizar');
         if (btn) {
+            const textoOriginal = btn.innerHTML;
             btn.disabled = true;
             btn.style.opacity = '0.7';
             btn.style.cursor = 'not-allowed';
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+
+            // 3. Temporizador de seguridad (8 segundos): Si el servidor tarda o la sesión expiró, rehabilitar el botón
+            setTimeout(function() {
+                if (btn && btn.disabled) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                    btn.innerHTML = textoOriginal;
+                    formEnviado = false;
+                    
+                    // Mostrar alerta de seguridad si no hubo redirección
+                    let alertDiv = document.getElementById('alertaTimeoutSubmit');
+                    if (!alertDiv) {
+                        alertDiv = document.createElement('div');
+                        alertDiv.id = 'alertaTimeoutSubmit';
+                        alertDiv.className = 'mod-alert mod-alert-err mb-16';
+                        alertDiv.style.marginTop = '12px';
+                        alertDiv.innerHTML = '<i class="bi bi-clock-history"></i> La operación está tardando más de lo esperado o la sesión expiró por inactividad. Puedes volver a presionar el botón o recargar con <strong>F5</strong>.';
+                        btn.parentNode.insertBefore(alertDiv, btn.nextSibling);
+                    }
+                }
+            }, 8000);
         }
     });
 }

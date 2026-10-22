@@ -35,6 +35,8 @@ class ItemCotizacionService
         $titulo              = mb_substr(sanitizar_entrada($postData['titulo'] ?? ''), 0, 255);
         $descripcion         = mb_substr(sanitizar_entrada($postData['descripcion'] ?? ''), 0, 5000);
         $cantidad            = max(1, (int)($postData['cantidad'] ?? 1));
+        $unidad_raw          = trim($postData['unidad'] ?? '');
+        $unidad              = !empty($unidad_raw) ? mb_substr(sanitizar_entrada($unidad_raw), 0, 50) : '';
         $precio              = (float)($postData['precio'] ?? 0);
         $iva                 = mb_substr(sanitizar_entrada($postData['iva'] ?? 'si'), 0, 5);
         $porcentaje_iva      = (float)($postData['porcentaje_iva'] ?? 19);
@@ -42,7 +44,12 @@ class ItemCotizacionService
         $categoria           = mb_substr(sanitizar_entrada($postData['categoria'] ?? ''), 0, 100);
         $codigo_producto     = mb_substr(sanitizar_entrada($postData['codigo_producto'] ?? ''), 0, 60);
         $marca               = mb_substr(sanitizar_entrada($postData['marca'] ?? ''), 0, 100);
-        $modelo              = mb_substr(sanitizar_entrada($postData['modelo'] ?? ''), 0, 100);
+        $sin_modelo          = !empty($postData['sin_modelo']);
+        $modelo_raw          = $sin_modelo ? 'N/A' : ($postData['modelo'] ?? '');
+        $modelo              = mb_substr(sanitizar_entrada($modelo_raw), 0, 100);
+        if ($sin_modelo && empty($modelo)) {
+            $modelo = 'N/A';
+        }
         $precio_proveedor    = (float)($postData['precio_proveedor'] ?? 0);
         $porcentaje_utilidad = (float)($postData['porcentaje_utilidad'] ?? 0);
         $flete               = (float)($postData['flete'] ?? 0);
@@ -87,7 +94,7 @@ class ItemCotizacionService
             $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
             $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
             $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops,
-            $proveedor_id, $proveedor_nit, $marca, $modelo
+            $proveedor_id, $proveedor_nit, $marca, $modelo, $unidad
         );
 
         if (!$inserted) {
@@ -158,6 +165,8 @@ class ItemCotizacionService
         $titulo              = mb_substr(sanitizar_entrada($postData['titulo'] ?? ''), 0, 255);
         $descripcion         = mb_substr(sanitizar_entrada($postData['descripcion'] ?? ''), 0, 5000);
         $cantidad            = max(1, (int)($postData['cantidad'] ?? 1));
+        $unidad_raw          = trim($postData['unidad'] ?? '');
+        $unidad              = !empty($unidad_raw) ? mb_substr(sanitizar_entrada($unidad_raw), 0, 50) : '';
         $precio              = (float)($postData['precio'] ?? 0);
         $iva                 = mb_substr(sanitizar_entrada($postData['iva'] ?? 'si'), 0, 5);
         $porcentaje_iva      = (float)($postData['porcentaje_iva'] ?? 19);
@@ -165,7 +174,12 @@ class ItemCotizacionService
         $categoria           = mb_substr(sanitizar_entrada($postData['categoria'] ?? ''), 0, 100);
         $codigo_producto     = mb_substr(sanitizar_entrada($postData['codigo_producto'] ?? ''), 0, 60);
         $marca               = mb_substr(sanitizar_entrada($postData['marca'] ?? ''), 0, 100);
-        $modelo              = mb_substr(sanitizar_entrada($postData['modelo'] ?? ''), 0, 100);
+        $sin_modelo          = !empty($postData['sin_modelo']);
+        $modelo_raw          = $sin_modelo ? 'N/A' : ($postData['modelo'] ?? '');
+        $modelo              = mb_substr(sanitizar_entrada($modelo_raw), 0, 100);
+        if ($sin_modelo && empty($modelo)) {
+            $modelo = 'N/A';
+        }
         $precio_proveedor    = (float)($postData['precio_proveedor'] ?? 0);
         $porcentaje_utilidad = (float)($postData['porcentaje_utilidad'] ?? 0);
         $flete               = (float)($postData['flete'] ?? 0);
@@ -198,7 +212,7 @@ class ItemCotizacionService
             $descripcion, $cantidad, $precio, $iva, $porcentaje_iva, $tiempo_entrega,
             $categoria, $codigo_producto, $precio_proveedor, $porcentaje_utilidad,
             $flete, $calibracion, $estampillas, $proveedor, $codigo_proveedor, $calc_ops,
-            $proveedor_id, $proveedor_nit, $marca, $modelo
+            $proveedor_id, $proveedor_nit, $marca, $modelo, $unidad
         );
 
         // Sincronizar catálogo general de productos al editar

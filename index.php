@@ -454,6 +454,9 @@ if ($module === 'cotizaciones') {
         case 'eliminar_item':
             $ctrl->eliminarItem();
             break;
+        case 'reordenar_item':
+            $ctrl->reordenarItem();
+            break;
         case 'generar_pdf':
             include __DIR__ . '/app/views/cotizaciones/generar_pdf.php';
             break;

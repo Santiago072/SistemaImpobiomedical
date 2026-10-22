@@ -198,7 +198,9 @@ header('Expires: 0');
         ?>
         <tr class="<?= $rowCls ?>">
             <td class="text-center"><?= $i ?></td>
-            <td class="text-center" style="font-weight: bold;"><?= $qty ?></td>
+            <td class="text-center" style="font-weight: bold;">
+                <?= $qty ?><?= (!empty($it['unidad'])) ? ' ' . htmlspecialchars(sanitizar_formula_excel($it['unidad'])) : '' ?>
+            </td>
             <td class="text-center"><?= htmlspecialchars(sanitizar_formula_excel($it['codigo_producto'] ?? $it['codigo_proveedor'] ?? '-')) ?></td>
             <td>
                 <strong><?= htmlspecialchars(mb_strtoupper(sanitizar_formula_excel($it['titulo']))) ?></strong>

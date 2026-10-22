@@ -266,17 +266,32 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                        value="<?= htmlspecialchars($producto['marca'] ?? '') ?>">
                             </div>
                             <div class="imo-form-group">
-                                <label>Modelo *</label>
-                                <input type="text" name="modelo" id="inpModelo" required maxlength="100"
-                                       placeholder="Ej: Series 2000, Pro-X..."
-                                       value="<?= htmlspecialchars($producto['modelo'] ?? '') ?>">
+                                <label>Modelo <span id="reqModeloStar" style="color: #ef4444;">*</span></label>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="text" name="modelo" id="inpModelo" required maxlength="100"
+                                           placeholder="Ej: Series 2000, Pro-X..."
+                                           style="flex: 1;"
+                                           value="<?= htmlspecialchars($producto['modelo'] ?? '') ?>">
+                                    <label style="font-size: 11.5px; font-weight: 500; color: #475569; margin-bottom: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; padding: 7px 10px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; user-select: none;">
+                                        <input type="checkbox" name="sin_modelo" id="chkSinModelo" value="1" onchange="toggleSinModelo(this.checked)" style="cursor: pointer; margin: 0;">
+                                        Sin modelo
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
                         <div class="imo-form-row">
-                            <div class="imo-form-group">
-                                <label>Cantidad *</label>
-                                <input type="number" name="cantidad" id="inpCantidad" min="1" value="<?= $producto['cantidad'] ?? 1 ?>" required>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div class="imo-form-group">
+                                    <label>Cantidad *</label>
+                                    <input type="number" name="cantidad" id="inpCantidad" min="1" value="<?= $producto['cantidad'] ?? 1 ?>" required>
+                                </div>
+                                <div class="imo-form-group">
+                                    <label>Unidad de Medida</label>
+                                    <input type="text" name="unidad" id="inpUnidad" maxlength="50"
+                                           placeholder="Ej: Unidad, Caja..."
+                                           value="<?= htmlspecialchars($producto['unidad'] ?? '') ?>">
+                                </div>
                             </div>
                             <div class="imo-form-group">
                                 <label>Precio Unitario (sin IVA)
@@ -355,47 +370,87 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                         <table class="mod-table">
                             <thead>
                                 <tr>
+                                    <th style="width: 44px; text-align: center;">#</th>
                                     <th>Producto</th>
-                                    <th>Cant.</th>
+                                    <th style="text-align: center;">Cant.</th>
                                     <th>Precio</th>
                                     <th>IVA</th>
                                     <th>Subtotal</th>
                                     <th>Entrega</th>
-                                    <th></th>
+                                    <th style="text-align: center;">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                            <?php $totalCot = 0; foreach ($items as $it):
+                            <tbody id="tbodyCotizacionItems">
+                            <?php $totalCot = 0; $numItems = count($items); foreach ($items as $idx => $it):
                                 $pu  = (float)$it['precio'];
                                 $qty = (int)$it['cantidad'];
                                 $pct = (float)($it['porcentaje_iva'] ?? 19);
                                 $ivaAmt = ($it['iva'] === 'si') ? $pu * $qty * ($pct / 100) : 0;
                                 $sub = $pu * $qty + $ivaAmt;
                                 $totalCot += $sub;
+                                $esPrimero = ($idx === 0);
+                                $esUltimo  = ($idx === $numItems - 1);
                             ?>
-                                <tr>
+                                <tr data-item-id="<?= (int)$it['id'] ?>" class="fila-cotizacion-item">
+                                    <td style="text-align: center; color: #64748b; font-weight: 700; font-size: 12px;">
+                                        <?= $idx + 1 ?>
+                                    </td>
                                     <td>
                                         <?php if (!empty($it['foto'])): ?>
                                         <img src="<?= $basePath ?>uploads/<?= htmlspecialchars($it['foto']) ?>"
                                              class="item-thumb-img">
                                         <?php endif; ?>
                                         <?= htmlspecialchars(mb_strimwidth($it['titulo'], 0, 40, '…')) ?>
-                                        <?php if (!empty($it['marca']) || !empty($it['modelo'])): ?>
+                                        <?php 
+                                            $marcaShow = trim($it['marca'] ?? '');
+                                            $modeloShow = trim($it['modelo'] ?? '');
+                                            $esSinModelo = ($modeloShow === 'N/A' || $modeloShow === '-' || empty($modeloShow));
+                                            $subTexto = '';
+                                            if (!empty($marcaShow) && !$esSinModelo) {
+                                                $subTexto = $marcaShow . ' · ' . $modeloShow;
+                                            } elseif (!empty($marcaShow)) {
+                                                $subTexto = $marcaShow;
+                                            } elseif (!$esSinModelo) {
+                                                $subTexto = $modeloShow;
+                                            }
+                                        ?>
+                                        <?php if (!empty($subTexto)): ?>
                                             <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
-                                                <?= htmlspecialchars(trim(($it['marca'] ?? '') . ' ' . ($it['modelo'] ?? ''))) ?>
+                                                <?= htmlspecialchars($subTexto) ?>
                                             </div>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= $qty ?></td>
+                                    <td style="text-align: center;">
+                                        <div style="font-weight: 700;"><?= $qty ?></div>
+                                        <?php if (!empty($it['unidad'])): ?>
+                                            <div style="font-size: 11px; color: #0d9488; font-weight: 600; text-align: center;"><?= htmlspecialchars($it['unidad']) ?></div>
+                                        <?php endif; ?>
+                                    </td>
                                     <td>$<?= number_format($pu, 0, ',', '.') ?></td>
                                     <td><?= $it['iva'] === 'si' ? $pct . '%' : 'No' ?></td>
                                     <td><strong>$<?= number_format($sub, 0, ',', '.') ?></strong></td>
                                     <td class="font-11"><?= htmlspecialchars($it['tiempo_entrega'] ?? '') ?></td>
                                     <td>
-                                        <div class="mod-actions">
+                                        <div class="mod-actions" style="display: flex; gap: 4px; justify-content: center; align-items: center;">
+                                            <!-- Botones para reordenar -->
+                                            <button type="button" 
+                                                    onclick="moverFilaItem(<?= (int)$it['id'] ?>, 'arriba')" 
+                                                    class="mod-btn-move" 
+                                                    title="Mover arriba"
+                                                    <?= $esPrimero ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : '' ?>>
+                                                <i class="bi bi-arrow-up"></i>
+                                            </button>
+                                            <button type="button" 
+                                                    onclick="moverFilaItem(<?= (int)$it['id'] ?>, 'abajo')" 
+                                                    class="mod-btn-move" 
+                                                    title="Mover abajo"
+                                                    <?= $esUltimo ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : '' ?>>
+                                                <i class="bi bi-arrow-down"></i>
+                                            </button>
+
                                             <a href="<?= $basePath ?>?module=cotizaciones&action=editar_item&id=<?= $it['id'] ?>"
                                                class="mod-btn-edit" title="Editar"><i class="bi bi-pencil-fill"></i></a>
-                                            <button onclick="eliminarItem(<?= $it['id'] ?>)"
+                                            <button type="button" onclick="eliminarItem(<?= $it['id'] ?>)"
                                                     class="mod-btn-del" title="Eliminar"><i class="bi bi-trash-fill"></i></button>
                                         </div>
                                     </td>
@@ -404,7 +459,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="4" class="text-right"><strong>TOTAL ESTIMADO:</strong></td>
+                                    <td colspan="5" class="text-right"><strong>TOTAL ESTIMADO:</strong></td>
                                     <td colspan="3"><strong class="total-highlight">$<?= number_format($totalCot, 0, ',', '.') ?></strong></td>
                                 </tr>
                             </tfoot>
@@ -515,7 +570,16 @@ function autocompletar(p) {
         document.getElementById('inpMarca').value      = p.marca || '';
     }
     if (document.getElementById('inpModelo')) {
-        document.getElementById('inpModelo').value     = p.modelo || '';
+        const modVal = p.modelo || '';
+        const esSinMod = (modVal === 'N/A' || modVal === '-');
+        document.getElementById('chkSinModelo').checked = esSinMod;
+        toggleSinModelo(esSinMod);
+        if (!esSinMod) {
+            document.getElementById('inpModelo').value = modVal;
+        }
+    }
+    if (document.getElementById('inpUnidad')) {
+        document.getElementById('inpUnidad').value     = p.unidad || '';
     }
     // Preservar código de proveedor si el usuario ya lo escribió en la calculadora
     const inpCodProv = document.getElementById('inpCodigoProveedor');
@@ -530,6 +594,29 @@ function autocompletar(p) {
     document.getElementById('busquedaProducto').value = '';
     toggleIva((p.iva || 'si').toLowerCase());
     calcularPreview();
+}
+
+function toggleSinModelo(sinModelo) {
+    const inp = document.getElementById('inpModelo');
+    const star = document.getElementById('reqModeloStar');
+    if (!inp) return;
+    if (sinModelo) {
+        if (inp.value && inp.value !== 'N/A') {
+            inp.dataset.prevModelo = inp.value;
+        }
+        inp.value = 'N/A';
+        inp.readOnly = true;
+        inp.style.backgroundColor = '#f1f5f9';
+        inp.style.color = '#94a3b8';
+        if (star) star.style.display = 'none';
+    } else {
+        const prev = inp.dataset.prevModelo || '';
+        inp.value = (prev !== 'N/A') ? prev : '';
+        inp.readOnly = false;
+        inp.style.backgroundColor = '';
+        inp.style.color = '';
+        if (star) star.style.display = 'inline';
+    }
 }
 
 // ── IVA preview ───────────────────────────────────────────────────────────────
@@ -692,7 +779,10 @@ function limpiarFormulario() {
     document.getElementById('inpCategoria').value = '';
     document.getElementById('inpCodigoProducto').value = '';
     if (document.getElementById('inpMarca')) document.getElementById('inpMarca').value = '';
+    if (document.getElementById('chkSinModelo')) document.getElementById('chkSinModelo').checked = false;
+    toggleSinModelo(false);
     if (document.getElementById('inpModelo')) document.getElementById('inpModelo').value = '';
+    if (document.getElementById('inpUnidad')) document.getElementById('inpUnidad').value = '';
     
     document.getElementById('inpPrecioProveedor').value = '';
     document.getElementById('inpProveedor').value = '';
@@ -765,6 +855,93 @@ if (inpProv && listaProv) {
                     console.error('Error buscando proveedores:', err);
                 });
         }, 250);
+    });
+}
+
+// ── Reordenar ítem (Subir / Bajar con flechas fluidas en vivo) ───────────────
+function moverFilaItem(id, direccion) {
+    const fila = document.querySelector(`tr[data-item-id="${id}"]`);
+    if (!fila) return;
+
+    const tbody = document.getElementById('tbodyCotizacionItems');
+    if (!tbody) return;
+
+    const filaDestino = (direccion === 'arriba') ? fila.previousElementSibling : fila.nextElementSibling;
+    if (!filaDestino || !filaDestino.classList.contains('fila-cotizacion-item')) {
+        return; // Ya está al tope o al final
+    }
+
+    // 1. Intercambio visual inmediato en el DOM sin recargas ni alerts
+    if (direccion === 'arriba') {
+        tbody.insertBefore(fila, filaDestino);
+    } else {
+        tbody.insertBefore(filaDestino, fila);
+    }
+
+    // 2. Actualizar numeración visual (# 1, 2, 3...) y estado de los botones
+    actualizarNumerosYBotonesReorden();
+
+    // 3. Sincronizar en segundo plano con el servidor
+    const formData = new FormData();
+    formData.append('csrf_token', CSRF);
+    formData.append('id', id);
+    formData.append('direccion', direccion);
+
+    fetch(BASE + '?module=cotizaciones&action=reordenar_item', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-Token': CSRF
+        },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.status !== 'success') {
+            console.error('Error al sincronizar orden:', res.message);
+        }
+    })
+    .catch(err => {
+        console.error('Error al comunicar reordenamiento:', err);
+    });
+}
+
+function actualizarNumerosYBotonesReorden() {
+    const filas = document.querySelectorAll('#tbodyCotizacionItems tr.fila-cotizacion-item');
+    const total = filas.length;
+
+    filas.forEach((tr, index) => {
+        // Actualizar número #
+        const tdNum = tr.querySelector('td:first-child');
+        if (tdNum) tdNum.textContent = index + 1;
+
+        // Actualizar estado de las flechas (arriba / abajo)
+        const btnUp   = tr.querySelector('.mod-btn-move[title="Mover arriba"]');
+        const btnDown = tr.querySelector('.mod-btn-move[title="Mover abajo"]');
+
+        if (btnUp) {
+            if (index === 0) {
+                btnUp.disabled = true;
+                btnUp.style.opacity = '0.3';
+                btnUp.style.cursor = 'not-allowed';
+            } else {
+                btnUp.disabled = false;
+                btnUp.style.opacity = '1';
+                btnUp.style.cursor = 'pointer';
+            }
+        }
+
+        if (btnDown) {
+            if (index === total - 1) {
+                btnDown.disabled = true;
+                btnDown.style.opacity = '0.3';
+                btnDown.style.cursor = 'not-allowed';
+            } else {
+                btnDown.disabled = false;
+                btnDown.style.opacity = '1';
+                btnDown.style.cursor = 'pointer';
+            }
+        }
     });
 }
 

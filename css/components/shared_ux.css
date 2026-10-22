@@ -156,11 +156,13 @@
 .nit-text { color: #0f766e; font-family: monospace; font-size: 13.5px; font-weight: 700; }
 .mono-text { font-family: monospace; }
 .sub-text { font-size: 12px; color: #64748b; }
-.mod-btn-edit, .mod-btn-del { width: 34px; height: 34px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; transition: all .2s; }
+.mod-btn-edit, .mod-btn-del, .mod-btn-move { width: 34px; height: 34px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; transition: all .2s; }
 .mod-btn-edit { background: #e0f2fe; color: #0284c7; }
 .mod-btn-edit:hover { background: #0284c7; color: #fff; }
 .mod-btn-del { background: #fee2e2; color: #dc2626; }
 .mod-btn-del:hover { background: #dc2626; color: #fff; }
+.mod-btn-move { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.mod-btn-move:hover:not(:disabled) { background: #10757e; color: #ffffff; border-color: #10757e; }
 
 /* Items del buscador predictivo de proveedores */
 .prov-search-item { padding: 9px 14px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s; }

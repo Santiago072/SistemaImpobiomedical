@@ -283,6 +283,7 @@ class OrdenCompraController
                 $titulo          = mb_substr(sanitizar_entrada($d['titulo'] ?? ''), 0, 255);
                 $descripcion     = mb_substr(sanitizar_entrada($d['descripcion'] ?? ''), 0, 2000);
                 $cantidad        = max(1, (int)($d['cantidad'] ?? 1));
+                $unidad          = mb_substr(sanitizar_entrada($d['unidad'] ?? ''), 0, 50);
                 $precioUnit      = (float)($d['precio'] ?? 0);
                 $ivaItem         = sanitizar_entrada($d['iva'] ?? 'si');
                 $pctIva          = (float)($d['porcentaje_iva'] ?? 19);
@@ -290,7 +291,7 @@ class OrdenCompraController
                 $this->model->insertarItem(
                     $ordenId, $itemId, $codigoProveedor,
                     $titulo, $descripcion, $cantidad,
-                    $precioUnit, $ivaItem, $pctIva
+                    $precioUnit, $ivaItem, $pctIva, $unidad
                 );
             }
 
@@ -444,6 +445,7 @@ class OrdenCompraController
             $codigoProveedor = mb_substr(sanitizar_entrada($it['codigo_proveedor'] ?? ''), 0, 60);
             $descripcion     = mb_substr(sanitizar_entrada($it['descripcion'] ?? ''), 0, 2000);
             $cantidad        = max(1, (int)($it['cantidad'] ?? 1));
+            $unidad          = mb_substr(sanitizar_entrada($it['unidad'] ?? ''), 0, 50);
             $precioUnit      = max(0, (float)($it['precio'] ?? 0));
             $ivaItem         = sanitizar_entrada($it['iva'] ?? 'si');
             $pctIva          = $ivaItem === 'si' ? 19.00 : 0.00;
@@ -451,7 +453,7 @@ class OrdenCompraController
             $this->model->insertarItem(
                 $ordenId, null, $codigoProveedor,
                 $titulo, $descripcion, $cantidad,
-                $precioUnit, $ivaItem, $pctIva
+                $precioUnit, $ivaItem, $pctIva, $unidad
             );
         }
 

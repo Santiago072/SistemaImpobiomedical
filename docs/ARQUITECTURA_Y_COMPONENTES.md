@@ -367,12 +367,14 @@ erDiagram
     cotizacion_items {
         int id PK
         int cotizacion_id FK
+        int orden
         int producto_id FK
         int proveedor_id FK
         varchar titulo
         varchar foto
         text descripcion
         int cantidad
+        varchar unidad
         decimal precio
         enum iva "si, no"
         decimal porcentaje_iva
@@ -429,6 +431,7 @@ erDiagram
         varchar titulo
         text descripcion
         int cantidad
+        varchar unidad
         decimal precio_unit
         enum iva "si, no"
         decimal porcentaje_iva
@@ -640,7 +643,7 @@ El sistema utiliza la biblioteca **DomPDF** optimizada para el entorno de produc
 
 ## 12. Suite de Pruebas Automatizadas (PHPUnit)
 
-El proyecto cuenta con una suite completa de **39 pruebas unitarias y de integración** (162 aserciones, 100% de éxito) configurada en `phpunit.xml`:
+El proyecto cuenta con una suite completa de **41 pruebas unitarias y de integración** (173 aserciones, 100% de éxito) configurada en `phpunit.xml`:
 
 ```bash
 # Ejecutar todas las pruebas unitarias e integración

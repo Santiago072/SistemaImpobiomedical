@@ -346,22 +346,23 @@ class OrdenCompraModel
     }
 
     public function insertarItem(
-        int    $ordenId,
-        ?int   $cotizacionItemId,
-        string $codigoProveedor,
-        string $titulo,
-        string $descripcion,
-        int    $cantidad,
-        float  $precioUnit,
-        string $iva,
-        float  $porcentajeIva
+        int     $ordenId,
+        ?int    $cotizacionItemId,
+        string  $codigoProveedor,
+        string  $titulo,
+        string  $descripcion,
+        int     $cantidad,
+        float   $precioUnit,
+        string  $iva,
+        float   $porcentajeIva,
+        ?string $unidad = ''
     ): bool {
         $total = $precioUnit * $cantidad;
         $stmt  = $this->db->prepare(
             "INSERT INTO orden_compra_items
              (orden_id, cotizacion_item_id, codigo_proveedor, titulo, descripcion,
-              cantidad, precio_unit, iva, porcentaje_iva, total)
-             VALUES (:oid, :ciid, :cprov, :tit, :desc, :cant, :prec, :iva, :porciva, :total)"
+              cantidad, unidad, precio_unit, iva, porcentaje_iva, total)
+             VALUES (:oid, :ciid, :cprov, :tit, :desc, :cant, :uni, :prec, :iva, :porciva, :total)"
         );
         return $stmt->execute([
             ':oid'    => $ordenId,
@@ -370,6 +371,7 @@ class OrdenCompraModel
             ':tit'    => $titulo,
             ':desc'   => $descripcion,
             ':cant'   => $cantidad,
+            ':uni'    => trim($unidad ?? ''),
             ':prec'   => $precioUnit,
             ':iva'    => $iva,
             ':porciva'=> $porcentajeIva,
