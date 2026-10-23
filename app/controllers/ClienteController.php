@@ -83,12 +83,23 @@ class ClienteController
             return compact('mensajeError', 'csrf_token');
         }
 
-        if ($this->model->crear($nombre, $nit, $departamento, $municipio, $direccion, $nombre_contacto, $telefono, $correo)) {
-            header('Location: ' . BASE_URL . '?module=clientes&created=1');
-            exit();
+        try {
+            if ($this->model->crear($nombre, $nit, $departamento, $municipio, $direccion, $nombre_contacto, $telefono, $correo)) {
+                header('Location: ' . BASE_URL . '?module=clientes&created=1');
+                exit();
+            }
+            $mensajeError = 'Error al crear el cliente.';
+        } catch (\PDOException $e) {
+            error_log('Error PDO creando cliente: ' . $e->getMessage());
+            if ($e->getCode() === '23000' || str_contains($e->getMessage(), 'Duplicate entry')) {
+                $mensajeError = "El NIT/CC '{$nit}' ya se encuentra registrado para otro cliente.";
+            } else {
+                $mensajeError = 'No fue posible registrar el cliente debido a un problema con los datos.';
+            }
+        } catch (\Throwable $e) {
+            error_log('Error creando cliente: ' . $e->getMessage());
+            $mensajeError = 'Ocurrió un error inesperado al registrar el cliente.';
         }
-
-        $mensajeError = 'Error al crear el cliente';
         return compact('mensajeError', 'csrf_token');
     }
 
@@ -149,12 +160,23 @@ class ClienteController
             return compact('cliente', 'mensajeError', 'csrf_token');
         }
 
-        if ($this->model->actualizar($id, $nombre, $nit, $departamento, $municipio, $direccion, $nombre_contacto, $telefono, $correo, $estado)) {
-            header('Location: ' . BASE_URL . '?module=clientes&updated=1');
-            exit();
+        try {
+            if ($this->model->actualizar($id, $nombre, $nit, $departamento, $municipio, $direccion, $nombre_contacto, $telefono, $correo, $estado)) {
+                header('Location: ' . BASE_URL . '?module=clientes&updated=1');
+                exit();
+            }
+            $mensajeError = 'Error al actualizar el cliente.';
+        } catch (\PDOException $e) {
+            error_log('Error PDO actualizando cliente: ' . $e->getMessage());
+            if ($e->getCode() === '23000' || str_contains($e->getMessage(), 'Duplicate entry')) {
+                $mensajeError = "El NIT/CC '{$nit}' ya pertenece a otro cliente registrado.";
+            } else {
+                $mensajeError = 'No fue posible actualizar el cliente debido a un problema con los datos.';
+            }
+        } catch (\Throwable $e) {
+            error_log('Error actualizando cliente: ' . $e->getMessage());
+            $mensajeError = 'Ocurrió un error inesperado al actualizar el cliente.';
         }
-
-        $mensajeError = 'Error al actualizar';
         return compact('cliente', 'mensajeError', 'csrf_token');
     }
 

@@ -37,9 +37,9 @@ class ItemCotizacionService
         $cantidad            = max(1, (int)($postData['cantidad'] ?? 1));
         $unidad_raw          = trim($postData['unidad'] ?? '');
         $unidad              = !empty($unidad_raw) ? mb_substr(sanitizar_entrada($unidad_raw), 0, 50) : '';
-        $precio              = (float)($postData['precio'] ?? 0);
+        $precio              = max(0, (float)($postData['precio'] ?? 0));
         $iva                 = mb_substr(sanitizar_entrada($postData['iva'] ?? 'si'), 0, 5);
-        $porcentaje_iva      = (float)($postData['porcentaje_iva'] ?? 19);
+        $porcentaje_iva      = max(0, (float)($postData['porcentaje_iva'] ?? 19));
         $tiempo_entrega      = mb_substr(sanitizar_entrada($postData['tiempo_entrega'] ?? ''), 0, 120);
         $categoria           = mb_substr(sanitizar_entrada($postData['categoria'] ?? ''), 0, 100);
         $codigo_producto     = mb_substr(sanitizar_entrada($postData['codigo_producto'] ?? ''), 0, 60);
@@ -50,11 +50,11 @@ class ItemCotizacionService
         if ($sin_modelo && empty($modelo)) {
             $modelo = 'N/A';
         }
-        $precio_proveedor    = (float)($postData['precio_proveedor'] ?? 0);
-        $porcentaje_utilidad = (float)($postData['porcentaje_utilidad'] ?? 0);
-        $flete               = (float)($postData['flete'] ?? 0);
-        $calibracion         = (float)($postData['calibracion'] ?? 0);
-        $estampillas         = (float)($postData['estampillas'] ?? 0);
+        $precio_proveedor    = max(0, (float)($postData['precio_proveedor'] ?? 0));
+        $porcentaje_utilidad = max(0, (float)($postData['porcentaje_utilidad'] ?? 0));
+        $flete               = max(0, (float)($postData['flete'] ?? 0));
+        $calibracion         = max(0, (float)($postData['calibracion'] ?? 0));
+        $estampillas         = max(0, (float)($postData['estampillas'] ?? 0));
         $proveedor           = mb_substr(sanitizar_entrada($postData['proveedor'] ?? ''), 0, 100);
         $proveedor_nit_raw   = mb_substr(sanitizar_entrada($postData['proveedor_nit'] ?? ''), 0, 30);
         $proveedor_nit       = function_exists('normalizar_nit') ? normalizar_nit($proveedor_nit_raw) : str_replace(['.', ' '], '', $proveedor_nit_raw);
@@ -167,9 +167,9 @@ class ItemCotizacionService
         $cantidad            = max(1, (int)($postData['cantidad'] ?? 1));
         $unidad_raw          = trim($postData['unidad'] ?? '');
         $unidad              = !empty($unidad_raw) ? mb_substr(sanitizar_entrada($unidad_raw), 0, 50) : '';
-        $precio              = (float)($postData['precio'] ?? 0);
+        $precio              = max(0, (float)($postData['precio'] ?? 0));
         $iva                 = mb_substr(sanitizar_entrada($postData['iva'] ?? 'si'), 0, 5);
-        $porcentaje_iva      = (float)($postData['porcentaje_iva'] ?? 19);
+        $porcentaje_iva      = max(0, (float)($postData['porcentaje_iva'] ?? 19));
         $tiempo_entrega      = mb_substr(sanitizar_entrada($postData['tiempo_entrega'] ?? ''), 0, 120);
         $categoria           = mb_substr(sanitizar_entrada($postData['categoria'] ?? ''), 0, 100);
         $codigo_producto     = mb_substr(sanitizar_entrada($postData['codigo_producto'] ?? ''), 0, 60);
@@ -180,11 +180,11 @@ class ItemCotizacionService
         if ($sin_modelo && empty($modelo)) {
             $modelo = 'N/A';
         }
-        $precio_proveedor    = (float)($postData['precio_proveedor'] ?? 0);
-        $porcentaje_utilidad = (float)($postData['porcentaje_utilidad'] ?? 0);
-        $flete               = (float)($postData['flete'] ?? 0);
-        $calibracion         = (float)($postData['calibracion'] ?? 0);
-        $estampillas         = (float)($postData['estampillas'] ?? 0);
+        $precio_proveedor    = max(0, (float)($postData['precio_proveedor'] ?? 0));
+        $porcentaje_utilidad = max(0, (float)($postData['porcentaje_utilidad'] ?? 0));
+        $flete               = max(0, (float)($postData['flete'] ?? 0));
+        $calibracion         = max(0, (float)($postData['calibracion'] ?? 0));
+        $estampillas         = max(0, (float)($postData['estampillas'] ?? 0));
         $proveedor           = mb_substr(sanitizar_entrada($postData['proveedor'] ?? ''), 0, 100);
         $proveedor_nit_raw   = mb_substr(sanitizar_entrada($postData['proveedor_nit'] ?? ''), 0, 30);
         $proveedor_nit       = function_exists('normalizar_nit') ? normalizar_nit($proveedor_nit_raw) : str_replace(['.', ' '], '', $proveedor_nit_raw);

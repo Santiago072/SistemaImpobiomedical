@@ -77,7 +77,13 @@ class CotizacionController
         $totalItems = count($items);
 
         $mensajeExito = '';
-        if (isset($_GET['updated'])) $mensajeExito = 'Ítem actualizado';
+        if (isset($_GET['updated'])) {
+            if (isset($_SESSION['cotizacion_ajustando_id'])) {
+                $mensajeExito = 'Ítem actualizado correctamente. Haz clic en "Guardar Ajuste" para actualizar la cotización.';
+            } else {
+                $mensajeExito = 'Ítem actualizado correctamente';
+            }
+        }
 
         return compact('productos', 'producto', 'busqueda', 'cotizacion_id',
                        'items', 'totalItems', 'csrf_token', 'mensajeExito');
@@ -552,6 +558,64 @@ class CotizacionController
         exit();
     }
 
+    // ── GUARDAR AJUSTE DIRECTO (Desde la tabla de ítems sin pasar por cliente) ───
+    public function guardarAjusteDirecto(): void
+    {
+        verificar_autenticacion();
+        verificar_rate_limit(15, 60, 'cot_guardar_ajuste');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!verificar_token_csrf($_POST['csrf_token'] ?? '')) {
+                $_SESSION['flash_error'] = 'Token de seguridad inválido. Intente nuevamente.';
+                header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
+                exit();
+            }
+        }
+
+        if (!isset($_SESSION['cotizacion_ajustando_id']) || !isset($_SESSION['cotizacion_id'])) {
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        }
+
+        $clonId           = (int)$_SESSION['cotizacion_id'];
+        $destinoId        = (int)$_SESSION['cotizacion_ajustando_id'];
+        $numeroCotizacion = $_SESSION['cotizacion_ajustando_numero'] ?? '';
+
+        $items = $this->model->obtenerItems($clonId);
+        if (empty($items)) {
+            $_SESSION['flash_error'] = 'La cotización debe tener al menos un ítem.';
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
+            exit();
+        }
+
+        try {
+            // Mover ítems del clon temporal a la cotización original y eliminar el clon
+            $this->model->aplicarItemsAjuste($clonId, $destinoId);
+
+            unset(
+                $_SESSION['cotizacion_id'],
+                $_SESSION['cotizacion_ajustando_id'],
+                $_SESSION['cotizacion_ajustando_clon_id'],
+                $_SESSION['cotizacion_ajustando_numero']
+            );
+
+            // Restaurar borrador previo si existía
+            if (isset($_SESSION['borrador_previo_id'])) {
+                $_SESSION['cotizacion_id'] = (int)$_SESSION['borrador_previo_id'];
+                unset($_SESSION['borrador_previo_id']);
+            }
+
+            $_SESSION['flash_exito'] = 'Cotización ' . htmlspecialchars($numeroCotizacion) . ' actualizada con éxito. Puedes verificar los cambios en Consultar Cotizaciones.';
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            exit();
+        } catch (\Throwable $e) {
+            error_log('Error en guardarAjusteDirecto: ' . $e->getMessage());
+            $_SESSION['flash_error'] = 'Error al actualizar la cotización. Por favor intente nuevamente.';
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
+            exit();
+        }
+    }
+
     // ── DESCARTAR BORRADOR ─────────────────────────────────────────
     public function limpiarBorrador(): void
     {
@@ -662,9 +726,14 @@ class CotizacionController
                 unset($_SESSION['cotizacion_id'], $_SESSION['cotizacion_revision_de']);
             }
 
-            // Redirigir limpiamente a Consultar Cotizaciones con éxito y disparador para descargar/ver el PDF
-            $_SESSION['flash_exito'] = 'Cotización ' . htmlspecialchars($numeroCotizacion) . ' guardada con éxito.';
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&descargar_pdf=' . urlencode($numeroCotizacion));
+            // Redirigir limpiamente a Consultar Cotizaciones con éxito
+            if ($esModoAjuste) {
+                $_SESSION['flash_exito'] = 'Cotización ' . htmlspecialchars($numeroCotizacion) . ' actualizada con éxito. Puedes verificar los cambios en Consultar Cotizaciones.';
+                header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            } else {
+                $_SESSION['flash_exito'] = 'Cotización ' . htmlspecialchars($numeroCotizacion) . ' guardada con éxito.';
+                header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar&descargar_pdf=' . urlencode($numeroCotizacion));
+            }
             exit();
         } catch (\Throwable $e) {
             error_log('Error al finalizar cotización: ' . $e->getMessage() . "\n" . $e->getTraceAsString());

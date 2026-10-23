@@ -29,13 +29,6 @@ $tabActual = $tabActual ?? 'pendientes';
             </a>
         </div>
 
-        <?php if (!empty($_SESSION['flash_success'])): ?>
-        <div class="mod-alert mod-alert-ok">
-            <i class="bi bi-check-circle-fill"></i>
-            <span><?= htmlspecialchars($_SESSION['flash_success']) ?></span>
-        </div>
-        <?php unset($_SESSION['flash_success']); endif; ?>
-
         <?php if (!empty($_SESSION['flash_error'])):
             $alertaErrorMsg = $_SESSION['flash_error'];
             unset($_SESSION['flash_error']);

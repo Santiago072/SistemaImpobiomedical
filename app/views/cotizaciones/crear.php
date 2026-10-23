@@ -26,9 +26,21 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             <div class="header-actions-wrap align-center mt-8">
                 <p class="page-sub m-0">Ítems agregados: <strong><?= $totalItems ?></strong></p>
                 <?php if ($totalItems > 0): ?>
-                <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary btn-sm-action">
-                    <i class="bi bi-arrow-right-circle-fill"></i> Continuar → <?= isset($_SESSION['cotizacion_ajustando_id']) ? 'Revisar Datos y Guardar Ajuste' : 'Datos Cliente y PDF' ?>
-                </a>
+                    <?php if (isset($_SESSION['cotizacion_ajustando_id'])): ?>
+                    <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=guardar_ajuste_directo" style="display:inline; margin:0;">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                        <button type="submit" class="btn-mod-primary btn-sm-action" style="background:#0f766e; border-color:#0d9488; font-weight:700;" title="Aplica directamente los cambios a la cotización">
+                            <i class="bi bi-check2-circle"></i> Guardar Ajuste
+                        </button>
+                    </form>
+                    <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary btn-sm-action" style="background:#475569; border-color:#334155;">
+                        <i class="bi bi-person-lines-fill"></i> Revisar Cliente
+                    </a>
+                    <?php else: ?>
+                    <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary btn-sm-action">
+                        <i class="bi bi-arrow-right-circle-fill"></i> Continuar → Datos Cliente y PDF
+                    </a>
+                    <?php endif; ?>
                 <?php endif; ?>
                 <?php if (isset($_SESSION['cotizacion_ajustando_id'])): ?>
                 <a href="<?= $basePath ?>?module=cotizaciones&action=cancelar_ajuste" class="btn-discard-draft" onclick="return confirm('¿Seguro que deseas cancelar el ajuste? La cotización mantendrá su estado finalizado anterior.');">
@@ -46,9 +58,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
             </div>
         </div>
 
-        <?php if (!empty($mensajeExito)): ?>
-        <div class="mod-alert mod-alert-ok"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($mensajeExito) ?></div>
-        <?php endif; ?>
+
 
         <?php
         $errorRaw = urldecode($_GET['error'] ?? '');
@@ -467,10 +477,22 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                     </div>
 
                     <?php if ($totalItems > 0): ?>
-                    <div class="mt-24 text-right">
-                        <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary text-nodecor">
-                            <i class="bi bi-arrow-right-circle-fill"></i> Continuar → Completar Datos del Cliente
-                        </a>
+                    <div class="mt-24" style="display: flex; gap: 12px; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
+                        <?php if (isset($_SESSION['cotizacion_ajustando_id'])): ?>
+                            <form method="POST" action="<?= $basePath ?>?module=cotizaciones&action=guardar_ajuste_directo" style="display:inline; margin:0;">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                                <button type="submit" class="btn-mod-primary" style="background:#0f766e; border-color:#0d9488; font-weight:700; padding:10px 20px; box-shadow:0 2px 6px rgba(15,118,110,0.25);" title="Aplica directamente los cambios a la cotización sin pasar por datos del cliente">
+                                    <i class="bi bi-check2-circle"></i> Guardar Ajuste
+                                </button>
+                            </form>
+                            <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary text-nodecor" style="background:#475569; border-color:#334155;">
+                                <i class="bi bi-person-lines-fill"></i> Opcional: Revisar Datos del Cliente <i class="bi bi-arrow-right"></i>
+                            </a>
+                        <?php else: ?>
+                            <a href="<?= $basePath ?>?module=cotizaciones&action=finalizar" class="btn-mod-primary text-nodecor">
+                                <i class="bi bi-arrow-right-circle-fill"></i> Continuar → Completar Datos del Cliente
+                            </a>
+                        <?php endif; ?>
                     </div>
                     <?php endif; ?>
 
@@ -967,8 +989,46 @@ document.addEventListener('click', e => {
     }
 });
 
-// Serializar calcState en hidden antes de enviar el formulario
+function sanitizarNumeroPositivo(input, minVal = 0, esEntero = false) {
+    if (!input) return;
+    input.addEventListener('keydown', function(e) {
+        if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+            e.preventDefault();
+        }
+    });
+    input.addEventListener('input', function() {
+        let val = esEntero ? parseInt(this.value, 10) : parseFloat(this.value);
+        if (!isNaN(val) && val < minVal) {
+            this.value = minVal;
+        }
+    });
+}
+
+sanitizarNumeroPositivo(document.getElementById('inpCantidad'), 1, true);
+sanitizarNumeroPositivo(document.getElementById('inpPrecio'), 0, false);
+sanitizarNumeroPositivo(document.getElementById('inpPrecioProveedor'), 0, false);
+sanitizarNumeroPositivo(document.getElementById('inpPctIva'), 0, false);
+
+// Serializar calcState en hidden antes de enviar el formulario con validación previa
 document.getElementById('formItem').addEventListener('submit', function(e) {
+    const cantInp = document.getElementById('inpCantidad');
+    const precioInp = document.getElementById('inpPrecio');
+    const cant = parseFloat(cantInp?.value);
+    const precio = parseFloat(precioInp?.value);
+
+    if (isNaN(cant) || cant < 1) {
+        e.preventDefault();
+        alert('⚠️ La cantidad debe ser un número entero mayor o igual a 1.');
+        cantInp?.focus();
+        return false;
+    }
+    if (isNaN(precio) || precio < 0) {
+        e.preventDefault();
+        alert('⚠️ El precio unitario no puede ser negativo.');
+        precioInp?.focus();
+        return false;
+    }
+
     document.getElementById('hdnCalcOps').value = JSON.stringify(calcState);
 });
 

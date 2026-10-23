@@ -72,6 +72,11 @@ class ProveedorController
             return ['mensajeError' => $_SESSION['flash_error']];
         }
 
+        if ($banco === '' || $cuenta === '' || $tipoCta === '') {
+            $_SESSION['flash_error'] = 'El Nombre del Banco, Tipo de Cuenta y Número de Cuenta son obligatorios.';
+            return ['mensajeError' => $_SESSION['flash_error']];
+        }
+
         if ($this->model->nitExiste($nit)) {
             $_SESSION['flash_error'] = "El NIT {$nit} ya se encuentra registrado para otro proveedor.";
             return ['mensajeError' => $_SESSION['flash_error']];
@@ -132,6 +137,12 @@ class ProveedorController
 
         if ($id <= 0 || $nit === '' || $nombre === '') {
             $_SESSION['flash_error'] = 'Datos insuficientes para actualizar el proveedor.';
+            header('Location: ' . BASE_URL . '?module=proveedores');
+            exit();
+        }
+
+        if ($banco === '' || $cuenta === '' || $tipoCta === '') {
+            $_SESSION['flash_error'] = 'El Nombre del Banco, Tipo de Cuenta y Número de Cuenta son obligatorios.';
             header('Location: ' . BASE_URL . '?module=proveedores');
             exit();
         }

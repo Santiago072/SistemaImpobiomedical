@@ -82,10 +82,20 @@ class FinalizarCotizacionService
         } else {
             // Crear nuevo cliente
             if (!empty($clienteNombre)) {
-                $clienteId = $this->clienteModel->crear(
-                    $clienteNombre, $clienteNit, $clienteDepto, $clienteCiudad, 
-                    $clienteDireccion, $clienteContacto, $clienteTelefono, $clienteCorreo
-                );
+                try {
+                    $clienteId = $this->clienteModel->crear(
+                        $clienteNombre, $clienteNit, $clienteDepto, $clienteCiudad, 
+                        $clienteDireccion, $clienteContacto, $clienteTelefono, $clienteCorreo
+                    );
+                } catch (\PDOException $e) {
+                    // Si ya existía por restricción UNIQUE de NIT u otro campo, asociar el existente
+                    $recuperado = !empty($clienteNit) ? $this->clienteModel->buscarPorNit($clienteNit) : null;
+                    if ($recuperado) {
+                        $clienteId = (int)$recuperado['id'];
+                    } else {
+                        error_log("[FinalizarCotizacionService] Error al crear cliente: " . $e->getMessage());
+                    }
+                }
             }
         }
 

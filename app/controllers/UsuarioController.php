@@ -11,11 +11,13 @@ require_once dirname(__DIR__, 2) . '/config/seguridad.php';
  */
 class UsuarioController
 {
+    private \PDO $db;
     private UsuarioModel $model;
     private int $porPagina = 10;
 
     public function __construct(\PDO $conexion, ?UsuarioModel $model = null)
     {
+        $this->db    = $conexion;
         $this->model = $model ?? new UsuarioModel($conexion);
     }
 

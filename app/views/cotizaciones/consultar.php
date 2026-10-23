@@ -23,12 +23,7 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
         </div>
 
-        <?php if (!empty($_SESSION['flash_exito'])): ?>
-            <div class="mod-alert mod-alert-ok mb-16">
-                <i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($_SESSION['flash_exito']) ?>
-            </div>
-            <?php unset($_SESSION['flash_exito']); ?>
-        <?php endif; ?>
+
 
         <?php if (!empty($_SESSION['flash_error'])):
             $alertaErrorMsg = $_SESSION['flash_error'];

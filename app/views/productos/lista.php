@@ -36,9 +36,6 @@ include dirname(__DIR__) . '/layout/menu.php';
             </div>
         </div>
 
-        <?php if (!empty($mensajeExito)): ?>
-        <div class="mod-alert mod-alert-ok"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($mensajeExito) ?></div>
-        <?php endif; ?>
         <?php if (!empty($mensajeError)): ?>
         <?php $clase = (strpos($mensajeError, 'asociado') !== false) ? 'mod-alert-warn' : 'mod-alert-err'; ?>
         <div class="mod-alert <?= $clase ?>"><i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($mensajeError) ?></div>

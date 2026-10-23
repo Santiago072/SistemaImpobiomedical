@@ -200,6 +200,7 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                                     </td>
                                     <td class="text-right nowrap">
                                         <input type="number"
+                                               min="0"
                                                step="0.01"
                                                value="<?= $pu ?>"
                                                class="precio-input"
@@ -832,6 +833,95 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
             }
             if (valLimpio.trim().length >= 3) {
                 timerBusqueda = setTimeout(() => verificarProveedor(valLimpio.trim()), 350);
+            }
+        });
+    }
+
+    function sanitizarNumeroPositivo(input, minVal = 0, esEntero = false) {
+        if (!input) return;
+        input.addEventListener('keydown', function(e) {
+            if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                e.preventDefault();
+            }
+        });
+        input.addEventListener('input', function() {
+            let val = esEntero ? parseInt(this.value, 10) : parseFloat(this.value);
+            if (!isNaN(val) && val < minVal) {
+                this.value = minVal;
+            }
+        });
+    }
+
+    document.querySelectorAll('.qty-input').forEach(inp => sanitizarNumeroPositivo(inp, 1, true));
+    document.querySelectorAll('.precio-input').forEach(inp => sanitizarNumeroPositivo(inp, 0, false));
+    ['inputDescuentoValor', 'inputFlete', 'inputSaldoFavor'].forEach(id => {
+        sanitizarNumeroPositivo(document.getElementById(id), 0, false);
+    });
+    sanitizarNumeroPositivo(document.getElementById('inputRetencion'), 0, false);
+
+    const formOrden = document.getElementById('formOrden');
+    if (formOrden) {
+        formOrden.addEventListener('submit', function(e) {
+            const checks = document.querySelectorAll('.item-check:checked');
+            if (checks.length === 0) {
+                e.preventDefault();
+                alert('⚠️ Debe seleccionar al menos un producto para la orden.');
+                return false;
+            }
+
+            for (let i = 0; i < checks.length; i++) {
+                const tr = checks[i].closest('tr');
+                const titulo = tr.querySelector('.item-title')?.textContent.trim() || 'Ítem ' + (i + 1);
+                const cantInp = tr.querySelector('.qty-input');
+                const precioInp = tr.querySelector('.precio-input');
+
+                const cant = parseFloat(cantInp?.value);
+                if (isNaN(cant) || cant < 1) {
+                    e.preventDefault();
+                    alert(`⚠️ La cantidad para "${titulo}" debe ser un número entero mayor o igual a 1.`);
+                    cantInp?.focus();
+                    return false;
+                }
+
+                const precio = parseFloat(precioInp?.value);
+                if (isNaN(precio) || precio < 0) {
+                    e.preventDefault();
+                    alert(`⚠️ El precio para "${titulo}" no puede ser negativo.`);
+                    precioInp?.focus();
+                    return false;
+                }
+            }
+
+            const fleteInp = document.getElementById('inputFlete');
+            if (fleteInp && parseFloat(fleteInp.value) < 0) {
+                e.preventDefault();
+                alert('⚠️ El valor del flete no puede ser negativo.');
+                fleteInp.focus();
+                return false;
+            }
+
+            const descInp = document.getElementById('inputDescuentoValor');
+            if (descInp && parseFloat(descInp.value) < 0) {
+                e.preventDefault();
+                alert('⚠️ El valor del descuento no puede ser negativo.');
+                descInp.focus();
+                return false;
+            }
+
+            const retInp = document.getElementById('inputRetencion');
+            if (retInp && (parseFloat(retInp.value) < 0 || parseFloat(retInp.value) > 100)) {
+                e.preventDefault();
+                alert('⚠️ El porcentaje de retención debe estar entre 0% y 100%.');
+                retInp.focus();
+                return false;
+            }
+
+            const saldoInp = document.getElementById('inputSaldoFavor');
+            if (saldoInp && parseFloat(saldoInp.value) < 0) {
+                e.preventDefault();
+                alert('⚠️ El saldo a favor no puede ser negativo.');
+                saldoInp.focus();
+                return false;
             }
         });
     }

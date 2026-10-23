@@ -26,9 +26,6 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         </div>
 
         <!-- ── Notificaciones ── -->
-        <?php if (!empty($mensajeExito)): ?>
-        <div class="mod-alert mod-alert-ok"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($mensajeExito) ?></div>
-        <?php endif; ?>
         <?php if (!empty($mensajeError)):
             $alertaErrorMsg = $mensajeError;
             include __DIR__ . '/../layout/alerta_error.php';

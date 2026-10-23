@@ -125,18 +125,34 @@ class ProveedorModel
     }
 
     /**
-     * Obtiene un proveedor por su NIT (admite con o sin puntos).
+     * Obtiene un proveedor por su NIT (admite con/sin puntos, espacios o guion).
      */
     public function buscarPorNit(string $nit): ?array
     {
-        $nitNorm = function_exists('normalizar_nit') ? normalizar_nit($nit) : str_replace(['.', ' '], '', $nit);
-        $stmt = $this->db->prepare(
-            "SELECT * FROM proveedores 
-             WHERE TRIM(nit) = :nit 
-                OR REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :nitNorm 
-             LIMIT 1"
-        );
-        $stmt->execute([':nit' => trim($nit), ':nitNorm' => $nitNorm]);
+        $nitLimpio = trim($nit);
+        if ($nitLimpio === '') return null;
+
+        $nitNorm    = function_exists('normalizar_nit') ? normalizar_nit($nitLimpio) : str_replace(['.', ' '], '', $nitLimpio);
+        $nitDigitos = preg_replace('/\D/', '', $nitLimpio);
+
+        $sql = "SELECT * FROM proveedores 
+                WHERE TRIM(nit) = :nit 
+                   OR REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :nitNorm";
+        $params = [
+            ':nit'     => $nitLimpio,
+            ':nitNorm' => $nitNorm,
+        ];
+
+        if (strlen($nitDigitos) >= 6) {
+            $sql .= " OR REPLACE(REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', ''), '-', '') = :nitDigitos";
+            $params[':nitDigitos'] = $nitDigitos;
+        }
+
+        $sql .= " ORDER BY (TRIM(nit) = :nitExacto) DESC, id DESC LIMIT 1";
+        $params[':nitExacto'] = $nitLimpio;
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         $row = $stmt->fetch();
         return $row ?: null;
     }
@@ -281,22 +297,32 @@ class ProveedorModel
         }
 
         // No existe → INSERT
-        $stmt = $this->db->prepare(
-            "INSERT INTO proveedores
-             (nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta, celular, correo, estado)
-             VALUES (:nit, :nom, :tipo, :banco, :cta, :tipo_cta, :celular, :correo, 'activo')"
-        );
-        $stmt->execute([
-            ':nit'      => $nit,
-            ':nom'      => $nom,
-            ':tipo'     => $tipo,
-            ':banco'    => $banco,
-            ':cta'      => $cuenta,
-            ':tipo_cta' => $tipoCta,
-            ':celular'  => !empty($datos['celular']) ? trim($datos['celular']) : null,
-            ':correo'   => !empty($datos['correo']) ? trim($datos['correo']) : null,
-        ]);
-        return (int)$this->db->lastInsertId();
+        try {
+            $stmt = $this->db->prepare(
+                "INSERT INTO proveedores
+                 (nit, nombre_proveedor, tipo_contribuyente, nombre_banco, numero_cuenta, tipo_cuenta, celular, correo, estado)
+                 VALUES (:nit, :nom, :tipo, :banco, :cta, :tipo_cta, :celular, :correo, 'activo')"
+            );
+            $stmt->execute([
+                ':nit'      => mb_substr($nit, 0, 30),
+                ':nom'      => mb_substr($nom, 0, 200),
+                ':tipo'     => mb_substr($tipo, 0, 100),
+                ':banco'    => !empty($banco) ? mb_substr($banco, 0, 100) : null,
+                ':cta'      => !empty($cuenta) ? mb_substr($cuenta, 0, 100) : null,
+                ':tipo_cta' => !empty($tipoCta) ? mb_substr($tipoCta, 0, 50) : null,
+                ':celular'  => !empty($datos['celular']) ? mb_substr(trim($datos['celular']), 0, 30) : null,
+                ':correo'   => !empty($datos['correo']) ? mb_substr(trim($datos['correo']), 0, 100) : null,
+            ]);
+            return (int)$this->db->lastInsertId();
+        } catch (\PDOException $e) {
+            // Si hubo colisión por concurrencia o variación de NIT, recuperar el proveedor existente
+            $recuperado = $this->buscarPorNit($nit);
+            if ($recuperado) {
+                return (int)$recuperado['id'];
+            }
+            error_log("[ProveedorModel::registrarOActualizar] Error en INSERT: " . $e->getMessage());
+            return 0;
+        }
     }
 
     /**

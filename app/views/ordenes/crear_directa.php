@@ -12,6 +12,9 @@ include dirname(__DIR__) . '/layout/menu.php';
 <?php
 $esAjuste = !empty($_SESSION['orden_ajustando_id']) && !empty($ordenAjustando);
 $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
+$datosProvIni = $infoProveedorInicial['datos'] ?? [];
+$esRegistradoIni = !empty($infoProveedorInicial['registrado']);
+$numOrdenesIni = (int)($infoProveedorInicial['ordenes'] ?? 0);
 ?>
 
 <div class="layout-main">
@@ -119,8 +122,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
                     <h3 class="section-title-orden" style="margin: 0; display: flex; align-items: center; gap: 10px;">
                         <i class="bi bi-2-circle-fill"></i> Datos de la Orden y Proveedor
-                        <span id="badgeEstadoProv" class="mod-badge badge-gold" style="font-size: 12px; padding: 3px 10px; font-weight: 600;">
-                            <i class="bi bi-plus-circle"></i> Proveedor Nuevo
+                        <span id="badgeEstadoProv" class="mod-badge <?= $esRegistradoIni ? 'badge-green' : 'badge-gold' ?>" style="font-size: 12px; padding: 3px 10px; font-weight: 600;">
+                            <i class="bi <?= $esRegistradoIni ? 'bi-check-circle-fill' : 'bi-plus-circle' ?>"></i> <?= $esRegistradoIni ? 'Proveedor Registrado' . ($numOrdenesIni > 0 ? " ($numOrdenesIni orden" . ($numOrdenesIni > 1 ? 'es' : '') . ')' : '') : 'Proveedor Nuevo' ?>
                         </span>
                     </h3>
                 </div>
@@ -131,8 +134,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                         <label class="oc-label"><i class="bi bi-building"></i> Proveedor (TO:) <span class="required-star">*</span></label>
                         <input type="text" name="proveedor" id="inputProveedor" class="oc-input" required
                                placeholder="Escriba el nombre o NIT del proveedor..." maxlength="200" autocomplete="off"
-                               value="<?= htmlspecialchars($ordenAjustando['proveedor'] ?? '') ?>">
-                        <input type="hidden" name="estado_proveedor" id="inputEstadoProveedor" value="<?= htmlspecialchars($ordenAjustando['estado_proveedor'] ?? 'nuevo') ?>">
+                               value="<?= htmlspecialchars($ordenAjustando['proveedor'] ?? ($datosProvIni['proveedor'] ?? '')) ?>">
+                        <input type="hidden" name="estado_proveedor" id="inputEstadoProveedor" value="<?= htmlspecialchars($esRegistradoIni ? 'registrado' : ($ordenAjustando['estado_proveedor'] ?? 'nuevo')) ?>">
                         <div id="listaProveedoresDirecta" class="lista-sugerencias" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:1050; background:#ffffff; border:1.5px solid #0d9488; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); max-height:220px; overflow-y:auto;"></div>
                     </div>
 
@@ -148,7 +151,7 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                         <label class="oc-label"><i class="bi bi-person-badge"></i> Tipo de Contribuyente</label>
                         <input type="text" name="tipo_contribuyente" id="inputTipoContribuyente" class="oc-input"
                                placeholder="Ej: PERSONA NATURAL / JURIDICA" maxlength="100"
-                               value="<?= htmlspecialchars($ordenAjustando['tipo_contribuyente'] ?? '') ?>">
+                               value="<?= htmlspecialchars(!empty($ordenAjustando['tipo_contribuyente']) ? $ordenAjustando['tipo_contribuyente'] : ($datosProvIni['tipo_contribuyente'] ?? '')) ?>">
                     </div>
 
                     <div class="oc-field-group">
@@ -235,17 +238,17 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                             <label class="oc-label">Nombre del Banco</label>
                             <input type="text" name="banco_nombre" id="inputBancoNombre" class="oc-input"
                                    placeholder="Ej: Bancolombia" maxlength="100"
-                                   value="<?= htmlspecialchars($ordenAjustando['banco_nombre'] ?? '') ?>">
+                                   value="<?= htmlspecialchars(!empty($ordenAjustando['banco_nombre']) ? $ordenAjustando['banco_nombre'] : ($datosProvIni['banco_nombre'] ?? '')) ?>">
                         </div>
                         <div class="oc-field-group">
                             <label class="oc-label">Número de Cuenta</label>
                             <input type="text" name="banco_cuenta" id="inputBancoCuenta" class="oc-input"
                                    placeholder="Ej: 123456789" maxlength="100"
-                                   value="<?= htmlspecialchars($ordenAjustando['banco_cuenta'] ?? '') ?>">
+                                   value="<?= htmlspecialchars(!empty($ordenAjustando['banco_cuenta']) ? $ordenAjustando['banco_cuenta'] : ($datosProvIni['banco_cuenta'] ?? '')) ?>">
                         </div>
                         <div class="oc-field-group">
                             <label class="oc-label">Tipo de Cuenta</label>
-                            <?php $bTipo = $ordenAjustando['banco_tipo_cuenta'] ?? ''; ?>
+                            <?php $bTipo = !empty($ordenAjustando['banco_tipo_cuenta']) ? $ordenAjustando['banco_tipo_cuenta'] : ($datosProvIni['banco_tipo_cuenta'] ?? ''); ?>
                             <select name="banco_tipo_cuenta" id="inputBancoTipoCuenta" class="oc-input">
                                 <option value="">Seleccione...</option>
                                 <option value="Ahorros" <?= $bTipo === 'Ahorros' ? 'selected' : '' ?>>Ahorros</option>
@@ -256,13 +259,13 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                             <label class="oc-label"><i class="bi bi-telephone-fill"></i> Celular / Teléfono</label>
                             <input type="text" name="proveedor_celular" id="inputProveedorCelular" class="oc-input"
                                    placeholder="Ej: 3001234567" maxlength="30"
-                                   value="<?= htmlspecialchars($ordenAjustando['proveedor_celular'] ?? '') ?>">
+                                   value="<?= htmlspecialchars(!empty($ordenAjustando['proveedor_celular']) ? $ordenAjustando['proveedor_celular'] : ($datosProvIni['celular'] ?? '')) ?>">
                         </div>
                         <div class="oc-field-group">
                             <label class="oc-label"><i class="bi bi-envelope-fill"></i> Correo Electrónico</label>
                             <input type="email" name="proveedor_correo" id="inputProveedorCorreo" class="oc-input"
                                    placeholder="Ej: ventas@proveedor.com" maxlength="100"
-                                   value="<?= htmlspecialchars($ordenAjustando['proveedor_correo'] ?? '') ?>">
+                                   value="<?= htmlspecialchars(!empty($ordenAjustando['proveedor_correo']) ? $ordenAjustando['proveedor_correo'] : ($datosProvIni['correo'] ?? '')) ?>">
                         </div>
                     </div>
                 </div>
@@ -309,6 +312,24 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
     let filaIndex = 0;
     const tbody = document.getElementById('tbodyItemsDirecta');
     const form = document.getElementById('formOrdenDirecta');
+    const inputProv = document.getElementById('inputProveedor');
+    const badgeProv = document.getElementById('badgeEstadoProv');
+    const hdnEstado = document.getElementById('inputEstadoProveedor');
+
+    function sanitizarNumeroPositivo(input, minVal = 0, esEntero = false) {
+        if (!input) return;
+        input.addEventListener('keydown', function(e) {
+            if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+                e.preventDefault();
+            }
+        });
+        input.addEventListener('input', function() {
+            let val = esEntero ? parseInt(this.value, 10) : parseFloat(this.value);
+            if (!isNaN(val) && val < minVal) {
+                this.value = minVal;
+            }
+        });
+    }
 
     function verificarFilaVacia() {
         const filas = tbody.querySelectorAll('tr:not(#filaEmptyState)');
@@ -390,6 +411,9 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
             inp.addEventListener('change', calcularTotales);
         });
 
+        sanitizarNumeroPositivo(tr.querySelector('.item-cantidad'), 1, true);
+        sanitizarNumeroPositivo(tr.querySelector('.item-precio'), 0, false);
+
         tbody.appendChild(tr);
         calcularTotales();
     }
@@ -454,9 +478,11 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                                     );
 
                                     // Si el producto trae proveedor y el input de proveedor está vacío, autocompletarlo
-                                    if (p.proveedor && !inputProv.value.trim()) {
+                                    if (p.proveedor && inputProv && !inputProv.value.trim()) {
                                         inputProv.value = p.proveedor;
-                                        verificarProveedor(p.proveedor);
+                                        if (typeof verificarProveedor === 'function') {
+                                            verificarProveedor(p.proveedor);
+                                        }
                                     }
 
                                     listaSug.style.display = 'none';
@@ -521,9 +547,11 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         let subtotal = 0;
         let totalIva = 0;
 
-        const filas = tbody.querySelectorAll('tr');
+        const filas = tbody.querySelectorAll('tr:not(#filaEmptyState)');
         filas.forEach(tr => {
-            const cant = parseFloat(tr.querySelector('.item-cantidad').value) || 0;
+            const cantInput = tr.querySelector('.item-cantidad');
+            if (!cantInput) return;
+            const cant = parseFloat(cantInput.value) || 0;
             const precio = parseFloat(tr.querySelector('.item-precio').value) || 0;
             const aplicaIva = tr.querySelector('.item-iva-sel').value === 'si';
             const pctIva = aplicaIva ? 0.19 : 0.00;
@@ -532,7 +560,10 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
             const ivaFila = subFila * pctIva;
             const totalFila = subFila + ivaFila;
 
-            tr.querySelector('.item-total-fila').textContent = formatPesos(totalFila);
+            const totalFilaEl = tr.querySelector('.item-total-fila');
+            if (totalFilaEl) {
+                totalFilaEl.textContent = formatPesos(totalFila);
+            }
 
             if (cant > 0 && precio > 0) {
                 count++;
@@ -542,8 +573,8 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         });
 
         // Descuento
-        const tipoDesc = document.getElementById('inputTipoDescuento').value;
-        const valDescInput = parseFloat(document.getElementById('inputDescuentoValor').value) || 0;
+        const tipoDesc = document.getElementById('inputTipoDescuento')?.value || 'cop';
+        const valDescInput = parseFloat(document.getElementById('inputDescuentoValor')?.value) || 0;
         let descCalculado = 0;
 
         if (tipoDesc === 'porcentaje') {
@@ -551,33 +582,53 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         } else {
             descCalculado = Math.min(subtotal, Math.max(0, valDescInput));
         }
-        document.getElementById('inputDescuentoCalculado').value = descCalculado.toFixed(2);
+        const descCalcEl = document.getElementById('inputDescuentoCalculado');
+        if (descCalcEl) descCalcEl.value = descCalculado.toFixed(2);
 
         const subtotalConDesc = Math.max(0, subtotal - descCalculado);
 
         // Retención
-        const retPct = parseFloat(document.getElementById('inputRetencion').value) || 0;
-        document.getElementById('lblRetPct').textContent = retPct;
+        const retPct = parseFloat(document.getElementById('inputRetencion')?.value) || 0;
+        const lblRet = document.getElementById('lblRetPct');
+        if (lblRet) lblRet.textContent = retPct;
         const retencion = subtotalConDesc * (retPct / 100);
 
         // Flete e IVA de flete
-        const flete = parseFloat(document.getElementById('inputFlete').value) || 0;
+        const flete = parseFloat(document.getElementById('inputFlete')?.value) || 0;
         const fleteIvaSel = document.getElementById('inputFleteIva');
         const fleteAplicaIva = fleteIvaSel ? fleteIvaSel.value === 'si' : false;
         const fleteIvaVal = fleteAplicaIva ? flete * 0.19 : 0;
+
         // Saldo a favor (descontar de total a pagar)
         const saldoFavor = parseFloat(document.getElementById('inputSaldoFavor')?.value) || 0;
+
+        // IVA TOTAL (ítems + IVA de flete)
+        const totalIvaFinal = totalIva + fleteIvaVal;
 
         // TOTAL FINAL
         const totalPagar = Math.max(0, subtotalConDesc + totalIvaFinal - retencion + flete - saldoFavor);
 
-        document.getElementById('cntItems').textContent = filas.length;
-        document.getElementById('cntSubtotal').textContent = formatPesos(subtotal);
-        document.getElementById('cntDesc').textContent = '- ' + formatPesos(descCalculado);
-        document.getElementById('cntSubNeto').textContent = formatPesos(subtotalConDesc);
-        document.getElementById('cntIva').textContent = '+ ' + formatPesos(totalIvaFinal) + (fleteAplicaIva && flete > 0 ? ' (inc. IVA flete)' : '');
-        document.getElementById('cntRet').textContent = '- ' + formatPesos(retencion);
-        document.getElementById('cntFlete').textContent = '+ ' + formatPesos(flete) + (fleteAplicaIva ? ' (con IVA)' : '');
+        const cntItemsEl = document.getElementById('cntItems');
+        if (cntItemsEl) cntItemsEl.textContent = filas.length;
+
+        const cntSubtotalEl = document.getElementById('cntSubtotal');
+        if (cntSubtotalEl) cntSubtotalEl.textContent = formatPesos(subtotal);
+
+        const cntDescEl = document.getElementById('cntDesc');
+        if (cntDescEl) cntDescEl.textContent = '- ' + formatPesos(descCalculado);
+
+        const cntSubNetoEl = document.getElementById('cntSubNeto');
+        if (cntSubNetoEl) cntSubNetoEl.textContent = formatPesos(subtotalConDesc);
+
+        const cntIvaEl = document.getElementById('cntIva');
+        if (cntIvaEl) cntIvaEl.textContent = '+ ' + formatPesos(totalIvaFinal) + (fleteAplicaIva && flete > 0 ? ' (inc. IVA flete)' : '');
+
+        const cntRetEl = document.getElementById('cntRet');
+        if (cntRetEl) cntRetEl.textContent = '- ' + formatPesos(retencion);
+
+        const cntFleteEl = document.getElementById('cntFlete');
+        if (cntFleteEl) cntFleteEl.textContent = '+ ' + formatPesos(flete) + (fleteAplicaIva ? ' (con IVA)' : '');
+
         const wrapSaldo = document.getElementById('wrapCntSaldoFavor');
         const cntSaldo = document.getElementById('cntSaldoFavor');
         if (wrapSaldo && cntSaldo) {
@@ -588,10 +639,12 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                 wrapSaldo.style.display = 'none';
             }
         }
-        document.getElementById('cntTotal').textContent = formatPesos(totalPagar);
+
+        const cntTotalEl = document.getElementById('cntTotal');
+        if (cntTotalEl) cntTotalEl.textContent = formatPesos(totalPagar);
     }
 
-    // Escuchadores de cambio en totales
+    // Escuchadores de cambio en totales y sanitización contra negativos
     ['inputTipoDescuento', 'inputDescuentoValor', 'inputRetencion', 'inputFlete', 'inputFleteIva', 'inputSaldoFavor'].forEach(id => {
         const elem = document.getElementById(id);
         if (elem) {
@@ -600,10 +653,12 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         }
     });
 
+    ['inputDescuentoValor', 'inputFlete', 'inputSaldoFavor'].forEach(id => {
+        sanitizarNumeroPositivo(document.getElementById(id), 0, false);
+    });
+    sanitizarNumeroPositivo(document.getElementById('inputRetencion'), 0, false);
+
     // ── Búsqueda y autocompletado de proveedor ──
-    const inputProv = document.getElementById('inputProveedor');
-    const badgeProv = document.getElementById('badgeEstadoProv');
-    const hdnEstado = document.getElementById('inputEstadoProveedor');
     let timerBusqueda = null;
     let ultimoProvAutocompletado = '';
 
@@ -649,13 +704,22 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
             .then(res => res.json())
             .then(res => {
                 const d = res.datos;
-                if (res.registrado && d) {
+                if (res.registrado) {
                     if (badgeProv) {
                         badgeProv.className = 'mod-badge badge-green';
                         badgeProv.innerHTML = '<i class="bi bi-check-circle-fill"></i> Proveedor Registrado (' + res.ordenes + ' orden' + (res.ordenes > 1 ? 'es' : '') + ')';
                     }
                     if (hdnEstado) hdnEstado.value = 'registrado';
+                } else {
+                    if (badgeProv) {
+                        badgeProv.className = 'mod-badge badge-gold';
+                        badgeProv.innerHTML = '<i class="bi bi-plus-circle"></i> Proveedor Nuevo';
+                    }
+                    if (hdnEstado) hdnEstado.value = 'nuevo';
+                }
 
+                if (d) {
+                    const nitInp   = document.getElementById('inputProveedorNit');
                     const tcontInp = document.getElementById('inputTipoContribuyente');
                     const condInp  = document.getElementById('inputCondicionesPago');
                     const bnomInp  = document.getElementById('inputBancoNombre');
@@ -664,21 +728,17 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
                     const celInp   = document.getElementById('inputProveedorCelular');
                     const corInp   = document.getElementById('inputProveedorCorreo');
 
-                    if (tcontInp) tcontInp.value = d.tipo_contribuyente || '';
-                    if (condInp)  condInp.value = d.condiciones_pago || 'Según acuerdo';
-                    if (bnomInp)  bnomInp.value = d.banco_nombre || '';
-                    if (bctaInp)  bctaInp.value = d.banco_cuenta || '';
-                    if (btipoInp) btipoInp.value = d.banco_tipo_cuenta || '';
-                    if (celInp)   celInp.value = d.celular || '';
-                    if (corInp)   corInp.value = d.correo || '';
+                    if (nitInp && !nitInp.value.trim() && d.proveedor_nit) nitInp.value = d.proveedor_nit;
+                    if (tcontInp && (!tcontInp.value.trim() || tcontInp.value === 'PERSONA JURÍDICA')) tcontInp.value = d.tipo_contribuyente || tcontInp.value;
+                    if (condInp && !condInp.value.trim())  condInp.value = d.condiciones_pago || 'Según acuerdo';
+                    if (bnomInp && !bnomInp.value.trim())  bnomInp.value = d.banco_nombre || '';
+                    if (bctaInp && !bctaInp.value.trim())  bctaInp.value = d.banco_cuenta || '';
+                    if (btipoInp && !btipoInp.value.trim()) btipoInp.value = d.banco_tipo_cuenta || '';
+                    if (celInp && !celInp.value.trim())    celInp.value = d.celular || '';
+                    if (corInp && !corInp.value.trim())    corInp.value = d.correo || '';
                     ultimoProvAutocompletado = (d.proveedor || nombre).trim();
-                } else {
-                    if (badgeProv) {
-                        badgeProv.className = 'mod-badge badge-gold';
-                        badgeProv.innerHTML = '<i class="bi bi-plus-circle"></i> Proveedor Nuevo';
-                    }
-                    if (hdnEstado) hdnEstado.value = 'nuevo';
-                    // Si no está registrado o ya no coincide, vaciar datos bancarios y tipo de contribuyente
+                } else if (!res.registrado) {
+                    // Si no está registrado ni existe en proveedores, vaciar campos asociados
                     limpiarCamposProveedor(false, false);
                 }
             })
@@ -715,12 +775,16 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         const bnomInp  = document.getElementById('inputBancoNombre');
         const bctaInp  = document.getElementById('inputBancoCuenta');
         const btipoInp = document.getElementById('inputBancoTipoCuenta');
+        const celInp   = document.getElementById('inputProveedorCelular');
+        const corInp   = document.getElementById('inputProveedorCorreo');
 
         if (nitInp) nitInp.value = p.nit || '';
         if (tcontInp) tcontInp.value = p.tipo_contribuyente || 'PERSONA JURÍDICA';
         if (bnomInp) bnomInp.value = p.nombre_banco || '';
         if (bctaInp) bctaInp.value = p.numero_cuenta || '';
         if (btipoInp) btipoInp.value = p.tipo_cuenta || '';
+        if (celInp) celInp.value = p.celular || '';
+        if (corInp) corInp.value = p.correo || '';
 
         ultimoProvAutocompletado = (p.nombre_proveedor || '').trim();
 
@@ -849,9 +913,72 @@ $poAjuste = $esAjuste ? (int)$ordenAjustando['numero_po'] : 0;
         const filas = tbody.querySelectorAll('tr:not(#filaEmptyState)');
         if (filas.length === 0) {
             e.preventDefault();
-            alert('Debe agregar al menos un producto del catálogo a la orden.');
+            alert('⚠️ Debe agregar al menos un producto del catálogo a la orden.');
+            return false;
+        }
+
+        for (let i = 0; i < filas.length; i++) {
+            const tr = filas[i];
+            const titulo = tr.querySelector('.item-titulo')?.value.trim() || 'Ítem ' + (i + 1);
+            const cantInput = tr.querySelector('.item-cantidad');
+            const precioInput = tr.querySelector('.item-precio');
+
+            const cant = parseFloat(cantInput?.value);
+            if (isNaN(cant) || cant < 1) {
+                e.preventDefault();
+                alert(`⚠️ La cantidad para "${titulo}" debe ser un número entero mayor o igual a 1.`);
+                cantInput?.focus();
+                return false;
+            }
+
+            const precio = parseFloat(precioInput?.value);
+            if (isNaN(precio) || precio < 0) {
+                e.preventDefault();
+                alert(`⚠️ El precio para "${titulo}" no puede ser negativo.`);
+                precioInput?.focus();
+                return false;
+            }
+        }
+
+        const fleteInp = document.getElementById('inputFlete');
+        if (fleteInp && parseFloat(fleteInp.value) < 0) {
+            e.preventDefault();
+            alert('⚠️ El valor del flete no puede ser negativo.');
+            fleteInp.focus();
+            return false;
+        }
+
+        const descInp = document.getElementById('inputDescuentoValor');
+        if (descInp && parseFloat(descInp.value) < 0) {
+            e.preventDefault();
+            alert('⚠️ El valor del descuento no puede ser negativo.');
+            descInp.focus();
+            return false;
+        }
+
+        const retInp = document.getElementById('inputRetencion');
+        if (retInp && (parseFloat(retInp.value) < 0 || parseFloat(retInp.value) > 100)) {
+            e.preventDefault();
+            alert('⚠️ El porcentaje de retención debe estar entre 0% y 100%.');
+            retInp.focus();
+            return false;
+        }
+
+        const saldoInp = document.getElementById('inputSaldoFavor');
+        if (saldoInp && parseFloat(saldoInp.value) < 0) {
+            e.preventDefault();
+            alert('⚠️ El saldo a favor no puede ser negativo.');
+            saldoInp.focus();
+            return false;
         }
     });
+
+    // Si ya hay un proveedor precargado (modo ajuste), sincronizar badge y datos bancarios/contacto
+    if (inputProv && inputProv.value.trim().length >= 2) {
+        verificarProveedor(inputProv.value.trim());
+    } else if (inputNit && inputNit.value.trim().length >= 3) {
+        verificarProveedor(inputNit.value.trim());
+    }
 
 })();
 </script>

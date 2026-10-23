@@ -199,7 +199,7 @@ class OrdenCompraModel
      * Consulta el historial de un proveedor exclusivamente en base a órdenes de compra emitidas.
      * Retorna registrado = true únicamente si ya tiene al menos una orden previa (>= 1).
      */
-    public function buscarHistorialProveedor(string $termino): array
+    public function buscarHistorialProveedor(string $termino, ?int $ordenActualId = null): array
     {
         $termino = trim($termino);
         if (empty($termino)) {
@@ -260,18 +260,21 @@ class OrdenCompraModel
                 : '';
             $nombreOficial = $provOficial ? trim($provOficial['nombre_proveedor']) : '';
 
+            $condicionOrdenId = ($ordenActualId !== null && $ordenActualId > 0) ? " AND id < :orden_actual_id" : "";
             $stmtCount = $this->db->prepare(
                 "SELECT COUNT(*) AS total
                  FROM ordenes_compra
-                 WHERE LOWER(TRIM(proveedor)) = LOWER(:c_exact)
-                    OR LOWER(TRIM(proveedor)) LIKE LOWER(:c_like)
-                    OR (:c_nom_oficial != '' AND LOWER(TRIM(proveedor)) = LOWER(:c_nom_oficial2))
-                    OR (proveedor_nit != '' AND (
-                        REPLACE(REPLACE(TRIM(proveedor_nit), '.', ''), ' ', '') = :c_nitnorm
-                        OR (:c_nit_oficial != '' AND REPLACE(REPLACE(TRIM(proveedor_nit), '.', ''), ' ', '') = :c_nit_oficial2)
-                    ))"
+                 WHERE (
+                     LOWER(TRIM(proveedor)) = LOWER(:c_exact)
+                     OR LOWER(TRIM(proveedor)) LIKE LOWER(:c_like)
+                     OR (:c_nom_oficial != '' AND LOWER(TRIM(proveedor)) = LOWER(:c_nom_oficial2))
+                     OR (proveedor_nit != '' AND (
+                         REPLACE(REPLACE(TRIM(proveedor_nit), '.', ''), ' ', '') = :c_nitnorm
+                         OR (:c_nit_oficial != '' AND REPLACE(REPLACE(TRIM(proveedor_nit), '.', ''), ' ', '') = :c_nit_oficial2)
+                     ))
+                 )" . $condicionOrdenId
             );
-            $stmtCount->execute([
+            $paramsCount = [
                 ':c_exact'        => $termRaw,
                 ':c_like'         => '%' . $termRaw . '%',
                 ':c_nom_oficial'  => $nombreOficial,
@@ -279,7 +282,11 @@ class OrdenCompraModel
                 ':c_nitnorm'      => $termNitNorm,
                 ':c_nit_oficial'  => $nitOficialNorm,
                 ':c_nit_oficial2' => $nitOficialNorm
-            ]);
+            ];
+            if ($ordenActualId !== null && $ordenActualId > 0) {
+                $paramsCount[':orden_actual_id'] = $ordenActualId;
+            }
+            $stmtCount->execute($paramsCount);
             $totalOrdenes = (int)$stmtCount->fetchColumn();
 
             $esRegistrado = ($totalOrdenes >= 1);

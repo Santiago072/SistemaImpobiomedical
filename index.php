@@ -209,8 +209,8 @@ header('Expires: Sat, 26 Jul 1997 05:00:00 GMT'); // Fecha en el pasado para ase
 // se limpia el estado temporal y se restaura el borrador original.
 if (isset($_SESSION['cotizacion_revision_de']) || isset($_SESSION['cotizacion_ajustando_id'])) {
     $esFlujoCotizacion = (
-        ($module === 'cotizaciones' && in_array($action, ['', 'crear', 'editar_item', 'eliminar_item', 'finalizar', 'ajax_buscar_productos', 'ajax_get_producto', 'ajax_buscar_clientes', 'ajax_get_cliente', 'modificar', 'ajustar', 'cancelar_ajuste', 'limpiar_borrador']))
-        || ($module === 'proveedores' && in_array($action, ['ajax_buscar', 'ajax_get']))
+        ($module === 'cotizaciones' && in_array($action, ['', 'crear', 'editar_item', 'eliminar_item', 'reordenar_item', 'guardar_ajuste_directo', 'finalizar', 'ajax_buscar_productos', 'ajax_get_producto', 'ajax_buscar_clientes', 'ajax_get_cliente', 'modificar', 'ajustar', 'cancelar_ajuste', 'limpiar_borrador'], true))
+        || ($module === 'proveedores' && in_array($action, ['ajax_buscar', 'ajax_get'], true))
     );
     
     if (!$esFlujoCotizacion) {
@@ -494,6 +494,9 @@ if ($module === 'cotizaciones') {
             break;
         case 'cancelar_ajuste':
             $ctrl->cancelarAjuste();
+            break;
+        case 'guardar_ajuste_directo':
+            $ctrl->guardarAjusteDirecto();
             break;
         case 'cambiar_estado':
             $ctrl->cambiarEstadoComercial();

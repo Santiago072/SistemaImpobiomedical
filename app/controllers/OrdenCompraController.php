@@ -91,7 +91,8 @@ class OrdenCompraController
         }
 
         $proveedorInicial = $ordenAjustando['proveedor'] ?? (count($proveedores) === 1 ? ($proveedores[0] ?? '') : '');
-        $infoProveedorInicial = !empty($proveedorInicial) ? $this->model->buscarHistorialProveedor($proveedorInicial) : null;
+        $idAjusteSeleccionar = !empty($ordenAjustando['id']) ? (int)$ordenAjustando['id'] : null;
+        $infoProveedorInicial = !empty($proveedorInicial) ? $this->model->buscarHistorialProveedor($proveedorInicial, $idAjusteSeleccionar) : null;
 
         return compact('cotizacion', 'items', 'proveedores', 'csrf_token', 'infoProveedorInicial', 'ordenAjustando', 'itemsOrdenAjustando', 'proveedorInicial');
     }
@@ -155,10 +156,11 @@ class OrdenCompraController
         $provCelular        = mb_substr(sanitizar_entrada($_POST['proveedor_celular'] ?? ''), 0, 30);
         $provCorreo         = mb_substr(sanitizar_entrada($_POST['proveedor_correo'] ?? ''), 0, 100);
 
+        $idAjuste = !empty($_SESSION['orden_ajustando_id']) ? (int)$_SESSION['orden_ajustando_id'] : null;
         // Verificar estado de proveedor directamente contra la base de datos (por nombre o NIT normalizado)
-        $historialProv = $this->model->buscarHistorialProveedor(!empty($proveedorNit) ? $proveedorNit : $proveedor);
+        $historialProv = $this->model->buscarHistorialProveedor(!empty($proveedorNit) ? $proveedorNit : $proveedor, $idAjuste);
         if (empty($historialProv['registrado'])) {
-            $historialProv = $this->model->buscarHistorialProveedor($proveedor);
+            $historialProv = $this->model->buscarHistorialProveedor($proveedor, $idAjuste);
         }
         $estadoProveedor = !empty($historialProv['registrado']) ? 'registrado' : 'nuevo';
 
@@ -241,8 +243,9 @@ class OrdenCompraController
                     $fleteIva, $fletePorcentajeIva, $saldoFavor
                 );
                 $ordenId = $idAjuste;
+                $poNum = (int)($this->model->buscarPorId($ordenId)['numero_po'] ?? $ordenId);
                 unset($_SESSION['orden_ajustando_id'], $_SESSION['orden_ajustando_po']);
-                $_SESSION['flash_success'] = 'Orden de compra ajustada correctamente conservando su número P.O.';
+                $_SESSION['flash_success'] = 'Orden de compra P.O. ' . $poNum . ' ajustada con éxito.';
             } else {
                 // Modo CREACIÓN normal
                 $ordenId = $this->model->crearOrden(
@@ -254,6 +257,8 @@ class OrdenCompraController
                     $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
                     $fleteIva, $fletePorcentajeIva, $saldoFavor
                 );
+                $poNum = (int)($this->model->buscarPorId($ordenId)['numero_po'] ?? $ordenId);
+                $_SESSION['flash_success'] = 'Orden de compra P.O. ' . $poNum . ' generada con éxito.';
             }
 
             // Auto-registro o actualización en el directorio de proveedores (sin riesgo de Duplicate Entry)
@@ -295,8 +300,8 @@ class OrdenCompraController
                 );
             }
 
-            // Redirigir a la lista de órdenes y abrir el visor modal de la orden creada/ajustada
-            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar&ver_po=' . $ordenId);
+            // Redirigir limpiamente a la lista de órdenes con el mensaje de éxito
+            header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
             exit();
         } catch (\Throwable $e) {
             error_log('Error creando o ajustando orden de compra: ' . $e->getMessage());
@@ -316,14 +321,19 @@ class OrdenCompraController
 
         $ordenAjustando = null;
         $itemsAjustando = [];
+        $infoProveedorInicial = null;
         if (!empty($_SESSION['orden_ajustando_id'])) {
             $ordenAjustando = $this->model->buscarPorId((int)$_SESSION['orden_ajustando_id']);
             if ($ordenAjustando) {
                 $itemsAjustando = $this->model->obtenerItems((int)$ordenAjustando['id']);
+                $provBusqueda = !empty($ordenAjustando['proveedor_nit']) ? $ordenAjustando['proveedor_nit'] : ($ordenAjustando['proveedor'] ?? '');
+                if (!empty($provBusqueda)) {
+                    $infoProveedorInicial = $this->model->buscarHistorialProveedor($provBusqueda, (int)$ordenAjustando['id']);
+                }
             }
         }
 
-        return compact('csrf_token', 'fechaActual', 'ordenAjustando', 'itemsAjustando');
+        return compact('csrf_token', 'fechaActual', 'ordenAjustando', 'itemsAjustando', 'infoProveedorInicial');
     }
 
     public function crearDirectaGuardar(): void
@@ -375,10 +385,12 @@ class OrdenCompraController
         $provCelular        = mb_substr(sanitizar_entrada($_POST['proveedor_celular'] ?? ''), 0, 30);
         $provCorreo         = mb_substr(sanitizar_entrada($_POST['proveedor_correo'] ?? ''), 0, 100);
 
+        $idAjuste = !empty($_SESSION['orden_ajustando_id']) ? (int)$_SESSION['orden_ajustando_id'] : null;
+
         // Estado del proveedor calculado contra la BD (por NIT o Nombre)
-        $historialProv = $this->model->buscarHistorialProveedor(!empty($proveedorNit) ? $proveedorNit : $proveedor);
+        $historialProv = $this->model->buscarHistorialProveedor(!empty($proveedorNit) ? $proveedorNit : $proveedor, $idAjuste);
         if (empty($historialProv['registrado'])) {
-            $historialProv = $this->model->buscarHistorialProveedor($proveedor);
+            $historialProv = $this->model->buscarHistorialProveedor($proveedor, $idAjuste);
         }
         $estadoProveedor = !empty($historialProv['registrado']) ? 'registrado' : 'nuevo';
 
@@ -390,9 +402,7 @@ class OrdenCompraController
         $descuentoCalculado = max(0, (float)($_POST['descuento'] ?? 0));
         $saldoFavor         = max(0, (float)($_POST['saldo_favor'] ?? 0));
 
-        $idAjuste = !empty($_SESSION['orden_ajustando_id']) ? (int)$_SESSION['orden_ajustando_id'] : 0;
-
-        if ($idAjuste > 0) {
+        if (!empty($idAjuste)) {
             // Actualizar orden existente
             $this->model->actualizarOrden(
                 $idAjuste,
@@ -404,8 +414,9 @@ class OrdenCompraController
                 $fleteIva, $fletePorcentajeIva, $saldoFavor
             );
             $ordenId = $idAjuste;
+            $poNum = (int)($this->model->buscarPorId($ordenId)['numero_po'] ?? $ordenId);
             unset($_SESSION['orden_ajustando_id'], $_SESSION['orden_ajustando_po']);
-            $_SESSION['flash_success'] = 'Orden de mostrador ajustada correctamente conservando su número P.O.';
+            $_SESSION['flash_success'] = 'Orden de mostrador P.O. ' . $poNum . ' ajustada con éxito.';
         } else {
             // Crear la orden con cotizacion_id NULL y cotizacion_numero MOSTRADOR
             $ordenId = $this->model->crearOrden(
@@ -417,6 +428,8 @@ class OrdenCompraController
                 $estadoProveedor, $flete, $tipoDescuento, $descuentoValor, $descuentoCalculado,
                 $fleteIva, $fletePorcentajeIva, $saldoFavor
             );
+            $poNum = (int)($this->model->buscarPorId($ordenId)['numero_po'] ?? $ordenId);
+            $_SESSION['flash_success'] = 'Orden de mostrador P.O. ' . $poNum . ' generada con éxito.';
         }
 
         // ── AUTO-REGISTRO O ACTUALIZACIÓN EN EL DIRECTORIO DE PROVEEDORES (sin riesgo de Duplicate Entry) ──
@@ -457,8 +470,8 @@ class OrdenCompraController
             );
         }
 
-        // Redirigir a la lista de órdenes y abrir el visor modal de la orden creada/ajustada
-        header('Location: ' . BASE_URL . '?module=ordenes&action=consultar&ver_po=' . $ordenId);
+        // Redirigir limpiamente a la lista de órdenes con el mensaje de éxito
+        header('Location: ' . BASE_URL . '?module=ordenes&action=consultar');
         exit();
     }
 
@@ -666,7 +679,8 @@ class OrdenCompraController
         header('Content-Type: application/json; charset=utf-8');
 
         $termino = sanitizar_entrada($_GET['term'] ?? '');
-        $resultado = $this->model->buscarHistorialProveedor($termino);
+        $excluirId = !empty($_SESSION['orden_ajustando_id']) ? (int)$_SESSION['orden_ajustando_id'] : null;
+        $resultado = $this->model->buscarHistorialProveedor($termino, $excluirId);
 
         echo json_encode($resultado);
         exit();

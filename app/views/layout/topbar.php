@@ -713,4 +713,54 @@ function cambiarTabManual(tabId, btn) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') cerrarManualUsuario();
 });
+
+// Helper global para descartar toast
+function cerrarToastNotificacion(btn) {
+    const toast = btn.closest('.toast-top-right');
+    if (toast) {
+        toast.classList.add('toast-hide');
+        setTimeout(() => toast.remove(), 350);
+    }
+}
+
+// Auto-desvanecer toasts después de 5 segundos
+document.addEventListener('DOMContentLoaded', function() {
+    const toasts = document.querySelectorAll('.toast-top-right');
+    toasts.forEach(toast => {
+        setTimeout(() => {
+            if (toast && !toast.classList.contains('toast-hide')) {
+                toast.classList.add('toast-hide');
+                setTimeout(() => toast.remove(), 350);
+            }
+        }, 5000);
+    });
+});
 </script>
+
+<?php
+// Renderizado de Toast Superior Derecho si hay mensaje de éxito en sesión o variable
+$toastTexto = '';
+if (!empty($_SESSION['flash_exito'])) {
+    $toastTexto = $_SESSION['flash_exito'];
+    unset($_SESSION['flash_exito']);
+} elseif (!empty($_SESSION['flash_success'])) {
+    $toastTexto = $_SESSION['flash_success'];
+    unset($_SESSION['flash_success']);
+} elseif (!empty($mensajeExito)) {
+    $toastTexto = $mensajeExito;
+}
+?>
+<?php if (!empty($toastTexto)): ?>
+<div class="toast-top-right" role="alert" aria-live="polite">
+    <div class="toast-icon-wrap">
+        <i class="bi bi-check2-circle"></i>
+    </div>
+    <div class="toast-body-wrap">
+        <h4 class="toast-title">Operación Exitosa</h4>
+        <p class="toast-desc"><?= htmlspecialchars($toastTexto) ?></p>
+    </div>
+    <button type="button" class="toast-close-btn" onclick="cerrarToastNotificacion(this)" title="Cerrar notificación">
+        <i class="bi bi-x-lg"></i>
+    </button>
+</div>
+<?php endif; ?>

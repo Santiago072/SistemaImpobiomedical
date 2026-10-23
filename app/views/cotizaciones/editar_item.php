@@ -256,7 +256,7 @@ include dirname(__DIR__) . '/layout/menu.php';
 
                 <div class="imo-modal-footer">
                     <a href="<?= $basePath ?>?module=cotizaciones&action=crear" class="imo-btn-cancel text-nodecor"><i class="bi bi-x-lg"></i> Cancelar</a>
-                    <button type="submit" class="btn-mod-primary"><i class="bi bi-save-fill"></i> Guardar Cambios</button>
+                    <button type="submit" class="btn-mod-primary"><i class="bi bi-arrow-repeat"></i> Actualizar Ítem</button>
                 </div>
             </form>
         </div>
@@ -476,13 +476,50 @@ if (inpProvEdit && listaProvEdit) {
     });
 }
 
-// Serializar calcState antes de enviar y validar proveedor obligatorio
+function sanitizarNumeroPositivo(input, minVal = 0, esEntero = false) {
+    if (!input) return;
+    input.addEventListener('keydown', function(e) {
+        if (e.key === '-' || e.key === 'e' || e.key === 'E') {
+            e.preventDefault();
+        }
+    });
+    input.addEventListener('input', function() {
+        let val = esEntero ? parseInt(this.value, 10) : parseFloat(this.value);
+        if (!isNaN(val) && val < minVal) {
+            this.value = minVal;
+        }
+    });
+}
+
+sanitizarNumeroPositivo(document.getElementById('inpCantidad'), 1, true);
+sanitizarNumeroPositivo(document.getElementById('inpPrecio'), 0, false);
+sanitizarNumeroPositivo(document.getElementById('inpPrecioProveedor'), 0, false);
+sanitizarNumeroPositivo(document.getElementById('inpPctIva'), 0, false);
+
+// Serializar calcState antes de enviar y validar campos obligatorios y numéricos
 document.querySelector('form').addEventListener('submit', function(e) {
     const inp = document.getElementById('inpProveedor');
     if (!inp || !inp.value.trim()) {
         e.preventDefault();
         inp.focus();
         inp.reportValidity();
+        return false;
+    }
+    const cantInp = document.getElementById('inpCantidad');
+    const precioInp = document.getElementById('inpPrecio');
+    const cant = parseFloat(cantInp?.value);
+    const precio = parseFloat(precioInp?.value);
+
+    if (isNaN(cant) || cant < 1) {
+        e.preventDefault();
+        alert('⚠️ La cantidad debe ser un número entero mayor o igual a 1.');
+        cantInp?.focus();
+        return false;
+    }
+    if (isNaN(precio) || precio < 0) {
+        e.preventDefault();
+        alert('⚠️ El precio unitario no puede ser negativo.');
+        precioInp?.focus();
         return false;
     }
     document.getElementById('hdnCalcOps').value = JSON.stringify(calcState);

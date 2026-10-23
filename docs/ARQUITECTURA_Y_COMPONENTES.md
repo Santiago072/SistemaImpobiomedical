@@ -1,6 +1,6 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** v3.5.6  
+**Versión:** v3.6.2  
 **Fecha:** Octubre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -472,6 +472,9 @@ erDiagram
 ### 6.5 Órdenes de Compra (`OrdenCompraController.php`)
 - **Aislamiento por Proveedor:** Agrupa los ítems cotizados y permite generar la Orden de Compra (P.O.) únicamente con los productos del proveedor seleccionado.
 - **Ajuste Directo de Órdenes (`action=ajustar` y `action=cancelar_ajuste`):** Permite reabrir y corregir una orden de compra generada (tanto proveniente de cotización como de mostrador directo), preservando exactamente el número secuencial `numero_po` mediante el método atómico `actualizarOrden(...)` de `OrdenCompraModel` con reemplazo transaccional de ítems.
+- **Coherencia Histórica de Proveedores (`buscarHistorialProveedor`):** La evaluación histórica de compras previas admite el ID de orden en ajuste (`$ordenActualId`) para filtrar estrictamente con `id < ordenActualId`. Así, la primera orden histórica de un proveedor siempre muestra congruentemente `PROVEEDOR NUEVO` (tanto en la vista de ajuste como en la tabla de consultas) sin auto-contar la orden que se está modificando.
+- **Autocompletado Total Desacoplado:** Precarga de forma automática todos los datos bancarios (`banco_nombre`, `banco_cuenta`, `banco_tipo_cuenta`) y de contacto (`celular`, `correo`) desde el catálogo maestro de proveedores independientemente de si la orden es nueva o registrada.
+- **Blindaje Numérico Anti-Negativos:** Bloqueo de teclado en tiempo real (`keydown`), sanitización reactiva (`input`) y validación pre-submit garantizando que cantidades sean $\ge 1$ y precios/fletes/descuentos/saldos sean $\ge 0$.
 - **Redirección Optimizada con Modal Automático:** Tras crear o guardar el ajuste, el controlador redirige a `?module=ordenes&action=consultar&ver_po={id}`, donde la vista despliega automáticamente el modal de previsualización del PDF. Al cerrar el visor o dar "Atrás", el usuario queda situado directamente en la tabla completa de órdenes.
 - **Bloqueo Inteligente:** Deshabilita tanto en frontend como en backend la generación de órdenes sobre cotizaciones que hayan sido marcadas como `concluida` o `descartada`.
 - **Pestañas de Estado y AJAX:** Pestañas visuales para 🟡 *Pendientes* y 🟢 *Completadas* con endpoint reactivo `cambiar_estado` protegido con CSRF y Rate Limit.
@@ -491,7 +494,7 @@ erDiagram
 - **Control de Roles (RBAC):** Restricción de desactivación/eliminación exclusivamente a administradores (`admin`).
 - **Normalización de NIT:** Eliminación de puntos y espacios preservando el dígito de verificación (`normalizar_nit()`).
 - **Búsqueda Predictiva en Vivo:** Endpoint AJAX (`ajaxBuscar`) con Rate Limiting (`60/min`) utilizado transversalmente en cotizaciones y órdenes de compra.
-- **Historial de Proveedores:** Integración con `OrdenCompraModel` para clasificar automáticamente al proveedor en órdenes como `🟡 Nuevo` (primera orden) o `🟢 Registrado` (conteo de órdenes previas).
+- **Historial de Proveedores:** Integración con `OrdenCompraModel` para clasificar automáticamente al proveedor en órdenes como `🟡 Nuevo` (primera orden, evaluando `id < ordenActualId`) o `🟢 Registrado` (conteo de órdenes previas), asegurando la precarga íntegra de datos maestros bancarios y de contacto en ambos estados.
 
 ---
 

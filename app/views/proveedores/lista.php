@@ -26,10 +26,6 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
         </div>
 
         <!-- ── Notificaciones Flash ── -->
-        <?php if (!empty($mensajeExito)): ?>
-        <div class="mod-alert mod-alert-ok"><i class="bi bi-check-circle-fill"></i> <?= htmlspecialchars($mensajeExito) ?></div>
-        <?php unset($_SESSION['flash_exito']); ?>
-        <?php endif; ?>
         <?php if (!empty($mensajeError)):
             $alertaErrorMsg = $mensajeError;
             unset($_SESSION['flash_error']);
@@ -146,12 +142,12 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
                 <div class="imo-form-row">
                     <div class="imo-form-group">
-                        <label>Nombre del Banco</label>
-                        <input type="text" name="nombre_banco" placeholder="Ej: BANCOLOMBIA" maxlength="100">
+                        <label>Nombre del Banco <span style="color:#ef4444;">*</span></label>
+                        <input type="text" name="nombre_banco" placeholder="Ej: BANCOLOMBIA" maxlength="100" required>
                     </div>
                     <div class="imo-form-group">
-                        <label>Tipo de Cuenta</label>
-                        <select name="tipo_cuenta">
+                        <label>Tipo de Cuenta <span style="color:#ef4444;">*</span></label>
+                        <select name="tipo_cuenta" required>
                             <option value="">Seleccione...</option>
                             <option value="Ahorros">Ahorros</option>
                             <option value="Corriente">Corriente</option>
@@ -160,8 +156,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 </div>
 
                 <div class="imo-form-group">
-                    <label>Número de Cuenta</label>
-                    <input type="text" name="numero_cuenta" placeholder="Ej: 123456789" maxlength="100">
+                    <label>Número de Cuenta <span style="color:#ef4444;">*</span></label>
+                    <input type="text" name="numero_cuenta" placeholder="Ej: 123456789" maxlength="100" required>
                 </div>
 
                 <div class="imo-form-row">
@@ -223,12 +219,12 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 
                 <div class="imo-form-row">
                     <div class="imo-form-group">
-                        <label>Nombre del Banco</label>
-                        <input type="text" name="nombre_banco" id="edit_nombre_banco" maxlength="100">
+                        <label>Nombre del Banco <span style="color:#ef4444;">*</span></label>
+                        <input type="text" name="nombre_banco" id="edit_nombre_banco" maxlength="100" required>
                     </div>
                     <div class="imo-form-group">
-                        <label>Tipo de Cuenta</label>
-                        <select name="tipo_cuenta" id="edit_tipo_cuenta">
+                        <label>Tipo de Cuenta <span style="color:#ef4444;">*</span></label>
+                        <select name="tipo_cuenta" id="edit_tipo_cuenta" required>
                             <option value="">Seleccione...</option>
                             <option value="Ahorros">Ahorros</option>
                             <option value="Corriente">Corriente</option>
@@ -237,8 +233,8 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                 </div>
 
                 <div class="imo-form-group">
-                    <label>Número de Cuenta</label>
-                    <input type="text" name="numero_cuenta" id="edit_numero_cuenta" maxlength="100">
+                    <label>Número de Cuenta <span style="color:#ef4444;">*</span></label>
+                    <input type="text" name="numero_cuenta" id="edit_numero_cuenta" maxlength="100" required>
                 </div>
 
                 <div class="imo-form-row">

@@ -835,17 +835,33 @@ class CotizacionModel
      */
     public function aplicarItemsAjuste(int $clonId, int $cotizacionDestinoId): void
     {
-        // 1. Eliminar ítems anteriores de la cotización finalizada
-        $stmtDel = $this->db->prepare('DELETE FROM cotizacion_items WHERE cotizacion_id = :dest_id');
-        $stmtDel->execute([':dest_id' => $cotizacionDestinoId]);
+        $enTransaccion = $this->db->inTransaction();
+        if (!$enTransaccion) {
+            $this->db->beginTransaction();
+        }
 
-        // 2. Mover los ítems del clon temporal hacia la cotización finalizada
-        $stmtMove = $this->db->prepare('UPDATE cotizacion_items SET cotizacion_id = :dest_id WHERE cotizacion_id = :clon_id');
-        $stmtMove->execute([':dest_id' => $cotizacionDestinoId, ':clon_id' => $clonId]);
+        try {
+            // 1. Eliminar ítems anteriores de la cotización finalizada
+            $stmtDel = $this->db->prepare('DELETE FROM cotizacion_items WHERE cotizacion_id = :dest_id');
+            $stmtDel->execute([':dest_id' => $cotizacionDestinoId]);
 
-        // 3. Eliminar la cabecera del clon temporal
-        $stmtDelClon = $this->db->prepare('DELETE FROM cotizaciones WHERE id = :clon_id');
-        $stmtDelClon->execute([':clon_id' => $clonId]);
+            // 2. Mover los ítems del clon temporal hacia la cotización finalizada
+            $stmtMove = $this->db->prepare('UPDATE cotizacion_items SET cotizacion_id = :dest_id WHERE cotizacion_id = :clon_id');
+            $stmtMove->execute([':dest_id' => $cotizacionDestinoId, ':clon_id' => $clonId]);
+
+            // 3. Eliminar la cabecera del clon temporal
+            $stmtDelClon = $this->db->prepare('DELETE FROM cotizaciones WHERE id = :clon_id');
+            $stmtDelClon->execute([':clon_id' => $clonId]);
+
+            if (!$enTransaccion) {
+                $this->db->commit();
+            }
+        } catch (\Throwable $e) {
+            if (!$enTransaccion && $this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
     }
 
     /**

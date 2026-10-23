@@ -4,6 +4,44 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.6.2] - 2026-10-22
+### Agregado y Mejorado
+- **Controles Anti-Negativos y Validación en Tiempo Real (Blindaje Numérico Global):**
+  - Implementación de bloqueo de pulsaciones (`keydown`) para caracteres negativos (`-`, `+`, `e`, `E`) en inputs numéricos de cantidades, precios, retenciones, fletes y descuentos.
+  - Sanitización reactiva (`input`) para autocorregir automáticamente cualquier intento de pegar o ingresar números menores a cero o menores a 1 en cantidades.
+  - Validación pre-envío (`submit`) en formularios de cotizaciones y órdenes de compra con alertas emergentes claras especificando el producto o campo exacto que presenta valores inválidos.
+  - Aseguramiento de integridad en backend (`max(0, ...)` y `max(1, ...)`) en `OrdenCompraController.php` y `ItemCotizacionService.php`.
+- **Autocompletado Total de Datos de Proveedor en Creación y Ajuste de Órdenes:**
+  - Precarga automática de datos tributarios, bancarios y de contacto (`nombre_banco`, `numero_cuenta`, `tipo_cuenta`, `celular`, `correo`) tanto en `crear_directa.php` como en `seleccionar_items.php`.
+  - Desacoplamiento del autocompletado frente al estado de la orden: el sistema rellena los datos maestros del proveedor independientemente de si es su primera compra (`Nuevo`) o si ya tiene órdenes previas (`Registrado`).
+- **Coherencia Histórica en Conteo de Órdenes Previas de Proveedores:**
+  - Actualizado `OrdenCompraModel::buscarHistorialProveedor()` y `OrdenCompraController.php` para recibir el parámetro opcional `$ordenActualId`.
+  - Al ajustar una orden existente (ej. P.O. 11), el conteo de compras previas del proveedor filtra exclusivamente las órdenes con `id < ordenActualId`. De esta forma, una primera orden histórica se clasifica congruentemente como `PROVEEDOR NUEVO` tanto en el formulario de ajuste como en la tabla general de órdenes, eliminando el falso positivo de auto-conteo.
+- **Sistema de Notificaciones y Alertas Modales Institucionales (Shared UX):**
+  - Incorporación del componente centralizado `shared_ux.css` y helpers unificados de confirmaciones y alertas con diseño institucional (`alerts.css`, `modals.css`).
+
+---
+
+## [v3.6.1] - 2026-10-22
+### Agregado y Mejorado
+- **Campos Bancarios Obligatorios en Proveedores:**
+  - `nombre_banco`, `numero_cuenta` y `tipo_cuenta` ahora son obligatorios con asterisco rojo (`*`) y validación nativa HTML5 en modales de creación y edición (`proveedores/lista.php`).
+  - Validación en servidor en `ProveedorController.php` impidiendo registros o ediciones incompletas.
+- **Blindaje y Resiliencia en Finalización de Cotizaciones (Cero Fallos por NIT Duplicado):**
+  - Repotenciada la función `ClienteModel::buscarPorNit()` para admitir normalización con y sin puntos, espacios y guion.
+  - Blindaje con `try-catch` en `FinalizarCotizacionService.php` para asociar atómicamente el cliente existente en caso de colisión de clave única sin interrumpir la emisión de cotizaciones.
+- **Manejo Amigable de Errores en Creación de Clientes (Eliminación de Error 500):**
+  - Captura controlada de `PDOException` en `ClienteController.php`, mostrando mensaje amigable institucional ("NIT / CC duplicado") dentro de la misma vista sin tumbar la pantalla con Error 500.
+  - Límites de sanitización seguros con `mb_substr()` en `ClienteModel.php` preservando las longitudes exactas del esquema `bd.sql`.
+- **Experiencia de Usuario en Ajuste de Cotizaciones:**
+  - El botón de confirmación en `finalizar.php` muestra limpiamente *"Guardar Ajuste"* (en lugar de *"Guardar Ajuste y Generar PDF"*).
+  - Al guardar un ajuste directo, el sistema actualiza la cotización original y redirige a la consulta de cotizaciones sin descargar automáticamente el PDF innecesariamente.
+  - Protección de sesión de ajuste en `index.php`: añadida la acción `'reordenar_item'` a la lista blanca para que al subir o bajar productos con las flechas no se borre la sesión de ajuste ni los datos precargados del cliente.
+- **Homologación de Búsqueda de Proveedores:**
+  - Actualizado `ProveedorModel::buscarPorNit()` con normalización completa e inserción protegida con `try-catch` en `registrarOActualizar()`.
+
+---
+
 ## [v3.6.0] - 2026-10-21
 ### Agregado
 - **Campo de Unidad de Medida en Ítems de Cotización y Órdenes de Compra:**

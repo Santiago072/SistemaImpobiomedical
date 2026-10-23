@@ -13,6 +13,10 @@ graph LR
     F3 --> F4["Fase 4: Modularización CSS\n(Arquitectura SMACSS)"]
     F4 --> F5["Fase 5: Pruebas & CI/CD\n(PHPUnit + GitHub Actions)"]
     F5 --> F6["Fase 6: Documentación & Docs\n(Transferencia y Venta)"]
+    F6 --> F7["Fase 7: Evolución Operativa\n(Ajuste vs Modificar)"]
+    F7 --> F8["Fase 8: Ajuste Órdenes P.O.\n(Modal Automático)"]
+    F8 --> F9["Fase 9: Proveedores & Unidades\n(Reordenamiento)"]
+    F9 --> F10["Fase 10: Blindaje Numérico & UX\n(Coherencia v3.6.2)"]
 ```
 
 ---
@@ -60,3 +64,14 @@ graph LR
 * **Redirección Optimizada con Modal Automático:** Desacoplamiento de la redirección directa al stream de DomPDF en bruto; retorno fluido a la tabla de órdenes (`consultar`) con apertura automática del visor modal para evitar bloqueos en el historial de navegación al presionar el botón "Atrás".
 * **Ampliación de Esquema en Base de Datos:** Incorporación de persistencia para el IVA de flete (`flete_iva`, `flete_porcentaje_iva`) en `ordenes_compra`.
 * **Actualización de Identidad Visual Corporativa:** Sustitución de logo corporativo intermedio en el encabezado de cotizaciones PDF por `logo/logoimpdf.png`.
+
+### Fase 9: Módulo Centralizado de Proveedores, Reordenamiento y Unidades de Medida
+* **Directorio Maestro de Proveedores:** Migración de tabla y CRUD completo con datos comerciales, tributarios y bancarios obligatorios (`ProveedorModel`, `ProveedorController`).
+* **Unidad de Medida y Soporte Sin Modelo (`N/A`):** Columna `unidad` en ítems de cotización y órdenes de compra con reflejo en PDFs, Hoja de Respaldo y Excel; checkbox reactivo para productos que no aplican modelo técnico.
+* **Reordenamiento Interactivo de Ítems:** Persistencia de orden posicional (`orden INT`) en cotizaciones con desplazamiento interactivo de filas mediante flechas (⬆️/⬇️).
+
+### Fase 10: Blindaje Numérico Global, Autocompletado Maestro y Coherencia Histórica (v3.6.2)
+* **Controles Anti-Negativos en Tiempo Real:** Bloqueo de pulsaciones de teclado (`keydown`), sanitización reactiva (`input`) y validaciones `submit` en clientes y backend asegurando que cantidades sean $\ge 1$ y precios/costos sean $\ge 0$.
+* **Autocompletado Total Desacoplado de Proveedores:** Precarga íntegra de información bancaria y de contacto (`celular`, `correo`, banco, cuenta) en órdenes directas y desde cotización independientemente de la clasificación del proveedor.
+* **Coherencia Histórica de Proveedor en Ajuste:** Evaluación de compras previas filtrando estrictamente por `id < ordenActualId`, asegurando que la primera orden histórica muestre congruentemente `PROVEEDOR NUEVO` sin auto-contar la orden abierta.
+* **Estandarización de Notificaciones UX:** Adopción de componente institucional `shared_ux.css` y alertas amigables en todos los módulos operativos.

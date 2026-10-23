@@ -1,6 +1,6 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v3.5.6  
+**Versión del Sistema:** v3.6.1  
 **Fecha:** Octubre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -36,10 +36,10 @@ El sistema cuenta con tres roles claramente estructurados:
 ### 📝 Cotizaciones y Calculadora Comercial
 * **RF10:** El sistema debe permitir elaborar cotizaciones seleccionando productos del catálogo (autocompletando título, marca, modelo, descripción y categoría) o ingresando productos de manera manual si es un producto nuevo.
 * **RF11:** El sistema debe calcular el precio de venta unitario a partir del costo del proveedor, sumando el porcentaje de utilidad, flete, calibración y estampillas.
-* **RF12:** El sistema debe permitir editar y ajustar los productos agregados a la lista de la cotización antes de finalizarla.
+* **RF12:** El sistema debe permitir editar, eliminar y reordenar interactivamente (arriba/abajo) los productos agregados a la cotización tanto en cotizaciones nuevas como en ajustes de cotización.
 * **RF13:** El sistema debe generar automáticamente un consecutivo mensual para cada cotización (`01`, `02`, `03`...) precedido por las iniciales del asesor comercial.
 * **RF14:** El sistema debe permitir modificar una cotización finalizada bajo dos modalidades:
-  * **Ajustar Cotización:** Corrige precios o datos manteniendo el mismo número original.
+  * **Ajustar Cotización:** Corrige precios, cantidades o datos manteniendo el mismo número original y guardando los cambios sin descarga forzada de PDF.
   * **Nueva Revisión:** Genera una copia con sufijo de versión (`_01`, `_02`...) para conservar el histórico de la negociación original.
 * **RF15:** Cada asesor comercial solo puede ajustar o modificar las cotizaciones de su autoría; mientras que el Administrador y el Encargado de Compras pueden gestionar las de cualquier usuario.
 * **RF16:** El sistema debe permitir gestionar el **Estado Comercial** de las cotizaciones (*Pendiente*, *Concluida*, *Descartada*) en tiempo real, registrando la fecha y hora del cambio.
@@ -92,7 +92,7 @@ El sistema cuenta con tres roles claramente estructurados:
 ### 🎨 Usabilidad y Experiencia de Usuario
 * **RF50:** El sistema debe señalar visualmente los campos obligatorios de los formularios con un asterisco en color rojo.
 * **RF51:** El sistema debe incluir un botón de ayuda rápida (`[ ? Ayuda ]`) en la barra superior para consultar el manual operativo según los permisos del usuario activo.
-* **RF52:** El sistema debe presentar mensajes de alerta claros ante errores o validaciones, explicando la causa y sugiriendo la acción correcta para continuar.
+* **RF52:** El sistema debe presentar mensajes de alerta claros ante errores o validaciones, bloqueando el ingreso de valores numéricos negativos en tiempo real y sugiriendo la acción correcta para continuar.
 
 ---
 
@@ -184,9 +184,10 @@ A continuación se detallan las Historias de Usuario organizadas según la barra
 * **Para** corregir precios sobre la misma propuesta o conservar el histórico de versiones de una negociación en curso.
 * **Requisitos cubiertos:** `RF14`, `RF15`
 * **Criterios de Aceptación:**
-  * **1.** Bajo la opción "Ajustar", el sistema permite modificar ítems y precios manteniendo exactamente el mismo número consecutivo original.
-  * **2.** Bajo la opción "Nueva Revisión", el sistema crea una copia de la cotización agregando el sufijo de versión (`_01`, `_02`...).
-  * **3.** Un asesor comercial solo puede ajustar o crear revisiones sobre cotizaciones de su autoría; los roles `admin` y `compras` pueden hacerlo sobre cualquier cotización.
+  * **1.** Bajo la opción "Ajustar", el sistema permite modificar ítems, cantidades, reordenar posiciones con flechas interactivas y corregir precios manteniendo exactamente el mismo número consecutivo original.
+  * **2.** Al pulsar "Guardar Ajuste", la cotización actualiza sus datos en la base de datos y redirige a la vista de consulta sin forzar la descarga del PDF.
+  * **3.** Bajo la opción "Nueva Revisión", el sistema crea una copia de la cotización agregando el sufijo de versión (`_01`, `_02`...).
+  * **4.** Un asesor comercial solo puede ajustar o crear revisiones sobre cotizaciones de su autoría; los roles `admin` y `compras` pueden hacerlo sobre cualquier cotización.
 
 #### HU07 - Trazabilidad de Estados Comerciales y Logística de Entrega (Módulo: Consultar Cotizaciones)
 * **Como** usuario del sistema,

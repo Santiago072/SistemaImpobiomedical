@@ -61,11 +61,33 @@ class ClienteModel implements RepositoryInterface
         return $row ?: null;
     }
 
-    /** Buscar cliente por NIT */
+    /** Buscar cliente por NIT (incluyendo variantes con/sin puntos, espacios o guion) */
     public function buscarPorNit(string $nit): ?array
     {
-        $stmt = $this->db->prepare('SELECT * FROM clientes WHERE nit = :nit LIMIT 1');
-        $stmt->execute([':nit' => $nit]);
+        $nitLimpio = trim($nit);
+        if ($nitLimpio === '') return null;
+
+        $nitNorm    = function_exists('normalizar_nit') ? normalizar_nit($nitLimpio) : str_replace(['.', ' '], '', $nitLimpio);
+        $nitDigitos = preg_replace('/\D/', '', $nitLimpio);
+
+        $sql = "SELECT * FROM clientes 
+                WHERE TRIM(nit) = :nit 
+                   OR REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', '') = :nitNorm";
+        $params = [
+            ':nit'     => $nitLimpio,
+            ':nitNorm' => $nitNorm,
+        ];
+
+        if (strlen($nitDigitos) >= 6) {
+            $sql .= " OR REPLACE(REPLACE(REPLACE(TRIM(nit), '.', ''), ' ', ''), '-', '') = :nitDigitos";
+            $params[':nitDigitos'] = $nitDigitos;
+        }
+
+        $sql .= " ORDER BY (TRIM(nit) = :nitExacto) DESC, id DESC LIMIT 1";
+        $params[':nitExacto'] = $nitLimpio;
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         $row = $stmt->fetch();
         return $row ?: null;
     }
@@ -125,14 +147,14 @@ class ClienteModel implements RepositoryInterface
              VALUES (:nom, :nit, :dep, :mun, :dir, :contacto, :tel, :correo)'
         );
         $stmt->execute([
-            ':nom'      => $nombre,
-            ':nit'      => $nit,
-            ':dep'      => $departamento,
-            ':mun'      => $municipio,
-            ':dir'      => $direccion,
-            ':contacto' => $nombre_contacto,
-            ':tel'      => $telefono,
-            ':correo'   => $correo,
+            ':nom'      => mb_substr(trim($nombre), 0, 100),
+            ':nit'      => mb_substr(trim($nit), 0, 25),
+            ':dep'      => mb_substr(trim($departamento), 0, 60),
+            ':mun'      => mb_substr(trim($municipio), 0, 60),
+            ':dir'      => mb_substr(trim($direccion), 0, 100),
+            ':contacto' => mb_substr(trim($nombre_contacto), 0, 60),
+            ':tel'      => mb_substr(trim($telefono), 0, 20),
+            ':correo'   => !empty($correo) ? mb_substr(trim($correo), 0, 100) : null,
         ]);
         return (int)$this->db->lastInsertId();
     }
@@ -147,15 +169,15 @@ class ClienteModel implements RepositoryInterface
              estado=:estado WHERE id=:id'
         );
         return $stmt->execute([
-            ':nom'      => $nombre,
-            ':nit'      => $nit,
-            ':dep'      => $departamento,
-            ':mun'      => $municipio,
-            ':dir'      => $direccion,
-            ':contacto' => $nombre_contacto,
-            ':tel'      => $telefono,
-            ':correo'   => $correo,
-            ':estado'   => $estado,
+            ':nom'      => mb_substr(trim($nombre), 0, 100),
+            ':nit'      => mb_substr(trim($nit), 0, 25),
+            ':dep'      => mb_substr(trim($departamento), 0, 60),
+            ':mun'      => mb_substr(trim($municipio), 0, 60),
+            ':dir'      => mb_substr(trim($direccion), 0, 100),
+            ':contacto' => mb_substr(trim($nombre_contacto), 0, 60),
+            ':tel'      => mb_substr(trim($telefono), 0, 20),
+            ':correo'   => !empty($correo) ? mb_substr(trim($correo), 0, 100) : null,
+            ':estado'   => in_array($estado, ['activo', 'inactivo'], true) ? $estado : 'activo',
             ':id'       => $id,
         ]);
     }

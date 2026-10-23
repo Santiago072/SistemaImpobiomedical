@@ -141,7 +141,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                             </a>
                             <button type="submit" id="btnSubmitFinalizar" class="btn-mod-primary">
                                 <?php if (isset($_SESSION['cotizacion_ajustando_id'])): ?>
-                                <i class="bi bi-check2-circle"></i> Guardar Ajuste y Generar PDF
+                                <i class="bi bi-check2-circle"></i> Guardar Ajuste
                                 <?php else: ?>
                                 <i class="bi bi-file-earmark-pdf-fill"></i> Generar PDF
                                 <?php endif; ?>
