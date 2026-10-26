@@ -589,24 +589,29 @@ class CotizacionController
         }
 
         try {
-            // Mover ítems del clon temporal a la cotización original y eliminar el clon
+            // Mover ítems del clon temporal a la cotización original y eliminar el clon viejo
             $this->model->aplicarItemsAjuste($clonId, $destinoId);
 
-            unset(
-                $_SESSION['cotizacion_id'],
-                $_SESSION['cotizacion_ajustando_id'],
-                $_SESSION['cotizacion_ajustando_clon_id'],
-                $_SESSION['cotizacion_ajustando_numero']
-            );
+            // Generar de inmediato un nuevo clon fresco a partir de la cotización original ya actualizada
+            $usuarioId          = (int)$_SESSION['usuario_id'];
+            $usuarioCodigo      = $_SESSION['usuario_codigo'] ?? '';
+            $cotizacionOriginal = $this->model->buscarPorId($destinoId);
+            $asesorNombre       = $cotizacionOriginal['asesor_nombre'] ?? '';
+            $asesorCargo        = $cotizacionOriginal['asesor_cargo'] ?? '';
 
-            // Restaurar borrador previo si existía
-            if (isset($_SESSION['borrador_previo_id'])) {
-                $_SESSION['cotizacion_id'] = (int)$_SESSION['borrador_previo_id'];
-                unset($_SESSION['borrador_previo_id']);
-            }
+            $nuevoClonId = $this->model->crearCabecera($usuarioId, $usuarioCodigo, $asesorNombre, $asesorCargo);
+            $this->model->marcarComoRevision($nuevoClonId);
+            $this->model->clonarDatosCabecera($destinoId, $nuevoClonId);
+            $this->model->clonarItems($destinoId, $nuevoClonId);
+
+            // Mantener al usuario en modo ajuste con el nuevo clon activo
+            $_SESSION['cotizacion_id']               = $nuevoClonId;
+            $_SESSION['cotizacion_ajustando_id']     = $destinoId;
+            $_SESSION['cotizacion_ajustando_clon_id'] = $nuevoClonId;
+            $_SESSION['cotizacion_ajustando_numero'] = $numeroCotizacion;
 
             $_SESSION['flash_exito'] = 'Cotización ' . htmlspecialchars($numeroCotizacion) . ' actualizada con éxito. Puedes verificar los cambios en Consultar Cotizaciones.';
-            header('Location: ' . BASE_URL . '?module=cotizaciones&action=consultar');
+            header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
             exit();
         } catch (\Throwable $e) {
             error_log('Error en guardarAjusteDirecto: ' . $e->getMessage());

@@ -42,7 +42,10 @@ class ProveedorModel
 
         // Registros paginados
         $stmt = $this->db->prepare(
-            "SELECT * FROM proveedores {$whereClause}
+            "SELECT proveedores.*, 
+                ((SELECT COUNT(*) FROM cotizacion_items WHERE cotizacion_items.proveedor_id = proveedores.id) +
+                 (SELECT COUNT(*) FROM ordenes_compra WHERE ordenes_compra.proveedor_nit = proveedores.nit)) AS total_asociadas
+             FROM proveedores {$whereClause}
              ORDER BY nombre_proveedor ASC
              LIMIT :lim OFFSET :off"
         );
@@ -325,13 +328,32 @@ class ProveedorModel
         }
     }
 
-    /**
-     * Eliminación suave (Soft Delete) o física si no tiene historial.
-     */
+    public function contarAsociadas(int $id): int
+    {
+        $stmt = $this->db->prepare(
+            "SELECT 
+                (SELECT COUNT(*) FROM cotizacion_items WHERE proveedor_id = :id1) +
+                (SELECT COUNT(*) FROM ordenes_compra WHERE proveedor_nit = (SELECT nit FROM proveedores WHERE id = :id2 LIMIT 1))"
+        );
+        $stmt->execute([':id1' => $id, ':id2' => $id]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    public function cambiarEstado(int $id, string $estado): bool
+    {
+        $estadoValido = in_array($estado, ['activo', 'inactivo'], true) ? $estado : 'activo';
+        $stmt = $this->db->prepare("UPDATE proveedores SET estado = :estado WHERE id = :id");
+        return $stmt->execute([':estado' => $estadoValido, ':id' => $id]);
+    }
+
+    public function eliminarFisico(int $id): bool
+    {
+        $stmt = $this->db->prepare("DELETE FROM proveedores WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
+    }
+
     public function eliminar(int $id): bool
     {
-        // Cambiar a inactivo para proteger integridad referencial histórica
-        $stmt = $this->db->prepare("UPDATE proveedores SET estado = 'inactivo' WHERE id = :id");
-        return $stmt->execute([':id' => $id]);
+        return $this->cambiarEstado($id, 'inactivo');
     }
 }

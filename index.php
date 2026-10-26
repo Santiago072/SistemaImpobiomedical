@@ -323,6 +323,9 @@ if ($module === 'clientes') {
         case 'eliminar':
             $ctrl->eliminar();
             break;
+        case 'reactivar':
+            $ctrl->reactivar();
+            break;
         case 'verificar_nit':
             $ctrl->verificarNit();
             break;
@@ -362,6 +365,9 @@ if ($module === 'proveedores') {
         case 'eliminar':
             $ctrl->eliminar();
             break;
+        case 'reactivar':
+            $ctrl->reactivar();
+            break;
         case 'verificar_nit':
             $ctrl->verificarNit();
             break;
@@ -399,6 +405,9 @@ if ($module === 'productos') {
     switch ($action) {
         case 'eliminar':
             $ctrl->eliminar();
+            break;
+        case 'reactivar':
+            $ctrl->reactivar();
             break;
         case 'exportarExcel':
             $ctrl->exportarExcel();

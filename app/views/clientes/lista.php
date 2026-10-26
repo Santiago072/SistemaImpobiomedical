@@ -85,9 +85,20 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                     <i class="bi bi-pencil-fill"></i>
                                 </button>
                                 <?php if (($_SESSION['rol'] ?? '') === 'admin'): ?>
-                                <button class="mod-btn-del" title="Eliminar" onclick="confirmarEliminar(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['nombre'])) ?>')">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
+                                    <?php if (strtolower($c['estado'] ?? 'activo') === 'activo'): ?>
+                                    <button class="mod-btn-del" title="Desactivar / Eliminar" onclick="confirmarEliminar(<?= (int)$c['id'] ?>, '<?= htmlspecialchars(addslashes($c['nombre'])) ?>', <?= (int)($c['total_cotizaciones'] ?? 0) ?>)">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                    <?php else: ?>
+                                    <button class="mod-btn-reactivar" title="Reactivar Cliente" onclick="confirmarReactivar(<?= (int)$c['id'] ?>, '<?= htmlspecialchars(addslashes($c['nombre'])) ?>')">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                    <?php if (($c['total_cotizaciones'] ?? 0) == 0): ?>
+                                    <button class="mod-btn-del" title="Eliminar Definitivamente" onclick="confirmarEliminar(<?= (int)$c['id'] ?>, '<?= htmlspecialchars(addslashes($c['nombre'])) ?>', 0)">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                    <?php endif; ?>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -233,23 +244,45 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     </div>
 </div>
 
-<!-- Modal Confirmar Eliminar -->
+<!-- Modal Confirmar Eliminar / Desactivar -->
 <div id="modal-eliminar" class="imo-modal-bg" onclick="cerrarModal('modal-eliminar', event)">
     <div class="imo-modal imo-modal-sm">
         <div class="imo-modal-header danger">
-            <h3><i class="bi bi-exclamation-triangle-fill"></i> Confirmar eliminación</h3>
+            <h3 id="modal-eliminar-titulo"><i class="bi bi-trash-fill"></i> Confirmar eliminación</h3>
             <button onclick="cerrarModal('modal-eliminar')" class="imo-modal-close">&times;</button>
         </div>
         <div class="imo-modal-body">
-            <p>¿Está seguro de que desea eliminar al cliente <strong id="nombre-eliminar"></strong>?</p>
-            <p class="imo-muted-sm">Esta acción cambiará el estado a inactivo para proteger el historial de cotizaciones.</p>
+            <p id="modal-eliminar-mensaje">¿Está seguro de que desea eliminar al cliente <strong id="nombre-eliminar"></strong>?</p>
+            <p class="imo-muted-sm" id="modal-eliminar-detalle">Esta acción cambiará el estado a inactivo para proteger el historial de cotizaciones.</p>
         </div>
         <div class="imo-modal-footer">
             <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
             <form id="form-eliminar-cliente" method="POST" action="" class="form-inline-action">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
                 <input type="hidden" name="id" id="eliminar_cliente_id">
-                <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
+                <button type="submit" id="btn-confirmar-eliminar-cliente" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Reactivar -->
+<div id="modal-reactivar" class="imo-modal-bg" onclick="cerrarModal('modal-reactivar', event)">
+    <div class="imo-modal imo-modal-sm">
+        <div class="imo-modal-header success">
+            <h3><i class="bi bi-arrow-clockwise"></i> Reactivar Cliente</h3>
+            <button onclick="cerrarModal('modal-reactivar')" class="imo-modal-close">&times;</button>
+        </div>
+        <div class="imo-modal-body">
+            <p>¿Desea reactivar al cliente <strong id="nombre-reactivar"></strong>?</p>
+            <p class="imo-muted-sm">El cliente volverá a estar disponible para la creación de nuevas cotizaciones.</p>
+        </div>
+        <div class="imo-modal-footer">
+            <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-reactivar')">Cancelar</button>
+            <form id="form-reactivar-cliente" method="POST" action="<?= $basePath ?>?module=clientes&action=reactivar" class="form-inline-action">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                <input type="hidden" name="id" id="reactivar_cliente_id">
+                <button type="submit" class="imo-btn-success"><i class="bi bi-check-circle-fill"></i> Reactivar</button>
             </form>
         </div>
     </div>
@@ -379,23 +412,56 @@ function abrirModalEditar(data) {
     document.body.style.overflow = 'hidden';
 }
 
-function confirmarEliminar(id, nombre) {
-    document.getElementById('nombre-eliminar').textContent = nombre;
+function confirmarEliminar(id, nombre, totalCotizaciones = 0) {
     const inputId = document.getElementById('eliminar_cliente_id');
     if (inputId) inputId.value = id;
     document.getElementById('form-eliminar-cliente').action = BASE + '?module=clientes&action=eliminar&id=' + id;
+
+    const tituloModal = document.getElementById('modal-eliminar-titulo');
+    const msg         = document.getElementById('modal-eliminar-mensaje');
+    const detalle     = document.getElementById('modal-eliminar-detalle');
+    const btn         = document.getElementById('btn-confirmar-eliminar-cliente');
+
+    if (totalCotizaciones > 0) {
+        if (tituloModal) tituloModal.innerHTML = '<i class="bi bi-slash-circle-fill"></i> Desactivar Cliente';
+        if (msg) msg.innerHTML = `¿Desea desactivar al cliente <strong>${escapeHtml(nombre)}</strong>?`;
+        if (detalle) detalle.innerHTML = `Este cliente tiene <strong>${totalCotizaciones} cotización(es) asociada(s)</strong>. Se cambiará a estado <strong>Inactivo</strong> para proteger el historial.`;
+        if (btn) {
+            btn.className = 'imo-btn-danger';
+            btn.innerHTML = '<i class="bi bi-slash-circle-fill"></i> Desactivar';
+        }
+    } else {
+        if (tituloModal) tituloModal.innerHTML = '<i class="bi bi-trash-fill"></i> Confirmar Eliminación';
+        if (msg) msg.innerHTML = `¿Está seguro de eliminar definitivamente al cliente <strong>${escapeHtml(nombre)}</strong>?`;
+        if (detalle) detalle.innerHTML = 'Este cliente no tiene cotizaciones asociadas. Se eliminará por completo del sistema.';
+        if (btn) {
+            btn.className = 'imo-btn-danger';
+            btn.innerHTML = '<i class="bi bi-trash-fill"></i> Eliminar Definitivamente';
+        }
+    }
+
     document.getElementById('modal-eliminar').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function confirmarReactivar(id, nombre) {
+    const spanNom = document.getElementById('nombre-reactivar');
+    if (spanNom) spanNom.textContent = nombre;
+    const inpId = document.getElementById('reactivar_cliente_id');
+    if (inpId) inpId.value = id;
+    document.getElementById('modal-reactivar').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
 
 function cerrarModal(id, evento) {
     if (evento && evento.target !== document.getElementById(id)) return;
-    document.getElementById(id).classList.remove('open');
+    const m = document.getElementById(id);
+    if (m) m.classList.remove('open');
     document.body.style.overflow = 'auto';
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') {
-    ['modal-crear','modal-editar','modal-eliminar'].forEach(id => {
+    ['modal-crear','modal-editar','modal-eliminar','modal-reactivar'].forEach(id => {
         document.getElementById(id)?.classList.remove('open');
     });
     document.body.style.overflow = 'auto';
@@ -475,11 +541,20 @@ function renderizarClientesAjax(lista, isAdmin) {
                         <button class="mod-btn-edit" title="Editar" onclick="abrirModalEditar(${cJson})">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        ${isAdmin ? `
-                        <button class="mod-btn-del" title="Eliminar" onclick="confirmarEliminar(${cid}, '${nombreSafe}')">
-                            <i class="bi bi-trash-fill"></i>
-                        </button>
-                        ` : ''}
+                        ${isAdmin ? (
+                            estadoVal === 'activo'
+                                ? `<button class="mod-btn-del" title="Desactivar / Eliminar" onclick="confirmarEliminar(${cid}, '${nombreSafe}', ${parseInt(c.total_cotizaciones || 0)})">
+                                    <i class="bi bi-trash-fill"></i>
+                                   </button>`
+                                : `<button class="mod-btn-reactivar" title="Reactivar Cliente" onclick="confirmarReactivar(${cid}, '${nombreSafe}')">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                   </button>
+                                   ${(parseInt(c.total_cotizaciones || 0) === 0) ? `
+                                   <button class="mod-btn-del" title="Eliminar Definitivamente" onclick="confirmarEliminar(${cid}, '${nombreSafe}', 0)">
+                                    <i class="bi bi-trash-fill"></i>
+                                   </button>` : ''}
+                                   `
+                        ) : ''}
                     </div>
                 </td>
             </tr>

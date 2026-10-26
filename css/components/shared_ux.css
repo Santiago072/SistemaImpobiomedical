@@ -152,15 +152,19 @@
 .imo-modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 28px 24px 28px; border-top: 1px solid #f1f5f9; margin-top: 8px; }
 .mod-actions { display: flex; gap: 6px; }
 .mod-actions-center { display: flex; gap: 6px; justify-content: center; }
+.imo-modal-header.danger h3 { color: #dc2626; }
+.imo-modal-header.success h3 { color: #16a34a; }
 .col-actions { text-align: center; width: 100px; }
 .nit-text { color: #0f766e; font-family: monospace; font-size: 13.5px; font-weight: 700; }
 .mono-text { font-family: monospace; }
 .sub-text { font-size: 12px; color: #64748b; }
-.mod-btn-edit, .mod-btn-del, .mod-btn-move { width: 34px; height: 34px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; transition: all .2s; }
+.mod-btn-edit, .mod-btn-del, .mod-btn-move, .mod-btn-reactivar { width: 34px; height: 34px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; transition: all .2s; }
 .mod-btn-edit { background: #e0f2fe; color: #0284c7; }
 .mod-btn-edit:hover { background: #0284c7; color: #fff; }
 .mod-btn-del { background: #fee2e2; color: #dc2626; }
 .mod-btn-del:hover { background: #dc2626; color: #fff; }
+.mod-btn-reactivar { background: #dcfce7; color: #16a34a; }
+.mod-btn-reactivar:hover { background: #16a34a; color: #fff; }
 .mod-btn-move { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 .mod-btn-move:hover:not(:disabled) { background: #10757e; color: #ffffff; border-color: #10757e; }
 
@@ -174,6 +178,9 @@
 .imo-btn-save { padding: 10px 22px; background: #10757e; color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
 .imo-btn-save:hover { background: #0a4f55; }
 .imo-btn-danger { padding: 10px 22px; background: #dc2626; color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+.imo-btn-danger:hover { background: #b91c1c; }
+.imo-btn-success { padding: 10px 22px; background: #16a34a; color: #fff; border: none; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+.imo-btn-success:hover { background: #15803d; }
 .imo-modal-desc { color: #4b5563; }
 .form-inline-action { display: inline; }
 

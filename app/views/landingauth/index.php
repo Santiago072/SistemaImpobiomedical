@@ -44,6 +44,13 @@ $csrf_token   = $csrf_token ?? '';
 
     <!-- Favicon Oficial -->
     <link rel="icon" type="image/svg+xml" href="<?= $base ?>public/favicon.svg?v=<?= time() ?>">
+
+    <!-- Frame-busting: Si la sesión expira y se intenta abrir un PDF en iframe, redirigir la ventana principal al login -->
+    <script>
+        if (window.top !== window.self) {
+            window.top.location.href = window.self.location.href;
+        }
+    </script>
 </head>
 <body>
 

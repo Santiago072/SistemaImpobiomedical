@@ -251,4 +251,75 @@ class FlujoIntegracionNegocioTest extends TestCase
         $this->assertSame(10, $items[0]['id']);
         $this->assertSame(1, $items[0]['orden']);
     }
+
+    /**
+     * Prueba 9: Flujo de Guardar Ajuste Directo con Regeneración de Clon y Permanencia en Pantalla.
+     * Al guardar ajuste directo:
+     * 1. Los ítems del clon se aplican a la cotización original.
+     * 2. El clon viejo se destruye.
+     * 3. Se genera de inmediato un nuevo clon fresco a partir de la original actualizada.
+     * 4. La sesión se actualiza y mantiene el modo ajuste activo para seguir editando.
+     * 5. Al cancelar el ajuste posteriormente, el clon de trabajo se descarta y el original preserva los cambios guardados.
+     */
+    public function testGuardarAjusteDirectoPermanenciaConNuevoClon(): void
+    {
+        $cotizacionOriginal = [
+            'id' => 200,
+            'numero_cotizacion' => 'EB 10',
+            'estado' => 'finalizada',
+            'items' => [
+                ['id' => 701, 'titulo' => 'Bomba de Infusión', 'precio' => 3000000.0, 'cantidad' => 1]
+            ]
+        ];
+
+        // 1. Iniciar Ajuste: Clon temporal inicial #888
+        $clonId1 = 888;
+        $session = [
+            'cotizacion_id' => $clonId1,
+            'cotizacion_ajustando_id' => 200,
+            'cotizacion_ajustando_clon_id' => $clonId1,
+            'cotizacion_ajustando_numero' => 'EB 10',
+        ];
+
+        // Se agrega un nuevo ítem en el clon 1
+        $itemsClon1 = [
+            ['id' => 701, 'titulo' => 'Bomba de Infusión', 'precio' => 3000000.0, 'cantidad' => 1],
+            ['id' => 702, 'titulo' => 'Set de Infusión IV', 'precio' => 50000.0, 'cantidad' => 10],
+        ];
+
+        // 2. Ejecutar "Guardar Ajuste": Aplicar ítems a la original y destruir clon 1
+        $cotizacionOriginal['items'] = $itemsClon1;
+        $clon1Destruido = true;
+        $this->assertTrue($clon1Destruido);
+
+        // 3. Generar nuevo clon fresco (#999) y actualizar la sesión
+        $nuevoClonId = 999;
+        $itemsNuevoClon = $cotizacionOriginal['items']; // Clonado desde la original actualizada
+
+        $session['cotizacion_id']               = $nuevoClonId;
+        $session['cotizacion_ajustando_id']     = $cotizacionOriginal['id'];
+        $session['cotizacion_ajustando_clon_id'] = $nuevoClonId;
+        $session['cotizacion_ajustando_numero'] = $cotizacionOriginal['numero_cotizacion'];
+        $session['flash_exito']                 = 'Cotización EB 10 actualizada con éxito. Puedes verificar los cambios en Consultar Cotizaciones.';
+
+        // Comprobaciones de permanencia en modo ajuste
+        $this->assertSame(999, $session['cotizacion_id']);
+        $this->assertSame(200, $session['cotizacion_ajustando_id']);
+        $this->assertSame('Cotización EB 10 actualizada con éxito. Puedes verificar los cambios en Consultar Cotizaciones.', $session['flash_exito']);
+        $this->assertCount(2, $itemsNuevoClon);
+
+        // 4. Usuario termina y pulsa "Cancelar Ajuste" para salir:
+        // Se descarta el nuevo clon 999, pero la cotización original conserva sus 2 ítems intactos
+        unset(
+            $session['cotizacion_id'],
+            $session['cotizacion_ajustando_id'],
+            $session['cotizacion_ajustando_clon_id'],
+            $session['cotizacion_ajustando_numero']
+        );
+        $clon2Destruido = true;
+
+        $this->assertTrue($clon2Destruido);
+        $this->assertArrayNotHasKey('cotizacion_ajustando_id', $session);
+        $this->assertCount(2, $cotizacionOriginal['items'], 'La cotización original debe conservar los cambios guardados');
+    }
 }

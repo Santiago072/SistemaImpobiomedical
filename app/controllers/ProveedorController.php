@@ -196,8 +196,38 @@ class ProveedorController
         }
 
         if ($id > 0) {
-            $this->model->eliminar($id);
-            $_SESSION['flash_exito'] = 'Proveedor desactivado correctamente.';
+            $conteo = $this->model->contarAsociadas($id);
+            if ($conteo > 0) {
+                $this->model->cambiarEstado($id, 'inactivo');
+                $_SESSION['flash_exito'] = 'El proveedor tiene cotizaciones u órdenes asociadas. Se cambió su estado a Inactivo para proteger el historial.';
+            } else {
+                $this->model->eliminarFisico($id);
+                $_SESSION['flash_exito'] = 'Proveedor eliminado definitivamente del sistema.';
+            }
+        }
+
+        header('Location: ' . BASE_URL . '?module=proveedores');
+        exit();
+    }
+
+    public function reactivar(): void
+    {
+        verificar_admin();
+        verificar_rate_limit(10, 60, 'proveedor_reactivar');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!verificar_token_csrf($_POST['csrf_token'] ?? '')) {
+                http_response_code(403);
+                die('Error 403: Solicitud no válida o token CSRF expirado.');
+            }
+            $id = (int)($_POST['id'] ?? 0);
+        } else {
+            $id = (int)($_GET['id'] ?? 0);
+        }
+
+        if ($id > 0) {
+            $this->model->cambiarEstado($id, 'activo');
+            $_SESSION['flash_exito'] = 'Proveedor reactivado correctamente.';
         }
 
         header('Location: ' . BASE_URL . '?module=proveedores');

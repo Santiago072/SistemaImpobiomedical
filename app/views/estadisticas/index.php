@@ -2,12 +2,12 @@
 /**
  * Vista de Estadísticas — Módulo Analítico Avanzado
  */
+$basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 $pageTitle = 'Estadísticas del Sistema';
-$extraHead = '<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>';
+$extraHead = '<script src="' . $basePath . 'public/js/chart.min.js"></script>'
+           . '<script>if (typeof Chart === "undefined") { document.write(\'<script src="https://cdn.jsdelivr.net/npm/chart.js"><\\/script>\'); }</script>';
 include __DIR__ . '/../layout/header.php';
 include __DIR__ . '/../layout/menu.php';
-
-$basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 ?>
 
 <div class="layout-main">
@@ -173,7 +173,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
     </main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="<?= $basePath ?>public/js/chart.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof Chart === 'undefined') {

@@ -43,7 +43,7 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                     <?php endif; ?>
                 <?php endif; ?>
                 <?php if (isset($_SESSION['cotizacion_ajustando_id'])): ?>
-                <a href="<?= $basePath ?>?module=cotizaciones&action=cancelar_ajuste" class="btn-discard-draft" onclick="return confirm('¿Seguro que deseas cancelar el ajuste? La cotización mantendrá su estado finalizado anterior.');">
+                <a href="<?= $basePath ?>?module=cotizaciones&action=cancelar_ajuste" class="btn-discard-draft" onclick="return confirm('¿Seguro que deseas salir del ajuste? Los cambios no guardados se descartarán.');">
                     <i class="bi bi-x-circle-fill"></i> Cancelar Ajuste
                 </a>
                 <?php elseif (isset($_SESSION['cotizacion_revision_de'])): ?>

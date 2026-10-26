@@ -410,12 +410,25 @@ function verOrdenPDF(id, po) {
     const url = '<?= $basePath ?>?module=ordenes&action=generar_pdf&id=' + id;
     frame.src  = url;
     document.getElementById('btn-descargar-orden').href = url + '&descargar=1';
+
+    // Detección de expiración de sesión en iframe de orden
+    frame.onload = function() {
+        try {
+            const frameDoc = frame.contentDocument || frame.contentWindow.document;
+            if (frameDoc && (frameDoc.getElementById('formAccesoPortal') || frameDoc.title.includes('Acceso al Sistema') || frame.contentWindow.location.href.includes('action=login') || frame.contentWindow.location.href.includes('timeout=1'))) {
+                window.top.location.href = '<?= $basePath ?>?timeout=1';
+            }
+        } catch(e) {}
+    };
+
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
 function cerrarOrden() {
     document.getElementById('modal-orden-viewer').style.display = 'none';
-    document.getElementById('orden-frame').src = '';
+    const frame = document.getElementById('orden-frame');
+    frame.onload = null;
+    frame.src = '';
     document.body.style.overflow = 'auto';
 }
 window.addEventListener('click', e => {

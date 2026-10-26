@@ -20,7 +20,8 @@ class ClienteModel implements RepositoryInterface
         if ($busqueda !== '') {
             $param = "%$busqueda%";
             $stmt  = $this->db->prepare(
-                "SELECT * FROM clientes WHERE (nombre LIKE :b1 OR nit LIKE :b2 OR municipio LIKE :b3)
+                "SELECT clientes.*, (SELECT COUNT(*) FROM cotizaciones c WHERE c.cliente_id = clientes.id) AS total_cotizaciones
+                 FROM clientes WHERE (nombre LIKE :b1 OR nit LIKE :b2 OR municipio LIKE :b3)
                  ORDER BY nombre LIMIT :limit OFFSET :offset"
             );
             $stmt->bindValue(':b1', $param);
@@ -28,7 +29,8 @@ class ClienteModel implements RepositoryInterface
             $stmt->bindValue(':b3', $param);
         } else {
             $stmt = $this->db->prepare(
-                "SELECT * FROM clientes ORDER BY nombre LIMIT :limit OFFSET :offset"
+                "SELECT clientes.*, (SELECT COUNT(*) FROM cotizaciones c WHERE c.cliente_id = clientes.id) AS total_cotizaciones
+                 FROM clientes ORDER BY nombre LIMIT :limit OFFSET :offset"
             );
         }
         $stmt->bindValue(':limit',  $limite, \PDO::PARAM_INT);
@@ -182,10 +184,28 @@ class ClienteModel implements RepositoryInterface
         ]);
     }
 
+    public function contarCotizacionesAsociadas(int $id): int
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM cotizaciones WHERE cliente_id = :id');
+        $stmt->execute([':id' => $id]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    public function cambiarEstado(int $id, string $estado): bool
+    {
+        $estadoValido = in_array($estado, ['activo', 'inactivo'], true) ? $estado : 'activo';
+        $stmt = $this->db->prepare('UPDATE clientes SET estado = :estado WHERE id = :id');
+        return $stmt->execute([':estado' => $estadoValido, ':id' => $id]);
+    }
+
+    public function eliminarFisico(int $id): bool
+    {
+        $stmt = $this->db->prepare('DELETE FROM clientes WHERE id = :id');
+        return $stmt->execute([':id' => $id]);
+    }
+
     public function eliminar(int $id): bool
     {
-        // Soft delete: cambiar a inactivo para proteger la integridad referencial del historial de cotizaciones
-        $stmt = $this->db->prepare("UPDATE clientes SET estado = 'inactivo' WHERE id = :id");
-        return $stmt->execute([':id' => $id]);
+        return $this->cambiarEstado($id, 'inactivo');
     }
 }

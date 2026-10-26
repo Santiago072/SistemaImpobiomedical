@@ -190,14 +190,42 @@ class ClienteController
             header('Location: ' . BASE_URL . '?module=clientes&error=csrf');
             exit();
         }
-        $id = $_POST['id'] ?? $_GET['id'] ?? '';
-        if (!validar_numero($id)) {
+        $id = (int)($_POST['id'] ?? $_GET['id'] ?? 0);
+        if ($id <= 0) {
             header('Location: ' . BASE_URL . '?module=clientes');
             exit();
         }
 
-        $this->model->eliminar((int)$id);
+        $conteo = $this->model->contarCotizacionesAsociadas($id);
+        if ($conteo > 0) {
+            $this->model->cambiarEstado($id, 'inactivo');
+            $_SESSION['flash_exito'] = 'El cliente tiene cotizaciones asociadas, por lo que su estado se cambió a Inactivo para proteger el historial.';
+        } else {
+            $this->model->eliminarFisico($id);
+            $_SESSION['flash_exito'] = 'Cliente eliminado definitivamente del sistema.';
+        }
+
         header('Location: ' . BASE_URL . '?module=clientes&deleted=1');
+        exit();
+    }
+
+    public function reactivar(): void
+    {
+        verificar_admin();
+        verificar_rate_limit(10, 60, 'cliente_reactivar');
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
+            header('Location: ' . BASE_URL . '?module=clientes&error=csrf');
+            exit();
+        }
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id > 0) {
+            $this->model->cambiarEstado($id, 'activo');
+            $_SESSION['flash_exito'] = 'Cliente reactivado correctamente.';
+        }
+
+        header('Location: ' . BASE_URL . '?module=clientes&reactivated=1');
         exit();
     }
 

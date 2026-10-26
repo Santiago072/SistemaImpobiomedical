@@ -159,16 +159,17 @@ table { width:100%; border-collapse:collapse; }
 .cot-num-label { font-size:10px; color:#555; letter-spacing:1px; }
 .cot-num-value { font-size:19px; font-weight:bold; color:#1a8a8a; letter-spacing:1px; }
 
-/* Columnas tabla items */
-.col-cant  { width:4%;  }
-.col-desc  { width:30%; }
+/* Columnas tabla items (Total 100%) */
+.col-num   { width:3%;  }
 .col-img   { width:10%; }
+.col-desc  { width:29%; }
 .col-piva  { width:5%;  }
+.col-cant  { width:5%;  }
 .col-vu    { width:10%; }
-.col-iva   { width:10%; }
+.col-iva   { width:9%;  }
 .col-tiva  { width:10%; }
-.col-vt    { width:10%; }
-.col-te    { width:11%; }
+.col-vt    { width:9%;  }
+.col-te    { width:10%; }
 
 /* Header de items */
 .th-item {
@@ -221,7 +222,7 @@ table { width:100%; border-collapse:collapse; }
 ════════════════════════════════════════════════ -->
 <table style="width:100%; border-collapse:collapse; border:none; font-size:9.5px;">
 <thead style="display:table-header-group;">
-<tr><td colspan="9" style="padding:0; border:none; background:#fff; text-align:left;">
+<tr><td colspan="10" style="padding:0; border:none; background:#fff; text-align:left;">
 
 <!-- HEADER PRINCIPAL -->
 <div class="hdr-wrap">
@@ -269,7 +270,7 @@ table { width:100%; border-collapse:collapse; }
 </thead>
 
 <tbody>
-<tr><td colspan="9" style="padding:0; border:none; background:#fff; text-align:left;">
+<tr><td colspan="10" style="padding:0; border:none; background:#fff; text-align:left;">
 
 <!-- ══════════════════════════════════════════════
      DATOS CLIENTE + FECHA
@@ -324,10 +325,11 @@ table { width:100%; border-collapse:collapse; }
 </tbody>
 <!-- Títulos de Columnas -->
 <tr>
-  <th class="th-item col-cant">CANT</th>
-  <th class="th-item col-desc">DESCRIPCIÓN</th>
+  <th class="th-item col-num">#</th>
   <th class="th-item col-img">IMAGEN</th>
+  <th class="th-item col-desc">DESCRIPCIÓN</th>
   <th class="th-item col-piva">% IVA</th>
+  <th class="th-item col-cant">CANT</th>
   <th class="th-item col-vu">V/U</th>
   <th class="th-item col-iva">IVA</th>
   <th class="th-item col-tiva">T/IVA</th>
@@ -358,28 +360,56 @@ foreach ($items as $it):
     $rowIdx++;
 
     $imgProd = !empty($it['foto']) ? imgBase64(dirname(__DIR__, 3) . '/uploads/' . $it['foto']) : '';
-?>
-<?php
-    // Descripción completa — nl2br para respetar saltos de línea del usuario
-    $descHtml = nl2br(htmlspecialchars($it['descripcion'] ?? ''));
+
+    // Marca y Modelo condicionales
+    $marcaIt   = trim($it['marca'] ?? '');
+    $modeloIt  = trim($it['modelo'] ?? '');
+    $esSinMod  = ($modeloIt === 'N/A' || $modeloIt === '-' || empty($modeloIt));
+    $lineaMarcaModelo = '';
+    if (!empty($marcaIt) && !$esSinMod) {
+        $lineaMarcaModelo = $marcaIt . ' · ' . $modeloIt;
+    } elseif (!empty($marcaIt)) {
+        $lineaMarcaModelo = $marcaIt;
+    } elseif (!$esSinMod) {
+        $lineaMarcaModelo = $modeloIt;
+    }
+
+    // Descripción: limpiar si inicia con el mismo título para evitar redundancia
+    $textoDesc = trim($it['descripcion'] ?? '');
+    $tituloNorm = trim($it['titulo'] ?? '');
+    if (!empty($tituloNorm) && mb_stripos($textoDesc, $tituloNorm) === 0) {
+        $restoDesc = trim(mb_substr($textoDesc, mb_strlen($tituloNorm)));
+        // Si lo que sigue es guion o dos puntos, removerlo
+        $restoDesc = ltrim($restoDesc, "-: \t\n\r\0\x0B");
+        if (!empty($restoDesc)) {
+            $textoDesc = $restoDesc;
+        }
+    }
+    $descHtml = nl2br(htmlspecialchars($textoDesc));
 ?>
   <tr class="<?= $rowCls ?>">
+    <td class="b tc vm" style="padding:6px 2px; font-size:9.5px; color:#64748b; font-weight:bold;">
+      <?= $rowIdx ?>
+    </td>
+    <td class="b tc vm" style="padding:4px;">
+      <?php if ($imgProd): ?>
+        <img src="<?= $imgProd ?>" style="max-height:85px; max-width:100px;">
+      <?php endif; ?>
+    </td>
+    <td class="b tl vt col-desc-cell" style="padding:6px 8px; width:29%;">
+      <strong style="font-size:9.5px; display:block; margin-bottom:2px;"><?= mb_strtoupper(htmlspecialchars($it['titulo'])) ?></strong>
+      <?php if (!empty($lineaMarcaModelo)): ?>
+        <span style="font-size:8px; color:#475569; font-weight:bold; display:block; margin-bottom:3px;"><?= htmlspecialchars(mb_strtoupper($lineaMarcaModelo)) ?></span>
+      <?php endif; ?>
+      <span style="font-size:8.5px; line-height:1.35;"><?= $descHtml ?></span>
+    </td>
+    <td class="b tc vm nowrap" style="padding:4px 6px;"><?= $aplica ? $pct . '%' : '0%' ?></td>
     <td class="b tc vm" style="padding:6px 2px; font-size:9px;">
       <strong><?= $qty ?></strong>
       <?php if (!empty($it['unidad'])): ?>
         <br><span style="font-size:7.5px; color:#1a8a8a; font-weight:bold;"><?= mb_strtoupper(htmlspecialchars($it['unidad'])) ?></span>
       <?php endif; ?>
     </td>
-    <td class="b tl vt col-desc-cell" style="padding:6px 8px; width:30%;">
-      <strong style="font-size:9.5px; display:block; margin-bottom:3px;"><?= mb_strtoupper(htmlspecialchars($it['titulo'])) ?></strong>
-      <span style="font-size:8.5px; line-height:1.35;"><?= $descHtml ?></span>
-    </td>
-    <td class="b tc vm" style="padding:4px;">
-      <?php if ($imgProd): ?>
-        <img src="<?= $imgProd ?>" style="max-height:90px; max-width:110px;">
-      <?php endif; ?>
-    </td>
-    <td class="b tc vm nowrap" style="padding:4px 6px;"><?= $aplica ? $pct . '%' : '0%' ?></td>
     <td class="b tr vm nowrap" style="padding:4px 6px;">$ <?= number_format($vu, 0, ',', '.') ?></td>
     <td class="b tr vm nowrap" style="padding:4px 6px;">$ <?= number_format($ivaFila, 0, ',', '.') ?></td>
     <td class="b tr vm nowrap" style="padding:4px 6px;">$ <?= number_format($tIva, 0, ',', '.') ?></td>
@@ -390,7 +420,7 @@ foreach ($items as $it):
 
   <!-- Fila nota de entrega + totales en columnas derechas -->
   <tr>
-    <td colspan="5" rowspan="3" style="background:#e8f4f4; border:1px solid #555; padding:6px 8px; font-size:8.5px; font-weight:bold; vertical-align:top;">
+    <td colspan="6" rowspan="3" style="background:#e8f4f4; border:1px solid #555; padding:6px 8px; font-size:8.5px; font-weight:bold; vertical-align:top;">
       *EL TIEMPO DE ENTREGA CUENTA A PARTIR DEL RECIBO DE LA ORDEN DE COMPRA. SUJETO A VERIFICACIÓN DE DISPONIBILIDAD DE EXISTENCIA EN EL MOMENTO DE CONFIRMACIÓN DE ENVÍO.*
     </td>
     <td colspan="2" style="padding:4px 6px; border:1px solid #555; background:#e8f4f4; font-size:9.5px; font-weight:bold; text-align:right;">VALOR BASE</td>

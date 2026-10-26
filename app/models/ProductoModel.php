@@ -35,7 +35,7 @@ class ProductoModel implements RepositoryInterface
         }
 
         $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-        $sql = "SELECT * FROM productos $whereClause ORDER BY titulo LIMIT :limit OFFSET :offset";
+        $sql = "SELECT productos.*, (SELECT COUNT(*) FROM cotizacion_items WHERE cotizacion_items.producto_id = productos.id) AS total_cotizaciones FROM productos $whereClause ORDER BY productos.titulo LIMIT :limit OFFSET :offset";
 
         $stmt = $this->db->prepare($sql);
         foreach ($params as $k => $v) {
@@ -215,10 +215,40 @@ class ProductoModel implements RepositoryInterface
         ]);
     }
 
+    public function contarCotizacionesAsociadas(int $id): int
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM cotizacion_items WHERE producto_id = :id');
+        $stmt->execute([':id' => $id]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    public function cambiarEstado(int $id, string $estado): bool
+    {
+        $estadoValido = in_array($estado, ['activo', 'inactivo'], true) ? $estado : 'activo';
+        $stmt = $this->db->prepare('UPDATE productos SET estado = :estado WHERE id = :id');
+        return $stmt->execute([':estado' => $estadoValido, ':id' => $id]);
+    }
+
+    public function eliminarFisico(int $id): bool
+    {
+        $prod = $this->buscarPorId($id);
+        if ($prod && !empty($prod['foto'])) {
+            $stmtImg = $this->db->prepare('SELECT COUNT(*) FROM productos WHERE foto = :foto AND id != :id');
+            $stmtImg->execute([':foto' => $prod['foto'], ':id' => $id]);
+            if ((int)$stmtImg->fetchColumn() === 0) {
+                $path = dirname(__DIR__, 2) . '/uploads/' . $prod['foto'];
+                if (file_exists($path) && is_file($path)) {
+                    @unlink($path);
+                }
+            }
+        }
+        $stmt = $this->db->prepare('DELETE FROM productos WHERE id = :id');
+        return $stmt->execute([':id' => $id]);
+    }
+
     public function eliminar(int $id): bool
     {
-        // Soft delete: cambiar a inactivo para proteger la integridad del catálogo y las cotizaciones históricas
-        $stmt = $this->db->prepare("UPDATE productos SET estado = 'inactivo' WHERE id = :id");
-        return $stmt->execute([':id' => $id]);
+        // Por compatibilidad de interfaz, elimina cambiando estado a inactivo
+        return $this->cambiarEstado($id, 'inactivo');
     }
 }

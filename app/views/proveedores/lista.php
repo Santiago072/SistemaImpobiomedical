@@ -87,11 +87,24 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
                                         onclick="abrirModalEditar(<?= htmlspecialchars(json_encode($p), ENT_QUOTES, 'UTF-8') ?>)">
                                     <i class="bi bi-pencil-fill"></i>
                                 </button>
-                                <?php if ($p['estado'] === 'activo' && ($_SESSION['rol'] ?? '') === 'admin'): ?>
-                                <button type="button" class="mod-btn-del" title="Desactivar Proveedor"
-                                        onclick="confirmarEliminar(<?= (int)$p['id'] ?>, '<?= htmlspecialchars(addslashes($p['nombre_proveedor'])) ?>')">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
+                                <?php if (($_SESSION['rol'] ?? '') === 'admin'): ?>
+                                    <?php if ($p['estado'] === 'activo'): ?>
+                                    <button type="button" class="mod-btn-del" title="Desactivar / Eliminar Proveedor"
+                                            onclick="confirmarEliminar(<?= (int)$p['id'] ?>, '<?= htmlspecialchars(addslashes($p['nombre_proveedor'])) ?>', <?= (int)($p['total_asociadas'] ?? 0) ?>)">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                    <?php else: ?>
+                                    <button type="button" class="mod-btn-reactivar" title="Reactivar Proveedor"
+                                            onclick="confirmarReactivar(<?= (int)$p['id'] ?>, '<?= htmlspecialchars(addslashes($p['nombre_proveedor'])) ?>')">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                    <?php if (($p['total_asociadas'] ?? 0) == 0): ?>
+                                    <button type="button" class="mod-btn-del" title="Eliminar Definitivamente"
+                                            onclick="confirmarEliminar(<?= (int)$p['id'] ?>, '<?= htmlspecialchars(addslashes($p['nombre_proveedor'])) ?>', 0)">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                    <?php endif; ?>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -270,19 +283,41 @@ $basePath = defined('BASE_URL') ? BASE_URL : '/SistemaImpobiomedical/';
 <div id="modal-eliminar" class="imo-modal-bg" onclick="cerrarModal('modal-eliminar', event)">
     <div class="imo-modal imo-modal-sm">
         <div class="imo-modal-header danger">
-            <h3><i class="bi bi-exclamation-triangle-fill"></i> Confirmar Eliminación</h3>
+            <h3 id="modal-eliminar-titulo"><i class="bi bi-trash-fill"></i> Confirmar Eliminación</h3>
             <button type="button" class="imo-modal-close" onclick="cerrarModal('modal-eliminar')">&times;</button>
         </div>
         <div class="imo-modal-body">
-            <p>¿Está seguro de que desea eliminar al proveedor <strong id="nombre-eliminar"></strong>?</p>
-            <p class="imo-muted-sm">Esta acción cambiará el estado a inactivo si tiene órdenes asociadas.</p>
+            <p id="modal-eliminar-mensaje">¿Está seguro de que desea eliminar al proveedor <strong id="nombre-eliminar"></strong>?</p>
+            <p class="imo-muted-sm" id="modal-eliminar-detalle">Esta acción cambiará el estado a inactivo si tiene órdenes asociadas.</p>
         </div>
         <div class="imo-modal-footer">
             <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
             <form method="POST" action="<?= $basePath ?>?module=proveedores&action=eliminar" class="form-inline-action">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                 <input type="hidden" name="id" id="eliminar_id">
-                <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
+                <button type="submit" id="btn-confirmar-eliminar-prov" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Reactivar Proveedor -->
+<div id="modal-reactivar" class="imo-modal-bg" onclick="cerrarModal('modal-reactivar', event)">
+    <div class="imo-modal imo-modal-sm">
+        <div class="imo-modal-header success">
+            <h3><i class="bi bi-arrow-clockwise"></i> Reactivar Proveedor</h3>
+            <button type="button" class="imo-modal-close" onclick="cerrarModal('modal-reactivar')">&times;</button>
+        </div>
+        <div class="imo-modal-body">
+            <p>¿Desea reactivar al proveedor <strong id="nombre-reactivar"></strong>?</p>
+            <p class="imo-muted-sm">El proveedor volverá a estar disponible para cotizaciones y órdenes de compra.</p>
+        </div>
+        <div class="imo-modal-footer">
+            <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-reactivar')">Cancelar</button>
+            <form method="POST" action="<?= $basePath ?>?module=proveedores&action=reactivar" class="form-inline-action">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                <input type="hidden" name="id" id="reactivar_id">
+                <button type="submit" class="imo-btn-success"><i class="bi bi-check-circle-fill"></i> Reactivar</button>
             </form>
         </div>
     </div>
@@ -411,10 +446,43 @@ function abrirModalEditar(prov) {
     document.body.style.overflow = 'hidden';
 }
 
-function confirmarEliminar(id, nombre) {
-    document.getElementById('nombre-eliminar').textContent = nombre;
-    document.getElementById('eliminar_id').value = id;
+function confirmarEliminar(id, nombre, totalAsociadas = 0) {
+    const inpId = document.getElementById('eliminar_id');
+    if (inpId) inpId.value = id;
+
+    const tituloModal = document.getElementById('modal-eliminar-titulo');
+    const msg         = document.getElementById('modal-eliminar-mensaje');
+    const detalle     = document.getElementById('modal-eliminar-detalle');
+    const btn         = document.getElementById('btn-confirmar-eliminar-prov');
+
+    if (totalAsociadas > 0) {
+        if (tituloModal) tituloModal.innerHTML = '<i class="bi bi-slash-circle-fill"></i> Desactivar Proveedor';
+        if (msg) msg.innerHTML = `¿Desea desactivar al proveedor <strong>${escapeHtml(nombre)}</strong>?`;
+        if (detalle) detalle.innerHTML = `Este proveedor tiene <strong>${totalAsociadas} cotización(es) u orden(es) asociada(s)</strong>. Se cambiará a estado <strong>Inactivo</strong> para proteger el historial.`;
+        if (btn) {
+            btn.className = 'imo-btn-danger';
+            btn.innerHTML = '<i class="bi bi-slash-circle-fill"></i> Desactivar';
+        }
+    } else {
+        if (tituloModal) tituloModal.innerHTML = '<i class="bi bi-trash-fill"></i> Confirmar Eliminación';
+        if (msg) msg.innerHTML = `¿Está seguro de eliminar definitivamente al proveedor <strong>${escapeHtml(nombre)}</strong>?`;
+        if (detalle) detalle.innerHTML = 'Este proveedor no tiene historial asociado. Se eliminará completamente del sistema.';
+        if (btn) {
+            btn.className = 'imo-btn-danger';
+            btn.innerHTML = '<i class="bi bi-trash-fill"></i> Eliminar Definitivamente';
+        }
+    }
+
     document.getElementById('modal-eliminar').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function confirmarReactivar(id, nombre) {
+    const spanNom = document.getElementById('nombre-reactivar');
+    if (spanNom) spanNom.textContent = nombre;
+    const inpId = document.getElementById('reactivar_id');
+    if (inpId) inpId.value = id;
+    document.getElementById('modal-reactivar').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
 
@@ -429,7 +497,7 @@ function cerrarModal(id, evento) {
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        ['modal-crear', 'modal-editar', 'modal-eliminar'].forEach(id => {
+        ['modal-crear', 'modal-editar', 'modal-eliminar', 'modal-reactivar'].forEach(id => {
             document.getElementById(id)?.classList.remove('open');
         });
         document.body.style.overflow = 'auto';
@@ -511,11 +579,20 @@ function renderizarProveedoresAjax(lista, isAdmin) {
                         <button type="button" class="mod-btn-edit" title="Editar Proveedor" onclick="abrirModalEditar(${pJson})">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        ${(estadoVal === 'activo' && isAdmin) ? `
-                        <button type="button" class="mod-btn-del" title="Desactivar Proveedor" onclick="confirmarEliminar(${pid}, '${nombreSafe}')">
-                            <i class="bi bi-trash-fill"></i>
-                        </button>
-                        ` : ''}
+                        ${isAdmin ? (
+                            estadoVal === 'activo'
+                                ? `<button type="button" class="mod-btn-del" title="Desactivar / Eliminar Proveedor" onclick="confirmarEliminar(${pid}, '${nombreSafe}', ${parseInt(p.total_asociadas || 0)})">
+                                    <i class="bi bi-trash-fill"></i>
+                                   </button>`
+                                : `<button type="button" class="mod-btn-reactivar" title="Reactivar Proveedor" onclick="confirmarReactivar(${pid}, '${nombreSafe}')">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                   </button>
+                                   ${(parseInt(p.total_asociadas || 0) === 0) ? `
+                                   <button type="button" class="mod-btn-del" title="Eliminar Definitivamente" onclick="confirmarEliminar(${pid}, '${nombreSafe}', 0)">
+                                    <i class="bi bi-trash-fill"></i>
+                                   </button>` : ''}
+                                   `
+                        ) : ''}
                     </div>
                 </td>
             </tr>

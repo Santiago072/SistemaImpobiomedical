@@ -349,17 +349,33 @@ function verPDF(id, numero, cliente) {
     err.style.display   = 'none';
     frame.style.display = 'block';
     titulo.textContent  = numero + ' - ' + cliente;
-    frame.src           = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&id=' + id + '&ver=' + encodeURIComponent(numero);
-    btnDesc.href        = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&id=' + id + '&ver=' + encodeURIComponent(numero) + '&descargar=1';
+    const urlPdf        = '<?= $basePath ?>?module=cotizaciones&action=generar_pdf&id=' + id + '&ver=' + encodeURIComponent(numero);
+    frame.src           = urlPdf;
+    btnDesc.href        = urlPdf + '&descargar=1';
     btnDesc.setAttribute('download', 'cotizacion_' + numero + '.pdf');
+
+    // Detección proactiva de expiración de sesión: si el iframe carga el login, redirigir la ventana completa
+    frame.onload = function() {
+        try {
+            const frameDoc = frame.contentDocument || frame.contentWindow.document;
+            if (frameDoc && (frameDoc.getElementById('formAccesoPortal') || frameDoc.title.includes('Acceso al Sistema') || frame.contentWindow.location.href.includes('action=login') || frame.contentWindow.location.href.includes('timeout=1'))) {
+                window.top.location.href = '<?= $basePath ?>?timeout=1';
+            }
+        } catch(e) {
+            // Ignorar errores de política de mismo origen si aplica
+        }
+    };
+
     modal.style.display          = 'block';
     document.body.style.overflow = 'hidden';
 }
 
 function cerrarPDF() {
     document.getElementById('modal-pdf-viewer').style.display = 'none';
-    document.getElementById('pdf-frame').src                  = '';
-    document.body.style.overflow                               = 'auto';
+    const frame = document.getElementById('pdf-frame');
+    frame.onload = null;
+    frame.src    = '';
+    document.body.style.overflow = 'auto';
 }
 
 function cambiarEstadoComercial(select) {
