@@ -57,7 +57,9 @@ jobs:
 
       # ── 7. Ejecutar suite de pruebas unitarias ──────────────────────────────
       - name: 🧪 Ejecutar pruebas unitarias
-        run: vendor/bin/phpunit --testdox
+        run: |
+          vendor/bin/phpunit --testdox 2>&1 | tee phpunit_output.txt
+          cat phpunit_output.txt >> $GITHUB_STEP_SUMMARY
         env:
           APP_ENV: testing
           SESSION_LIFETIME: 3600
