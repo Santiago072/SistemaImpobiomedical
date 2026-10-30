@@ -425,16 +425,34 @@ $totalCols = 4;
             }
             $aplicaIva = strtolower($p['iva'] ?? '') === 'si';
             $porcIva = (float)($p['porcentaje_iva'] ?? 19);
+
+            // Marca y Modelo condicionales (estilo unificado con Cotizaciones)
+            $marcaP   = trim($p['marca'] ?? '');
+            $modeloP  = trim($p['modelo'] ?? '');
+            $esSinMod = ($modeloP === 'N/A' || $modeloP === '-' || empty($modeloP));
+            $lineaMarcaModeloP = '';
+            if (!empty($marcaP) && !$esSinMod) {
+                $lineaMarcaModeloP = $marcaP . ' • ' . $modeloP;
+            } elseif (!empty($marcaP)) {
+                $lineaMarcaModeloP = $marcaP;
+            } elseif (!$esSinMod) {
+                $lineaMarcaModeloP = $modeloP;
+            }
         ?>
         <tr>
             <td class="col-nombre">
-                <?= htmlspecialchars($p['titulo'] ?? '') ?>
+                <strong style="display:block;"><?= htmlspecialchars($p['titulo'] ?? '') ?></strong>
+                <?php if (!empty($lineaMarcaModeloP)): ?>
+                    <span style="font-size: 7.5px; color: #475569; font-weight: bold; display: block; margin-top: 2px;">
+                        <?= htmlspecialchars(mb_strtoupper($lineaMarcaModeloP)) ?>
+                    </span>
+                <?php endif; ?>
             </td>
             <td class="col-iva">
                 <?php if ($aplicaIva): ?>
                     <span class="badge-iva-si">Sí (<?= $porcIva ?>%)</span>
                 <?php else: ?>
-                    <span class="badge-iva-no">No</span>
+                    <span class="badge-iva-no">Sin IVA</span>
                 <?php endif; ?>
             </td>
             <?php if ($incluirImagenes): ?>

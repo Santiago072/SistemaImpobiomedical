@@ -21,7 +21,10 @@ class UsuarioModel implements RepositoryInterface
         if ($busqueda !== '') {
             $param = "%$busqueda%";
             $stmt  = $this->db->prepare(
-                'SELECT * FROM usuarios WHERE (nombre LIKE :b1 OR codigo LIKE :b2 OR cargo LIKE :b3 OR correo LIKE :b4 OR rol LIKE :b5) ORDER BY nombre LIMIT :limit OFFSET :offset'
+                'SELECT u.*, (SELECT COUNT(*) FROM cotizaciones c WHERE c.usuario_id = u.id AND c.estado = \'finalizada\') AS total_cotizaciones 
+                 FROM usuarios u 
+                 WHERE (u.nombre LIKE :b1 OR u.codigo LIKE :b2 OR u.cargo LIKE :b3 OR u.correo LIKE :b4 OR u.rol LIKE :b5) 
+                 ORDER BY u.nombre LIMIT :limit OFFSET :offset'
             );
             $stmt->bindValue(':b1', $param);
             $stmt->bindValue(':b2', $param);
@@ -30,7 +33,9 @@ class UsuarioModel implements RepositoryInterface
             $stmt->bindValue(':b5', $param);
         } else {
             $stmt = $this->db->prepare(
-                'SELECT * FROM usuarios ORDER BY nombre LIMIT :limit OFFSET :offset'
+                'SELECT u.*, (SELECT COUNT(*) FROM cotizaciones c WHERE c.usuario_id = u.id AND c.estado = \'finalizada\') AS total_cotizaciones 
+                 FROM usuarios u 
+                 ORDER BY u.nombre LIMIT :limit OFFSET :offset'
             );
         }
         $stmt->bindValue(':limit',  $limite, \PDO::PARAM_INT);
@@ -270,6 +275,13 @@ class UsuarioModel implements RepositoryInterface
             }
             return false;
         }
+    }
+
+    public function cambiarEstado(int $id, string $estado): bool
+    {
+        $estadoValido = in_array($estado, ['activo', 'inactivo'], true) ? $estado : 'activo';
+        $stmt = $this->db->prepare('UPDATE usuarios SET estado = :estado WHERE id = :id');
+        return $stmt->execute([':estado' => $estadoValido, ':id' => $id]);
     }
 
     public function contarAdmins(): int

@@ -282,6 +282,9 @@ if ($module === 'usuarios') {
         case 'eliminar':
             $ctrl->eliminar();
             break;
+        case 'reactivar':
+            $ctrl->reactivar();
+            break;
         case 'reset_password':
             $ctrl->resetPassword();
             break;

@@ -107,7 +107,7 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                     <div class="prod-meta">
                         <span class="prod-tag <?= $p['iva'] === 'si' ? 'tag-iva' : 'tag-noiva' ?>">
-                            IVA: <?= $p['iva'] === 'si' ? 'Sí' : 'No' ?>
+                            <?= $p['iva'] === 'si' ? 'Con IVA' : 'Sin IVA' ?>
                         </span>
                         <?php if ($p['estado'] !== 'activo'): ?>
                             <span class="prod-tag tag-inactive"><i class="bi bi-x-circle-fill"></i> Inactivo</span>
@@ -674,7 +674,7 @@ function renderizarProductosAjax(productos, isAdmin) {
                 </div>
                 <div class="prod-meta">
                     <span class="prod-tag ${p.iva === 'si' ? 'tag-iva' : 'tag-noiva'}">
-                        IVA: ${p.iva === 'si' ? 'Sí' : 'No'}
+                        ${p.iva === 'si' ? 'Con IVA' : 'Sin IVA'}
                     </span>
                     ${p.estado !== 'activo' ? `<span class="prod-tag tag-inactive"><i class="bi bi-x-circle-fill"></i> Inactivo</span>` : ''}
                 </div>

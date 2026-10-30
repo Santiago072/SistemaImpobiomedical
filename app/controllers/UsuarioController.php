@@ -108,6 +108,7 @@ class UsuarioController
 
         $hash = password_hash(!empty($password) ? $password : $doc, PASSWORD_BCRYPT);
         if ($this->model->crear($codigo, $doc, $nombre, $correo, $hash, $telefono, $cargo, $rol)) {
+            $_SESSION['flash_exito'] = 'Usuario creado exitosamente.';
             header('Location: ' . BASE_URL . '?module=usuarios&created=1');
             exit();
         }
@@ -193,6 +194,7 @@ class UsuarioController
                 $_SESSION['usuario_cargo']  = $cargo;
                 $_SESSION['rol']            = $rol;
             }
+            $_SESSION['flash_exito'] = 'Usuario actualizado exitosamente.';
             header('Location: ' . BASE_URL . '?module=usuarios&updated=1');
             exit();
         }
@@ -229,6 +231,7 @@ class UsuarioController
         $nuevaPass = $usuario['documento'];
         $hash = password_hash($nuevaPass, PASSWORD_BCRYPT);
         $this->model->resetPassword($id, $hash);
+        $_SESSION['flash_exito'] = 'Contraseña de ' . htmlspecialchars($usuario['nombre']) . ' restablecida al número de documento (' . $nuevaPass . ').';
         header('Location: ' . BASE_URL . '?module=usuarios&reset=1');
         exit();
     }
@@ -278,18 +281,24 @@ class UsuarioController
         $cotModel = new CotizacionModel($this->db);
         $totalCotizaciones = $cotModel->contarDelUsuario($id);
         if ($totalCotizaciones > 0) {
-            $responderError(
-                "El usuario tiene {$totalCotizaciones} cotización(es) asociadas en el sistema y no puede ser eliminado para mantener la trazabilidad e historial comercial. Se recomienda cambiar su estado a Inactivo.",
-                'has_cotizaciones'
-            );
+            $this->model->cambiarEstado($id, 'inactivo');
+            if ($esAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'success', 'accion' => 'inactivado', 'message' => 'El usuario tiene cotizaciones asociadas, por lo que su estado se cambió a Inactivo para proteger el historial.']);
+                exit();
+            }
+            $_SESSION['flash_exito'] = 'El usuario tiene cotizaciones asociadas, por lo que su estado se cambió a Inactivo para proteger el historial comercial.';
+            header('Location: ' . BASE_URL . '?module=usuarios&updated=1');
+            exit();
         }
 
         if ($this->model->eliminar($id)) {
             if ($esAjax) {
                 header('Content-Type: application/json');
-                echo json_encode(['status' => 'success']);
+                echo json_encode(['status' => 'success', 'accion' => 'eliminado']);
                 exit();
             }
+            $_SESSION['flash_exito'] = 'Usuario eliminado definitivamente del sistema.';
             header('Location: ' . BASE_URL . '?module=usuarios&deleted=1');
             exit();
         }
@@ -298,6 +307,27 @@ class UsuarioController
         unset($_SESSION['db_error']);
         $_SESSION['mensajeError'] = $err;
         header('Location: ' . BASE_URL . '?module=usuarios');
+        exit();
+    }
+
+    public function reactivar(): void
+    {
+        verificar_admin();
+        verificar_rate_limit(10, 60, 'usuario_reactivar');
+
+        $token = $_POST['csrf_token'] ?? '';
+        if (!verificar_token_csrf($token)) {
+            header('Location: ' . BASE_URL . '?module=usuarios&error=csrf');
+            exit();
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id > 0) {
+            $this->model->cambiarEstado($id, 'activo');
+            $_SESSION['flash_exito'] = 'Usuario reactivado correctamente.';
+        }
+
+        header('Location: ' . BASE_URL . '?module=usuarios&reactivated=1');
         exit();
     }
 
@@ -422,6 +452,7 @@ class UsuarioController
         if ($this->model->cambiarPassword($usuarioId, $hash)) {
             unset($_SESSION['mostrar_modal_cambio_pass']);
             rotar_token_csrf();
+            $_SESSION['flash_exito'] = '¡Contraseña actualizada exitosamente! Tu nueva clave ya está activa.';
             if ($esAjax) {
                 header('Content-Type: application/json');
                 echo json_encode(['status' => 'success', 'message' => 'Contraseña actualizada exitosamente']);

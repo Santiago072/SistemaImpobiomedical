@@ -71,12 +71,26 @@ include dirname(__DIR__) . '/layout/menu.php';
                     <div><i class="bi bi-telephone"></i> <?= htmlspecialchars($u['telefono'] ?? '') ?></div>
                 </div>
                 <div class="usr-actions">
-                    <button type="button" class="mod-btn-edit" onclick="abrirModalEditar(<?= htmlspecialchars(json_encode($u)) ?>, event)">
+                    <button type="button" class="mod-btn-edit" title="Editar Usuario" onclick="abrirModalEditar(<?= htmlspecialchars(json_encode($u)) ?>, event)">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
-                    <button type="button" class="mod-btn-del" onclick="confirmarEliminar(<?= intval($u['id']) ?>, '<?= htmlspecialchars(addslashes($u['nombre'])) ?>', event)">
+                    <button type="button" class="mod-btn-key" title="Restablecer Contraseña al Documento" onclick="confirmarResetDirecto(<?= intval($u['id']) ?>, '<?= htmlspecialchars(addslashes($u['nombre'])) ?>', '<?= htmlspecialchars(addslashes($u['documento'])) ?>', event)">
+                        <i class="bi bi-key-fill"></i>
+                    </button>
+                    <?php if (strtolower($u['estado'] ?? 'activo') === 'activo'): ?>
+                    <button type="button" class="mod-btn-del" title="Desactivar / Eliminar" onclick="confirmarEliminar(<?= intval($u['id']) ?>, '<?= htmlspecialchars(addslashes($u['nombre'])) ?>', <?= (int)($u['total_cotizaciones'] ?? 0) ?>, event)">
                         <i class="bi bi-trash-fill"></i>
                     </button>
+                    <?php else: ?>
+                    <button type="button" class="mod-btn-reactivar" title="Reactivar Usuario" onclick="confirmarReactivar(<?= intval($u['id']) ?>, '<?= htmlspecialchars(addslashes($u['nombre'])) ?>', event)">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <?php if ((int)($u['total_cotizaciones'] ?? 0) === 0): ?>
+                    <button type="button" class="mod-btn-del" title="Eliminar Definitivamente" onclick="confirmarEliminar(<?= intval($u['id']) ?>, '<?= htmlspecialchars(addslashes($u['nombre'])) ?>', 0, event)">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                    <?php endif; ?>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -224,29 +238,63 @@ include dirname(__DIR__) . '/layout/menu.php';
                     </div>
                 </div>
             </div>
-            <div class="imo-modal-footer">
-                <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-editar')">Cancelar</button>
-                <button type="submit" class="imo-btn-save"><i class="bi bi-save-fill"></i> Guardar Cambios</button>
+            <div class="imo-modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <button type="button" onclick="restablecerClaveDocumento(event)" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s;" title="Restablecer la contraseña del usuario a su documento">
+                    <i class="bi bi-key-fill"></i> Restablecer al Documento
+                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-editar')">Cancelar</button>
+                    <button type="submit" class="imo-btn-save"><i class="bi bi-save-fill"></i> Guardar Cambios</button>
+                </div>
             </div>
         </form>
     </div>
 </div>
 
-<!-- MODAL: Eliminar -->
-<div id="modal-eliminar" class="imo-modal-bg">
+<!-- Formulario Oculto para Restablecer Contraseña -->
+<form id="form-reset-pass-user" method="POST" action="<?= $basePath ?>?module=usuarios&action=reset_password" style="display:none;">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+    <input type="hidden" name="id" id="reset_pass_user_id" value="">
+</form>
+
+<!-- MODAL: Eliminar / Desactivar -->
+<div id="modal-eliminar" class="imo-modal-bg" onclick="cerrarModal('modal-eliminar', event)">
     <div class="imo-modal imo-modal-sm">
         <div class="imo-modal-header danger">
-            <h3><i class="bi bi-exclamation-triangle-fill"></i> Eliminar Usuario</h3>
-            <button onclick="cerrarModal('modal-eliminar')" class="imo-modal-close">&times;</button>
+            <h3 id="modal-eliminar-titulo"><i class="bi bi-trash-fill"></i> Confirmar Eliminación</h3>
+            <button type="button" onclick="cerrarModal('modal-eliminar')" class="imo-modal-close">&times;</button>
         </div>
         <div class="imo-modal-body">
-            <p class="imo-modal-desc">¿Seguro que deseas eliminar a <strong id="nombre-eliminar"></strong>? Esta acción es irreversible.</p>
+            <p id="modal-eliminar-mensaje" class="imo-modal-desc">¿Está seguro de que desea eliminar al usuario <strong id="nombre-eliminar"></strong>?</p>
+            <p class="imo-muted-sm" id="modal-eliminar-detalle">Esta acción cambiará el estado a inactivo para proteger el historial de cotizaciones.</p>
         </div>
         <div class="imo-modal-footer">
-            <button class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
+            <button type="button" class="imo-btn-cancel" onclick="cerrarModal('modal-eliminar')">Cancelar</button>
             <form id="form-eliminar-usuario" method="POST" action="" class="form-inline-action">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
-                <button type="submit" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Sí, eliminar</button>
+                <button type="submit" id="btn-confirmar-eliminar" class="imo-btn-danger"><i class="bi bi-trash-fill"></i> Eliminar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Reactivar Usuario -->
+<div id="modal-reactivar" class="imo-modal-bg">
+    <div class="imo-modal imo-modal-sm">
+        <div class="imo-modal-header" style="background:#ecfdf5; color:#065f46; border-bottom:1px solid #a7f3d0;">
+            <h3><i class="bi bi-arrow-clockwise"></i> Reactivar Usuario</h3>
+            <button onclick="cerrarModal('modal-reactivar')" class="imo-modal-close">&times;</button>
+        </div>
+        <div class="imo-modal-body">
+            <p class="imo-modal-desc">¿Deseas reactivar el acceso al sistema para el usuario <strong id="nombre-reactivar"></strong>?</p>
+            <p style="font-size:0.85rem; color:#64748b; margin-top:8px;">Su estado volverá a estar <strong>Activo</strong> y podrá iniciar sesión normalmente.</p>
+        </div>
+        <div class="imo-modal-footer">
+            <button class="imo-btn-cancel" onclick="cerrarModal('modal-reactivar')">Cancelar</button>
+            <form id="form-reactivar-usuario" method="POST" action="<?= $basePath ?>?module=usuarios&action=reactivar" class="form-inline-action">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                <input type="hidden" name="id" id="reactivar_usuario_id" value="">
+                <button type="submit" class="imo-btn-save" style="background:#0d9488;"><i class="bi bi-check-circle-fill"></i> Sí, reactivar</button>
             </form>
         </div>
     </div>
@@ -298,12 +346,69 @@ function abrirModalEditar(u, e) {
     document.body.style.overflow = 'hidden';
 }
 
-function confirmarEliminar(id, nombre, e) {
-    if(e) { e.preventDefault(); e.stopPropagation(); }
-    document.getElementById('nombre-eliminar').textContent = nombre;
+const CURRENT_USER_ID = <?= (int)($_SESSION['usuario_id'] ?? 0) ?>;
+
+function confirmarEliminar(id, nombre, totalCotizaciones = 0, e = null) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    if (id === CURRENT_USER_ID) {
+        alert('No puedes eliminar ni desactivar tu propia cuenta mientras tienes la sesión activa.');
+        return;
+    }
     document.getElementById('form-eliminar-usuario').action = BASE + '?module=usuarios&action=eliminar&id=' + id;
+    const tituloModal = document.getElementById('modal-eliminar-titulo');
+    const msg         = document.getElementById('modal-eliminar-mensaje');
+    const detalle     = document.getElementById('modal-eliminar-detalle');
+    const btn         = document.getElementById('btn-confirmar-eliminar');
+
+    if (totalCotizaciones > 0) {
+        if (tituloModal) tituloModal.innerHTML = '<i class="bi bi-slash-circle-fill"></i> Desactivar Usuario';
+        if (msg) msg.innerHTML = `¿Desea desactivar al usuario <strong>${escapeHtml(nombre)}</strong>?`;
+        if (detalle) detalle.innerHTML = `Este usuario tiene <strong>${totalCotizaciones} cotización(es) asociada(s)</strong>. Se cambiará a estado <strong>Inactivo</strong> para proteger el historial.`;
+        if (btn) {
+            btn.className = 'imo-btn-danger';
+            btn.innerHTML = '<i class="bi bi-slash-circle-fill"></i> Desactivar';
+        }
+    } else {
+        if (tituloModal) tituloModal.innerHTML = '<i class="bi bi-trash-fill"></i> Confirmar Eliminación';
+        if (msg) msg.innerHTML = `¿Está seguro de eliminar definitivamente al usuario <strong>${escapeHtml(nombre)}</strong>?`;
+        if (detalle) detalle.innerHTML = 'Este usuario no tiene cotizaciones asociadas. Se eliminará por completo del sistema.';
+        if (btn) {
+            btn.className = 'imo-btn-danger';
+            btn.innerHTML = '<i class="bi bi-trash-fill"></i> Eliminar Definitivamente';
+        }
+    }
     document.getElementById('modal-eliminar').classList.add('open');
     document.body.style.overflow = 'hidden';
+}
+
+function confirmarReactivar(id, nombre, e = null) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    document.getElementById('reactivar_usuario_id').value = id;
+    document.getElementById('nombre-reactivar').textContent = nombre;
+    document.getElementById('modal-reactivar').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function confirmarResetDirecto(id, nombre, doc, e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    if (confirm(`¿Restablecer la contraseña de "${nombre}" a su número de documento (${doc})?`)) {
+        document.getElementById('reset_pass_user_id').value = id;
+        document.getElementById('form-reset-pass-user').submit();
+    }
+}
+
+function restablecerClaveDocumento(e) {
+    if (e) { e.preventDefault(); }
+    const doc = document.getElementById('e_documento').value;
+    const nom = document.getElementById('e_nombre').value;
+    if (confirm(`¿Restablecer la contraseña de "${nom}" a su número de documento (${doc})?`)) {
+        const actionUrl = document.getElementById('form-editar-usuario').action;
+        const idMatch = actionUrl.match(/id=(\d+)/);
+        if (idMatch && idMatch[1]) {
+            document.getElementById('reset_pass_user_id').value = idMatch[1];
+            document.getElementById('form-reset-pass-user').submit();
+        }
+    }
 }
 
 function cerrarModal(id, evento) {
@@ -314,7 +419,7 @@ function cerrarModal(id, evento) {
 
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-        ['modal-crear','modal-editar','modal-eliminar'].forEach(id => {
+        ['modal-crear','modal-editar','modal-eliminar','modal-reactivar'].forEach(id => {
             document.getElementById(id)?.classList.remove('open');
         });
         document.body.style.overflow = 'auto';
@@ -397,12 +502,26 @@ function renderizarUsuariosAjax(usuarios) {
                 <div><i class="bi bi-telephone"></i> ${escapeHtml(u.telefono || '')}</div>
             </div>
             <div class="usr-actions">
-                <button type="button" class="mod-btn-edit" onclick="abrirModalEditar(${uJson}, event)">
+                <button type="button" class="mod-btn-edit" title="Editar Usuario" onclick="abrirModalEditar(${uJson}, event)">
                     <i class="bi bi-pencil-fill"></i>
                 </button>
-                <button type="button" class="mod-btn-del" onclick="confirmarEliminar(${uid}, '${nombreSafe}', event)">
+                <button type="button" class="mod-btn-key" title="Restablecer Contraseña al Documento" onclick="confirmarResetDirecto(${uid}, '${nombreSafe}', '${escapeJsString(u.documento || '')}', event)">
+                    <i class="bi bi-key-fill"></i>
+                </button>
+                ${estActivo ? `
+                <button type="button" class="mod-btn-del" title="Desactivar / Eliminar" onclick="confirmarEliminar(${uid}, '${nombreSafe}', ${parseInt(u.total_cotizaciones || 0)}, event)">
                     <i class="bi bi-trash-fill"></i>
                 </button>
+                ` : `
+                <button type="button" class="mod-btn-reactivar" title="Reactivar Usuario" onclick="confirmarReactivar(${uid}, '${nombreSafe}', event)">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+                ${parseInt(u.total_cotizaciones || 0) === 0 ? `
+                <button type="button" class="mod-btn-del" title="Eliminar Definitivamente" onclick="confirmarEliminar(${uid}, '${nombreSafe}', 0, event)">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+                ` : ''}
+                `}
             </div>
         </div>
         `;

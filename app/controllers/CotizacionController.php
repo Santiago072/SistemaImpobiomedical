@@ -141,6 +141,13 @@ class CotizacionController
 
         try {
             $this->itemService->guardarItem($cotizacion_id, $_POST, $_FILES);
+            if (isset($_SESSION['cotizacion_ajustando_id'])) {
+                $_SESSION['flash_exito'] = 'Producto agregado exitosamente al ajuste.';
+            } elseif (isset($_SESSION['cotizacion_revision_de'])) {
+                $_SESSION['flash_exito'] = 'Producto agregado exitosamente a la nueva versión.';
+            } else {
+                $_SESSION['flash_exito'] = 'Producto agregado exitosamente a la cotización.';
+            }
             header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear');
             exit();
         } catch (\Exception $e) {
@@ -203,6 +210,13 @@ class CotizacionController
                 try {
                     $itemId = (int)($_POST['item_id'] ?? 0);
                     if ($this->itemService->actualizarItem($itemId, $cotizacion_id, $_POST, $_FILES)) {
+                        if (isset($_SESSION['cotizacion_ajustando_id'])) {
+                            $_SESSION['flash_exito'] = 'Ítem actualizado correctamente en el ajuste.';
+                        } elseif (isset($_SESSION['cotizacion_revision_de'])) {
+                            $_SESSION['flash_exito'] = 'Ítem actualizado correctamente en la nueva versión.';
+                        } else {
+                            $_SESSION['flash_exito'] = 'Ítem actualizado correctamente.';
+                        }
                         header('Location: ' . BASE_URL . '?module=cotizaciones&action=crear&updated=1');
                         exit();
                     } else {
@@ -276,6 +290,9 @@ class CotizacionController
         }
 
         $exito = $this->model->eliminarItem((int)$rawId, (int)$cotizacionId);
+        if ($exito) {
+            $_SESSION['flash_exito'] = 'Ítem eliminado correctamente de la cotización.';
+        }
 
         if ($esAjax) {
             header('Content-Type: application/json');
