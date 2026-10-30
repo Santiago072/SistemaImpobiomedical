@@ -81,7 +81,7 @@ class Q4SeguridadAvanzadaTest extends TestCase
         ];
 
         foreach ($payloads as $payload) {
-            $limpio = basename($payload);
+            $limpio = basename(str_replace('\\', '/', $payload));
             $this->assertStringNotContainsString('../', $limpio);
             $this->assertStringNotContainsString('..\\', $limpio);
             $this->assertFalse(str_starts_with($limpio, '..'));
