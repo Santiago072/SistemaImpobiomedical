@@ -57,7 +57,10 @@ jobs:
 
       # ── 7. Ejecutar suite de pruebas unitarias ──────────────────────────────
       - name: 🧪 Ejecutar pruebas unitarias
-        run: vendor/bin/phpunit --testdox
+        run: |
+          vendor/bin/phpunit --testdox > phpunit_log.txt 2>&1 || touch failed.flag
+          cat phpunit_log.txt
+          if [ -f failed.flag ]; then exit 1; fi
         env:
           APP_ENV: testing
           SESSION_LIFETIME: 3600
