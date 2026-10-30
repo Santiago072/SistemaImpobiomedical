@@ -61,7 +61,7 @@ jobs:
           vendor/bin/phpunit --testdox > phpunit_log.txt 2>&1 || touch failed.flag
           cat phpunit_log.txt
           if [ -f failed.flag ]; then
-            grep -A 30 "FAILURES!" phpunit_log.txt | while IFS= read -r line; do echo "::error::$line"; done
+            grep -B 35 "FAILURES!" phpunit_log.txt | while IFS= read -r line; do echo "::error::$line"; done
             exit 1
           fi
         env:
