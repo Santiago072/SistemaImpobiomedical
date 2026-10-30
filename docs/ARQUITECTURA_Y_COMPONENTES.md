@@ -1,6 +1,6 @@
 # 🏗️ Arquitectura y Componentes del Sistema Impobiomedical
 
-**Versión:** v3.6.2  
+**Versión:** v3.6.3  
 **Fecha:** Octubre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -132,14 +132,16 @@ graph TB
 | Cotizaciones | Crear | `/?module=cotizaciones&action=crear&nueva=1` | Cotizador dinámico y calculadora |
 | Cotizaciones | Finalizar | `/?module=cotizaciones&action=finalizar` | Cierre de cotización y datos de cliente |
 | Cotizaciones | Consultar | `/?module=cotizaciones&action=consultar` | Tabla de cotizaciones y cambio de estado AJAX |
+| Cotizaciones | **Guardar Ajuste** | `/?module=cotizaciones&action=guardar_ajuste_directo` | **Actualizado** — Aplica cambios a la original, renueva clon y permanece en edición |
+| Cotizaciones | **Cancelar Ajuste** | `/?module=cotizaciones&action=cancelar_ajuste` | Descarta clon activo y retorna a consultar |
 | Cotizaciones | PDF | `/?module=cotizaciones&action=generar_pdf&ver=EB01` | Visor / descarga de PDF oficial |
 | Cotizaciones | Respaldo | `/?module=cotizaciones&action=ver_respaldo&numero=EB01` | Hoja confidencial de costos de proveedores |
 | Órdenes | Consultar | `/?module=ordenes&action=consultar` | Listado de órdenes por pestañas (Pendientes / Completadas) |
 | Órdenes | Crear P.O. | `/?module=ordenes&action=seleccionar_items&cotizacion=EB01` | Generar orden para un proveedor desde cotización |
-| Órdenes | **Orden Directa** | `/?module=ordenes&action=crear_directa` | **Nueva** — Generar P.O. sin cotización previa (compra directa) |
-| Productos | Listar | `/?module=productos` | Catálogo médico y subida de imágenes |
-| Clientes | Listar | `/?module=clientes` | Directorio de entidades de salud |
-| Proveedores | Listar | `/?module=proveedores` | Directorio comercial y bancario de proveedores |
+| Órdenes | **Orden Directa** | `/?module=ordenes&action=crear_directa` | Generar P.O. sin cotización previa (compra directa) |
+| Productos | Listar / **Reactivar** | `/?module=productos` / `&action=reactivar` | Catálogo médico, inactivación inteligente y reactivación |
+| Clientes | Listar / **Reactivar** | `/?module=clientes` / `&action=reactivar` | Directorio de clientes, soft-delete y reactivación |
+| Proveedores | Listar / **Reactivar** | `/?module=proveedores` / `&action=reactivar` | Directorio de proveedores, soft-delete y reactivación |
 | Usuarios | Listar | `/?module=usuarios` | Gestión de cuentas de asesores y roles |
 | Estadísticas | Reportes | `/?module=estadisticas` | Métricas y gráficos comparativos consolidados |
 
@@ -244,12 +246,15 @@ SistemaImpobiomedical/
 ├── public/
 │   ├── favicon.svg             # Favicon oficial corporativo vectorial
 │   └── js/
+│       ├── chart.min.js        # Librería Chart.js v4.6.1 empaquetada local para soporte offline
 │       └── script.js           # Toggle de menú, confirmaciones, estrellas rojas y debounce
 │
 ├── tests/
-│   └── Unit/                   # Suite de pruebas unitarias PHPUnit 10
+│   └── Unit/                   # Suite de pruebas unitarias PHPUnit 10 (46 pruebas, 100% OK)
 │       ├── CalculosCotizacionTest.php
 │       ├── FileUploadServiceTest.php
+│       ├── FlujoIntegracionNegocioTest.php
+│       ├── InactivacionReactivacionTest.php
 │       ├── OrdenCompraCalculosTest.php
 │       ├── SeguridadTest.php
 │       └── ValidacionesNegocioTest.php
@@ -458,16 +463,18 @@ erDiagram
 ### 6.3 Cotizador y Negociaciones (`CotizacionController.php`)
 - **Manejo de Borrador Activo:** Sesión `$_SESSION['cotizacion_id']` para construir la cotización paso a paso sin perder datos.
 - **Modal de Selección Ajustar vs. Modificar:** Diálogo interactivo al pulsar Modificar que permite elegir entre:
-  - **Ajustar Cotización (`action=ajustar`):** Crea un clon temporal de trabajo (`es_revision = 1`) para editar los ítems de forma aislada, manteniendo la cotización original intacta en la base de datos y visible en consultas. Al guardar (`guardar_ajuste`), transfiere atómicamente los ítems corregidos mediante `CotizacionModel::aplicarItemsAjuste()`, actualiza el PDF y preserva el mismo número consecutivo original (ej: `EB 01`) sin incrementar el contador mensual.
+  - **Ajustar Cotización (`action=ajustar`):** Crea un clon temporal de trabajo (`es_revision = 1`) para editar los ítems de forma aislada, manteniendo la cotización original intacta en la base de datos y visible en consultas.
+  - **Guardado Directo con Permanencia (`guardar_ajuste_directo`):** Al guardar el ajuste, transfiere atómicamente los ítems a la cotización oficial (`CotizacionModel::aplicarItemsAjuste()`), destruye el clon viejo, **genera de inmediato un nuevo clon fresco** sincronizado y recarga la pantalla de edición (`action=crear`) mostrando la notificación toast de éxito. El usuario permanece en la pantalla pudiendo guardar avances iterativos hasta pulsar "Cancelar Ajuste" para salir a Consultar.
   - **Nueva Versión / Revisión (`action=modificar`):** Genera una copia formal con sufijo secuencial (`_01`, `_02`) conservando el historial comercial anterior.
 - **Validación de Propiedad y Permisos (Ownership Check):** Los usuarios estándar solo pueden ajustar o modificar cotizaciones de su autoría; los roles `admin` y `compras` tienen permisos globales de edición y eliminación.
-- **Protección de Abandono de Flujo:** Si el usuario cancela (`action=cancelar_ajuste`) o navega fuera del módulo sin guardar, el clon temporal es depurado y la cotización original permanece inalterada. El método `CotizacionModel::limpiarClonesHuerfanos()` previene la acumulación de clones residuales sin tocar los borradores activos.
+- **Protección de Abandono de Flujo:** Si el usuario cancela (`action=cancelar_ajuste`) o navega fuera del módulo sin guardar, el clon temporal es depurado y la cotización original permanece inalterada con los últimos cambios guardados. El método `CotizacionModel::limpiarClonesHuerfanos()` previene la acumulación de clones residuales sin tocar los borradores activos.
 - **Actualización de Estado Comercial:** Endpoint `cambiar_estado` protegido con token CSRF y rate limit con respuesta JSON asíncrona y reactividad inmediata en el botón de órdenes.
 - **Eliminación Desacoplada:** El botón de eliminar se encuentra desacoplado del estado comercial, permitiendo a administradores y encargados de compras purgar cotizaciones en cualquier estado.
 
 ### 6.4 Catálogo de Productos (`ProductoController.php`)
 - **Carga de Fotografías:** Integrado con `FileUploadService` para validación de tipo MIME real (`finfo`), generación de nombres únicos (`bin2hex(random_bytes(16))`) y control de tamaño.
-- **Exportación PDF:** Genera catálogo estructurado en dos columnas con miniaturas e imágenes optimizadas.
+- **Exportación PDF:** Genera catálogo estructurado en dos columnas con miniaturas e imágenes optimizadas, formateando Marca y Modelo debajo de la descripción principal y señalando con precisión el estado 'Con IVA (19%)' o 'Sin IVA'.
+- **Protección de Integridad y Reactivación:** La eliminación evalúa `contarCotizacionesAsociadas()`. Si tiene cotizaciones u órdenes vinculadas, se ejecuta una desactivación preventiva cambiando su estado a inactivo para proteger los históricos; si tiene 0 movimientos, permite borrado físico. Cuenta con endpoint `reactivar` para restaurar productos dados de baja con un solo clic.
 
 ### 6.5 Órdenes de Compra (`OrdenCompraController.php`)
 - **Aislamiento por Proveedor:** Agrupa los ítems cotizados y permite generar la Orden de Compra (P.O.) únicamente con los productos del proveedor seleccionado.
@@ -484,10 +491,13 @@ erDiagram
 ### 6.6 Directorio de Clientes (`ClienteController.php`)
 - **Autocompletado en Vivo:** Endpoint AJAX para búsqueda instantánea por NIT o Razón Social.
 - **Ubicación Geográfica:** Almacena departamento y municipio de cada entidad de salud.
+- **Protección de Integridad y Reactivación:** La acción de eliminación valida si el cliente tiene cotizaciones emitidas (`contarCotizacionesAsociadas()`). Si posee cotizaciones, se desactiva preventivamente; si tiene 0 cotizaciones, se permite la eliminación física definitiva. Para clientes inactivos, el endpoint `reactivar` restaura el cliente al estado activo inmediatamente.
 
 ### 6.7 Gestión de Usuarios (`UsuarioController.php`)
 - **Control de Asesores:** Asigna código de cotización de 2 a 3 letras único por asesor (ej. `EB`).
-- **Reseteo Administrativo:** Restablece contraseñas al número de documento con un solo clic.
+- **Reseteo Administrativo de Claves:** Restablece contraseñas al número de documento con un solo clic desde la tarjeta del usuario (botón de llave dorada) o desde el formulario de edición.
+- **Protección de Integridad y Desactivación Preventiva:** Al eliminar, evalúa si el usuario posee cotizaciones finalizadas (`total_cotizaciones`). Si tiene cotizaciones asociadas, el modal interactivo conmuta a suspensión/desactivación preventiva (`cambiarEstado($id, 'inactivo')`) para salvaguardar la trazabilidad comercial de ventas. Si tiene 0 cotizaciones, permite la eliminación física definitiva (`eliminar($id)`).
+- **Reactivación Inmediata:** Endpoint `reactivar` para restituir usuarios inactivos al estado activo de forma inmediata.
 
 ### 6.8 Gestión de Proveedores (`ProveedorController.php`)
 - **Directorio Centralizado:** Administración CRUD de proveedores con campos tributarios (`nit`, `tipo_contribuyente`), comerciales (`nombre_proveedor`) y bancarios (`nombre_banco`, `numero_cuenta`, `tipo_cuenta`).
@@ -495,6 +505,7 @@ erDiagram
 - **Normalización de NIT:** Eliminación de puntos y espacios preservando el dígito de verificación (`normalizar_nit()`).
 - **Búsqueda Predictiva en Vivo:** Endpoint AJAX (`ajaxBuscar`) con Rate Limiting (`60/min`) utilizado transversalmente en cotizaciones y órdenes de compra.
 - **Historial de Proveedores:** Integración con `OrdenCompraModel` para clasificar automáticamente al proveedor en órdenes como `🟡 Nuevo` (primera orden, evaluando `id < ordenActualId`) o `🟢 Registrado` (conteo de órdenes previas), asegurando la precarga íntegra de datos maestros bancarios y de contacto en ambos estados.
+- **Protección de Integridad y Reactivación:** Evalúa `contarAsociadas()` antes de eliminar. Si el proveedor tiene órdenes o cotizaciones vinculadas, se desactiva lógicamente; si tiene 0 registros, permite su eliminación física. Incluye endpoint y botón `reactivar` para reincorporar proveedores inactivos.
 
 ---
 

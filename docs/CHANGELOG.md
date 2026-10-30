@@ -4,6 +4,22 @@ Todas las actualizaciones, mejoras arquitectónicas, parches de seguridad y vers
 
 ---
 
+## [v3.6.3] - 2026-10-29
+### Agregado y Mejorado
+- **Gestión Inteligente de Usuarios y Control de Integridad Comercial:**
+  - Implementación de modal interactivo condicional de eliminación/desactivación: si el usuario posee cotizaciones finalizadas asociadas, el modal bloquea el borrado destructivo y ofrece el botón *Desactivar Usuario* (`cambiarEstado($id, 'inactivo')`), preservando la trazabilidad de ventas históricas.
+  - Si el usuario cuenta con 0 cotizaciones vinculadas, el sistema permite la eliminación física definitiva (`eliminar($id)`).
+  - Nuevo endpoint y acción de router `case 'reactivar':` para habilitar de inmediato usuarios previamente suspendidos con botón verde en su tarjeta.
+  - Corrección en `UsuarioModel::listar()` filtrando el conteo de cotizaciones con `c.estado = 'finalizada'` para descartar borradores temporales huérfanos.
+  - Botón de acceso rápido con ícono de llave dorada en las tarjetas de usuario y enlace *Restablecer al documento* en el modal de edición para resetear la clave al documento con un solo clic.
+- **Catálogo de Productos y Exportación a PDF:**
+  - Formateo corporativo en el PDF del catálogo: inclusión de la Marca y Modelo debajo del nombre del producto, replicando el formato de las cotizaciones oficiales.
+  - Sustitución de la etiqueta "No" por la indicación explícita "Sin IVA" tanto en la tabla web del catálogo como en el PDF descargable.
+- **Notificaciones Toast y Experiencia de Usuario (Shared UX):**
+  - Notificaciones flotantes emergentes (toasts de éxito) al añadir productos en cotizaciones nuevas, ajustes directos y nuevas versiones, así como al editar o eliminar ítems.
+  - Confirmación flotante inmediata tras cambiar la contraseña inicial o realizar un restablecimiento de clave administrativo.
+
+---
 ## [v3.6.2] - 2026-10-22
 ### Agregado y Mejorado
 - **Controles Anti-Negativos y Validación en Tiempo Real (Blindaje Numérico Global):**

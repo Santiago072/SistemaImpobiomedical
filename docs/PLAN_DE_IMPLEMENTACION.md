@@ -75,3 +75,9 @@ graph LR
 * **Autocompletado Total Desacoplado de Proveedores:** Precarga íntegra de información bancaria y de contacto (`celular`, `correo`, banco, cuenta) en órdenes directas y desde cotización independientemente de la clasificación del proveedor.
 * **Coherencia Histórica de Proveedor en Ajuste:** Evaluación de compras previas filtrando estrictamente por `id < ordenActualId`, asegurando que la primera orden histórica muestre congruentemente `PROVEEDOR NUEVO` sin auto-contar la orden abierta.
 * **Estandarización de Notificaciones UX:** Adopción de componente institucional `shared_ux.css` y alertas amigables en todos los módulos operativos.
+
+### Fase 11: Desactivación Inteligente de Usuarios, Toasts UX y Catálogo PDF (v3.6.3)
+* **Desactivación Lógica vs. Eliminación Física:** Modal interactivo dinámico que conmuta a suspensión (*Inactivo*) si el usuario tiene cotizaciones finalizadas registradas, o eliminación física si no cuenta con registros vinculados, con endpoint y botón rápido de reactivación.
+* **Restablecimiento Rápido de Credenciales:** Botón directo de llave en tarjeta y en modal para reconfigurar la clave al documento al instante.
+* **Catálogo PDF Enriquecido:** Impresión de Marca y Modelo debajo del título del equipo y etiqueta explicativa *Sin IVA*.
+* **Toasts Flotantes de Éxito:** Mensajes emergentes reactivos al interactuar con ítems de cotización y al actualizar claves.

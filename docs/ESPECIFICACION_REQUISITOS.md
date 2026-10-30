@@ -1,6 +1,6 @@
 # 📋 Especificación de Requisitos y Alcance Funcional — Sistema Impobiomedical
 
-**Versión del Sistema:** v3.6.1  
+**Versión del Sistema:** v3.6.3  
 **Fecha:** Octubre 2026  
 **Tecnología:** PHP 8.2 (PDO, MVC, Arquitectura Modular) · MariaDB / MySQL 8.0 · Vanilla CSS Modular (`css/components/`) · DomPDF · PHPUnit 10
 
@@ -26,30 +26,30 @@ El sistema cuenta con tres roles claramente estructurados:
 * **RF03:** El sistema debe sugerir al usuario cambiar su contraseña cuando ingrese por primera vez con su número de documento, permitiéndole omitir el cambio para esa sesión.
 * **RF04:** El sistema debe validar que toda nueva contraseña tenga al menos 6 caracteres, coincida con su confirmación y sea distinta al número de documento.
 * **RF05:** El sistema debe bloquear temporalmente los intentos continuos de inicio de sesión fallidos para proteger las cuentas.
-* **RF06:** El sistema debe permitir cerrar la sesión de forma segura, cerrando el acceso en el navegador.
+* **RF06:** El sistema debe permitir cerrar la sesión manualmente de forma segura o por tiempo de inactividad de 1 hora, se expira la sesion, cerrando el acceso en el navegador.
 
 ### 📊 Panel de Control (Dashboard)
-* **RF07:** El sistema debe mostrar un resumen de indicadores clave: total de cotizaciones, cotizaciones del mes, clientes registrados, productos activos y los registros recientes.
+* **RF07:** El sistema debe mostrar un resumen de indicadores clave: total de cotizaciones, cotizaciones del mes, clientes registrados, productos activos y los registros recientes de productos y cotizaciones.
 * **RF08:** El sistema debe mostrar a cada asesor comercial únicamente sus propias métricas y cotizaciones en el dashboard, mientras que los administradores y encargados de compras visualizan los consolidados generales.
 * **RF09:** El sistema debe presentar accesos rápidos a las funciones principales adaptados al rol del usuario conectado.
 
-### 📝 Cotizaciones y Calculadora Comercial
-* **RF10:** El sistema debe permitir elaborar cotizaciones seleccionando productos del catálogo (autocompletando título, marca, modelo, descripción y categoría) o ingresando productos de manera manual si es un producto nuevo.
-* **RF11:** El sistema debe calcular el precio de venta unitario a partir del costo del proveedor, sumando el porcentaje de utilidad, flete, calibración y estampillas.
-* **RF12:** El sistema debe permitir editar, eliminar y reordenar interactivamente (arriba/abajo) los productos agregados a la cotización tanto en cotizaciones nuevas como en ajustes de cotización.
+### 📝 Cotizaciones (Nueva Cotización y Consultar Cotizaciones)
+* **RF10:** El sistema debe permitir elaborar cotizaciones seleccionando productos del catálogo (autocompletando título, marca, modelo, descripción y categoría) o ingresando productos de manera manual si es un producto nuevo el cual tambien se guarda en el catálogo.
+* **RF11:** El sistema debe calcular el precio de venta unitario a partir del costo del proveedor, sumando el porcentaje de utilidad, flete, calibración y estampillas, (se asigna el valor de estampillas al precio unitario).
+* **RF12:** El sistema debe permitir editar, eliminar y reordenar interactivamente (arriba/abajo) los productos agregados a la cotización tanto en cotizaciones nuevas como en ajustes y nueva versión de cotización.
 * **RF13:** El sistema debe generar automáticamente un consecutivo mensual para cada cotización (`01`, `02`, `03`...) precedido por las iniciales del asesor comercial.
 * **RF14:** El sistema debe permitir modificar una cotización finalizada bajo dos modalidades:
-  * **Ajustar Cotización:** Corrige precios, cantidades o datos manteniendo el mismo número original y guardando los cambios sin descarga forzada de PDF.
+  * **Ajustar Cotización:** Corrige precios, cantidades o datos directamente sobre la cotización original manteniendo su mismo número consecutivo; guarda los ajustes en la cotización oficial, renueva de inmediato el clon de trabajo y mantiene al usuario en la pantalla de edición mostrando la alerta de éxito («Cotización actualizada con éxito»), permitiendo guardar avances sucesivos hasta pulsar "Cancelar Ajuste" o navegar a otro módulo.
   * **Nueva Revisión:** Genera una copia con sufijo de versión (`_01`, `_02`...) para conservar el histórico de la negociación original.
-* **RF15:** Cada asesor comercial solo puede ajustar o modificar las cotizaciones de su autoría; mientras que el Administrador y el Encargado de Compras pueden gestionar las de cualquier usuario.
+* **RF15:** Cada asesor comercial solo puede ajustar o modificar las cotizaciones de su autoría; mientras que el Administrador y el Encargado de Compras pueden gestionar las de cualquier usuario y eliminarlas cuando sea necesario.
 * **RF16:** El sistema debe permitir gestionar el **Estado Comercial** de las cotizaciones (*Pendiente*, *Concluida*, *Descartada*) en tiempo real, registrando la fecha y hora del cambio.
-* **RF17:** El sistema debe permitir actualizar el **Estado de Entrega** de las cotizaciones (*Por despachar*, *En camino*, *Entregado*), calculando el tiempo transcurrido en días al confirmarse la entrega.
-* **RF18:** El sistema debe generar el documento PDF oficial de la cotización con formato corporativo para ser presentado al cliente.
+* **RF17:** El sistema debe permitir actualizar el **Estado de Entrega** de las cotizaciones (Por despachar, En camino, Entregado), calculando automáticamente los días transcurridos hasta la entrega a partir de la fecha en que la negociación fue marcada como Concluida (o desde su creación si no hubo cambio previo).
+* **RF18:** El sistema debe generar el documento PDF oficial de la cotización con formato corporativo para el cliente, permitiendo previsualizarlo en una ventana modal interactiva, descargarlo directamente desde el módulo de Consultar Cotizaciones.
 * **RF19:** El sistema debe permitir registrar la fecha de cotización, los días de validez y las condiciones de pago para incluirlas en el documento oficial.
 * **RF20:** El sistema debe disponer de una **Hoja de Respaldo** interna que muestre los costos reales del proveedor, utilidades y márgenes de ganancia de cada producto cotizado.
 * **RF21:** El sistema debe permitir exportar las cotizaciones a formato Excel de manera estructurada y rápida.
 * **RF22:** Solo el Administrador y el Encargado de Compras pueden consultar y eliminar cotizaciones de cualquier asesor comercial.
-* **RF23:** El sistema debe permitir buscar cotizaciones por número de cotización, nombre del cliente, asesor comercial o rango de fechas, actualizando los contadores de cada estado.
+* **RF23:** El sistema debe clasificar las cotizaciones en el módulo de consulta mediante pestañas por estado comercial (*Todas*, *Pendientes*, *Concluidas*, *Descartadas*) y permitir filtrarlas por número de cotización, nombre del cliente, o rango de fechas, actualizando los contadores de cada pestaña en tiempo real.
 
 ### 📦 Órdenes de Compra (P.O.)
 * **RF24:** El sistema debe permitir generar órdenes de compra a proveedores a partir de cotizaciones en estado pendiente o mediante la creación de Órdenes Directas de mostrador.
@@ -57,35 +57,35 @@ El sistema cuenta con tres roles claramente estructurados:
 * **RF26:** El sistema debe clasificar las órdenes de compra en pendientes y completadas con contadores en tiempo real.
 * **RF27:** Solo el Administrador y el Encargado de Compras pueden actualizar el estado de las órdenes de compra y eliminarlas cuando sea necesario.
 * **RF28:** El sistema debe permitir la selección individual y masiva de órdenes de compra para su exportación consolidada a PDF y Excel.
-* **RF29:** El sistema debe incluir un visor interactivo para previsualizar, imprimir y descargar las órdenes de compra en formato PDF.
+* **RF29:** El sistema debe incluir un visor interactivo para previsualizar y descargar las órdenes de compra en formato PDF.
 * **RF30:** El sistema debe permitir ajustar directamente cualquier orden de compra conservando su número consecutivo P.O. original.
 * **RF31:** Cada asesor comercial solo puede ajustar las órdenes de compra que él mismo haya creado; mientras que el Administrador y el Encargado de Compras pueden ajustar las de cualquier usuario.
-* **RF32:** El sistema debe agrupar los ítems de la orden de compra por proveedor, asegurando que cada orden pertenezca a un único proveedor.
-* **RF33:** En las Órdenes Directas de mostrador, el sistema debe exigir que los productos se seleccionen del catálogo oficial para garantizar la integridad de los datos.
+* **RF32:** El sistema debe agrupar los ítems de la orden por proveedor único y clasificarlo como Nuevo (0 órdenes previas) o Registrado (1 o más órdenes) según su historial, permitiendo modificar cantidades, precios de proveedor, IVA, datos comerciales del proveedor, condiciones de retención, descuento, flete, saldo a favor, datos bancarios y observaciones finales.
+* **RF33:** En las Órdenes Directas de mostrador, el sistema debe exigir que los productos se seleccionen del catálogo oficial para garantizar la integridad de los datos, permitiendo modificar cantidades, precios de proveedor, IVA, datos comerciales del proveedor, condiciones de retención, descuento, flete, saldo a favor, datos bancarios y observaciones finales.
 
 ### 🩺 Catálogo de Productos Médicos
-* **RF34:** Los usuarios autorizados pueden consultar, registrar y editar productos médicos con su foto, código, título, categoría, IVA y estado; pero solo el Administrador puede eliminarlos del sistema.
-* **RF35:** El sistema debe permitir buscar productos en el catálogo de manera instantánea mientras se escribe el nombre o código.
-* **RF36:** El sistema debe validar que los archivos de imagen subidos al catálogo cumplan con formatos válidos (JPG, PNG, WebP).
-* **RF37:** El sistema debe permitir exportar el catálogo de productos a PDF, ya sea completo, por categoría o mediante la selección manual de productos específicos.
+* **RF34:** Los usuarios autorizados pueden visualizar el catálogo en tarjetas, así como registrar y editar productos médicos con su foto, código, título, categoría, IVA y estado. Solo el Administrador puede dar de baja o eliminar productos; si el producto posee cotizaciones u órdenes vinculadas, el sistema ejecuta una inactivación preventiva (soft-delete), y solo permite eliminación física si no tiene historial asociado.
+* **RF35:** El sistema debe permitir buscar productos de manera instantánea por nombre o código y filtrarlos por categoría, sirviendo como catálogo maestro para alimentar las cotizaciones y suministrar los productos en las órdenes directas de mostrador.
+* **RF36:** El sistema debe validar que los archivos de imagen subidos al catálogo cumplan con formatos válidos (JPG, PNG, WebP) y tamaño máximo de 8MB.
+* **RF37:** El sistema debe permitir exportar el catálogo de productos a PDF (completo, por categoría o mediante selección manual de productos específicos).
 
 ### 🏢 Directorio de Clientes
-* **RF38:** Los usuarios autorizados pueden consultar, registrar y editar clientes con sus datos de contacto y tributarios; pero solo el Administrador puede eliminarlos del sistema.
+* **RF38:** Los usuarios autorizados pueden visualizar, buscar, registrar y editar clientes con sus datos de contacto y ubicación. Solo el Administrador puede dar de baja o eliminar clientes; si el cliente posee cotizaciones asociadas, el sistema ejecuta una inactivación preventiva (soft-delete) salvaguardando los históricos comerciales, y solo permite eliminación física si no cuenta con movimientos.
 * **RF39:** El sistema debe permitir buscar clientes para cargar automáticamente su información en la cotización, o permitir digitarlos manualmente si es un cliente nuevo.
 
 ### 👥 Gestión de Usuarios (Solo Administrador)
-* **RF40:** El sistema debe permitir registrar y administrar las cuentas de usuario, asignando sus datos personales, código único de asesor y su rol en el sistema.
-* **RF41:** El sistema debe permitir restablecer la contraseña de cualquier usuario asignándole temporalmente su número de documento.
+* **RF40:** El sistema debe permitir visualizar en tarjetas, buscar, registrar y editar cuentas de usuario, asignando sus datos personales, código único de cotización, cargo, rol y estado (activo/inactivo), bloqueando la auto-eliminación de la cuenta en sesión activa. Si el usuario cuenta con cotizaciones finalizadas registradas, el sistema conmuta la eliminación por una desactivación lógica preventiva (*Inactivo*) para salvaguardar la trazabilidad comercial, permitiendo su reactivación posterior; permitiendo la eliminación física definitiva únicamente si el usuario no tiene registros vinculados.
+* **RF41:** El sistema debe permitir al Administrador restablecer la contraseña de cualquier usuario asignándole de inmediato su número de documento, disponible tanto mediante el botón directo de acceso rápido como a través del enlace de restablecimiento dentro del modal de edición.
 
 ### 📈 Estadísticas y Reportes (Solo Administrador)
-* **RF42:** El sistema debe consolidar indicadores comerciales financieros: monto total cotizado, ventas reales por órdenes concluidas, número de cotizaciones y órdenes emitidas.
-* **RF43:** El sistema debe mostrar gráficos de rendimiento: clientes con mayores compras, histórico de ventas mensuales y comparativa de efectividad por asesor.
-* **RF44:** El sistema debe permitir exportar los reportes analíticos consolidados a formato PDF con diseño institucional.
+* **RF42:** El sistema debe consolidar indicadores comerciales financieros: monto total cotizado, monto vendido (ventas reales), número total de cotizaciones y órdenes emitidas, con opción de filtrado por rango de fechas (Desde / Hasta).
+* **RF43:** El sistema debe mostrar gráficos analíticos interactivos: evolución mensual (cotizaciones totales vs. concluidas con selector por asesor), Top 5 productos más cotizados, Top 5 clientes por monto vendido, Top 5 asesores por órdenes y desglose de ventas por cliente por mes.
+* **RF44:** El sistema debe permitir exportar el informe analítico consolidado a formato PDF con diseño institucional ejecutivo adaptado al período seleccionado.
 
 ### 🚚 Directorio de Proveedores
-* **RF45:** Los usuarios autorizados pueden consultar, registrar y editar proveedores con sus datos comerciales y bancarios; pero solo el Administrador puede eliminarlos del sistema.
-* **RF46:** El sistema debe permitir buscar proveedores por NIT o Nombre en tiempo real mientras el usuario escribe.
-* **RF47:** El sistema debe permitir seleccionar un proveedor registrado para cargar sus datos comerciales y bancarios al cotizar o generar órdenes de compra, o ingresarlos manualmente si es requerido.
+* **RF45:** Los usuarios autorizados pueden visualizar, buscar, registrar y editar proveedores con sus datos comerciales, bancarios y de contacto. Solo el Administrador puede dar de baja o eliminar proveedores; si el proveedor posee cotizaciones u órdenes asociadas, el sistema ejecuta una inactivación preventiva (soft-delete), y solo permite eliminación física definitiva si no tiene registros vinculados.
+* **RF46:** El sistema debe permitir buscar proveedores por NIT, Nombre o Banco en tiempo real mientras el usuario escribe.
+* **RF47:** El sistema debe permitir seleccionar un proveedor registrado para cargar sus datos comerciales, bancarios y de contacto al cotizar o generar órdenes de compra, o ingresarlos manualmente si es requerido.
 * **RF48:** El sistema debe clasificar automáticamente a los proveedores en las órdenes como `Nuevo` (primera compra) o `Registrado` (compras anteriores).
 * **RF49:** El sistema debe registrar automáticamente a un proveedor en el directorio general cuando se emite una orden de compra con datos no existentes previamente.
 
@@ -162,7 +162,7 @@ A continuación se detallan las Historias de Usuario organizadas según la barra
   * **1.** El usuario puede buscar productos del catálogo o escribir manualmente los datos de un producto no registrado.
   * **2.** El sistema calcula el valor unitario sumando al costo del proveedor el margen de utilidad configurado y los recargos operacionales (flete, calibración, estampillas).
   * **3.** El usuario puede editar o eliminar ítems de la lista antes de guardar la cotización.
-  * **4.** Al guardar, se genera el consecutivo mensual con las iniciales del asesor (ej. `EB-10-01`) y se registran los días de validez y condición de pago.
+  * **4.** Al guardar, se genera el consecutivo mensual con las iniciales del asesor (ej. `EB 01`) y se registran los días de validez y condición de pago.
 
 #### HU05 - Generación de Documento PDF Oficial y Hoja de Respaldo (Módulo: Nueva Cotización)
 * **Como** asesor comercial,
@@ -185,7 +185,7 @@ A continuación se detallan las Historias de Usuario organizadas según la barra
 * **Requisitos cubiertos:** `RF14`, `RF15`
 * **Criterios de Aceptación:**
   * **1.** Bajo la opción "Ajustar", el sistema permite modificar ítems, cantidades, reordenar posiciones con flechas interactivas y corregir precios manteniendo exactamente el mismo número consecutivo original.
-  * **2.** Al pulsar "Guardar Ajuste", la cotización actualiza sus datos en la base de datos y redirige a la vista de consulta sin forzar la descarga del PDF.
+  * **2.** Al presionar "Guardar Ajuste", los cambios se aplican de inmediato en la cotización oficial, el sistema renueva el clon de trabajo y mantiene al usuario en la pantalla de edición mostrando la alerta de éxito («Cotización actualizada con éxito»), permitiendo guardar avances sucesivos hasta pulsar "Cancelar Ajuste" o navegar a otro módulo.
   * **3.** Bajo la opción "Nueva Revisión", el sistema crea una copia de la cotización agregando el sufijo de versión (`_01`, `_02`...).
   * **4.** Un asesor comercial solo puede ajustar o crear revisiones sobre cotizaciones de su autoría; los roles `admin` y `compras` pueden hacerlo sobre cualquier cotización.
 
@@ -196,11 +196,11 @@ A continuación se detallan las Historias de Usuario organizadas según la barra
 * **Requisitos cubiertos:** `RF16`, `RF17`
 * **Criterios de Aceptación:**
   * **1.** El cambio de estado comercial se actualiza en tiempo real registrando fecha y hora del cambio.
-  * **2.** Al cambiar el estado de entrega a *Entregado*, el sistema calcula y almacena la diferencia en días desde la fecha de emisión de la cotización.
+  * **2.** Al cambiar el estado de entrega a *Entregado*, el sistema calcula los días transcurridos hasta la entrega a partir de la fecha en que la negociación fue marcada como Concluida (o desde su creación si no hubo cambio previo).
 
 #### HU08 - Búsqueda Avanzada y Eliminación Controlada de Cotizaciones (Módulo: Consultar Cotizaciones)
 * **Como** usuario de la plataforma,
-* **Quiero** filtrar cotizaciones por número, cliente, asesor o rango de fechas, y permitir su eliminación si tengo perfil directivo,
+* **Quiero** filtrar cotizaciones por número de cotización, nombre del cliente o rango de fechas, y permitir su eliminación si tengo perfil directivo,
 * **Para** consultar rápidamente el historial comercial y depurar registros erróneos o duplicados.
 * **Requisitos cubiertos:** `RF22`, `RF23`
 * **Criterios de Aceptación:**
@@ -254,30 +254,33 @@ A continuación se detallan las Historias de Usuario organizadas según la barra
 
 ### 5. 🏢 Módulo: Directorio Clientes
 
-#### HU13 - Gestión y Búsqueda de Clientes (Módulo: Directorio Clientes)
+#### HU13 - Gestión, Búsqueda y Reactivación de Clientes (Módulo: Directorio Clientes)
 * **Como** asesor comercial o usuario autorizado,
-* **Quiero** consultar, registrar y editar clientes, o buscarlos por nombre/NIT al cotizar para cargar sus datos (o digitarlos manualmente),
-* **Para** agilizar la formulación de propuestas comerciales asegurando que solo el Administrador pueda eliminarlos.
+* **Quiero** consultar, registrar y editar clientes, o buscarlos por nombre/NIT al cotizar para cargar sus datos (o digitarlos manualmente), y contar con eliminación inteligente y reactivación según su historial,
+* **Para** agilizar la formulación de propuestas comerciales asegurando la integridad de las cotizaciones emitidas.
 * **Requisitos cubiertos:** `RF38`, `RF39`
 * **Criterios de Aceptación:**
   * **1.** Cualquier usuario autenticado puede crear y modificar información de clientes (NIT, nombre, contacto, ubicación, correo).
   * **2.** En el formulario de cotización, la búsqueda predictiva carga automáticamente los datos del cliente al seleccionarlo, permitiendo también el ingreso manual si es un cliente nuevo.
   * **3.** El botón y endpoint de eliminación de clientes está restringido exclusivamente al rol `admin`.
+  * **4.** Si el cliente posee cotizaciones asociadas en el sistema, el Administrador solo puede desactivarlo alertando con un mensaje informativo para salvaguardar la integridad histórica; únicamente si el cliente tiene 0 cotizaciones asociadas se permite su eliminación física permanente.
+  * **5.** Para cualquier cliente en estado inactivo, se dispone de un botón interactivo que restaura de forma instantánea el cliente al estado activo
 
 ---
 
 ### 6. 🚚 Módulo: Proveedores
 
-#### HU14 - Búsqueda en Tiempo Real, Carga, Contacto y Sincronización Automática de Proveedores (Módulo: Proveedores)
+#### HU14 - Búsqueda en Tiempo Real, Carga, Contacto, Sincronización y Reactivación de Proveedores (Módulo: Proveedores)
 * **Como** usuario autorizado (Asesor o Compras),
-* **Quiero** buscar proveedores por NIT o Nombre en tiempo real, cargar sus datos comerciales, bancarios y de contacto (celular y correo), y que el sistema auto-clasifique, auto-registre y auto-actualice proveedores desde la emisión o ajuste de órdenes de compra,
-* **Para** agilizar el aprovisionamiento de insumos y mantener centralizado y actualizado el directorio comercial protegiendo su eliminación.
+* **Quiero** buscar proveedores por NIT o Nombre en tiempo real, cargar sus datos comerciales, bancarios y de contacto (celular y correo), y que el sistema auto-clasifique, auto-registre y auto-actualice proveedores desde la emisión o ajuste de órdenes de compra, disponiendo de eliminación inteligente y reactivación,
+* **Para** agilizar el aprovisionamiento de insumos y mantener centralizado y actualizado el directorio comercial protegiendo su eliminación accidental.
 * **Requisitos cubiertos:** `RF45`, `RF46`, `RF47`, `RF48`, `RF49`
 * **Criterios de Aceptación:**
   * **1.** La búsqueda de proveedores por NIT o Razón Social responde en tiempo real mientras el usuario digita.
   * **2.** El sistema permite seleccionar un proveedor para autocompletar sus datos bancarios, de contacto (celular y correo) y comerciales en cotizaciones u órdenes, o digitarlos manualmente si no está en la base.
   * **3.** Al procesar o ajustar una orden de compra, el sistema clasifica al proveedor como `Nuevo` (primera compra) o `Registrado` (compras previas), lo registra en el directorio general si no existía y sincroniza/actualiza automáticamente sus datos bancarios, de contacto y tributarios ante cualquier cambio.
-  * **4.** La eliminación física o desactivación de proveedores está reservada exclusivamente al rol `admin`.
+  * **4.** La eliminación o desactivación de proveedores está reservada exclusivamente al rol `admin`. Si el proveedor tiene cotizaciones u órdenes vinculadas, se ejecuta una desactivación lógica; únicamente si tiene 0 registros asociados se permite su eliminación física.
+  * **5.** Los proveedores inactivos muestran un botón que restablece su estado a `activo` de manera inmediata.
 
 ---
 
@@ -290,17 +293,19 @@ A continuación se detallan las Historias de Usuario organizadas según la barra
 * **Requisitos cubiertos:** `RF34`, `RF35`, `RF36`
 * **Criterios de Aceptación:**
   * **1.** El catálogo permite el filtrado predictivo instantáneo por código o descripción.
-  * **2.** Al subir imágenes para productos médicos, el sistema valida que los formatos sean válidos (JPG, PNG, WebP).
+  * **2.** Al subir imágenes para productos médicos, el sistema valida que los formatos sean válidos (JPG, PNG, WebP) y con tamaño máximo de 8 MB.
   * **3.** Los usuarios `usuario` y `compras` pueden crear y editar productos médicos del catálogo.
 
-#### HU16 - Modalidades de Exportación a PDF y Restricción de Eliminación (Módulo: Catálogo Productos)
+#### HU16 - Modalidades de Exportación a PDF, Eliminación Inteligente y Reactivación (Módulo: Catálogo Productos)
 * **Como** usuario comercial (o Administrador),
-* **Quiero** exportar el catálogo a PDF (completo, por categoría o por selección manual de productos) y salvaguardar los registros restringiendo la eliminación al Administrador,
-* **Para** compartir portafolios comerciales personalizados con los clientes y evitar borrados accidentales.
+* **Quiero** exportar el catálogo a PDF (completo, por categoría o por selección manual de productos), contar con eliminación preventiva salvaguardando cotizaciones históricas y reactivar productos descontinuados,
+* **Para** compartir portafolios comerciales personalizados con los clientes y evitar inconsistencias en cotizaciones previas.
 * **Requisitos cubiertos:** `RF34`, `RF37`
 * **Criterios de Aceptación:**
   * **1.** El sistema ofrece tres opciones de exportación a PDF: catálogo completo, filtrado por una categoría seleccionada, o únicamente los productos seleccionados mediante casillas de verificación.
-  * **2.** La acción de eliminación física de productos valida estrictamente el rol `admin`, bloqueando cualquier intento por parte de otros roles.
+  * **2.** La acción de eliminación física o inactivación de productos valida estrictamente el rol `admin`.
+  * **3.** Si el producto está asociado a cotizaciones u órdenes de compra históricas, el sistema impide el borrado físico y aplica una inactivación lógica con advertencia explicativa en el modal de confirmación. Solo si tiene 0 cotizaciones asociadas se permite la eliminación física definitiva.
+  * **4.** Para productos inactivos, el sistema presenta un botón para devolverlos al catálogo activo de forma inmediata.
 
 ---
 
@@ -314,7 +319,9 @@ A continuación se detallan las Historias de Usuario organizadas según la barra
 * **Criterios de Aceptación:**
   * **1.** El acceso al módulo está bloqueado para roles distintos a `admin`.
   * **2.** Cada usuario creado cuenta con nombres, documento, rol y código de asesor (usado como prefijo en consecutivos de cotización).
-  * **3.** La opción de restablecimiento asigna el documento del usuario como su contraseña temporal y activa la sugerencia de cambio de clave en su próximo inicio de sesión.
+  * **3.** El restablecimiento de clave asigna de inmediato el número de documento como contraseña temporal (mediante el botón de llave en la tarjeta o el enlace en el modal de edición) y activa el cambio opcional/sugerido en el siguiente acceso.
+  * **4.** El sistema bloquea la auto-eliminación de la cuenta con sesión activa. Si el usuario posee cotizaciones finalizadas, el sistema despliega el modal interactivo de confirmación para suspender su acceso marcando su estado como *Inactivo* (manteniendo auditoría comercial). Si tiene 0 registros asociados, se permite la eliminación física definitiva.
+  * **5.** El sistema ofrece un botón directo de *Reactivar* en las tarjetas de usuarios en estado inactivo para restituir su operatividad de inmediato.
 
 ---
 
@@ -326,8 +333,8 @@ A continuación se detallan las Historias de Usuario organizadas según la barra
 * **Para** evaluar la efectividad comercial del equipo y tomar decisiones directivas respaldadas en datos.
 * **Requisitos cubiertos:** `RF42`, `RF43`, `RF44`
 * **Criterios de Aceptación:**
-  * **1.** El módulo calcula y compara el valor total cotizado frente a las ventas concluidas reales.
-  * **2.** Se presentan gráficos analíticos con los clientes con mayor facturación, evolución de ventas y efectividad por asesor comercial.
+  * **1.** El módulo calcula y compara en tiempo real el valor total cotizado frente a las ventas concluidas reales, con capacidad de filtrado por rango de fechas (Desde / Hasta).
+  * **2.** Presenta gráficos analíticos interactivos con filtros dedicados: evolución mensual con selector por asesor, ranking de clientes por monto vendido, top productos más cotizados y desglose de ventas por cliente por mes.
   * **3.** El sistema genera un reporte ejecutivo en formato PDF con diseño institucional.
 
 ---
@@ -343,4 +350,5 @@ A continuación se detallan las Historias de Usuario organizadas según la barra
   * **1.** Todos los formularios marcan los campos mandatorios con un asterisco de color rojo visible.
   * **2.** El botón `[ ? Ayuda ]` en la barra superior despliega el manual de usuario correspondiente a las funciones del rol activo.
   * **3.** Las validaciones de negocio presentan alertas informativas que indican con precisión la causa y la acción correctiva.
+  * **4.** Las operaciones clave de cotización (adición, edición y eliminación de ítems en cotizaciones nuevas, ajustes y revisiones) y cambios de clave despliegan confirmaciones visuales flotantes (*toasts* de éxito) sin interrumpir el flujo de trabajo del usuario.
 
