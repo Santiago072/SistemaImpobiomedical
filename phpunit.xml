@@ -20,6 +20,7 @@
         </include>
     </source>
     <php>
+        <ini name="output_buffering" value="4096"/>
         <env name="APP_ENV" value="testing"/>
         <env name="SESSION_LIFETIME" value="3600"/>
     </php>

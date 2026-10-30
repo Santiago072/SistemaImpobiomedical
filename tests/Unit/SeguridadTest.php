@@ -9,7 +9,7 @@ class SeguridadTest extends TestCase
 {
     protected function setUp(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
             @session_start();
         }
         $_SESSION = [];

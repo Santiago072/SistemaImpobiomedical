@@ -41,12 +41,15 @@ jobs:
 
       # ── 4. Instalar dependencias ────────────────────────────────────────────
       - name: 📦 Instalar dependencias (composer install)
-        run: composer install --no-interaction --no-progress --prefer-dist
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          composer dump-autoload --optimize
 
       # ── 5. Validación de sintaxis PHP en controladores, modelos y servicios ──
       - name: 🔍 Chequeo de sintaxis PHP (Linting)
         run: |
-          find app/ config/ index.php -name "*.php" -exec php -l {} +
+          find app/ config/ -name "*.php" -exec php -l {} +
+          php -l index.php
 
       # ── 6. Verificar binario de PHPUnit ─────────────────────────────────────
       - name: ✅ Verificar versión de PHPUnit
